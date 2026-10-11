@@ -7,7 +7,15 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "seed": "tsx src/seed.ts"
+    "seed": "npm run build --silent && node dist/seed.js",
+    "db:migrate": "npm run build --silent && node dist/scripts/migrate.js",
+    "db:migrate:apply": "npm run build --silent && node dist/scripts/migrate.js --apply",
+    "db:verify": "npm run build --silent && node dist/scripts/verifyDatabase.js",
+    "ai:export": "npm run build --silent && node dist/scripts/exportAiDataset.js",
+    "test": "npm run build --silent && node dist/tests/rbac.test.js",
+    "test:algorithm": "npm run build --silent && node dist/tests/algorithm.test.js",
+    "test:integration": "npm run build --silent && node dist/tests/integration.postgres.test.js",
+    "test:intelligence": "npm run build --silent && node dist/tests/intelligence.postgres.test.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

@@ -17,6 +17,7 @@ import {
   Map,
   Route,
   CalendarDays,
+  Building2,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useFavorites } from '../../context/FavoritesContext';
@@ -111,7 +112,7 @@ export const Navbar: React.FC = () => {
   const userDropdownRef = useRef<HTMLDivElement>(null);
 
   const location = useLocation();
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin, isPartner } = useAuth();
   const { favorites } = useFavorites();
 
   useEffect(() => {
@@ -265,6 +266,16 @@ export const Navbar: React.FC = () => {
                         <ShieldCheck className="w-4 h-4 mr-3 text-blue-500" /> Giao diện Quản trị
                       </Link>
                     )}
+                    {isPartner && (
+                      <Link to="/partner" onClick={() => setUserDropdownOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-teal-700 font-medium hover:bg-teal-50">
+                        <Building2 className="w-4 h-4 mr-3 text-teal-600" /> Chuyển sang trang Đối tác
+                      </Link>
+                    )}
+                    {!isPartner && (
+                      <Link to="/become-partner" onClick={() => setUserDropdownOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
+                        <Building2 className="w-4 h-4 mr-3 text-slate-400" /> Trở thành đối tác
+                      </Link>
+                    )}
                     <div className="border-t border-slate-100 my-1" />
                     <button
                       onClick={() => { logout(); setUserDropdownOpen(false); }}
@@ -369,6 +380,12 @@ export const Navbar: React.FC = () => {
                       onClick={() => setMobileMenuOpen(false)}
                       extraClass="text-blue-600 font-semibold hover:bg-blue-50 block px-3 py-2 rounded-lg text-base"
                     />
+                  )}
+                  {isPartner && (
+                    <MobileLink to="/partner" label="Trang quản lý Đối tác" isActive={false} onClick={() => setMobileMenuOpen(false)} extraClass="text-teal-700 font-semibold hover:bg-teal-50 block px-3 py-2 rounded-lg text-base" />
+                  )}
+                  {!isPartner && (
+                    <MobileLink to="/become-partner" label="Trở thành đối tác" isActive={false} onClick={() => setMobileMenuOpen(false)} />
                   )}
                   <button
                     onClick={() => { logout(); setMobileMenuOpen(false); }}

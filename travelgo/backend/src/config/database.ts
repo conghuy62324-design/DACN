@@ -24,7 +24,7 @@ export const testDbConnection = async (): Promise<boolean> => {
     console.log('✅ Kết nối PostgreSQL/PostGIS thành công!');
     return true;
   } catch (error) {
-    console.warn('⚠️ Không thể kết nối trực tiếp đến PostgreSQL (server sẽ chạy với Mock Data Service):', (error as Error).message);
+    console.error('❌ Không thể kết nối PostgreSQL; backend sẽ không khởi động để tránh trả dữ liệu giả:', (error as Error).message);
     return false;
   }
 };

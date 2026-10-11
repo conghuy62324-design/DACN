@@ -1,4 +1,5 @@
-import { PlaceData } from '../utils/mockData.js';
+import { PlaceData } from './placeService.js';
+import { RecommendationRepository } from '../repositories/recommendationRepository.js';
 import { RatingService } from './ratingService.js';
 import { GeoService, Coordinates } from './geoService.js';
 
@@ -38,6 +39,9 @@ export interface RecommendedPlaceResult {
 }
 
 export class RecommendationService {
+  public static async recommendFromDatabase(query: RecommendationQuery): Promise<RecommendedPlaceResult[]> {
+    return this.recommendPlaces(await RecommendationRepository.getApprovedPlaces(), query);
+  }
   /**
    * Bản đồ từ khóa sở thích của người dùng ánh xạ vào tags/highlights của địa điểm
    */

@@ -1,5 +1,6 @@
 export interface Place {
   id: string;
+  businessId?: string;
   name: string;
   slug: string;
   category: 'tour' | 'attraction' | 'hotel' | 'restaurant';
@@ -21,10 +22,15 @@ export interface Place {
   amenities: string[];
   itinerary?: { day: number; title: string; desc: string; image?: string }[];
   isFeatured?: boolean;
+  district?: string;
+  openingHours?: Record<string, unknown>;
+  contactInfo?: Record<string, unknown>;
+  status?: 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
 }
 
 export interface Ticket {
   id: string;
+  businessId?: string;
   title: string;
   type: 'flight' | 'bus' | 'train' | 'tour' | 'sightseeing';
   operator: string;
@@ -36,8 +42,10 @@ export interface Ticket {
   price: number;
   originalPrice?: number;
   availableSeats: number;
+  capacity: number;
   features: string[];
   imageUrl?: string;
+  status: 'ACTIVE' | 'INACTIVE';
 }
 
 export interface Booking {
@@ -56,13 +64,17 @@ export interface Booking {
   unitPrice: number;
   totalAmount: number;
   paymentStatus: 'unpaid' | 'paid' | 'refunded';
-  bookingStatus: 'confirmed' | 'pending' | 'cancelled' | 'completed';
+  bookingStatus: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'REJECTED';
+  quantity: number;
+  discountAmount: number;
+  businessId?: string;
   notes?: string;
   createdAt: string;
 }
 
 export interface BlogPost {
   id: string;
+  businessId?: string;
   title: string;
   slug: string;
   excerpt: string;
@@ -76,6 +88,7 @@ export interface BlogPost {
   tags: string[];
   likesCount: number;
   isFeatured?: boolean;
+  status?: 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
   createdAt: string;
 }
 
@@ -98,13 +111,51 @@ export interface User {
   id: string;
   fullName: string;
   email: string;
-  role: 'user' | 'admin';
+  roles: UserRole[];
+  /** Legacy field accepted while old sessions are being migrated. */
+  role?: 'user' | 'admin' | 'partner';
   avatarUrl?: string;
   phone?: string;
 }
 
+export type UserRole = 'CUSTOMER' | 'PARTNER' | 'SUPER_ADMIN';
+
+export type BusinessType = 'HOTEL' | 'HOMESTAY' | 'RESORT' | 'RESTAURANT' | 'TOUR_OPERATOR';
+
+export interface Business {
+  id: string;
+  name: string;
+  type: BusinessType;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  status: 'ACTIVE' | 'SUSPENDED';
+  permissions?: string[];
+}
+
+export type PartnerApplicationStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'NEEDS_MORE_INFO' | 'SUSPENDED';
+
+export interface PartnerApplication {
+  id: string;
+  representativeName: string;
+  businessName: string;
+  businessType: BusinessType;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  imageUrls: string[];
+  verificationDetails: Record<string, unknown>;
+  status: PartnerApplicationStatus;
+  decisionReason?: string;
+  createdAt: string;
+  reviewedAt?: string;
+}
+
 export interface TourPackage {
   id: string;
+  businessId?: string;
   title: string;
   slug: string;
   destinationCity: string;
@@ -132,6 +183,9 @@ export interface TourPackage {
   }[];
   isTemplate: boolean;
   createdAt: string;
+  capacity?: number;
+  availableCapacity?: number;
+  status?: 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
 }
 
 export interface PlannerInput {

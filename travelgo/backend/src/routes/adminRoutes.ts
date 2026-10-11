@@ -1,0 +1,23 @@
+import { Router } from 'express';
+import { AdminController } from '../controllers/adminController.js';
+import { AdminResourceController } from '../controllers/adminResourceController.js';
+import { authenticate, requireRoles } from '../middlewares/authMiddleware.js';
+
+const router = Router();
+router.use(authenticate, requireRoles('SUPER_ADMIN'));
+router.get('/dashboard', AdminController.dashboard);
+router.get('/partners/pending', AdminController.pendingPartnerApplications);
+router.get('/partner-applications', AdminController.partnerApplications);
+router.patch('/partners/:id/approval', AdminController.decidePartnerApplication);
+router.get('/businesses', AdminController.businesses);
+router.get('/bookings', AdminController.bookings);
+router.get('/places', AdminResourceController.listPlaces);
+router.get('/places/:id', AdminResourceController.getPlace);
+router.patch('/places/:id/status', AdminResourceController.moderatePlace);
+router.get('/tours', AdminResourceController.listTours);
+router.get('/tours/:id', AdminResourceController.getTour);
+router.patch('/tours/:id/status', AdminResourceController.moderateTour);
+router.get('/blogs', AdminResourceController.listBlogs);
+router.get('/blogs/:id', AdminResourceController.getBlog);
+router.patch('/blogs/:id/status', AdminResourceController.moderateBlog);
+export default router;

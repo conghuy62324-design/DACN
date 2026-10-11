@@ -3,6 +3,7 @@ import { sequelize } from '../config/database.js';
 
 export interface PlaceAttributes {
   id: string;
+  businessId?: string;
   name: string;
   slug: string;
   category: 'tour' | 'attraction' | 'hotel' | 'restaurant';
@@ -11,6 +12,7 @@ export interface PlaceAttributes {
   city: string;
   province: string;
   address: string;
+  district?: string;
   latitude: number;
   longitude: number;
   priceFrom: number;
@@ -24,14 +26,18 @@ export interface PlaceAttributes {
   amenities: string[];
   itinerary?: { day: number; title: string; desc: string; image?: string }[];
   isFeatured: boolean;
+  openingHours: Record<string, unknown>;
+  contactInfo: Record<string, unknown>;
+  status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-export interface PlaceCreationAttributes extends Optional<PlaceAttributes, 'id' | 'rating' | 'reviewCount' | 'bayesianRating' | 'isFeatured'> {}
+export interface PlaceCreationAttributes extends Optional<PlaceAttributes, 'id' | 'businessId' | 'district' | 'rating' | 'reviewCount' | 'bayesianRating' | 'isFeatured' | 'openingHours' | 'contactInfo' | 'status'> {}
 
 export class Place extends Model<PlaceAttributes, PlaceCreationAttributes> implements PlaceAttributes {
   public id!: string;
+  public businessId?: string;
   public name!: string;
   public slug!: string;
   public category!: 'tour' | 'attraction' | 'hotel' | 'restaurant';
@@ -40,6 +46,7 @@ export class Place extends Model<PlaceAttributes, PlaceCreationAttributes> imple
   public city!: string;
   public province!: string;
   public address!: string;
+  public district?: string;
   public latitude!: number;
   public longitude!: number;
   public priceFrom!: number;
@@ -53,6 +60,9 @@ export class Place extends Model<PlaceAttributes, PlaceCreationAttributes> imple
   public amenities!: string[];
   public itinerary?: { day: number; title: string; desc: string; image?: string }[];
   public isFeatured!: boolean;
+  public openingHours!: Record<string, unknown>;
+  public contactInfo!: Record<string, unknown>;
+  public status!: 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -65,6 +75,7 @@ Place.init(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
+    businessId: { type: DataTypes.UUID, allowNull: true },
     name: {
       type: DataTypes.STRING(255),
       allowNull: false,
@@ -98,6 +109,7 @@ Place.init(
       type: DataTypes.TEXT,
       allowNull: false,
     },
+    district: { type: DataTypes.STRING(120), allowNull: true },
     latitude: {
       type: DataTypes.DOUBLE,
       allowNull: false,
@@ -150,6 +162,9 @@ Place.init(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    openingHours: { type: DataTypes.JSONB, allowNull: false, defaultValue: {} },
+    contactInfo: { type: DataTypes.JSONB, allowNull: false, defaultValue: {} },
+    status: { type: DataTypes.STRING(30), allowNull: false, defaultValue: 'APPROVED' },
   },
   {
     sequelize,

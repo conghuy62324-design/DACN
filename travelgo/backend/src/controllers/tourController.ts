@@ -2,6 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import { TourService } from '../services/tourService.js';
 import { TourPlannerService, PlannerInput } from '../services/tourPlannerService.js';
 
+const tourFields=['businessId','title','destinationCity','departureCity','durationDays','durationNights','category','summary','description','meetingPoint','heroImage','galleryImages','priceVND','capacity','inclusions','exclusions','highlights','itineraryDays','startDate','endDate','isTemplate'] as const;
+const tourInput=(body:any)=>Object.fromEntries(tourFields.filter(key=>body[key]!==undefined).map(key=>[key,body[key]]));
+
 export class TourController {
   /**
    * GET /api/tours
@@ -9,21 +12,24 @@ export class TourController {
    */
   public static async getTours(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { city, category, maxPrice, durationDays, sortBy, search } = req.query;
+      const { city, category, maxPrice, durationDays, sort, search, page, limit } = req.query;
 
-      const tours = await TourService.getAllTours({
+      const result = await TourService.listPublic({
         city: city as string,
         category: category as any,
         maxPrice: maxPrice ? Number(maxPrice) : undefined,
         days: durationDays ? Number(durationDays) : undefined,
-        sortBy: sortBy as any,
+        sort: sort as string,
         search: search as string,
+        page: page ? Number(page) : undefined,
+        limit: limit ? Number(limit) : undefined,
       });
 
       res.json({
         success: true,
-        count: tours.length,
-        data: tours,
+        count: result.items.length,
+        data: result.items,
+        pagination: { total: result.total, page: result.page, limit: result.limit },
       });
     } catch (error) {
       next(error);
@@ -102,7 +108,7 @@ export class TourController {
    */
   public static async createTour(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const tour = await TourService.createTour(req.body);
+      const tour = await TourService.createTour(tourInput(req.body));
       res.status(201).json({
         success: true,
         data: tour,
@@ -119,7 +125,7 @@ export class TourController {
   public static async updateTour(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const id = (Array.isArray(req.params.id) ? req.params.id[0] : req.params.id) as string;
-      const updated = await TourService.updateTour(id, req.body);
+      const updated = await TourService.updateTour(id, tourInput(req.body));
 
       if (!updated) {
         res.status(404).json({

@@ -3,6 +3,9 @@ import { sequelize } from '../config/database.js';
 
 export interface TicketAttributes {
   id: string;
+  businessId?: string;
+  placeId?: string;
+  tourId?: string;
   title: string;
   type: 'flight' | 'bus' | 'train' | 'tour' | 'sightseeing';
   operator: string;
@@ -14,15 +17,22 @@ export interface TicketAttributes {
   price: number;
   originalPrice?: number;
   availableSeats: number;
+  capacity: number;
+  validFrom?: Date;
+  validUntil?: Date;
+  status: 'ACTIVE' | 'INACTIVE';
   features: string[];
   imageUrl?: string;
   createdAt?: Date;
 }
 
-export interface TicketCreationAttributes extends Optional<TicketAttributes, 'id' | 'originalPrice' | 'availableSeats' | 'imageUrl'> {}
+export interface TicketCreationAttributes extends Optional<TicketAttributes, 'id' | 'businessId' | 'placeId' | 'tourId' | 'originalPrice' | 'availableSeats' | 'capacity' | 'validFrom' | 'validUntil' | 'status' | 'imageUrl'> {}
 
 export class Ticket extends Model<TicketAttributes, TicketCreationAttributes> implements TicketAttributes {
   public id!: string;
+  public businessId?: string;
+  public placeId?: string;
+  public tourId?: string;
   public title!: string;
   public type!: 'flight' | 'bus' | 'train' | 'tour' | 'sightseeing';
   public operator!: string;
@@ -34,6 +44,10 @@ export class Ticket extends Model<TicketAttributes, TicketCreationAttributes> im
   public price!: number;
   public originalPrice?: number;
   public availableSeats!: number;
+  public capacity!: number;
+  public validFrom?: Date;
+  public validUntil?: Date;
+  public status!: 'ACTIVE' | 'INACTIVE';
   public features!: string[];
   public imageUrl?: string;
 
@@ -47,6 +61,9 @@ Ticket.init(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
+    businessId: { type: DataTypes.UUID, allowNull: true },
+    placeId: { type: DataTypes.UUID, allowNull: true },
+    tourId: { type: DataTypes.UUID, allowNull: true },
     title: {
       type: DataTypes.STRING(255),
       allowNull: false,
@@ -91,6 +108,10 @@ Ticket.init(
       type: DataTypes.INTEGER,
       defaultValue: 50,
     },
+    capacity: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 50 },
+    validFrom: { type: DataTypes.DATE, allowNull: true },
+    validUntil: { type: DataTypes.DATE, allowNull: true },
+    status: { type: DataTypes.STRING(20), allowNull: false, defaultValue: 'ACTIVE' },
     features: {
       type: DataTypes.JSONB,
       defaultValue: [],

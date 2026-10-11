@@ -4,18 +4,22 @@ import { TicketService } from '../services/ticketService.js';
 export class TicketController {
   public static async getTickets(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { type, fromCity, toCity, maxPrice } = req.query;
-      const tickets = await TicketService.getAllTickets({
+      const { type, fromCity, toCity, maxPrice, search, page, limit } = req.query;
+      const result = await TicketService.listPublic({
         type: type as string,
         fromCity: fromCity as string,
         toCity: toCity as string,
         maxPrice: maxPrice ? parseFloat(maxPrice as string) : undefined,
+        search: search as string,
+        page: page ? Number(page) : undefined,
+        limit: limit ? Number(limit) : undefined,
       });
 
       res.json({
         success: true,
-        count: tickets.length,
-        data: tickets,
+        count: result.items.length,
+        data: result.items,
+        pagination: { total: result.total, page: result.page, limit: result.limit },
       });
     } catch (error) {
       next(error);

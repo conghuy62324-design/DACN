@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { X, Calendar, Users, CheckCircle, ShieldCheck, Phone, Mail, User as UserIcon } from 'lucide-react';
 import { useBooking } from '../../context/BookingContext';
 import { useAuth } from '../../context/AuthContext';
@@ -11,7 +12,7 @@ export const BookingModal: React.FC = () => {
 
   const [customerName, setCustomerName] = useState(user?.fullName || '');
   const [customerEmail, setCustomerEmail] = useState(user?.email || '');
-  const [customerPhone, setCustomerPhone] = useState(user?.phone || '0905123456');
+  const [customerPhone, setCustomerPhone] = useState(user?.phone || '');
   const [bookingDate, setBookingDate] = useState(() => {
     const today = new Date();
     today.setDate(today.getDate() + 3);
@@ -26,6 +27,7 @@ export const BookingModal: React.FC = () => {
   const [childrenCount, setChildrenCount] = useState(0);
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   if (!isOpen || !modalData) return null;
 
@@ -35,49 +37,24 @@ export const BookingModal: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError('');
 
     try {
       const created = await BookingService.createBooking({
         serviceType: modalData.serviceType,
         serviceId: modalData.serviceId,
-        serviceName: modalData.serviceName,
-        customerName: customerName || 'Khách hàng HuGo Travel',
-        customerEmail: customerEmail || 'guest@hugotravel.vn',
-        customerPhone: customerPhone || '0905123456',
+        customerPhone,
         bookingDate,
         returnDate,
         adultsCount,
         childrenCount,
-        unitPrice,
-        totalAmount,
         notes,
       });
 
       setConfirmedBooking(created);
     } catch (error) {
       console.error('Booking failed:', error);
-      // Fallback local booking for offline demo
-      const mockCreated = {
-        id: `bk-${Date.now()}`,
-        bookingCode: `HG-${Date.now().toString().slice(-6)}`,
-        serviceType: modalData.serviceType,
-        serviceId: modalData.serviceId,
-        serviceName: modalData.serviceName,
-        customerName: customerName || 'Khách hàng HuGo Travel',
-        customerEmail: customerEmail || 'guest@hugotravel.vn',
-        customerPhone: customerPhone || '0905123456',
-        bookingDate,
-        returnDate,
-        adultsCount,
-        childrenCount,
-        unitPrice,
-        totalAmount,
-        paymentStatus: 'unpaid' as const,
-        bookingStatus: 'confirmed' as const,
-        notes,
-        createdAt: new Date().toISOString(),
-      };
-      setConfirmedBooking(mockCreated);
+      setSubmitError((error as any)?.message || 'Không thể tạo booking. Vui lòng thử lại.');
     } finally {
       setIsSubmitting(false);
     }
@@ -108,7 +85,14 @@ export const BookingModal: React.FC = () => {
           </div>
         </div>
 
-        {confirmedBooking ? (
+        {!user ? (
+          <div className="p-8 text-center">
+            <ShieldCheck className="mx-auto h-12 w-12 text-orange-500" />
+            <h3 className="mt-4 text-xl font-extrabold text-slate-900">Đăng nhập để đặt dịch vụ</h3>
+            <p className="mt-2 text-sm text-slate-500">Booking phải được liên kết với tài khoản để bạn và đối tác cùng theo dõi trạng thái.</p>
+            <Link to="/login" onClick={closeBooking} className="mt-6 inline-block rounded-xl bg-orange-500 px-5 py-3 text-sm font-bold text-white">Đăng nhập ngay</Link>
+          </div>
+        ) : confirmedBooking ? (
           /* Confirmation Success Screen */
           <div className="p-8 text-center space-y-5">
             <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
@@ -158,6 +142,7 @@ export const BookingModal: React.FC = () => {
         ) : (
           /* Booking Form */
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            {submitError && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-medium text-rose-700">{submitError}</div>}
             {/* Customer Inputs */}
             <div className="space-y-3">
               <div>
@@ -165,6 +150,7 @@ export const BookingModal: React.FC = () => {
                 <div className="relative">
                   <UserIcon className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                   <input
+                    name="customerName"
                     type="text"
                     required
                     value={customerName}
@@ -181,6 +167,7 @@ export const BookingModal: React.FC = () => {
                   <div className="relative">
                     <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                     <input
+                      name="customerPhone"
                       type="tel"
                       required
                       value={customerPhone}
@@ -195,6 +182,7 @@ export const BookingModal: React.FC = () => {
                   <div className="relative">
                     <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                     <input
+                      name="customerEmail"
                       type="email"
                       required
                       value={customerEmail}
@@ -210,6 +198,7 @@ export const BookingModal: React.FC = () => {
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1">Ngày bắt đầu</label>
                   <input
+                    name="bookingDate"
                     type="date"
                     required
                     value={bookingDate}
@@ -220,6 +209,7 @@ export const BookingModal: React.FC = () => {
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1">Ngày kết thúc</label>
                   <input
+                    name="returnDate"
                     type="date"
                     value={returnDate}
                     onChange={(e) => setReturnDate(e.target.value)}
@@ -282,6 +272,7 @@ export const BookingModal: React.FC = () => {
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1">Ghi chú yêu cầu đặc biệt</label>
                 <textarea
+                  name="notes"
                   rows={2}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -304,6 +295,7 @@ export const BookingModal: React.FC = () => {
               </div>
 
               <button
+                data-testid="booking-submit"
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-extrabold rounded-2xl shadow-lg shadow-orange-500/25 active:scale-98 transition-all flex items-center justify-center space-x-2"

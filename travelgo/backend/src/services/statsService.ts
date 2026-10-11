@@ -1,31 +1,24 @@
-import { PlaceService } from './placeService.js';
-import { BookingService } from './bookingService.js';
-import { BlogService } from './blogService.js';
+import { Op } from 'sequelize';
+import { BlogPost, Booking, Place } from '../models/index.js';
+import { serializePlace } from './placeService.js';
 
 export class StatsService {
-  public static async getDashboardStats() {
-    const places = await PlaceService.getAllPlaces();
-    const bookings = await BookingService.getAllBookings();
-    const blogs = await BlogService.getAllBlogs();
-
-    const totalRevenue = bookings
-      .filter((b) => b.bookingStatus !== 'cancelled')
-      .reduce((sum, b) => sum + Number(b.totalAmount || 0), 0);
-
-    const pendingBookings = bookings.filter((b) => b.bookingStatus === 'pending').length;
-    const confirmedBookings = bookings.filter((b) => b.bookingStatus === 'confirmed').length;
-
+  static async getDashboardStats() {
+    const [totalRevenue, totalBookings, totalPlaces, totalBlogs, pendingBookings, confirmedBookings, recentBookings, popularPlaces] = await Promise.all([
+      Booking.sum('totalAmount', { where: { bookingStatus: { [Op.ne]: 'CANCELLED' } } }),
+      Booking.count(),
+      Place.count({ where: { status: 'APPROVED' } }),
+      BlogPost.count({ where: { status: 'APPROVED' } }),
+      Booking.count({ where: { bookingStatus: 'PENDING' } }),
+      Booking.count({ where: { bookingStatus: 'CONFIRMED' } }),
+      Booking.findAll({ limit: 5, order: [['createdAt', 'DESC']] }),
+      Place.findAll({ where: { status: 'APPROVED' }, limit: 5, order: [['bayesianRating', 'DESC']] }),
+    ]);
     return {
-      overview: {
-        totalRevenue,
-        totalBookings: bookings.length,
-        totalPlaces: places.length,
-        totalBlogs: blogs.length,
-        pendingBookings,
-        confirmedBookings,
-      },
-      recentBookings: bookings.slice(0, 5),
-      popularPlaces: places.slice(0, 5),
+      overview: { totalRevenue: Number(totalRevenue || 0), totalBookings, totalPlaces, totalBlogs, pendingBookings, confirmedBookings },
+      recentBookings,
+      popularPlaces: popularPlaces.map(serializePlace),
+      source: 'DATABASE',
     };
   }
 }

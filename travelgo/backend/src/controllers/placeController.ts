@@ -1,120 +1,15 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import { AuthenticatedRequest } from '../middlewares/authMiddleware.js';
 import { PlaceService } from '../services/placeService.js';
 
+const placeFields=['name','category','summary','description','city','province','district','address','latitude','longitude','priceFrom','duration','heroImage','galleryImages','highlights','amenities','openingHours','contactInfo'] as const;
+const placeInput=(body:any)=>Object.fromEntries(placeFields.filter(key=>body[key]!==undefined).map(key=>[key,body[key]]));
+
 export class PlaceController {
-  public static async getPlaces(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const { category, city, search, minRating, sortBy } = req.query;
-      const places = await PlaceService.getAllPlaces({
-        category: category as string,
-        city: city as string,
-        search: search as string,
-        minRating: minRating ? parseFloat(minRating as string) : undefined,
-        sortBy: sortBy as any,
-      });
-
-      res.json({
-        success: true,
-        count: places.length,
-        data: places,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public static async getPlaceById(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const id = (Array.isArray(req.params.id) ? req.params.id[0] : req.params.id) as string;
-      const place = await PlaceService.getPlaceByIdOrSlug(id);
-
-      if (!place) {
-        res.status(404).json({
-          success: false,
-          message: 'Không tìm thấy thông tin địa điểm hoặc tour du lịch',
-        });
-        return;
-      }
-
-      res.json({
-        success: true,
-        data: place,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public static async getPlaceReviews(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const id = (Array.isArray(req.params.id) ? req.params.id[0] : req.params.id) as string;
-      const reviews = await PlaceService.getReviewsByTarget(id);
-
-      res.json({
-        success: true,
-        count: reviews.length,
-        data: reviews,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public static async addReview(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const id = (Array.isArray(req.params.id) ? req.params.id[0] : req.params.id) as string;
-      const { userName, rating, criteria, comment, userAvatar } = req.body;
-
-      if (!userName || !rating || !comment) {
-        res.status(400).json({
-          success: false,
-          message: 'Vui lòng cung cấp họ tên, số sao đánh giá và nội dung nhận xét',
-        });
-        return;
-      }
-
-      const review = await PlaceService.addReview(id, {
-        userName,
-        rating: Number(rating),
-        criteria,
-        comment,
-        userAvatar,
-      });
-
-      res.status(201).json({
-        success: true,
-        message: 'Gửi đánh giá thành công! Điểm Bayesian của địa điểm đã được cập nhật.',
-        data: review,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public static async createPlace(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const place = await PlaceService.createPlace(req.body);
-      res.status(201).json({
-        success: true,
-        message: 'Tạo địa điểm mới thành công',
-        data: place,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public static async deletePlace(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const id = (Array.isArray(req.params.id) ? req.params.id[0] : req.params.id) as string;
-      const success = await PlaceService.deletePlace(id);
-      if (!success) {
-        res.status(404).json({ success: false, message: 'Địa điểm không tồn tại' });
-        return;
-      }
-      res.json({ success: true, message: 'Đã xóa địa điểm thành công' });
-    } catch (error) {
-      next(error);
-    }
-  }
+  static async getPlaces(req:Request,res:Response,next:NextFunction){try{const result=await PlaceService.listPublic({category:req.query.category as string,city:req.query.city as string,search:req.query.search as string,minRating:req.query.minRating?Number(req.query.minRating):undefined,sort:req.query.sortBy as string,page:Number(req.query.page||1),limit:Number(req.query.limit||20)});res.json({success:true,count:result.items.length,data:result.items,meta:{total:result.total,page:result.page,limit:result.limit,pages:result.pages}});}catch(error){next(error);}}
+  static async getPlaceById(req:Request,res:Response,next:NextFunction){try{const data=await PlaceService.getPlaceByIdOrSlug(String(req.params.id));if(!data){res.status(404).json({success:false,message:'Không tìm thấy địa điểm'});return;}res.json({success:true,data});}catch(error){next(error);}}
+  static async getPlaceReviews(req:Request,res:Response,next:NextFunction){try{const data=await PlaceService.getReviewsByTarget(String(req.params.id));res.json({success:true,count:data.length,data});}catch(error){next(error);}}
+  static async addReview(req:AuthenticatedRequest,res:Response,next:NextFunction){try{const{rating,criteria,comment,userAvatar}=req.body;const data=await PlaceService.addReview(String(req.params.id),req.user!,{rating:Number(rating),criteria,comment,userAvatar});res.status(201).json({success:true,message:'Gửi đánh giá thành công',data});}catch(error){next(error);}}
+  static async createPlace(req:Request,res:Response,next:NextFunction){try{const data=await PlaceService.createPlace(placeInput(req.body) as any);res.status(201).json({success:true,data});}catch(error){next(error);}}
+  static async deletePlace(req:Request,res:Response,next:NextFunction){try{const ok=await PlaceService.deletePlace(String(req.params.id));if(!ok){res.status(404).json({success:false,message:'Địa điểm không tồn tại'});return;}res.json({success:true,message:'Đã tạm ngừng địa điểm'});}catch(error){next(error);}}
 }

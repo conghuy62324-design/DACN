@@ -2,18 +2,22 @@ import express from 'express';
 import cors from 'cors';
 import apiRouter from './routes/api.js';
 import { errorHandler } from './middlewares/errorHandler.js';
+import { ENV } from './config/env.js';
 
 const app = express();
 
 // Middlewares
 app.use(cors({
-  origin: '*',
+  origin(origin, callback) {
+    if (!origin || ENV.APP_ORIGINS.includes(origin)) return callback(null, true);
+    callback(new Error('Origin không được HuGo Travel cho phép'));
+  },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key'],
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // Request logger
 app.use((req, res, next) => {

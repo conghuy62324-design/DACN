@@ -9,7 +9,15 @@ export const ENV = {
   DB_USER: process.env.DB_USER || 'postgres',
   DB_PASSWORD: process.env.DB_PASSWORD || 'postgres',
   DB_NAME: process.env.DB_NAME || 'travelgo_db',
-  JWT_SECRET: process.env.JWT_SECRET || 'travelgo-super-secret-key-2026',
+  APP_ORIGINS: (process.env.APP_ORIGINS || 'http://localhost:5173').split(',').map((origin) => origin.trim()),
+  JWT_SECRET: process.env.JWT_SECRET || 'development-only-change-me',
+  JWT_EXPIRES_SECONDS: process.env.JWT_EXPIRES_SECONDS
+    ? parseInt(process.env.JWT_EXPIRES_SECONDS, 10)
+    : 60 * 60 * 8,
   BAYESIAN_MIN_REVIEWS: 10,
   BAYESIAN_MEAN_PRIOR: 4.20,
 };
+
+if (ENV.NODE_ENV === 'production' && ENV.JWT_SECRET === 'development-only-change-me') {
+  throw new Error('JWT_SECRET bắt buộc phải được cấu hình trong môi trường production');
+}

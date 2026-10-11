@@ -4,7 +4,8 @@ import { testDbConnection } from './config/database.js';
 
 const startServer = async () => {
   // Test database connection (PostgreSQL / PostGIS)
-  await testDbConnection();
+  const connected = await testDbConnection();
+  if (!connected) throw new Error('PostgreSQL không khả dụng');
 
   const server = app.listen(ENV.PORT, () => {
     console.log(`=======================================================`);
@@ -26,4 +27,5 @@ const startServer = async () => {
 
 startServer().catch((err) => {
   console.error('Lỗi khi khởi động HuGo Travel server:', err);
+  process.exitCode = 1;
 });

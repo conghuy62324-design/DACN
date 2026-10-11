@@ -79,6 +79,6 @@ graph TD
 ---
 
 ## 3. THIẾT KẾ MÔI TRƯỜNG & KHẢ NĂNG CHUYỂN ĐỔI LINH HOẠT
-- **Cơ chế Dual-Mode Persistence:**
-  - Trong môi trường Production với cụm PostgreSQL đang chạy: Hệ thống kết nối Sequelize trực tiếp và chạy Migrations/PostGIS.
-  - Trong môi trường kiểm thử độc lập hoặc máy chủ không có dịch vụ PostgreSQL thường trực: Hệ thống tự động chuyển đổi sang Data Store tương thích in-memory, đảm bảo 100% API, Server và Frontend luôn hoạt động mượt mà, không gặp lỗi crash kết nối.
+- **Cơ chế PostgreSQL fail-fast:**
+  - Production path kết nối Sequelize trực tiếp với PostgreSQL/PostGIS; migration được chạy bằng thao tác quản trị riêng, không tự động trong lúc khởi động ứng dụng.
+  - Khi PostgreSQL không khả dụng, backend không khởi động với dữ liệu giả và health check trả `503 DATABASE_UNAVAILABLE`. Unit test thuật toán có thể chạy độc lập, còn HTTP integration/E2E phải dùng database local `test`/`dev` cô lập.

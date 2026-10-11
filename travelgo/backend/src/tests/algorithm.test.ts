@@ -3,6 +3,12 @@ import { GeoService } from '../services/geoService.js';
 import { RecommendationService } from '../services/recommendationService.js';
 import { TourPlannerService } from '../services/tourPlannerService.js';
 import { PlaceService } from '../services/placeService.js';
+import { RecommendationRepository } from '../repositories/recommendationRepository.js';
+import { MOCK_PLACES } from '../utils/mockData.js';
+
+(PlaceService.getAllPlaces as any) = async (query: { city?: string } = {}) =>
+  query.city ? MOCK_PLACES.filter((place) => place.city === query.city) : MOCK_PLACES;
+RecommendationRepository.useLoaderForTests(async () => MOCK_PLACES);
 
 interface TestCase {
   name: string;

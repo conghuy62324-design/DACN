@@ -1,5 +1,7 @@
 # HuGo Travel – Nền Tảng Gợi Ý & Quản Lý Hành Trình Du Lịch Thông Minh
 
+> Tài liệu nâng cấp RBAC, Admin/Partner workspace, migration và dữ liệu kiểm thử: [MULTI_ROLE_PHASE_1_2.md](./docs/MULTI_ROLE_PHASE_1_2.md)
+
 **HuGo Travel** là nền tảng web du lịch thông minh toàn diện được xây dựng theo kiến trúc **MVC (Model – View – Controller) kết hợp Service Layer & RESTful API**. Dự án tích hợp các thuật toán nghiên cứu chuyên sâu về xếp hạng địa điểm (Bayesian Average Rating), gợi ý dựa trên nội dung (Content-Based Recommendation), hệ thống thông tin địa lý (GIS Haversine & Spatial Clustering) và công cụ quản lý hành trình thực địa theo thời gian thực kết nối cộng đồng Blog du lịch.
 
 ---
@@ -148,6 +150,18 @@ npm run dev
 # Frontend chạy tại: http://localhost:3000
 ```
 
-### 3. Tài khoản Demo kiểm thử
-- **Quản trị viên (Admin):** `admin@hugotravel.vn` / Mật khẩu: `password123`
-- **Người dùng (User):** `thaoanh@hugotravel.vn` / Mật khẩu: `password123`
+### 3. Tài khoản kiểm thử trên database local cô lập
+
+Seed chỉ chạy khi `DB_HOST` là loopback, tên database có phân đoạn `test`/`dev`, và `SEED_PASSWORD` có ít nhất 12 ký tự. Seed không có mật khẩu mặc định và không in mật khẩu ra log.
+
+```powershell
+cd travelgo/backend
+$env:NODE_ENV='test'
+$env:DB_NAME='travelgo_test'
+$env:SEED_PASSWORD='your-unique-test-password'
+npm run build
+node dist/scripts/migrate.js --apply
+node dist/seed.js
+```
+
+Các email fixture gồm `admin@hugotravel.vn`, `customer.a@hugotravel.vn`, `customer.b@hugotravel.vn` và các tài khoản Partner được mô tả trong `docs/MULTI_ROLE_PHASE_3_5.md`. Tất cả dùng `SEED_PASSWORD` do người chạy cung cấp.

@@ -9,6 +9,7 @@ export function errorHandler(err: any, req: Request, res: Response, next: NextFu
   res.status(statusCode).json({
     success: false,
     message,
+    code: err.code,
     stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
   });
 }

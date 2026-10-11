@@ -352,6 +352,7 @@ export const TourPlannerPage: React.FC = () => {
                     Điểm khởi hành
                   </label>
                   <select
+                    name="departureCity"
                     value={departureCity}
                     onChange={(e) => setDepartureCity(e.target.value)}
                     className="w-full py-2.5 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800"
@@ -369,6 +370,7 @@ export const TourPlannerPage: React.FC = () => {
                     Điểm đến khám phá
                   </label>
                   <select
+                    name="destinationCity"
                     value={destinationCity}
                     onChange={(e) => setDestinationCity(e.target.value)}
                     className="w-full py-2.5 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 font-bold text-sky-800"
@@ -390,6 +392,7 @@ export const TourPlannerPage: React.FC = () => {
                     <Calendar className="w-3.5 h-3.5 text-slate-500" /> Ngày khởi hành
                   </label>
                   <input
+                    name="startDate"
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
@@ -402,6 +405,7 @@ export const TourPlannerPage: React.FC = () => {
                     <Calendar className="w-3.5 h-3.5 text-slate-500" /> Ngày kết thúc
                   </label>
                   <input
+                    name="endDate"
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
@@ -417,6 +421,7 @@ export const TourPlannerPage: React.FC = () => {
                     <Users className="w-3.5 h-3.5 text-slate-500" /> Người lớn
                   </label>
                   <input
+                    name="adults"
                     type="number"
                     min="1"
                     max="20"
@@ -431,6 +436,7 @@ export const TourPlannerPage: React.FC = () => {
                     Trẻ em
                   </label>
                   <input
+                    name="children"
                     type="number"
                     min="0"
                     max="10"
@@ -445,6 +451,7 @@ export const TourPlannerPage: React.FC = () => {
                     <DollarSign className="w-3.5 h-3.5 text-slate-500" /> Tổng ngân sách (VNĐ)
                   </label>
                   <input
+                    name="totalBudget"
                     type="number"
                     step="500000"
                     min="1000000"

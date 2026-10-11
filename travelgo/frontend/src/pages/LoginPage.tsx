@@ -1,29 +1,38 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Compass, Mail, Lock, ShieldCheck, UserCheck } from 'lucide-react';
+import { Compass, Mail, Lock } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
-  const [email, setEmail] = useState('khoidan@hugotravel.vn');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(email, email.includes('admin') || email.includes('khoi') ? 'admin' : 'user');
-    navigate('/');
-  };
-
-  const handleDemoUser = (role: 'admin' | 'user') => {
-    if (role === 'admin') {
-      setEmail('khoidan@hugotravel.vn');
-      login('khoidan@hugotravel.vn', 'admin');
-    } else {
-      setEmail('thaoanh@hugotravel.vn');
-      login('thaoanh@hugotravel.vn', 'user');
+    setSubmitting(true);
+    setError('');
+    try {
+      const signedInUser = await login(email, password);
+      const fallback = signedInUser.roles.includes('SUPER_ADMIN')
+        ? '/admin'
+        : signedInUser.roles.includes('PARTNER')
+          ? '/partner'
+          : '/';
+      const requestedDestination = (location.state as { from?: string } | null)?.from;
+      const destination = requestedDestination?.startsWith('/') && !requestedDestination.startsWith('//') && !requestedDestination.includes('\\')
+        ? requestedDestination
+        : fallback;
+      navigate(destination, { replace: true });
+    } catch (requestError: any) {
+      setError(requestError?.message || 'Không thể đăng nhập. Vui lòng kiểm tra lại thông tin.');
+    } finally {
+      setSubmitting(false);
     }
-    navigate('/');
   };
 
   return (
@@ -39,35 +48,14 @@ export const LoginPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Quick Demo Logins */}
-        <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200/80 space-y-2 text-xs">
-          <p className="font-bold text-slate-700 text-center">Tài khoản demo thử nghiệm nhanh:</p>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleDemoUser('admin')}
-              className="py-2 px-3 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-xl border border-blue-200 flex items-center justify-center space-x-1"
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Quản trị (Admin)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDemoUser('user')}
-              className="py-2 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl border border-emerald-200 flex items-center justify-center space-x-1"
-            >
-              <UserCheck className="w-3.5 h-3.5" />
-              <span>Khách hàng (User)</span>
-            </button>
-          </div>
-        </div>
-
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <div role="alert" className="rounded-xl bg-rose-50 border border-rose-200 p-3 text-xs font-medium text-rose-700">{error}</div>}
           <div>
             <label className="block text-xs font-semibold text-slate-600 mb-1">Email</label>
             <div className="relative">
               <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
+                name="email"
                 type="email"
                 required
                 value={email}
@@ -83,6 +71,7 @@ export const LoginPage: React.FC = () => {
             <div className="relative">
               <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
+                name="password"
                 type="password"
                 required
                 value={password}
@@ -95,9 +84,10 @@ export const LoginPage: React.FC = () => {
 
           <button
             type="submit"
+            disabled={submitting}
             className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-extrabold rounded-2xl shadow-lg shadow-orange-500/25 transition-all text-sm"
           >
-            Đăng nhập ngay
+            {submitting ? 'Đang đăng nhập…' : 'Đăng nhập ngay'}
           </button>
         </form>
 

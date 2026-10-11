@@ -155,6 +155,7 @@ export const TicketsPage: React.FC = () => {
             tickets.map((t) => (
               <div
                 key={t.id}
+                data-testid={`ticket-${t.id}`}
                 className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-card transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
               >
                 {/* Left details */}

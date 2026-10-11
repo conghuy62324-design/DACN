@@ -29,9 +29,9 @@ export const BookingsPage: React.FC = () => {
     if (!confirm('Bạn có chắc chắn muốn hủy đơn đặt này không?')) return;
 
     try {
-      await BookingService.updateBookingStatus(id, 'cancelled');
+      await BookingService.cancelBooking(id);
       setBookings((prev) =>
-        prev.map((b) => (b.id === id ? { ...b, bookingStatus: 'cancelled' } : b))
+        prev.map((b) => (b.id === id ? { ...b, bookingStatus: 'CANCELLED' } : b))
       );
       alert('Đã hủy đơn đặt dịch vụ thành công!');
     } catch (e) {
@@ -41,21 +41,21 @@ export const BookingsPage: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'confirmed':
+      case 'CONFIRMED':
         return (
           <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
             <CheckCircle2 className="w-3.5 h-3.5" />
             <span>Đã xác nhận</span>
           </span>
         );
-      case 'pending':
+      case 'PENDING':
         return (
           <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
             <Clock className="w-3.5 h-3.5" />
             <span>Chờ thanh toán</span>
           </span>
         );
-      case 'cancelled':
+      case 'CANCELLED':
         return (
           <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">
             <XCircle className="w-3.5 h-3.5" />
@@ -147,7 +147,7 @@ export const BookingsPage: React.FC = () => {
                     Ngày đặt: {new Date(b.createdAt).toLocaleDateString('vi-VN')}
                   </span>
 
-                  {b.bookingStatus !== 'cancelled' && (
+                  {!['CANCELLED', 'COMPLETED', 'REJECTED'].includes(b.bookingStatus) && (
                     <button
                       onClick={() => handleCancelBooking(b.id)}
                       className="px-4 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"

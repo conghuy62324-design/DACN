@@ -1,5 +1,5 @@
-import { PlaceData } from '../utils/mockData.js';
-import { PlaceService } from './placeService.js';
+import { PlaceData } from './placeService.js';
+import { RecommendationRepository } from '../repositories/recommendationRepository.js';
 import { RecommendationService } from './recommendationService.js';
 import { GeoService } from './geoService.js';
 
@@ -97,7 +97,7 @@ export class TourPlannerService {
       : 1500000;
 
     // 1. Lấy tất cả dữ liệu địa điểm, nhà hàng và khách sạn
-    const allPlaces = await PlaceService.getAllPlaces();
+    const allPlaces = await RecommendationRepository.getApprovedPlaces();
 
     // Tách riêng danh mục
     const attractionCandidates = allPlaces.filter(

@@ -22,6 +22,11 @@ api.interceptors.response.use(
   (response) => response.data,
   (error) => {
     console.error('API Error:', error.response?.data || error.message);
+    if (error.response?.status === 401) {
+      localStorage.removeItem('travelgo_token');
+      localStorage.removeItem('travelgo_user');
+      window.dispatchEvent(new Event('travelgo:unauthorized'));
+    }
     return Promise.reject(error.response?.data || error);
   }
 );

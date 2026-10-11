@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import { TripController } from '../controllers/tripController.js';
+import { authenticate, requireRoles } from '../middlewares/authMiddleware.js';
 
 const router = Router();
 
+router.use(authenticate, requireRoles('CUSTOMER', 'PARTNER', 'SUPER_ADMIN'));
 router.get('/', TripController.getTrips);
 router.post('/', TripController.createTrip);
 router.get('/:id', TripController.getTripById);

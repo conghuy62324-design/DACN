@@ -5,17 +5,26 @@ import { Compass, Mail, Lock, User, Phone } from 'lucide-react';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { register } = useAuth();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(email, 'user');
-    alert('Đăng ký tài khoản thành công!');
-    navigate('/');
+    setSubmitting(true);
+    setError('');
+    try {
+      await register({ fullName, email, phone, password });
+      navigate('/', { replace: true });
+    } catch (requestError: any) {
+      setError(requestError?.message || 'Không thể đăng ký tài khoản.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -32,6 +41,7 @@ export const RegisterPage: React.FC = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <div role="alert" className="rounded-xl bg-rose-50 border border-rose-200 p-3 text-xs font-medium text-rose-700">{error}</div>}
           <div>
             <label className="block text-xs font-semibold text-slate-600 mb-1">Họ và tên</label>
             <div className="relative">
@@ -94,9 +104,10 @@ export const RegisterPage: React.FC = () => {
 
           <button
             type="submit"
+            disabled={submitting}
             className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-extrabold rounded-2xl shadow-lg shadow-orange-500/25 transition-all text-sm"
           >
-            Đăng ký tài khoản
+            {submitting ? 'Đang tạo tài khoản…' : 'Đăng ký tài khoản'}
           </button>
         </form>
 

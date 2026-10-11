@@ -169,5 +169,5 @@
 - `GET /bookings`: Lịch sử booking của người dùng.
 - `GET /blogs`: Danh sách bài viết cộng đồng.
 - `POST /blogs`: Đăng bài blog mới.
-- `POST /auth/login`: Đăng nhập hệ thống (admin@hugotravel.vn / password123).
+- `POST /auth/login`: Đăng nhập hệ thống. Tài khoản fixture local dùng mật khẩu do người chạy cung cấp qua `SEED_PASSWORD`; không có mật khẩu mặc định.
 - `POST /auth/register`: Đăng ký tài khoản người dùng.
