@@ -25,9 +25,11 @@ export const MapView: React.FC<MapViewProps> = ({ places, selectedPlace, onSelec
       scrollWheelZoom: true,
     });
 
-    // OpenStreetMap Tile Layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    // OpenStreetMap Germany is reachable in the local demo network where the
+    // default OSM tile host may be blocked.
+    L.tileLayer('https://a.tile.openstreetmap.de/{z}/{x}/{y}.png', {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Tiles: <a href="https://openstreetmap.de/">OpenStreetMap Deutschland</a>',
       maxZoom: 19,
     }).addTo(map);
 

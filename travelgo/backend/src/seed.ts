@@ -1,7 +1,11 @@
 import { sequelize, BlogPost, Booking, Business, BusinessMember, Place, Ticket, Tour, User, UserRole } from './models/index.js';
 import { hashPassword } from './services/passwordService.js';
 import { Role } from './types/auth.js';
-import { assertIsolatedTestDatabase, requireSeedPassword } from './utils/testDatabaseGuard.js';
+import {
+  assertDatabaseSentinel,
+  assertTestDatabaseWriteOptIn,
+  requireSeedPassword,
+} from './utils/testDatabaseGuard.js';
 
 const accounts: Array<{ fullName: string; email: string; legacyRole: 'user' | 'admin' | 'partner'; roles: Role[] }> = [
   { fullName: 'HuGo Super Admin', email: 'admin@hugotravel.vn', legacyRole: 'admin', roles: ['CUSTOMER', 'SUPER_ADMIN'] },
@@ -14,20 +18,24 @@ const accounts: Array<{ fullName: string; email: string; legacyRole: 'user' | 'a
 ];
 
 async function seed() {
-  assertIsolatedTestDatabase('Database seed');
+  assertTestDatabaseWriteOptIn('Database seed');
   const seedPassword = requireSeedPassword();
   await sequelize.authenticate();
+  await assertDatabaseSentinel(sequelize, 'Database seed');
   const passwordHash = await hashPassword(seedPassword);
   const users = new Map<string, User>();
   const businesses = new Map<string, Business>();
 
   await sequelize.transaction(async (transaction) => {
     for (const account of accounts) {
-      const [user] = await User.findOrCreate({
+      const [user, created] = await User.findOrCreate({
         where: { email: account.email },
         defaults: { fullName: account.fullName, email: account.email, passwordHash, role: account.legacyRole },
         transaction,
       });
+      // Rotate only the known fixture accounts so each isolated run can use a
+      // fresh runtime secret without persisting or hard-coding that secret.
+      if (!created) await user.update({ passwordHash }, { transaction });
       users.set(account.email, user);
       for (const role of account.roles) {
         await UserRole.findOrCreate({ where: { userId: user.id, role }, defaults: { userId: user.id, role }, transaction });

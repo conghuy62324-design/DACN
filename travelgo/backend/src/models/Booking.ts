@@ -24,6 +24,9 @@ export interface BookingAttributes {
   totalAmount: number;
   discountAmount: number;
   idempotencyKey?: string;
+  recommendationRequestId?: string;
+  recommendationItemId?: string;
+  recommendationItemType?: 'place' | 'hotel' | 'restaurant' | 'tour' | 'ticket';
   paymentStatus: 'unpaid' | 'paid' | 'refunded';
   bookingStatus: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'REJECTED';
   notes?: string;
@@ -31,7 +34,7 @@ export interface BookingAttributes {
   updatedAt?: Date;
 }
 
-export interface BookingCreationAttributes extends Optional<BookingAttributes, 'id' | 'placeId' | 'tourId' | 'ticketId' | 'paymentStatus' | 'bookingStatus' | 'childrenCount' | 'quantity' | 'discountAmount' | 'idempotencyKey' | 'notes'> {}
+export interface BookingCreationAttributes extends Optional<BookingAttributes, 'id' | 'placeId' | 'tourId' | 'ticketId' | 'paymentStatus' | 'bookingStatus' | 'childrenCount' | 'quantity' | 'discountAmount' | 'idempotencyKey' | 'recommendationRequestId' | 'recommendationItemId' | 'recommendationItemType' | 'notes'> {}
 
 export class Booking extends Model<BookingAttributes, BookingCreationAttributes> implements BookingAttributes {
   public id!: string;
@@ -56,6 +59,9 @@ export class Booking extends Model<BookingAttributes, BookingCreationAttributes>
   public totalAmount!: number;
   public discountAmount!: number;
   public idempotencyKey?: string;
+  public recommendationRequestId?: string;
+  public recommendationItemId?: string;
+  public recommendationItemType?: 'place' | 'hotel' | 'restaurant' | 'tour' | 'ticket';
   public paymentStatus!: 'unpaid' | 'paid' | 'refunded';
   public bookingStatus!: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'REJECTED';
   public notes?: string;
@@ -138,6 +144,9 @@ Booking.init(
     },
     discountAmount: { type: DataTypes.DECIMAL(15, 2), allowNull: false, defaultValue: 0 },
     idempotencyKey: { type: DataTypes.STRING(120), allowNull: true },
+    recommendationRequestId: { type: DataTypes.UUID, allowNull: true },
+    recommendationItemId: { type: DataTypes.STRING(120), allowNull: true },
+    recommendationItemType: { type: DataTypes.STRING(30), allowNull: true },
     paymentStatus: {
       type: DataTypes.ENUM('unpaid', 'paid', 'refunded'),
       defaultValue: 'unpaid',

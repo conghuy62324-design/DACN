@@ -1,0 +1,80 @@
+{
+  "schema_version": "1.0.0",
+  "label_map_id": "hugo-vi-sentiment-3class-v1",
+  "task": "Vietnamese document-level sentiment classification",
+  "canonical_labels": [
+    {
+      "id": 0,
+      "name": "NEGATIVE"
+    },
+    {
+      "id": 1,
+      "name": "NEUTRAL"
+    },
+    {
+      "id": 2,
+      "name": "POSITIVE"
+    }
+  ],
+  "strict_policy": {
+    "unknown_label_action": "REJECT_ROW",
+    "missing_label_action": "REJECT_ROW",
+    "mixed_aspect_polarities_action": "DO_NOT_INFER_DOCUMENT_LABEL",
+    "rating_to_sentiment_inference_allowed": false,
+    "translation_or_synthetic_relabeling_allowed_for_locked_test": false,
+    "notes": "Only an explicit source label mapping approved here may produce a canonical label."
+  },
+  "source_mappings": {
+    "hf-h-i-e-u-vietnamese-sa": {
+      "eligible_only_after_dataset_gate_passes": true,
+      "exact_values": [
+        {
+          "source_value": "neg",
+          "canonical": "NEGATIVE"
+        },
+        {
+          "source_value": "NEG",
+          "canonical": "NEGATIVE"
+        },
+        {
+          "source_value": "neu",
+          "canonical": "NEUTRAL"
+        },
+        {
+          "source_value": "NEU",
+          "canonical": "NEUTRAL"
+        },
+        {
+          "source_value": "pos",
+          "canonical": "POSITIVE"
+        },
+        {
+          "source_value": "POS",
+          "canonical": "POSITIVE"
+        }
+      ]
+    },
+    "vlsp-2018-vabsa": {
+      "eligible_for_document_level_task": false,
+      "aspect_polarity_reference_only": {
+        "negative": "NEGATIVE",
+        "neutral": "NEUTRAL",
+        "positive": "POSITIVE"
+      },
+      "reason": "A review may contain multiple aspects with different polarities; no document label may be synthesized from them."
+    },
+    "hf-tamir39-causasent-ate-v2": {
+      "eligible_for_document_level_task": false,
+      "reason": "Aspect-level binary annotations omit NEUTRAL and do not define one document-level label."
+    },
+    "hugo-travel-domain-locked-test-v1": {
+      "eligible_after_annotation_and_data_gate": true,
+      "exact_values": {
+        "NEGATIVE": "NEGATIVE",
+        "NEUTRAL": "NEUTRAL",
+        "POSITIVE": "POSITIVE"
+      },
+      "annotation_rule": "Human annotators assign one canonical label from text under the frozen guideline; star rating and model output are hidden and must not generate the label."
+    }
+  }
+}

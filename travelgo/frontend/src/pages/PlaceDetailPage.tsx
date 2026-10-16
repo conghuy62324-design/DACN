@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   MapPin, 
   Clock, 
@@ -18,13 +18,21 @@ import {
 } from 'lucide-react';
 import { Place, Review } from '../types';
 import { PlaceService } from '../services/placeService';
+import { BookingService } from '../services/bookingService';
 import { RatingBadge } from '../components/common/RatingBadge';
 import { formatCurrencyVND } from '../utils/formatters';
 import { useFavorites } from '../context/FavoritesContext';
 import { useBooking } from '../context/BookingContext';
+import { useTelemetry } from '../context/TelemetryContext';
+import { useTelemetryView } from '../hooks/useTelemetryView';
+import { useAuth } from '../context/AuthContext';
+import { Booking } from '../types';
 
 export const PlaceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const recommendationRequestId = searchParams.get('recommendationRequestId') || undefined;
   const [place, setPlace] = useState<Place | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [similarPlaces, setSimilarPlaces] = useState<Place[]>([]);
@@ -41,14 +49,21 @@ export const PlaceDetailPage: React.FC = () => {
   const [children, setChildren] = useState(0);
 
   // New Review Form State
-  const [newReviewerName, setNewReviewerName] = useState('');
   const [newReviewScore, setNewReviewScore] = useState(5);
   const [newReviewComment, setNewReviewComment] = useState('');
+  const [selectedReviewBooking, setSelectedReviewBooking] = useState('');
+  const [eligibleReviewBookings, setEligibleReviewBookings] = useState<Booking[]>([]);
+  const [myReviewIds, setMyReviewIds] = useState<Set<string>>(new Set());
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewSuccessMsg, setReviewSuccessMsg] = useState('');
+  const [reviewErrorMsg, setReviewErrorMsg] = useState('');
 
-  const { toggleFavorite, isFavorite } = useFavorites();
+  const { toggleFavorite, isFavorite, isPending } = useFavorites();
   const { openBooking } = useBooking();
+  const { track } = useTelemetry();
+  const { user } = useAuth();
+  const telemetryItemType = place?.category === 'hotel' || place?.category === 'restaurant' ? place.category : 'place';
+  const viewRef = useTelemetryView(!loading ? place?.id : undefined, telemetryItemType, 'place_detail');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -61,6 +76,17 @@ export const PlaceDetailPage: React.FC = () => {
         const revData = await PlaceService.getReviews(placeData.id);
         setReviews(revData);
 
+        if (user) {
+          const [bookings, mine] = await Promise.all([BookingService.getBookings(), PlaceService.getMyReviews()]);
+          const reviewedBookingIds = new Set(mine.map((review) => review.bookingId).filter(Boolean));
+          setEligibleReviewBookings(bookings.filter((booking) =>
+            booking.bookingStatus === 'COMPLETED' && booking.placeId === placeData.id && !reviewedBookingIds.has(booking.id)));
+          setMyReviewIds(new Set(mine.map((review) => review.id)));
+        } else {
+          setEligibleReviewBookings([]);
+          setMyReviewIds(new Set());
+        }
+
         const allPlaces = await PlaceService.getPlaces();
         setSimilarPlaces(allPlaces.filter((p) => p.id !== placeData.id).slice(0, 3));
       } catch (err) {
@@ -71,7 +97,7 @@ export const PlaceDetailPage: React.FC = () => {
     };
 
     fetchPlaceData();
-  }, [id]);
+  }, [id, user?.id]);
 
   if (loading || !place) {
     return (
@@ -89,6 +115,7 @@ export const PlaceDetailPage: React.FC = () => {
   const favorited = isFavorite(place.id);
 
   const handleBookingClick = () => {
+    void track({ itemId: place.id, itemType: telemetryItemType, eventType: 'CLICK', uiSurface: 'booking_modal', requestId: recommendationRequestId });
     openBooking({
       serviceType: place.category as any,
       serviceId: place.id,
@@ -96,33 +123,70 @@ export const PlaceDetailPage: React.FC = () => {
       unitPrice: place.priceFrom,
       initialDate: selectedDate,
       imageUrl: place.heroImage,
+      recommendationRequestId,
     });
   };
 
   const handleAddReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newReviewerName || !newReviewComment) return;
+    if (!user || !newReviewComment.trim()) return;
 
     setSubmittingReview(true);
+    setReviewErrorMsg('');
     try {
       const added = await PlaceService.addReview(place.id, {
-        userName: newReviewerName,
+        bookingId: selectedReviewBooking || undefined,
         rating: newReviewScore,
         comment: newReviewComment,
       });
 
-      setReviews([added, ...reviews]);
-      setReviewSuccessMsg('Cảm ơn bạn! Đánh giá đã được ghi nhận và cập nhật vào thuật toán Bayesian Average của địa điểm.');
+      setReviews((current) => [added, ...current]);
+      setMyReviewIds((current) => new Set(current).add(added.id));
+      if (selectedReviewBooking) {
+        setEligibleReviewBookings((current) => current.filter((booking) => booking.id !== selectedReviewBooking));
+      }
+      setReviewSuccessMsg(added.verificationStatus === 'VERIFIED'
+        ? 'Đánh giá xác thực từ booking hoàn thành đã được ghi nhận.'
+        : 'Đánh giá đã được ghi nhận là chưa xác thực.');
       setNewReviewComment('');
-      setNewReviewerName('');
+      setSelectedReviewBooking('');
 
       // Refresh place stats
       const updated = await PlaceService.getPlaceById(place.id);
       setPlace(updated);
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      setReviewErrorMsg(e?.response?.data?.message || 'Không thể gửi đánh giá.');
     } finally {
       setSubmittingReview(false);
+    }
+  };
+
+  const handleAddToItinerary = () => {
+    const plannerDestination = `/tour-planner?mandatoryPlaceId=${encodeURIComponent(place.id)}`;
+    void track({
+      itemId: place.id,
+      itemType: telemetryItemType,
+      eventType: 'CLICK',
+      uiSurface: 'place_detail',
+      requestId: recommendationRequestId,
+    });
+    if (!user) {
+      navigate('/login', { state: { from: plannerDestination } });
+      return;
+    }
+    navigate(plannerDestination);
+  };
+
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!window.confirm('Xóa đánh giá này?')) return;
+    try {
+      await PlaceService.deleteReview(reviewId);
+      setReviews((current) => current.filter((review) => review.id !== reviewId));
+      setMyReviewIds((current) => { const next = new Set(current); next.delete(reviewId); return next; });
+      const updated = await PlaceService.getPlaceById(place.id);
+      setPlace(updated);
+    } catch (e: any) {
+      setReviewErrorMsg(e?.response?.data?.message || 'Không thể xóa đánh giá.');
     }
   };
 
@@ -139,7 +203,7 @@ export const PlaceDetailPage: React.FC = () => {
         </nav>
 
         {/* Gallery Grid Matching Image 2 */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+        <div ref={viewRef} className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
           {/* Main Large Photo */}
           <div className="lg:col-span-2 aspect-[16/10] rounded-3xl overflow-hidden bg-slate-200 shadow-md">
             <img
@@ -196,10 +260,22 @@ export const PlaceDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Action buttons (Share & Favorite) */}
-          <div className="flex items-center space-x-3">
+          {/* Action buttons */}
+          <div className="flex flex-wrap items-center gap-3">
             <button
-              onClick={() => toggleFavorite(place)}
+              type="button"
+              data-testid="add-place-to-itinerary"
+              onClick={handleAddToItinerary}
+              className="flex items-center space-x-1.5 px-4 py-2.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold shadow-sm transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Thêm vào lịch trình</span>
+            </button>
+            <button
+              data-testid="place-favorite"
+              aria-pressed={favorited}
+              disabled={isPending(place.id)}
+              onClick={() => toggleFavorite(place, 'place_detail', recommendationRequestId)}
               className={`flex items-center space-x-1.5 px-4 py-2.5 rounded-full border text-sm font-semibold transition-colors ${
                 favorited
                   ? 'bg-rose-50 border-rose-200 text-rose-600'
@@ -370,6 +446,11 @@ export const PlaceDetailPage: React.FC = () => {
                     {reviewSuccessMsg}
                   </div>
                 )}
+                {reviewErrorMsg && (
+                  <div role="alert" className="bg-rose-50 text-rose-800 p-4 rounded-xl text-sm border border-rose-200">
+                    {reviewErrorMsg}
+                  </div>
+                )}
 
                 {/* New Review Form */}
                 <form onSubmit={handleAddReview} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
@@ -378,17 +459,21 @@ export const PlaceDetailPage: React.FC = () => {
                     Để lại trải nghiệm thực tế của bạn
                   </h4>
 
+                  {!user && <p className="text-sm text-slate-600">Vui lòng đăng nhập để gửi đánh giá.</p>}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">Họ tên bạn</label>
-                      <input
-                        type="text"
-                        required
-                        value={newReviewerName}
-                        onChange={(e) => setNewReviewerName(e.target.value)}
-                        placeholder="Nguyễn Văn A"
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Booking đã hoàn thành (không bắt buộc)</label>
+                      <select
+                        data-testid="review-booking"
+                        value={selectedReviewBooking}
+                        onChange={(e) => setSelectedReviewBooking(e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
-                      />
+                      >
+                        <option value="">Không gắn booking — UNVERIFIED</option>
+                        {eligibleReviewBookings.map((booking) => (
+                          <option key={booking.id} value={booking.id}>{booking.bookingCode} — {booking.serviceName}</option>
+                        ))}
+                      </select>
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-slate-600 mb-1">Đánh giá số sao</label>
@@ -411,6 +496,8 @@ export const PlaceDetailPage: React.FC = () => {
                     <textarea
                       rows={3}
                       required
+                      minLength={10}
+                      maxLength={2000}
                       value={newReviewComment}
                       onChange={(e) => setNewReviewComment(e.target.value)}
                       placeholder="Chia sẻ cảm nhận về hướng dẫn viên, khách sạn, chất lượng phục vụ..."
@@ -420,10 +507,11 @@ export const PlaceDetailPage: React.FC = () => {
 
                   <button
                     type="submit"
-                    disabled={submittingReview}
+                    disabled={submittingReview || !user}
+                    data-testid="review-submit"
                     className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm rounded-xl shadow transition-colors"
                   >
-                    {submittingReview ? 'Đang gửi...' : 'Gửi đánh giá & Cập nhật Bayesian'}
+                    {submittingReview ? 'Đang gửi...' : 'Gửi đánh giá'}
                   </button>
                 </form>
 
@@ -440,7 +528,14 @@ export const PlaceDetailPage: React.FC = () => {
                           />
                           <div>
                             <h5 className="font-bold text-sm text-slate-900">{rev.userName}</h5>
-                            <span className="text-[11px] text-slate-400">{new Date(rev.createdAt).toLocaleDateString('vi-VN')}</span>
+                            <div className="flex items-center gap-2 text-[11px]">
+                              <span className="text-slate-400">{new Date(rev.createdAt).toLocaleDateString('vi-VN')}</span>
+                              {rev.verificationStatus === 'VERIFIED' ? (
+                                <span data-testid="verified-review" className="inline-flex items-center gap-1 font-bold text-emerald-700">
+                                  <ShieldCheck className="h-3.5 w-3.5" /> Đã xác thực booking
+                                </span>
+                              ) : <span className="text-slate-400">Chưa xác thực</span>}
+                            </div>
                           </div>
                         </div>
                         <div className="flex text-amber-400">
@@ -450,6 +545,12 @@ export const PlaceDetailPage: React.FC = () => {
                         </div>
                       </div>
                       <p className="text-sm text-slate-600 leading-relaxed">{rev.comment}</p>
+                      {myReviewIds.has(rev.id) && (
+                        <button type="button" onClick={() => handleDeleteReview(rev.id)}
+                          className="text-xs font-bold text-rose-600 hover:text-rose-700">
+                          Xóa đánh giá
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>

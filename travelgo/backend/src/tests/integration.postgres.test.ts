@@ -1,10 +1,15 @@
 import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
 import type { Server } from 'node:http';
 import app from '../app.js';
 import { sequelize } from '../config/database.js';
-import { AuditLog, Booking, PartnerApplication, Ticket, UserEvent, UserRole } from '../models/index.js';
+import { AuditLog, Booking, PartnerApplication, Place, Ticket, TripSession, UserEvent, UserRole } from '../models/index.js';
 import { RecommendationService } from '../services/recommendationService.js';
-import { assertIsolatedTestDatabase, requireSeedPassword } from '../utils/testDatabaseGuard.js';
+import {
+  assertDatabaseSentinel,
+  assertTestDatabaseWriteOptIn,
+  requireSeedPassword,
+} from '../utils/testDatabaseGuard.js';
 
 type ApiResponse = { status: number; body: any };
 
@@ -13,9 +18,10 @@ function tokenHeader(token: string): Record<string, string> {
 }
 
 async function main(): Promise<void> {
-  assertIsolatedTestDatabase('PostgreSQL integration test');
+  assertTestDatabaseWriteOptIn('PostgreSQL integration test');
   const seedPassword = requireSeedPassword();
   await sequelize.authenticate();
+  await assertDatabaseSentinel(sequelize, 'PostgreSQL integration test');
 
   const server = await new Promise<Server>((resolve) => {
     const listening = app.listen(0, '127.0.0.1', () => resolve(listening));
@@ -71,28 +77,37 @@ async function main(): Promise<void> {
     await expectStatus('/api/partner/dashboard', 403, { headers: tokenHeader(customerA.token) });
     pass('401/403 authorization boundaries and customer registration');
 
-    const anonymousEvent = await expectStatus('/api/intelligence/events', 202, {
+    await expectStatus('/api/intelligence/events', 401, {
       method: 'POST',
-      body: JSON.stringify({
-        sessionId: `anon-${suffix}`, itemId: 'search-da-nang', itemType: 'place', eventType: 'VIEW',
-        source: 'integration_test', userId: admin.user.id, context: { position: 1 },
-      }),
+      body: JSON.stringify({}),
     });
+    await expectStatus('/api/intelligence/consent', 200, {
+      method: 'PUT', headers: tokenHeader(customerA.token),
+      body: JSON.stringify({ analyticsEnabled: true, personalizationEnabled: true }),
+    });
+    const visiblePlace = await Place.findOne({ where: { status: 'APPROVED' }, order: [['createdAt', 'ASC']] });
+    assert.ok(visiblePlace);
+    const clientEventId = randomUUID();
     const authenticatedEvent = await expectStatus('/api/intelligence/events', 202, {
       method: 'POST', headers: tokenHeader(customerA.token),
       body: JSON.stringify({
-        sessionId: `auth-${suffix}`, itemId: 'search-da-nang', itemType: 'place', eventType: 'CLICK',
-        source: 'integration_test', userId: admin.user.id, context: { position: 1 },
+        contractVersion: '1.0', clientEventId, sessionId: `auth-${suffix}`, itemId: visiblePlace.id,
+        itemType: 'place', eventType: 'CLICK', occurredAt: new Date().toISOString(),
+        uiSurface: 'explore_results', context: { position: 1 },
       }),
     });
     await expectStatus('/api/intelligence/events', 400, {
-      method: 'POST', body: JSON.stringify({ sessionId: `bad-${suffix}`, itemId: 'x', itemType: 'place', eventType: 'ADMIN_GRANTED' }),
+      method: 'POST', headers: tokenHeader(customerA.token),
+      body: JSON.stringify({
+        contractVersion: '1.0', clientEventId: randomUUID(), sessionId: `spoof-${suffix}`, itemId: visiblePlace.id,
+        itemType: 'place', eventType: 'CLICK', occurredAt: new Date().toISOString(), uiSurface: 'explore_results',
+        userId: admin.user.id,
+      }),
     });
-    const storedAnonymousEvent = await UserEvent.findByPk(anonymousEvent.data.id);
     const storedAuthenticatedEvent = await UserEvent.findByPk(authenticatedEvent.data.id);
-    assert.equal(storedAnonymousEvent?.userId, null);
     assert.equal(storedAuthenticatedEvent?.userId, customerA.user.id);
-    pass('AI event validation, optional authentication, and anti-user spoofing');
+    assert.equal(storedAuthenticatedEvent?.clientEventId, clientEventId);
+    pass('AI event consent, required authentication, idempotency identity, and anti-user spoofing');
 
     const applicationBody = await expectStatus('/api/partner-applications', 201, {
       method: 'POST',
@@ -219,25 +234,59 @@ async function main(): Promise<void> {
     pass('Partner booking confirmation and customer status retrieval');
 
     const recommendations = await RecommendationService.recommendFromDatabase({
-      destinationCity: city, preferences: ['culture'], dailyBudgetPerPerson: 1000000,
+      destinationCity: city, preferences: ['van-hoa'], dailyBudgetPerPerson: 1000000,
     });
     assert.ok(recommendations.some((item) => item.place.id === placeId));
+    const requestedPreferences = ['van-hoa', 'am-thuc'];
     const planned = await expectStatus('/api/tours/plan', 200, {
       method: 'POST', body: JSON.stringify({
         departureCity: 'Da Nang', destinationCity: city, startDate: '2027-01-15', endDate: '2027-01-16',
-        adults: 1, children: 0, totalBudget: 4000000, transportation: 'car', preferences: ['culture'], pacing: 'balanced',
+        adults: 1, children: 0, totalBudget: 4000000, transportation: 'car', preferences: requestedPreferences, pacing: 'balanced',
       }),
     });
     assert.ok(planned.data.days.flatMap((day: any) => day.activities).some((activity: any) => activity.placeId === placeId));
-    pass('Database-backed recommendation and tour planner');
+    assert.deepEqual(planned.data.preferences, requestedPreferences);
+    await expectStatus('/api/tours/plan', 400, {
+      method: 'POST', body: JSON.stringify({ destinationCity: city, preferences: ['from-summary'] }),
+    });
+    pass('Database-backed recommendation, planner and preference allowlist');
 
     const savedTrip = await expectStatus('/api/trips', 201, {
       method: 'POST', headers: tokenHeader(partnerA.token), body: JSON.stringify({ itinerary: planned.data }),
     });
+    assert.deepEqual(savedTrip.data.preferences, requestedPreferences);
+    const storedTrip = await TripSession.findByPk(savedTrip.data.id);
+    assert.deepEqual(storedTrip?.preferences, requestedPreferences);
     const reopened = await expectStatus(`/api/trips/${savedTrip.data.id}`, 200, { headers: tokenHeader(partnerA.token) });
     assert.equal(reopened.data.id, savedTrip.data.id);
+    assert.deepEqual(reopened.data.preferences, requestedPreferences);
     await expectStatus(`/api/trips/${savedTrip.data.id}`, 404, { headers: tokenHeader(customerB.token) });
     pass('Trip persistence and ownership isolation');
+
+    await expectStatus('/api/trips', 400, {
+      method: 'POST', headers: tokenHeader(partnerA.token),
+      body: JSON.stringify({ itinerary: { ...planned.data, preferences: ['from-summary'] } }),
+    });
+    const editedTrip = await expectStatus(`/api/trips/${savedTrip.data.id}`, 200, {
+      method: 'PUT', headers: tokenHeader(partnerA.token),
+      body: JSON.stringify({ preferences: ['nghi-duong', 'bien'] }),
+    });
+    assert.deepEqual(editedTrip.data.preferences, ['nghi-duong', 'bien']);
+    await expectStatus(`/api/trips/${savedTrip.data.id}`, 400, {
+      method: 'PUT', headers: tokenHeader(partnerA.token),
+      body: JSON.stringify({ preferences: ['inferred-from-review'] }),
+    });
+    const clearedTrip = await expectStatus(`/api/trips/${savedTrip.data.id}`, 200, {
+      method: 'PUT', headers: tokenHeader(partnerA.token), body: JSON.stringify({ preferences: [] }),
+    });
+    assert.deepEqual(clearedTrip.data.preferences, []);
+    const legacyItinerary: any = { ...planned.data };
+    delete legacyItinerary.preferences;
+    const legacyTrip = await expectStatus('/api/trips', 201, {
+      method: 'POST', headers: tokenHeader(partnerA.token), body: JSON.stringify({ itinerary: legacyItinerary }),
+    });
+    assert.deepEqual(legacyTrip.data.preferences, []);
+    pass('Trip preferences save/reopen/edit/clear validation and legacy compatibility');
 
     assert.equal(await UserRole.count({ where: { role: 'SUPER_ADMIN' } }), 1);
     assert.equal(await UserRole.count({ where: { userId: customerB.user.id, role: 'SUPER_ADMIN' } }), 0);

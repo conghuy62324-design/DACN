@@ -146,6 +146,8 @@ export const MyTripsPage: React.FC = () => {
               return (
                 <div
                   key={trip.id}
+                  data-testid="trip-card"
+                  data-trip-id={trip.id}
                   onClick={() => navigate(`/my-trips/${trip.id}`)}
                   className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between cursor-pointer group"
                 >

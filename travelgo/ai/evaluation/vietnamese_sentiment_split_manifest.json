@@ -1,0 +1,154 @@
+{
+  "schema_version": "1.0.0",
+  "manifest_id": "hugo-vi-sentiment-split-spec-2026-10-12-v1",
+  "manifest_kind": "SPECIFICATION_ONLY",
+  "status": "BLOCKED",
+  "created_at": "2026-10-12",
+  "blockers": [
+    "No candidate training corpus has PASS status in the dataset registry.",
+    "The Vietnamese travel-domain locked test has not been collected or annotated.",
+    "No eligible immutable row inventory exists, so assigning rows or publishing a split hash would be fabricated."
+  ],
+  "dataset_registry_id": "hugo-vi-sentiment-m2a-2026-10-12-v1",
+  "label_map_id": "hugo-vi-sentiment-3class-v1",
+  "assigned_rows": 0,
+  "split_hash_sha256": null,
+  "dataset_snapshot_hashes": [],
+  "prohibited_inputs": [
+    "Google Maps reviews/content",
+    "travelgo_ai_m0_test rows for any performance or domain-quality claim",
+    "synthetic or machine-translated rows in any locked test",
+    "mutable Hugging Face main revisions",
+    "HuGo database dumps or unapproved exports"
+  ],
+  "eligibility_gate_before_split": [
+    "Dataset registry decision is PASS for the intended M2-B use.",
+    "Owner, official source, upstream lineage, license/user agreement and allowed purpose are documented.",
+    "Every raw file is pinned and SHA-256 verified.",
+    "Only explicit labels accepted by the label map remain.",
+    "At least 3,000 eligible Vietnamese travel/service rows remain after deduplication, matching the existing project data-quality gate.",
+    "PII scan/cleaning report and manual high-risk review pass without logging matched PII.",
+    "Travel-domain locked test rights, annotation guideline and adjudication record pass."
+  ],
+  "configuration_hashes": {
+    "dataset_registry_sha256": "42b308f46692745bd02d3cfcd6ea547087c65cefcd859c95037fc9e8c72b240a",
+    "label_map_sha256": "0056ec5df7b9f7774af09f2f053b0b440df7afa729eda073ea877a16db7a6159"
+  },
+  "cleaning_and_pii_specification": {
+    "operation_order": [
+      "Decode strict UTF-8 and reject undecodable rows.",
+      "Normalize Unicode to NFC; remove BOM/zero-width formatting controls; normalize line endings and repeated whitespace.",
+      "Reject null, empty, whitespace-only, invalid-label and structurally invalid records.",
+      "Detect email, Vietnamese/international phone, URL, order identifiers and account identifiers with versioned patterns.",
+      "Replace allowed incidental matches with typed tokens such as <EMAIL>, <PHONE>, <URL>, <ORDER_ID>, <ACCOUNT_ID>; quarantine high-risk or ambiguous identity-bearing rows for manual review.",
+      "Do not print raw matches in logs; report aggregate counts and rejection reasons only.",
+      "Preserve Vietnamese diacritics, negation, emoji, punctuation and intensity markers used by sentiment.",
+      "Compute exact and near-duplicate groups before any split assignment."
+    ],
+    "required_detectors": [
+      "email",
+      "phone",
+      "URL",
+      "order_identifier",
+      "account_identifier"
+    ],
+    "content_length_policy": {
+      "minimum_non_whitespace_characters": 3,
+      "maximum_characters": 2000,
+      "over_limit_action": "REJECT_OR_MANUALLY_REVIEW; do not silently truncate"
+    },
+    "pattern_version": "pii-vi-v1",
+    "manual_review_required": true
+  },
+  "duplicate_and_leakage_specification": {
+    "exact_duplicate_key": "SHA-256 of NFC + lowercase + collapsed-whitespace text, computed locally and never used as a public reversible identifier",
+    "near_duplicate_method": "character 5-gram MinHash candidate retrieval followed by exact Jaccard verification",
+    "near_duplicate_threshold": 0.9,
+    "grouping_rule": "Union connected rows that are exact/near duplicates or share reviewer_id/entity_id when that metadata exists; one connected component must stay in exactly one split.",
+    "source_leakage_rule": "Track source_family and upstream lineage before splitting; copies/derivatives of one corpus are one source family. Reserve a source/domain holdout when multiple independent sources exist and report it separately.",
+    "reviewer_leakage_rule": "Group by privacy-safe reviewer key when available; otherwise record reviewer leakage as unmeasurable.",
+    "entity_leakage_rule": "Group by entity/place/business when available; otherwise record entity leakage as unmeasurable.",
+    "post_split_assertions": [
+      "zero exact duplicate-group overlap",
+      "zero near-duplicate-group overlap at the frozen threshold",
+      "zero known reviewer-group overlap",
+      "zero known entity-group overlap",
+      "zero row identifier overlap"
+    ]
+  },
+  "split_specification": {
+    "random_seed": 20261012,
+    "algorithm": "deterministic grouped stratification after all cleaning and leakage grouping",
+    "train_ratio": 0.7,
+    "validation_ratio": 0.15,
+    "test_ratio": 0.15,
+    "ratio_tolerance": 0.02,
+    "stratify_by": [
+      "canonical_label",
+      "source_family",
+      "domain"
+    ],
+    "train_usage": "Fit vectorizers and classifier only.",
+    "validation_usage": "Select preprocessing, word/character feature settings, regularization, class_weight and decision policy only.",
+    "test_usage": "One locked final evaluation after the full pipeline and hyperparameters are frozen; never tune, relabel or select a model from test results.",
+    "lock_artifacts": [
+      "ordered pseudonymous row IDs per split",
+      "source file SHA-256 values",
+      "cleaning/PII configuration hash",
+      "label-map hash",
+      "split algorithm version and seed",
+      "final split manifest SHA-256"
+    ]
+  },
+  "travel_domain_locked_test_specification": {
+    "dataset_id": "hugo-travel-domain-locked-test-v1",
+    "status": "BLOCKED-NOT-CREATED",
+    "minimum_total_rows": 600,
+    "minimum_rows_per_class": 200,
+    "target_domains": [
+      "hotel",
+      "restaurant",
+      "attraction"
+    ],
+    "collection_policy": "Use original commissioned text or other clearly licensed text only; no Google Maps, test DB, synthetic generation or machine translation.",
+    "annotation_policy": "At least two independent competent Vietnamese annotators per row; hide ratings/source labels/model predictions; adjudicate disagreement under a frozen guideline.",
+    "agreement_reporting": "Report raw agreement and Krippendorff alpha or an appropriate chance-corrected statistic overall and by domain/class; predeclare the acceptance threshold before annotation.",
+    "leakage_policy": "Authors/reviewers, entities and duplicate clusters must be disjoint from training/validation and the ordinary test when metadata permits.",
+    "usage": "Domain evaluation only; never tune on it. If minimum support or rights/PII gates fail, domain quality remains BLOCKED."
+  },
+  "m2b_notebook_specification": {
+    "status": "NOT_STARTED",
+    "runtime": "Kaggle CPU",
+    "model": "Logistic Regression",
+    "features": {
+      "word_tfidf_ngram_range": [
+        1,
+        2
+      ],
+      "character_tfidf_ngram_range": [
+        3,
+        5
+      ],
+      "combine_word_and_character_features": true
+    },
+    "primary_metric": "Macro-F1",
+    "secondary_metrics": [
+      "per-class precision",
+      "per-class recall",
+      "per-class F1",
+      "confusion matrix",
+      "batch and single-item latency on declared CPU",
+      "serialized artifact size"
+    ],
+    "tuning_policy": "Validation only; test and travel-domain locked test remain sealed.",
+    "required_outputs": [
+      "metrics.json",
+      "confusion_matrix.json",
+      "model_card.md",
+      "dataset/split/label-map/config hashes",
+      "reload parity result",
+      "artifact SHA-256"
+    ],
+    "phobert_gate": "Do not train PhoBERT until a PASS dataset and locked split are committed and the TF-IDF baseline has completed on that exact split."
+  }
+}

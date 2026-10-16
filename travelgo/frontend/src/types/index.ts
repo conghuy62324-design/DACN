@@ -68,6 +68,9 @@ export interface Booking {
   quantity: number;
   discountAmount: number;
   businessId?: string;
+  placeId?: string;
+  tourId?: string;
+  ticketId?: string;
   notes?: string;
   createdAt: string;
 }
@@ -103,8 +106,17 @@ export interface Review {
   ratingPrice?: number;
   ratingLocation?: number;
   ratingExperience?: number;
+  criteriaProvided: { service: boolean; price: boolean; location: boolean; experience: boolean };
   comment: string;
+  bookingId?: string;
+  verificationStatus: 'VERIFIED' | 'UNVERIFIED';
+  moderationStatus: 'PENDING' | 'PUBLISHED' | 'HIDDEN' | 'REJECTED';
+  moderationReason?: string;
+  source?: 'LEGACY' | 'CUSTOMER_SUBMISSION';
+  environment?: 'production' | 'development' | 'test';
+  aiUsageAllowed?: boolean;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface User {
@@ -239,6 +251,7 @@ export interface GeneratedItinerary {
   adults: number;
   children: number;
   pacing: 'relaxed' | 'balanced' | 'packed';
+  preferences: string[];
   totalBudgetUserVND: number;
   totalEstimatedCostVND: number;
   costDifferenceVND: number;
@@ -247,6 +260,7 @@ export interface GeneratedItinerary {
   days: ItineraryDay[];
   summary: string;
   hotelSuggestion?: Place;
+  selectedPlaceIds: string[];
   createdAt: string;
 }
 
@@ -278,6 +292,7 @@ export interface TripSession {
   status: 'upcoming' | 'active' | 'completed' | 'cancelled';
   preferences: string[];
   days: ItineraryDay[];
+  selectedPlaceIds: string[];
   checkins: TripCheckin[];
   progressPercent: number;
   notes?: string;

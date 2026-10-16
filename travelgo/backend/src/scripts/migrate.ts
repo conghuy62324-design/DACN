@@ -3,7 +3,11 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { Client } from 'pg';
 import { ENV } from '../config/env.js';
-import { assertIsolatedTestDatabase } from '../utils/testDatabaseGuard.js';
+import {
+  assertDatabaseSentinel,
+  assertIsolatedTestDatabase,
+  assertTestDatabaseWriteOptIn,
+} from '../utils/testDatabaseGuard.js';
 
 const migrationDirectory = path.resolve(process.cwd(), '../database/migrations');
 const apply = process.argv.includes('--apply');
@@ -31,6 +35,8 @@ async function run(): Promise<void> {
     return;
   }
 
+  assertTestDatabaseWriteOptIn('Migration runner');
+
   const client = new Client({
     host: ENV.DB_HOST,
     port: ENV.DB_PORT,
@@ -43,6 +49,7 @@ async function run(): Promise<void> {
   try {
     const identity = await client.query('SELECT current_database() AS database, current_user AS username, version() AS version');
     console.log(`Connected: ${identity.rows[0].database} as ${identity.rows[0].username}`);
+    await assertDatabaseSentinel(client, 'Migration runner');
     await client.query("SELECT pg_advisory_lock(hashtext('hugotravel_schema_migrations'))");
 
     const tracked = await client.query("SELECT to_regclass('public.schema_migrations') AS table_name");

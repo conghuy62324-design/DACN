@@ -1,10 +1,10 @@
 import { Op } from 'sequelize';
 import { sequelize } from '../config/database.js';
-import { AuditLog, Place, Review } from '../models/index.js';
+import { AuditLog, Place } from '../models/index.js';
 import { PlaceListQuery, PlaceRepository } from '../repositories/placeRepository.js';
 import { HttpError } from '../utils/httpError.js';
 import { BusinessAccessService } from './businessAccessService.js';
-import { CriteriaRatings, RatingService } from './ratingService.js';
+import { RatingService } from './ratingService.js';
 
 export type PlaceData = ReturnType<typeof serializePlace>;
 const slugify = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/đ/g, 'd').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -28,20 +28,6 @@ export class PlaceService {
   }
   static async listPublic(params: PlaceListQuery = {}) { const result = await PlaceRepository.list(params, { publicOnly: true }); return { ...result, items: result.items.map(serializePlace) }; }
   static async getPlaceByIdOrSlug(value: string) { const place = await PlaceRepository.find(value, true); return place ? serializePlace(place) : null; }
-  static async getReviewsByTarget(targetId: string) { return Review.findAll({ where: { targetId }, order: [['createdAt','DESC']] }); }
-  static async addReview(targetId: string, user: { id: string; fullName: string }, reviewData: { rating: number; criteria?: CriteriaRatings; comment: string; userAvatar?: string }) {
-    const place = await Place.findOne({ where: { id: targetId, status: 'APPROVED' } });
-    if (!place) throw new HttpError(404, 'Không tìm thấy địa điểm đã được duyệt');
-    return sequelize.transaction(async (transaction) => {
-      const review = await Review.create({ targetType: 'place', targetId, userId: user.id, userName: user.fullName, userAvatar: reviewData.userAvatar,
-        rating: reviewData.rating, ratingService: reviewData.criteria?.service ?? reviewData.rating, ratingPrice: reviewData.criteria?.price ?? reviewData.rating,
-        ratingLocation: reviewData.criteria?.location ?? reviewData.rating, ratingExperience: reviewData.criteria?.experience ?? reviewData.rating, comment: reviewData.comment }, { transaction });
-      const aggregate = await Review.findOne({ attributes: [[sequelize.fn('COUNT', sequelize.col('id')), 'count'], [sequelize.fn('AVG', sequelize.col('rating')), 'average']], where: { targetId }, raw: true, transaction }) as any;
-      const count = Number(aggregate?.count || 0); const average = Number(aggregate?.average || 0);
-      await place.update({ reviewCount: count, rating: average, bayesianRating: RatingService.calculateBayesianAverage(count, average) }, { transaction });
-      return review;
-    });
-  }
   static async partnerList(userId: string, query: PlaceListQuery = {}) { const ids = await BusinessAccessService.businessIds(userId); const result = await PlaceRepository.list(query, { businessIds: ids }); return { ...result, items: result.items.map(serializePlace) }; }
   static async getManaged(userId: string, id: string) { const place = await PlaceRepository.find(id); if (!place?.businessId) throw new HttpError(404, 'Không tìm thấy địa điểm'); await BusinessAccessService.assert(userId, place.businessId); return serializePlace(place); }
   static async createForPartner(userId: string, businessId: string, input: PlaceInput) {

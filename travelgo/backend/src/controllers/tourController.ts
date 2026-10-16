@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { TourService } from '../services/tourService.js';
 import { TourPlannerService, PlannerInput } from '../services/tourPlannerService.js';
+import { validateTravelPreferences } from '../utils/travelPreferences.js';
 
 const tourFields=['businessId','title','destinationCity','departureCity','durationDays','durationNights','category','summary','description','meetingPoint','heroImage','galleryImages','priceVND','capacity','inclusions','exclusions','highlights','itineraryDays','startDate','endDate','isTemplate'] as const;
 const tourInput=(body:any)=>Object.fromEntries(tourFields.filter(key=>body[key]!==undefined).map(key=>[key,body[key]]));
@@ -88,7 +89,7 @@ export class TourController {
         children: Number(input.children) || 0,
         totalBudget: Number(input.totalBudget) || 5000000,
         transportation: input.transportation || 'car',
-        preferences: Array.isArray(input.preferences) ? input.preferences : ['am-thuc', 'thien-nhien'],
+        preferences: validateTravelPreferences(input.preferences),
         pacing: input.pacing || 'balanced',
         mandatoryPlaceIds: input.mandatoryPlaceIds || [],
       });

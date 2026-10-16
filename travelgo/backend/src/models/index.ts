@@ -16,6 +16,11 @@ import { BookingStatusHistory } from './BookingStatusHistory.js';
 import { UserEvent } from './UserEvent.js';
 import { RecommendationImpression } from './RecommendationImpression.js';
 import { AiModelRegistry } from './AiModelRegistry.js';
+import { TelemetryConsent } from './TelemetryConsent.js';
+import { RecommendationRequest } from './RecommendationRequest.js';
+import { RecommendationCandidate } from './RecommendationCandidate.js';
+import { RecommendationVisibleImpression } from './RecommendationVisibleImpression.js';
+import { Favorite } from './Favorite.js';
 
 // Associations
 User.hasMany(Booking, { foreignKey: 'userId', as: 'bookings' });
@@ -49,10 +54,28 @@ BlogPost.belongsTo(Business, { foreignKey: 'businessId', as: 'business' });
 
 User.hasMany(Review, { foreignKey: 'userId', as: 'reviews' });
 Review.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+Booking.hasOne(Review, { foreignKey: 'bookingId', as: 'review' });
+Review.belongsTo(Booking, { foreignKey: 'bookingId', as: 'booking' });
 User.hasMany(UserEvent, { foreignKey: 'userId', as: 'intelligenceEvents' });
 UserEvent.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+User.hasOne(TelemetryConsent, { foreignKey: 'userId', as: 'telemetryConsent' });
+TelemetryConsent.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 User.hasMany(RecommendationImpression, { foreignKey: 'userId', as: 'recommendationImpressions' });
 RecommendationImpression.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+User.hasMany(RecommendationRequest, { foreignKey: 'userId', as: 'recommendationRequests' });
+RecommendationRequest.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+RecommendationRequest.hasMany(RecommendationCandidate, { foreignKey: 'requestId', sourceKey: 'requestId', as: 'candidates' });
+RecommendationCandidate.belongsTo(RecommendationRequest, { foreignKey: 'requestId', targetKey: 'requestId', as: 'request' });
+RecommendationRequest.hasMany(RecommendationVisibleImpression, { foreignKey: 'requestId', sourceKey: 'requestId', as: 'visibleImpressions' });
+RecommendationVisibleImpression.belongsTo(RecommendationRequest, { foreignKey: 'requestId', targetKey: 'requestId', as: 'request' });
+RecommendationCandidate.hasMany(RecommendationVisibleImpression, { foreignKey: 'candidateId', as: 'visibleImpressions' });
+RecommendationVisibleImpression.belongsTo(RecommendationCandidate, { foreignKey: 'candidateId', as: 'candidate' });
+User.hasMany(RecommendationVisibleImpression, { foreignKey: 'userId', as: 'visibleRecommendationImpressions' });
+RecommendationVisibleImpression.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+User.hasMany(Favorite, { foreignKey: 'userId', as: 'favorites' });
+Favorite.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+Place.hasMany(Favorite, { foreignKey: 'placeId', as: 'favorites' });
+Favorite.belongsTo(Place, { foreignKey: 'placeId', as: 'place' });
 
 User.hasMany(UserRole, { foreignKey: 'userId', as: 'userRoles' });
 UserRole.belongsTo(User, { foreignKey: 'userId', as: 'user' });
@@ -85,4 +108,9 @@ export {
   UserEvent,
   RecommendationImpression,
   AiModelRegistry,
+  TelemetryConsent,
+  RecommendationRequest,
+  RecommendationCandidate,
+  RecommendationVisibleImpression,
+  Favorite,
 };

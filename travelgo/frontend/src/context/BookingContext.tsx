@@ -9,6 +9,7 @@ export interface BookingModalData {
   unitPrice: number;
   initialDate?: string;
   imageUrl?: string;
+  recommendationRequestId?: string;
 }
 
 interface BookingContextType {

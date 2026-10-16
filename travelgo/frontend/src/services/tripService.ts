@@ -12,12 +12,8 @@ export const TripService = {
     return res.data;
   },
 
-  async saveTripFromPlanner(
-    itinerary: GeneratedItinerary,
-    userId?: string,
-    userName?: string
-  ): Promise<TripSession> {
-    const res: any = await api.post('/trips', { itinerary, userId, userName });
+  async saveTripFromPlanner(itinerary: GeneratedItinerary): Promise<TripSession> {
+    const res: any = await api.post('/trips', { itinerary });
     return res.data;
   },
 

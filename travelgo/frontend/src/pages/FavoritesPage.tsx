@@ -6,7 +6,7 @@ import { formatCurrencyVND } from '../utils/formatters';
 import { RatingBadge } from '../components/common/RatingBadge';
 
 export const FavoritesPage: React.FC = () => {
-  const { favorites, toggleFavorite } = useFavorites();
+  const { favorites, toggleFavorite, loading, error, isPending } = useFavorites();
 
   return (
     <div className="min-h-screen pt-24 pb-20 bg-slate-50">
@@ -23,7 +23,10 @@ export const FavoritesPage: React.FC = () => {
           </p>
         </div>
 
-        {favorites.length === 0 ? (
+        {error && <p role="alert" className="mb-5 rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{error}</p>}
+        {loading ? (
+          <div role="status" className="py-12 text-center text-sm font-semibold text-slate-500">Đang đồng bộ Favorite từ máy chủ…</div>
+        ) : favorites.length === 0 ? (
           <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 max-w-lg mx-auto space-y-4">
             <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mx-auto">
               <Heart className="w-8 h-8" />
@@ -51,6 +54,7 @@ export const FavoritesPage: React.FC = () => {
                     <img src={item.heroImage} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     <button
                       onClick={() => toggleFavorite(item)}
+                      disabled={isPending(item.id)}
                       className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 text-rose-500 hover:bg-rose-50 flex items-center justify-center shadow"
                       title="Xóa khỏi yêu thích"
                     >

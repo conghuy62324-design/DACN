@@ -5,6 +5,7 @@ import { TourPlannerService } from '../services/tourPlannerService.js';
 import { PlaceService } from '../services/placeService.js';
 import { RecommendationRepository } from '../repositories/recommendationRepository.js';
 import { MOCK_PLACES } from '../utils/mockData.js';
+import { validateTravelPreferences } from '../utils/travelPreferences.js';
 
 (PlaceService.getAllPlaces as any) = async (query: { city?: string } = {}) =>
   query.city ? MOCK_PLACES.filter((place) => place.city === query.city) : MOCK_PLACES;
@@ -110,7 +111,33 @@ const tests: TestCase[] = [
 
 
 
-  // 4. TOUR PLANNER & ITINERARY SCHEDULER TESTS
+  // 4. EXPLICIT TRAVEL PREFERENCE CONTRACT TESTS
+  {
+    name: 'Preferences: allowlist chuẩn hóa khoảng trắng, loại trùng và giữ đúng lựa chọn chủ động',
+    fn: () => {
+      const preferences = validateTravelPreferences([' am-thuc ', 'van-hoa', 'am-thuc']);
+      return JSON.stringify(preferences) === JSON.stringify(['am-thuc', 'van-hoa']);
+    },
+  },
+  {
+    name: 'Preferences: dữ liệu thiếu hoặc mảng rỗng giữ nguyên rỗng cho Trip cũ',
+    fn: () => validateTravelPreferences(undefined).length === 0 && validateTravelPreferences([]).length === 0,
+  },
+  {
+    name: 'Preferences: từ chối giá trị ngoài allowlist, quá dài và số lượng vượt giới hạn',
+    fn: () => {
+      let unsupportedRejected = false;
+      let lengthRejected = false;
+      let overflowRejected = false;
+      try { validateTravelPreferences(['from-summary']); } catch { unsupportedRejected = true; }
+      try { validateTravelPreferences(['x'.repeat(33)]); } catch { lengthRejected = true; }
+      try { validateTravelPreferences(Array(9).fill('am-thuc')); } catch { overflowRejected = true; }
+      return unsupportedRejected && lengthRejected && overflowRejected;
+    },
+  },
+
+
+  // 5. TOUR PLANNER & ITINERARY SCHEDULER TESTS
   {
     name: 'TourPlanner: Tạo lịch trình 3N2Đ phân bổ đủ các ngày và tính chi phí',
     fn: async () => {
@@ -132,7 +159,8 @@ const tests: TestCase[] = [
         plan.days.length === 3 &&
         plan.days[0].activities.length > 0 &&
         plan.totalEstimatedCostVND > 0 &&
-        plan.hotelSuggestion !== undefined
+        plan.hotelSuggestion !== undefined &&
+        JSON.stringify(plan.preferences) === JSON.stringify(['am-thuc', 'thien-nhien'])
       );
     },
   },

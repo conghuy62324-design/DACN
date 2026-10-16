@@ -1,4 +1,4 @@
-# HuGo Intelligence v1 - Kaggle quickstart for the attached Restaurant Reviews dataset.
+A# HuGo Intelligence v1 - Kaggle quickstart for the attached Restaurant Reviews dataset.
 # In Kaggle, copy each section beginning with "# %%" into one Code cell, in order.
 # This is an English restaurant-review prototype, not the production recommender.
 

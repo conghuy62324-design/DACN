@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { Navbar } from '../components/common/Navbar';
 import { Footer } from '../components/common/Footer';
 import { BookingModal } from '../components/common/BookingModal';
+import { TelemetryConsent } from '../components/common/TelemetryConsent';
 
 export const MainLayout: React.FC = () => {
   return (
@@ -14,6 +15,7 @@ export const MainLayout: React.FC = () => {
       <Footer />
       {/* Global Booking Modal */}
       <BookingModal />
+      <TelemetryConsent />
     </div>
   );
 };

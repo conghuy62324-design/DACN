@@ -5,6 +5,7 @@ import { useBooking } from '../../context/BookingContext';
 import { useAuth } from '../../context/AuthContext';
 import { BookingService } from '../../services/bookingService';
 import { formatCurrencyVND } from '../../utils/formatters';
+import { getTelemetrySessionId } from '../../services/telemetryService';
 
 export const BookingModal: React.FC = () => {
   const { isOpen, modalData, closeBooking, confirmedBooking, setConfirmedBooking } = useBooking();
@@ -49,6 +50,8 @@ export const BookingModal: React.FC = () => {
         adultsCount,
         childrenCount,
         notes,
+        recommendationRequestId: modalData.recommendationRequestId,
+        recommendationSessionId: modalData.recommendationRequestId ? getTelemetrySessionId() : undefined,
       });
 
       setConfirmedBooking(created);

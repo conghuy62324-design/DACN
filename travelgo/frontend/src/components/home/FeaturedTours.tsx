@@ -6,6 +6,7 @@ import { RatingBadge } from '../common/RatingBadge';
 import { formatCurrencyVND } from '../../utils/formatters';
 import { useFavorites } from '../../context/FavoritesContext';
 import { useBooking } from '../../context/BookingContext';
+import { useTelemetry } from '../../context/TelemetryContext';
 
 interface FeaturedToursProps {
   tours: Place[];
@@ -14,6 +15,7 @@ interface FeaturedToursProps {
 export const FeaturedTours: React.FC<FeaturedToursProps> = ({ tours }) => {
   const { toggleFavorite, isFavorite } = useFavorites();
   const { openBooking } = useBooking();
+  const { track } = useTelemetry();
 
   return (
     <section className="py-20 bg-slate-50">
@@ -71,7 +73,7 @@ export const FeaturedTours: React.FC<FeaturedToursProps> = ({ tours }) => {
 
                   {/* Favorite button */}
                   <button
-                    onClick={() => toggleFavorite(item)}
+                    onClick={() => toggleFavorite(item, 'home_featured')}
                     className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-slate-700 hover:text-rose-500 hover:bg-white transition-all shadow-sm"
                     title={favorited ? 'Xóa khỏi yêu thích' : 'Thêm vào yêu thích'}
                   >
@@ -95,7 +97,10 @@ export const FeaturedTours: React.FC<FeaturedToursProps> = ({ tours }) => {
                     </div>
 
                     {/* Title */}
-                    <Link to={`/places/${item.id}`}>
+                    <Link to={`/places/${item.id}`} onClick={() => {
+                      const itemType = item.category === 'hotel' || item.category === 'restaurant' ? item.category : 'place';
+                      void track({ itemId: item.id, itemType, eventType: 'CLICK', uiSurface: 'home_featured', context: { position: index + 1 } });
+                    }}>
                       <h3 className="font-bold text-slate-900 text-base leading-snug line-clamp-2 group-hover:text-orange-600 transition-colors mb-2">
                         {item.name}
                       </h3>

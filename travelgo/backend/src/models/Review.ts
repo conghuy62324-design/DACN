@@ -15,10 +15,26 @@ export interface ReviewAttributes {
   ratingExperience?: number;
   comment: string;
   images?: string[];
+  bookingId?: string;
+  verificationStatus: 'VERIFIED' | 'UNVERIFIED';
+  verifiedAt?: Date;
+  moderationStatus: 'PENDING' | 'PUBLISHED' | 'HIDDEN' | 'REJECTED';
+  moderationReason?: string;
+  moderatedBy?: string;
+  moderatedAt?: Date;
+  source: 'LEGACY' | 'CUSTOMER_SUBMISSION';
+  environment: 'production' | 'development' | 'test';
+  criteriaProvided: { service: boolean; price: boolean; location: boolean; experience: boolean };
+  aiUsageAllowed: boolean;
+  consentPolicyVersion?: string;
   createdAt?: Date;
+  updatedAt?: Date;
 }
 
-export interface ReviewCreationAttributes extends Optional<ReviewAttributes, 'id' | 'ratingService' | 'ratingPrice' | 'ratingLocation' | 'ratingExperience' | 'images' | 'userAvatar'> {}
+export interface ReviewCreationAttributes extends Optional<ReviewAttributes,
+  'id' | 'ratingService' | 'ratingPrice' | 'ratingLocation' | 'ratingExperience' | 'images' | 'userAvatar' |
+  'bookingId' | 'verificationStatus' | 'verifiedAt' | 'moderationStatus' | 'moderationReason' | 'moderatedBy' |
+  'moderatedAt' | 'source' | 'environment' | 'criteriaProvided' | 'aiUsageAllowed' | 'consentPolicyVersion'> {}
 
 export class Review extends Model<ReviewAttributes, ReviewCreationAttributes> implements ReviewAttributes {
   public id!: string;
@@ -34,8 +50,21 @@ export class Review extends Model<ReviewAttributes, ReviewCreationAttributes> im
   public ratingExperience?: number;
   public comment!: string;
   public images?: string[];
+  public bookingId?: string;
+  public verificationStatus!: 'VERIFIED' | 'UNVERIFIED';
+  public verifiedAt?: Date;
+  public moderationStatus!: 'PENDING' | 'PUBLISHED' | 'HIDDEN' | 'REJECTED';
+  public moderationReason?: string;
+  public moderatedBy?: string;
+  public moderatedAt?: Date;
+  public source!: 'LEGACY' | 'CUSTOMER_SUBMISSION';
+  public environment!: 'production' | 'development' | 'test';
+  public criteriaProvided!: { service: boolean; price: boolean; location: boolean; experience: boolean };
+  public aiUsageAllowed!: boolean;
+  public consentPolicyVersion?: string;
 
   public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 }
 
 Review.init(
@@ -71,19 +100,19 @@ Review.init(
     },
     ratingService: {
       type: DataTypes.DECIMAL(2, 1),
-      defaultValue: 5.0,
+      allowNull: true,
     },
     ratingPrice: {
       type: DataTypes.DECIMAL(2, 1),
-      defaultValue: 5.0,
+      allowNull: true,
     },
     ratingLocation: {
       type: DataTypes.DECIMAL(2, 1),
-      defaultValue: 5.0,
+      allowNull: true,
     },
     ratingExperience: {
       type: DataTypes.DECIMAL(2, 1),
-      defaultValue: 5.0,
+      allowNull: true,
     },
     comment: {
       type: DataTypes.TEXT,
@@ -93,12 +122,28 @@ Review.init(
       type: DataTypes.JSONB,
       defaultValue: [],
     },
+    bookingId: { type: DataTypes.UUID, allowNull: true },
+    verificationStatus: { type: DataTypes.STRING(20), allowNull: false, defaultValue: 'UNVERIFIED' },
+    verifiedAt: { type: DataTypes.DATE, allowNull: true },
+    moderationStatus: { type: DataTypes.STRING(20), allowNull: false, defaultValue: 'PUBLISHED' },
+    moderationReason: { type: DataTypes.TEXT, allowNull: true },
+    moderatedBy: { type: DataTypes.UUID, allowNull: true },
+    moderatedAt: { type: DataTypes.DATE, allowNull: true },
+    source: { type: DataTypes.STRING(30), allowNull: false, defaultValue: 'LEGACY' },
+    environment: { type: DataTypes.STRING(20), allowNull: false, defaultValue: 'development' },
+    criteriaProvided: {
+      type: DataTypes.JSONB,
+      allowNull: false,
+      defaultValue: { service: false, price: false, location: false, experience: false },
+    },
+    aiUsageAllowed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    consentPolicyVersion: { type: DataTypes.STRING(20), allowNull: true },
   },
   {
     sequelize,
     tableName: 'reviews',
     timestamps: true,
-    updatedAt: false,
+    updatedAt: 'updatedAt',
     underscored: true,
   }
 );

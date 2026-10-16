@@ -15,12 +15,12 @@ export class PlaceRepository {
     if (query.search) where[Op.or] = [{ name: searchLike(query.search) }, { summary: searchLike(query.search) }, { city: searchLike(query.search) }];
     if (query.minRating) where.rating = { [Op.gte]: query.minRating };
     const order: any = query.sort === 'priceAsc' ? [['priceFrom','ASC']] : query.sort === 'priceDesc' ? [['priceFrom','DESC']] : [['bayesianRating','DESC']];
-    const result = await Place.findAndCountAll({ where, include: [{ model: Business, as: 'business', attributes: ['id','name','type'] }], order, limit, offset, distinct: true });
+    const result = await Place.findAndCountAll({ where, include: [{ model: Business, as: 'business', attributes: ['id','name','type','status'] }], order, limit, offset, distinct: true });
     return paged(result.rows, result.count, page, limit);
   }
 
   static find(value: string, publicOnly = false) {
-    return Place.findOne({ where: { ...idOrSlug(value), ...(publicOnly ? { status: 'APPROVED' } : {}) }, include: [{ model: Business, as: 'business', attributes: ['id','name','type'] }] });
+    return Place.findOne({ where: { ...idOrSlug(value), ...(publicOnly ? { status: 'APPROVED' } : {}) }, include: [{ model: Business, as: 'business', attributes: ['id','name','type','status'] }] });
   }
   static create(values: Parameters<typeof Place.create>[0]) { return Place.create(values); }
 }

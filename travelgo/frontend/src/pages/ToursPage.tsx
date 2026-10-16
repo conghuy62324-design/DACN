@@ -17,9 +17,11 @@ import {
 import { TourService } from '../services/tourService';
 import { TourPackage } from '../types';
 import { RatingBadge } from '../components/common/RatingBadge';
+import { useTelemetry } from '../context/TelemetryContext';
 
 export const ToursPage: React.FC = () => {
   const navigate = useNavigate();
+  const { track } = useTelemetry();
   const [tours, setTours] = useState<TourPackage[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -332,6 +334,7 @@ export const ToursPage: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <Link
                         to={`/tours/${tour.id}`}
+                        onClick={() => void track({ itemId: tour.id, itemType: 'tour', eventType: 'CLICK', uiSurface: 'tour_list' })}
                         className="bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs py-2.5 px-4 rounded-xl shadow-sm transition-all"
                       >
                         Chi tiết tour

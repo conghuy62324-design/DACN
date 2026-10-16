@@ -21,14 +21,18 @@ import { TourService } from '../services/tourService';
 import { TourPackage } from '../types';
 import { useBooking } from '../context/BookingContext';
 import { RatingBadge } from '../components/common/RatingBadge';
+import { useTelemetry } from '../context/TelemetryContext';
+import { useTelemetryView } from '../hooks/useTelemetryView';
 
 export const TourDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { openBooking } = useBooking();
+  const { track } = useTelemetry();
   const [tour, setTour] = useState<TourPackage | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeDay, setActiveDay] = useState(1);
+  const viewRef = useTelemetryView(!loading ? tour?.id : undefined, 'tour', 'tour_detail');
 
 
   useEffect(() => {
@@ -95,7 +99,7 @@ export const TourDetailPage: React.FC = () => {
           {/* LEFT COLUMN */}
           <div className="lg:col-span-8 space-y-8">
             {/* Title & Header */}
-            <div>
+            <div ref={viewRef}>
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <span className="bg-sky-100 text-sky-800 text-xs font-semibold px-3 py-1 rounded-full">
                   {tour.durationDays} Ngày {tour.durationNights} Đêm
@@ -300,14 +304,15 @@ export const TourDetailPage: React.FC = () => {
               {/* Actions */}
               <div className="space-y-3">
                 <button
-                  onClick={() =>
+                  onClick={() => {
+                    void track({ itemId: tour.id, itemType: 'tour', eventType: 'CLICK', uiSurface: 'booking_modal' });
                     openBooking({
                       serviceType: 'tour',
                       serviceId: tour.id,
                       serviceName: tour.title,
                       unitPrice: tour.priceVND,
-                    })
-                  }
+                    });
+                  }}
                   className="w-full bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all text-sm"
                 >
                   Đặt giữ chỗ ngay

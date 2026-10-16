@@ -24,13 +24,31 @@ export const PlaceService = {
   },
 
   async addReview(id: string, data: {
-    userName: string;
+    bookingId?: string;
     rating: number;
     criteria?: { service?: number; price?: number; location?: number; experience?: number };
     comment: string;
   }): Promise<Review> {
     const res: any = await api.post(`/places/${id}/reviews`, data);
     return res.data;
+  },
+
+  async getMyReviews(): Promise<Review[]> {
+    const res: any = await api.get('/reviews/me');
+    return res.data || [];
+  },
+
+  async updateReview(id: string, data: {
+    rating: number;
+    criteria?: { service?: number; price?: number; location?: number; experience?: number };
+    comment: string;
+  }): Promise<Review> {
+    const res: any = await api.patch(`/reviews/${id}`, data);
+    return res.data;
+  },
+
+  async deleteReview(id: string): Promise<void> {
+    await api.delete(`/reviews/${id}`);
   },
 
   async createPlace(data: Partial<Place>): Promise<Place> {

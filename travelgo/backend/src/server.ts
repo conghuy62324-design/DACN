@@ -1,10 +1,17 @@
 import app from './app.js';
 import { ENV } from './config/env.js';
-import { testDbConnection } from './config/database.js';
+import { sequelize, testDbConnection } from './config/database.js';
+import { assertDatabaseSentinel, assertTestDatabaseWriteOptIn } from './utils/testDatabaseGuard.js';
 
 const startServer = async () => {
+  const testWritesEnabled = process.env.ALLOW_TEST_DB_WRITES === 'true';
+  if (testWritesEnabled) assertTestDatabaseWriteOptIn('Write-enabled test server');
+
   // Test database connection (PostgreSQL / PostGIS)
   const connected = await testDbConnection();
+  if (connected && testWritesEnabled) {
+    await assertDatabaseSentinel(sequelize, 'Write-enabled test server');
+  }
   if (!connected) throw new Error('PostgreSQL không khả dụng');
 
   const server = app.listen(ENV.PORT, () => {

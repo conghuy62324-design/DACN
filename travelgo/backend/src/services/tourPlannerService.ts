@@ -2,6 +2,8 @@ import { PlaceData } from './placeService.js';
 import { RecommendationRepository } from '../repositories/recommendationRepository.js';
 import { RecommendationService } from './recommendationService.js';
 import { GeoService } from './geoService.js';
+import type { TravelPreference } from '../utils/travelPreferences.js';
+import { HttpError } from '../utils/httpError.js';
 
 export interface PlannerInput {
   departureCity: string;
@@ -12,7 +14,7 @@ export interface PlannerInput {
   children: number;
   totalBudget: number; // VNĐ
   transportation: 'flight' | 'car' | 'train' | 'motorbike';
-  preferences: string[];
+  preferences: TravelPreference[];
   pacing: 'relaxed' | 'balanced' | 'packed';
   mandatoryPlaceIds?: string[];
 }
@@ -54,6 +56,7 @@ export interface GeneratedItinerary {
   adults: number;
   children: number;
   pacing: 'relaxed' | 'balanced' | 'packed';
+  preferences: TravelPreference[];
   totalBudgetUserVND: number;
   totalEstimatedCostVND: number;
   costDifferenceVND: number;
@@ -62,7 +65,31 @@ export interface GeneratedItinerary {
   days: ItineraryDay[];
   summary: string;
   hotelSuggestion?: PlaceData;
+  selectedPlaceIds: string[];
   createdAt: string;
+}
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const MAX_MANDATORY_PLACES = 10;
+const normalizedText = (value: unknown) => String(value ?? '').normalize('NFC').trim().toLocaleLowerCase('vi-VN');
+
+function isPubliclyEligible(place: PlaceData): boolean {
+  const candidate = place as PlaceData & {
+    status?: string;
+    businessId?: string | null;
+    business?: { status?: string } | null;
+  };
+  if (candidate.status && candidate.status !== 'APPROVED') return false;
+  if (!candidate.businessId) return true;
+  return candidate.business?.status === 'ACTIVE';
+}
+
+function matchesDestination(place: PlaceData, destinationCity: string): boolean {
+  const destination = normalizedText(destinationCity);
+  return [place.city, place.province].some((value) => {
+    const location = normalizedText(value);
+    return location === destination || location.includes(destination) || destination.includes(location);
+  });
 }
 
 export class TourPlannerService {
@@ -97,7 +124,44 @@ export class TourPlannerService {
       : 1500000;
 
     // 1. Lấy tất cả dữ liệu địa điểm, nhà hàng và khách sạn
-    const allPlaces = await RecommendationRepository.getApprovedPlaces();
+    const catalog = await RecommendationRepository.getApprovedPlaces();
+    const allPlaces = catalog.filter(isPubliclyEligible);
+    const rawMandatoryIds = input.mandatoryPlaceIds ?? [];
+    if (!Array.isArray(rawMandatoryIds)) {
+      throw new HttpError(400, 'mandatoryPlaceIds phải là một danh sách Place ID.', 'INVALID_MANDATORY_PLACE_IDS');
+    }
+    if (rawMandatoryIds.length > MAX_MANDATORY_PLACES) {
+      throw new HttpError(400, `Chỉ được chọn tối đa ${MAX_MANDATORY_PLACES} địa điểm bắt buộc.`, 'MANDATORY_PLACE_LIMIT_EXCEEDED');
+    }
+    if (rawMandatoryIds.some((id) => typeof id !== 'string' || !UUID_PATTERN.test(id))) {
+      throw new HttpError(400, 'Một hoặc nhiều Place ID không đúng định dạng UUID.', 'INVALID_MANDATORY_PLACE_ID');
+    }
+    const mandatoryIds = [...new Set(rawMandatoryIds)];
+    const mandatoryPlaces = mandatoryIds.map((id) => {
+      const place = allPlaces.find((candidate) => candidate.id === id);
+      if (!place) {
+        throw new HttpError(422, 'Địa điểm bắt buộc không tồn tại hoặc không còn đủ điều kiện hiển thị.', 'MANDATORY_PLACE_UNAVAILABLE');
+      }
+      if (!matchesDestination(place, input.destinationCity)) {
+        throw new HttpError(422, `Địa điểm "${place.name}" không thuộc điểm đến ${input.destinationCity}.`, 'MANDATORY_PLACE_DESTINATION_MISMATCH');
+      }
+      return place;
+    });
+
+    const mandatoryAttractions = mandatoryPlaces.filter((place) => place.category === 'tour' || place.category === 'attraction');
+    const mandatoryRestaurants = mandatoryPlaces.filter((place) => place.category === 'restaurant');
+    const mandatoryHotels = mandatoryPlaces.filter((place) => place.category === 'hotel');
+    if (
+      mandatoryAttractions.length > daysCount * 2 ||
+      mandatoryRestaurants.length > daysCount ||
+      mandatoryHotels.length > 1
+    ) {
+      throw new HttpError(
+        422,
+        `Lịch trình ${daysCount} ngày không đủ chỗ cho các địa điểm bắt buộc đã chọn.`,
+        'MANDATORY_PLACE_CAPACITY_EXCEEDED',
+      );
+    }
 
     // Tách riêng danh mục
     const attractionCandidates = allPlaces.filter(
@@ -117,7 +181,11 @@ export class TourPlannerService {
     );
 
     // 3. Phân cụm các điểm tham quan theo ngày dựa vào GIS GeoService
-    const spotsToSchedule = recommendedAttractions.map((r) => r.place);
+    const mandatorySet = new Set(mandatoryIds);
+    const spotsToSchedule = [
+      ...mandatoryAttractions,
+      ...recommendedAttractions.map((result) => result.place).filter((place) => !mandatorySet.has(place.id)),
+    ].slice(0, daysCount * 2);
     const dailyClusters = GeoService.clusterPlacesIntoDays(spotsToSchedule, daysCount);
 
     // 4. Khách sạn lưu trú phù hợp
@@ -129,7 +197,19 @@ export class TourPlannerService {
         dailyBudgetPerPerson: dailyBudgetPerPerson * 0.8,
       }
     );
-    const selectedHotel = recommendedHotels[0]?.place;
+    const selectedHotel = mandatoryHotels[0] || recommendedHotels.find((result) => !mandatorySet.has(result.place.id))?.place;
+    const recommendedRestaurants = RecommendationService.recommendPlaces(
+      restaurantCandidates,
+      {
+        destinationCity: input.destinationCity,
+        preferences: ['am-thuc', ...input.preferences],
+        dailyBudgetPerPerson: dailyBudgetPerPerson * 0.35,
+      }
+    ).map((result) => result.place);
+    const restaurantsToSchedule = [
+      ...mandatoryRestaurants,
+      ...recommendedRestaurants.filter((place) => !mandatorySet.has(place.id)),
+    ];
 
     // 5. Xây dựng chi tiết từng ngày (Morning, Lunch, Afternoon, Dinner)
     const days: ItineraryDay[] = [];
@@ -148,7 +228,7 @@ export class TourPlannerService {
       let dayCost = 0;
 
       // Buổi sáng: Điểm tham quan 1
-      const morningSpot = daySpots[0] || spotsToSchedule[dayIdx % spotsToSchedule.length];
+      const morningSpot = daySpots[0];
       if (morningSpot) {
         const morningCost = Math.min(morningSpot.priceFrom || 300000, dailyBudgetPerPerson * 0.4);
         activities.push({
@@ -163,14 +243,15 @@ export class TourPlannerService {
           latitude: morningSpot.latitude,
           longitude: morningSpot.longitude,
           imageUrl: morningSpot.heroImage,
-          recommendationReason: 'Điểm tham quan hàng đầu được xếp hạng theo sở thích của bạn.',
+          recommendationReason: mandatorySet.has(morningSpot.id)
+            ? 'Địa điểm bắt buộc do bạn chọn từ trang chi tiết.'
+            : 'Điểm tham quan được xếp hạng theo sở thích và tiêu chí hành trình của bạn.',
         });
         dayCost += morningCost;
       }
 
       // Buổi trưa: Ăn trưa tại nhà hàng đặc sản
-      const lunchRestaurant =
-        restaurantCandidates[dayIdx % Math.max(1, restaurantCandidates.length)] || null;
+      const lunchRestaurant = restaurantsToSchedule[dayIdx] || null;
       const lunchCost = 150000;
       activities.push({
         id: `act-${dayNumber}-lunch`,
@@ -184,12 +265,14 @@ export class TourPlannerService {
         latitude: lunchRestaurant ? lunchRestaurant.latitude : (morningSpot?.latitude || 16.0544) + 0.005,
         longitude: lunchRestaurant ? lunchRestaurant.longitude : (morningSpot?.longitude || 108.2022) + 0.005,
         imageUrl: lunchRestaurant?.heroImage || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80',
-        recommendationReason: 'Nhà hàng ẩm thực được đánh giá cao gần khu vực tham quan buổi sáng.',
+        recommendationReason: lunchRestaurant && mandatorySet.has(lunchRestaurant.id)
+          ? 'Nhà hàng bắt buộc do bạn chọn từ trang chi tiết.'
+          : 'Gợi ý ẩm thực phù hợp với điểm đến và ngân sách ước tính.',
       });
       dayCost += lunchCost;
 
       // Buổi chiều: Điểm tham quan 2 / Check-in
-      const afternoonSpot = daySpots[1] || spotsToSchedule[(dayIdx + 2) % spotsToSchedule.length];
+      const afternoonSpot = daySpots[1];
       if (afternoonSpot) {
         const afternoonCost = Math.min(afternoonSpot.priceFrom || 200000, dailyBudgetPerPerson * 0.3);
         activities.push({
@@ -204,7 +287,9 @@ export class TourPlannerService {
           latitude: afternoonSpot.latitude,
           longitude: afternoonSpot.longitude,
           imageUrl: afternoonSpot.heroImage,
-          recommendationReason: 'Địa điểm lý tưởng để check-in và ngắm hoàng hôn.',
+          recommendationReason: mandatorySet.has(afternoonSpot.id)
+            ? 'Địa điểm bắt buộc do bạn chọn từ trang chi tiết.'
+            : 'Gợi ý check-in phù hợp với điểm đến và cụm địa lý của ngày.',
         });
         dayCost += afternoonCost;
       }
@@ -225,6 +310,23 @@ export class TourPlannerService {
         recommendationReason: 'Hoạt động trải nghiệm không gian về đêm đặc trưng của điểm đến.',
       });
       dayCost += dinnerCost;
+
+      if (dayIdx === 0 && mandatoryHotels[0]) {
+        activities.push({
+          id: `act-${dayNumber}-hotel`,
+          placeId: mandatoryHotels[0].id,
+          timeSlot: 'evening',
+          title: `Nhận phòng tại ${mandatoryHotels[0].name}`,
+          description: mandatoryHotels[0].summary || 'Khách sạn do bạn chủ động chọn cho hành trình.',
+          category: 'hotel',
+          durationMinutes: 60,
+          estimatedCostVND: 0,
+          latitude: mandatoryHotels[0].latitude,
+          longitude: mandatoryHotels[0].longitude,
+          imageUrl: mandatoryHotels[0].heroImage,
+          recommendationReason: 'Khách sạn bắt buộc do bạn chọn từ trang chi tiết địa điểm.',
+        });
+      }
 
       // Tiền phòng khách sạn mỗi đêm (nếu chuyến đi nhiều ngày)
       const hotelNightCost = selectedHotel ? Math.round(selectedHotel.priceFrom / totalPassengers) : 400000;
@@ -263,9 +365,17 @@ export class TourPlannerService {
 
     let budgetAdvice = '';
     if (isWithinBudget) {
-      budgetAdvice = `Lịch trình được tối ưu hoàn hảo trong ngân sách! Bạn còn dư khoảng ${new Intl.NumberFormat('vi-VN').format(costDiff)}đ cho chi tiêu phát sinh hoặc mua sắm quà lưu niệm.`;
+      budgetAdvice = `Tổng chi phí ước tính nằm trong ngân sách đã nhập. Bạn còn khoảng ${new Intl.NumberFormat('vi-VN').format(costDiff)}đ cho chi tiêu phát sinh hoặc mua sắm quà lưu niệm.`;
     } else {
       budgetAdvice = `Chi phí dự kiến vượt ngân sách khoảng ${new Intl.NumberFormat('vi-VN').format(Math.abs(costDiff))}đ. Gợi ý: Có thể cân nhắc phòng khách sạn tiêu chuẩn hoặc lựa chọn các quán ăn địa phương bình dân hơn để tiết kiệm.`;
+    }
+
+    const selectedPlaceIds = [...new Set(days.flatMap((day) =>
+      day.activities.map((activity) => activity.placeId).filter((id): id is string => Boolean(id))
+    ))];
+    const missingMandatory = mandatoryIds.filter((id) => !selectedPlaceIds.includes(id));
+    if (missingMandatory.length) {
+      throw new HttpError(422, 'Không thể xếp địa điểm bắt buộc vào lịch trình hiện tại.', 'MANDATORY_PLACE_SCHEDULING_FAILED');
     }
 
     return {
@@ -279,6 +389,7 @@ export class TourPlannerService {
       adults: input.adults,
       children: input.children,
       pacing: input.pacing,
+      preferences: [...input.preferences],
       totalBudgetUserVND: input.totalBudget,
       totalEstimatedCostVND: totalTripEstimatedCost,
       costDifferenceVND: costDiff,
@@ -287,6 +398,7 @@ export class TourPlannerService {
       days,
       summary: `Hành trình du lịch ${daysCount} ngày được thiết kế thông minh dựa trên thuật toán Content-Based và khoảng cách địa lý, đáp ứng các sở thích [${input.preferences.join(', ')}] với nhịp độ ${input.pacing === 'relaxed' ? 'Thư giãn' : input.pacing === 'packed' ? 'Khám phá nhiều' : 'Cân bằng'}.`,
       hotelSuggestion: selectedHotel,
+      selectedPlaceIds,
       createdAt: new Date().toISOString(),
     };
   }

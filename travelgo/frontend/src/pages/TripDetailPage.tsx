@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { TripService } from '../services/tripService';
 import { TripSession, TripCheckin, ItineraryDay, ItineraryActivity } from '../types';
+import { PREFERENCE_OPTIONS } from '../constants/travelPreferences';
 
 export const TripDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -34,6 +35,9 @@ export const TripDetailPage: React.FC = () => {
   const [gpsError, setGpsError] = useState<string | null>(null);
   const [checkinNotes, setCheckinNotes] = useState<{ [actId: string]: string }>({});
   const [isConvertingToBlog, setIsConvertingToBlog] = useState(false);
+  const [preferenceDraft, setPreferenceDraft] = useState<string[]>([]);
+  const [isSavingPreferences, setIsSavingPreferences] = useState(false);
+  const [preferenceMessage, setPreferenceMessage] = useState<string | null>(null);
 
   // Map References
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -51,11 +55,41 @@ export const TripDetailPage: React.FC = () => {
     try {
       const data = await TripService.getTripById(tripId);
       setTrip(data);
+      setPreferenceDraft(data.preferences || []);
     } catch (err) {
       console.error('Failed to load trip details:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const togglePreference = (preference: string) => {
+    setPreferenceMessage(null);
+    setPreferenceDraft((current) => current.includes(preference)
+      ? current.filter((item) => item !== preference)
+      : [...current, preference]);
+  };
+
+  const savePreferences = async (nextPreferences = preferenceDraft) => {
+    if (!trip) return;
+    setIsSavingPreferences(true);
+    setPreferenceMessage(null);
+    try {
+      const updated = await TripService.updateTrip(trip.id, { preferences: nextPreferences });
+      setTrip(updated);
+      setPreferenceDraft(updated.preferences || []);
+      setPreferenceMessage(nextPreferences.length > 0 ? 'Đã lưu sở thích.' : 'Đã xóa toàn bộ sở thích.');
+    } catch (err) {
+      console.error('Failed to update trip preferences:', err);
+      setPreferenceMessage('Không thể cập nhật sở thích.');
+    } finally {
+      setIsSavingPreferences(false);
+    }
+  };
+
+  const clearPreferences = async () => {
+    setPreferenceDraft([]);
+    await savePreferences([]);
   };
 
   // Request browser Geolocation
@@ -159,8 +193,9 @@ export const TripDetailPage: React.FC = () => {
         scrollWheelZoom: true,
       });
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors',
+      L.tileLayer('https://a.tile.openstreetmap.de/{z}/{x}/{y}.png', {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Tiles: <a href="https://openstreetmap.de/">OpenStreetMap Deutschland</a>',
         maxZoom: 19,
       }).addTo(map);
 
@@ -313,6 +348,64 @@ export const TripDetailPage: React.FC = () => {
             </div>
           </div>
 
+          <div data-testid="trip-preferences" className="mt-6 pt-6 border-t border-slate-100">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-extrabold text-slate-900">Sở thích bạn đã cung cấp</h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Chỉ các lựa chọn bạn chủ động đánh dấu được lưu cùng chuyến đi.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  data-testid="save-trip-preferences"
+                  onClick={() => savePreferences()}
+                  disabled={isSavingPreferences}
+                  className="bg-sky-600 hover:bg-sky-700 disabled:opacity-60 text-white text-xs font-bold px-3 py-2 rounded-xl"
+                >
+                  {isSavingPreferences ? 'Đang lưu...' : 'Lưu sở thích'}
+                </button>
+                <button
+                  type="button"
+                  data-testid="clear-trip-preferences"
+                  onClick={clearPreferences}
+                  disabled={isSavingPreferences || preferenceDraft.length === 0}
+                  className="bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-700 border border-slate-200 text-xs font-bold px-3 py-2 rounded-xl"
+                >
+                  Xóa tất cả
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-3">
+              {PREFERENCE_OPTIONS.map((preference) => {
+                const selected = preferenceDraft.includes(preference.id);
+                return (
+                  <button
+                    key={preference.id}
+                    type="button"
+                    data-testid={`trip-preference-${preference.id}`}
+                    aria-pressed={selected}
+                    onClick={() => togglePreference(preference.id)}
+                    className={`text-xs px-3 py-1.5 rounded-full border font-semibold transition-colors ${selected
+                      ? 'bg-orange-50 text-orange-800 border-orange-300'
+                      : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'}`}
+                  >
+                    {preference.label}
+                  </button>
+                );
+              })}
+            </div>
+            {preferenceDraft.length === 0 && (
+              <p data-testid="empty-trip-preferences" className="text-xs text-slate-500 mt-3">
+                Chưa có sở thích nào được lưu. Các Trip cũ vẫn hoạt động bình thường.
+              </p>
+            )}
+            {preferenceMessage && (
+              <p role="status" className="text-xs font-semibold text-emerald-700 mt-3">{preferenceMessage}</p>
+            )}
+          </div>
+
           {/* Progress Bar & Geolocation Status */}
           <div className="mt-6 pt-6 border-t border-slate-100 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
             <div className="md:col-span-8">
@@ -396,6 +489,8 @@ export const TripDetailPage: React.FC = () => {
                       return (
                         <div
                           key={act.id}
+                          data-testid="saved-trip-activity"
+                          data-place-id={act.placeId || ''}
                           className={`p-4 rounded-2xl border transition-all ${
                             isChecked
                               ? 'bg-emerald-50/40 border-emerald-200'
