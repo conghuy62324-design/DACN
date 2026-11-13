@@ -152,3 +152,4 @@ Hệ thống đã chuẩn bị sẵn các tài khoản demo sau khi chạy lện
 
 3. **Backend báo lỗi không kết nối được Database (`ECONNREFUSED`):**
    - *Khắc phục:* Kiểm tra xem Docker Desktop đã mở chưa và container `travelgo_postgres` có trạng thái Healthy chưa (`docker ps`).
+

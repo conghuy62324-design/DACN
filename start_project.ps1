@@ -1,4 +1,4 @@
-﻿# ==============================================================================
+# ==============================================================================
 # TravelGo - Script Khởi Chạy Tự Động Toàn Bộ Dự Án (1-Click Run)
 # Yêu cầu: Docker Desktop đang chạy, PowerShell.
 # ==============================================================================
@@ -45,3 +45,4 @@ Write-Host " - Giao dien Web: http://localhost:3000" -ForegroundColor Yellow
 Write-Host " - Tro ly AI:     http://localhost:3000/assistant" -ForegroundColor Yellow
 Write-Host " - Tai khoan:     customer.a@hugotravel.vn / travelgo2026seed" -ForegroundColor Yellow
 Write-Host "========================================================`n" -ForegroundColor Magenta
+
