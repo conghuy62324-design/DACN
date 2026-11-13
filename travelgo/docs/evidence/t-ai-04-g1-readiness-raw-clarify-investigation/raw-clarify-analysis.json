@@ -1,0 +1,139 @@
+{
+  "scenarios": [
+    {
+      "id": "S01",
+      "source": "docs/evidence/t-ai-04-g1-slot-filling-live-revalidation/S01.json",
+      "request": {
+        "history": [],
+        "message": "Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Phú Yên; Ngày bắt đầu: 2035-06-12; Ngày kết thúc: 2035-06-14; Số người lớn: 2; Ngân sách cả nhóm: 5400000 VND"
+      },
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "transportation"
+        ]
+      },
+      "rawDecision": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Phú Yên",
+          "startDate": "2035-06-12",
+          "endDate": "2035-06-14",
+          "adults": 2,
+          "totalBudget": 5400000
+        }
+      },
+      "rawNlu": "FAIL",
+      "originalSchemaValid": false,
+      "wireSystemSha256": "a70fa78949b83635dfd65bafd64504542f2733f9275d93fe5f83dc464f56c0ba",
+      "requestPromptBytesWithReserve": 9993,
+      "outputTokens": 69,
+      "doneReason": "stop",
+      "outputLimit": 2048,
+      "serverDidNotRepairRaw": true
+    },
+    {
+      "id": "S02",
+      "source": "docs/evidence/t-ai-04-g1-slot-filling-live-revalidation/S02.json",
+      "request": {
+        "history": [],
+        "message": "Lập lịch trình; Nơi xuất phát: Hải Phòng; Điểm đến: Sơn La; Ngày bắt đầu: 2035-07-05; Ngày kết thúc: 2035-07-07; Số người lớn: 3; Ngân sách cả nhóm: 8700000 VND; Phương tiện: chưa chọn"
+      },
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "transportation"
+        ]
+      },
+      "rawDecision": {
+        "kind": "clarify",
+        "fields": [
+          "transportation"
+        ]
+      },
+      "rawNlu": "PASS",
+      "originalSchemaValid": true,
+      "wireSystemSha256": "a70fa78949b83635dfd65bafd64504542f2733f9275d93fe5f83dc464f56c0ba",
+      "requestPromptBytesWithReserve": 10025,
+      "outputTokens": 12,
+      "doneReason": "stop",
+      "outputLimit": 2048,
+      "serverDidNotRepairRaw": true
+    },
+    {
+      "id": "S03",
+      "source": "docs/evidence/t-ai-04-g1-slot-filling-live-revalidation/S03.json",
+      "request": {
+        "history": [],
+        "message": "Lập lịch trình; Nơi xuất phát: Cần Thơ; Điểm đến: Đồng Tháp; Ngày bắt đầu: 2035-08-20; Ngày kết thúc: 2035-08-22; Số người lớn: 2; Ngân sách cả nhóm: 4600000 VND; Phương tiện: không đi ô tô và chưa chọn phương tiện khác"
+      },
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "transportation"
+        ]
+      },
+      "rawDecision": {
+        "kind": "clarify",
+        "fields": [
+          "transportation"
+        ]
+      },
+      "rawNlu": "PASS",
+      "originalSchemaValid": true,
+      "wireSystemSha256": "a70fa78949b83635dfd65bafd64504542f2733f9275d93fe5f83dc464f56c0ba",
+      "requestPromptBytesWithReserve": 10073,
+      "outputTokens": 12,
+      "doneReason": "stop",
+      "outputLimit": 2048,
+      "serverDidNotRepairRaw": true
+    },
+    {
+      "id": "M03",
+      "source": "docs/evidence/t-ai-04-g1-missing-slot-live-check/M03.json",
+      "request": {
+        "history": [],
+        "message": "Lập lịch trình; Nơi xuất phát: Cần Thơ; Điểm đến: Bến Tre; Ngày bắt đầu: 2037-06-10; Ngày kết thúc: 2037-06-12; Phương tiện: xe máy"
+      },
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "adults",
+          "totalBudget"
+        ]
+      },
+      "rawDecision": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Cần Thơ",
+          "destinationCity": "Bến Tre",
+          "startDate": "2037-06-10",
+          "endDate": "2037-06-12",
+          "transportation": "motorbike"
+        }
+      },
+      "rawNlu": "FAIL",
+      "originalSchemaValid": false,
+      "wireSystemSha256": "5902945e22dfe3b9b3432c669125daf4d7929fbfd5a330ffce0581fc62c4fe1f",
+      "requestPromptBytesWithReserve": 10390,
+      "outputTokens": 60,
+      "doneReason": "stop",
+      "outputLimit": 2048,
+      "serverDidNotRepairRaw": true
+    }
+  ],
+  "confirmed": [
+    "S01 and M03 omit required arguments and choose tool instead of clarify",
+    "S02/S03 explicit unset/negation produced clarify on earlier prompt; M01/M02 on latest prompt have no raw due to timeout",
+    "S01/M03 stop normally well below 2048 output tokens: no evidence of output truncation as missing-argument cause",
+    "JSON mode constrains syntax; original schema in system text/runtime does not force model semantic decision"
+  ],
+  "limits": [
+    "Inputs, missing fields and prompt versions differ; not a controlled omitted-vs-unset A/B",
+    "Root model cause is not established by instruction wording or current backend ability to extract slots"
+  ],
+  "inferencePosts": 0
+}

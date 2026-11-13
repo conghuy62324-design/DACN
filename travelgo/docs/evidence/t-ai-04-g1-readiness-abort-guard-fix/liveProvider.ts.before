@@ -1,0 +1,156 @@
+import { HttpError } from '../utils/httpError.js';
+import { LlmProvider, ProviderRequest, UnconfiguredLlmProvider } from './provider.js';
+import { DECISION_SCHEMA, GEMINI_DECISION_SCHEMA } from './decisionSchema.js';
+import { matchesDecisionSchema } from './decisionValidation.js';
+import { AGENT_TOOLS, parseDecision, validateTool } from './tools.js';
+import { classifyMissingReadSlots, MissingReadSlotsRejection } from './missingSlotRecovery.js';
+
+type Fetcher = typeof fetch;
+type Config = { provider: 'gemini' | 'ollama'; model: string; baseUrl?: string; apiKey?: string };
+export const LIVE_LIMITS = { inputTokens: 12288, outputTokens: 2048, responseBytes: 65536, decisionBytes: 16000, timeoutMs: 15000 } as const;
+const error = (code: string, status = 502) => new HttpError(status, 'Dịch vụ LLM chưa xử lý được yêu cầu. Vui lòng thử lại sau.', code);
+
+export function localOllamaUrl(raw: string): string {
+  const url = new URL(raw);
+  if (url.protocol !== 'http:' || !['127.0.0.1', '[::1]', 'localhost'].includes(url.hostname) ||
+    url.username || url.password || url.search || url.hash || url.pathname !== '/') throw new Error('Invalid Ollama endpoint');
+  // Avoid DNS lookup for localhost; no arbitrary host, path, credential or redirects.
+  if (url.hostname === 'localhost') url.hostname = '127.0.0.1';
+  return url.origin;
+}
+
+async function boundedJson(response: Response): Promise<any> {
+  if (!response.ok) {
+    await response.body?.cancel();
+    if (response.status === 429) throw error('AGENT_PROVIDER_QUOTA', 429);
+    if (response.status >= 500) throw error('AGENT_PROVIDER_UNAVAILABLE', 503);
+    throw error('AGENT_PROVIDER_REJECTED');
+  }
+  if (Number(response.headers.get('content-length')) > LIVE_LIMITS.responseBytes) {
+    await response.body?.cancel(); throw error('AGENT_PROVIDER_RESPONSE_TOO_LARGE');
+  }
+  const reader = response.body?.getReader();
+  if (!reader) throw error('AGENT_INVALID_PROVIDER_OUTPUT');
+  const chunks: Uint8Array[] = []; let size = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read(); if (done) break;
+      size += value.byteLength;
+      if (size > LIVE_LIMITS.responseBytes) { await reader.cancel(); throw error('AGENT_PROVIDER_RESPONSE_TOO_LARGE'); }
+      chunks.push(value);
+    }
+    return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+  } catch (e) {
+    if (e instanceof HttpError) throw e;
+    throw error('AGENT_INVALID_PROVIDER_OUTPUT');
+  } finally { reader.releaseLock(); }
+}
+
+/** No provider SDK/global singleton secrets. Transport never logs bodies or headers. */
+class LiveLlmProvider implements LlmProvider {
+  readonly configured = true;
+  readonly external: boolean;
+  constructor(private readonly config: Config, private readonly fetcher: Fetcher) { this.external = config.provider === 'gemini'; }
+
+  async generate(input: ProviderRequest, outer: AbortSignal): Promise<unknown> {
+    const abort = new AbortController();
+    const relay = () => abort.abort();
+    outer.addEventListener('abort', relay, { once: true });
+    if (outer.aborted) relay();
+    const timer = setTimeout(relay, LIVE_LIMITS.timeoutMs);
+    const signal = abort.signal;
+    const post = async (url: string, body: unknown) => {
+      signal.throwIfAborted();
+      const response = await this.fetcher(url, { method: 'POST', redirect: 'error', signal,
+        headers: { 'Content-Type': 'application/json', ...(this.external ? { 'x-goog-api-key': this.config.apiKey! } : {}) },
+        body: JSON.stringify(body) });
+      return boundedJson(response);
+    };
+    try {
+      // Conservative UTF-8 byte budget incl. schemas/system; not a model tokenizer claim.
+      // Gemini additionally uses exact countTokens; Ollama enforces a finite context window.
+      // Only compiled, allowlisted tool metadata enters the privileged system message.
+      // Request history and caller-supplied tool objects cannot redefine tools here.
+      const ollamaTools = this.config.provider === 'ollama'
+        ? `\nAvailable read-only tools (metadata from AGENT_TOOLS):\n${JSON.stringify(AGENT_TOOLS.map(tool => ({
+          name: tool.name, description: tool.description, required: tool.parameters.required,
+          parameters: tool.parameters,
+        })))}` : '';
+      const system = `${input.system}${ollamaTools}\nDecision JSON Schema:\n${JSON.stringify(DECISION_SCHEMA)}`;
+      const prompt = { system, messages: input.messages };
+      if (Buffer.byteLength(JSON.stringify(prompt), 'utf8') + 512 > LIVE_LIMITS.inputTokens) throw error('AGENT_INPUT_TOKEN_LIMIT', 400);
+      let raw: string;
+      if (this.config.provider === 'gemini') {
+        const model = `models/${this.config.model}`;
+        const base = `https://generativelanguage.googleapis.com/v1beta/${model}`;
+        const body = { systemInstruction: { parts: [{ text: system }] },
+          contents: input.messages.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })),
+          generationConfig: { temperature: 0, maxOutputTokens: LIVE_LIMITS.outputTokens,
+            responseMimeType: 'application/json', responseJsonSchema: GEMINI_DECISION_SCHEMA } };
+        const count = await post(`${base}:countTokens`, { generateContentRequest: { model, ...body } });
+        if (!Number.isSafeInteger(count.totalTokens) || count.totalTokens < 0) throw error('AGENT_INVALID_PROVIDER_OUTPUT');
+        if (count.totalTokens > LIVE_LIMITS.inputTokens) throw error('AGENT_INPUT_TOKEN_LIMIT', 400);
+        const envelope = await post(`${base}:generateContent`, body);
+        const candidate = envelope.candidates?.[0];
+        if (envelope.promptFeedback?.blockReason || envelope.candidates?.length !== 1 || candidate?.finishReason !== 'STOP' ||
+          !Array.isArray(candidate?.content?.parts) || candidate.content.parts.length !== 1 ||
+          candidate.content.parts[0].thought || typeof candidate.content.parts[0].text !== 'string') throw error('AGENT_INVALID_PROVIDER_OUTPUT');
+        raw = candidate.content.parts[0].text;
+      } else {
+        const envelope = await post(`${this.config.baseUrl}/api/chat`, { model: this.config.model,
+          messages: [{ role: 'system', content: system }, ...input.messages], stream: false, format: 'json',
+          options: { temperature: 0, num_predict: LIVE_LIMITS.outputTokens, num_ctx: LIVE_LIMITS.inputTokens + LIVE_LIMITS.outputTokens + 2048 } });
+        if (envelope.done !== true || envelope.done_reason !== 'stop' || envelope.message?.role !== 'assistant' ||
+          envelope.message?.tool_calls?.length || typeof envelope.message?.content !== 'string') throw error('AGENT_INVALID_PROVIDER_OUTPUT');
+        if (!Number.isSafeInteger(envelope.prompt_eval_count) || envelope.prompt_eval_count < 0 ||
+          !Number.isSafeInteger(envelope.eval_count) || envelope.eval_count < 0) throw error('AGENT_INVALID_PROVIDER_OUTPUT');
+        if (envelope.prompt_eval_count > LIVE_LIMITS.inputTokens || envelope.eval_count > LIVE_LIMITS.outputTokens) throw error('AGENT_INPUT_TOKEN_LIMIT', 400);
+        raw = envelope.message.content;
+      }
+      if (Buffer.byteLength(raw, 'utf8') > LIVE_LIMITS.decisionBytes) throw error('AGENT_PROVIDER_RESPONSE_TOO_LARGE');
+      let decision;
+      try {
+        const parsed = JSON.parse(raw);
+        if (this.config.provider === 'ollama' && !matchesDecisionSchema(parsed)) {
+          const current = input.messages[input.messages.length - 1];
+          const rejected = current?.role === 'user' ? classifyMissingReadSlots(parsed, current.content) : null;
+          if (rejected) throw rejected;
+          throw new Error('Invalid decision schema');
+        }
+        decision = parseDecision(parsed);
+      } catch (e) {
+        if (e instanceof MissingReadSlotsRejection) throw e;
+        throw error('AGENT_INVALID_PROVIDER_OUTPUT');
+      }
+      if (decision.kind === 'tool') {
+        try {
+          if (validateTool(decision).missing.length) throw new Error('Model must clarify missing fields');
+        } catch { throw error('AGENT_INVALID_PROVIDER_OUTPUT'); }
+      }
+      return decision;
+    } catch (e) {
+      if (signal.aborted) throw error('AGENT_TIMEOUT', 504);
+      if (e instanceof HttpError) throw e;
+      throw error('AGENT_PROVIDER_NETWORK');
+    } finally { clearTimeout(timer); outer.removeEventListener('abort', relay); }
+  }
+}
+
+/** All gates are operator settings, never accepted from the HTTP body. No fetch during construction. */
+export function createConfiguredProvider(env: NodeJS.ProcessEnv = process.env, fetcher: Fetcher = fetch): LlmProvider {
+  const disabled = () => new UnconfiguredLlmProvider();
+  if (env.LLM_LIVE_ENABLED !== 'true' || env.LLM_USAGE_APPROVED !== 'true') return disabled();
+  if (env.LLM_PROVIDER === 'gemini') {
+    if (env.LLM_EXTERNAL_PROCESSING_APPROVED !== 'true' || !env.GEMINI_API_KEY?.trim() || !/^[A-Za-z0-9._-]{1,120}$/.test(env.GEMINI_MODEL || '')) return disabled();
+    return new LiveLlmProvider({ provider: 'gemini', model: env.GEMINI_MODEL!, apiKey: env.GEMINI_API_KEY }, fetcher);
+  }
+  if (env.LLM_PROVIDER === 'ollama') {
+    if (env.OLLAMA_LOCAL_ONLY_CONFIRMED !== 'true' || !/^[A-Za-z0-9][A-Za-z0-9._:/-]{0,119}$/.test(env.OLLAMA_MODEL || '') || /cloud/i.test(env.OLLAMA_MODEL!)) return disabled();
+    try { return new LiveLlmProvider({ provider: 'ollama', model: env.OLLAMA_MODEL!, baseUrl: localOllamaUrl(env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434') }, fetcher); }
+    catch { return disabled(); }
+  }
+  return disabled();
+}
+
+export const SAFE_PROVIDER_ERRORS = new Set(['AGENT_PROVIDER_QUOTA', 'AGENT_PROVIDER_UNAVAILABLE', 'AGENT_PROVIDER_REJECTED',
+  'AGENT_PROVIDER_RESPONSE_TOO_LARGE', 'AGENT_INVALID_PROVIDER_OUTPUT', 'AGENT_PROVIDER_NETWORK', 'AGENT_INPUT_TOKEN_LIMIT']);

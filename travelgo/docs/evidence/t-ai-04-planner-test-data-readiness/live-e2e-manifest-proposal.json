@@ -1,0 +1,223 @@
+{
+  "status": "PROPOSED_NOT_EXECUTED",
+  "task": "T-AI-04-PLANNER-REAL-TOOL-LIVE-E2E",
+  "approved": false,
+  "executionAuthorized": false,
+  "originalScenario": {
+    "departureCity": "Huế",
+    "destinationCity": "Đà Nẵng",
+    "startDate": "2036-04-22",
+    "endDate": "2036-04-23",
+    "adults": 2,
+    "totalBudget": 6400000,
+    "transportation": "car"
+  },
+  "baselineReference": "docs/evidence/t-ai-04-g2-e2e-harness-fix-resume/manifest.json",
+  "fixtureProfile": "OWNER_MUST_CHOOSE; primary minimum1 row proposed; optional2-row daily coverage separately selectable",
+  "principalSource": "docs/evidence/t-ai-04-e-final/run-20261109T041645807Z-ae626a88/attempt-E04-B.json",
+  "principalHash": "6b982d095bc6bc30c87955cd38c78afa9ef31d3447ef30f62e8684bbe8bce600",
+  "fixtureCreationAndCleanupPermission": "Separate explicit owner authorization required; current task grants0 writes",
+  "proposedBudgetForSeparateApproval": {
+    "maxNativePosts": 7,
+    "conditionalOperatorLoadOnly": 1,
+    "maxGenuineInference": 6,
+    "unallocated": 0,
+    "retry": 0,
+    "hiddenWarmup": 0,
+    "concurrency": 1,
+    "maxAgentMainQuotaTurns": 9,
+    "conservativeOperatorEntry": 1,
+    "maxRollingEntriesRequired": 10,
+    "approvedNow": 0,
+    "source": "Proposal only; no prior task unused cap inherited"
+  },
+  "quota": "Recompute at and createdAt including old main/dry/operator attempts at actual execution; reserve full chain and conditional branch+cleanup within default20/h. If insufficient stop/wait for separately approved execution window, never reset/change principal. No current quota number substituted for future quota.",
+  "ttl": "Absolute15min; ensure entire locked chain fits before POST. Include session expiry checks before each inference; stop eviction/model mismatch/provider pending/timeout/abort/security or DB guard failure.",
+  "auth": "Same approved principal; authenticated test-signed JWT if needed,explicitly not real-login; G2 opt-in/exact privacy acknowledgement. No account fixture required",
+  "model": {
+    "name": "qwen3:4b-instruct-2507-q4_K_M",
+    "digest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+    "endpoint": "http://127.0.0.1:11434",
+    "format": "json",
+    "stream": false,
+    "temperature": 0,
+    "num_ctx": 16384,
+    "num_predict": 2048,
+    "applicationTimeoutMs": 15000,
+    "loadOnlyDeadlineMs": 60000
+  },
+  "cases": [
+    {
+      "id": "P-START",
+      "viewport": "desktop",
+      "message": "Lập lịch trình; Điểm đến: Đà Nẵng",
+      "action": "start",
+      "native": 0,
+      "expected": "needs_input,server-created ID/revision1; no provider/tool"
+    },
+    {
+      "id": "P-COMPLETE",
+      "viewport": "desktop",
+      "message": "Nơi xuất phát: Huế; Ngày bắt đầu: 2036-04-22; Ngày kết thúc: 2036-04-23; Số người lớn: 2; Ngân sách cả nhóm: 6400000 VND; Phương tiện: car",
+      "action": "continue",
+      "native": 1,
+      "expectedDecision": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Huế",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2036-04-22",
+          "endDate": "2036-04-23",
+          "adults": 2,
+          "totalBudget": 6400000,
+          "transportation": "car"
+        }
+      },
+      "expectedRevision": 2
+    },
+    {
+      "id": "P-BUDGET",
+      "viewport": "desktop",
+      "message": "Đổi ngân sách cả nhóm thành 9000000 VND, giữ thông tin còn lại.",
+      "action": "continue",
+      "native": 1,
+      "expectedDecision": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Huế",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2036-04-22",
+          "endDate": "2036-04-23",
+          "adults": 2,
+          "totalBudget": 9000000,
+          "transportation": "car"
+        }
+      },
+      "expectedRevision": 3
+    },
+    {
+      "id": "P-DATE",
+      "viewport": "desktop",
+      "message": "Ngày bắt đầu: 2036-04-23; Ngày kết thúc: 2036-04-24",
+      "action": "continue",
+      "native": 1,
+      "expectedDecision": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Huế",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2036-04-23",
+          "endDate": "2036-04-24",
+          "adults": 2,
+          "totalBudget": 9000000,
+          "transportation": "car"
+        }
+      },
+      "expectedRevision": 4
+    },
+    {
+      "id": "P-TRANSPORT",
+      "viewport": "desktop",
+      "message": "À đổi sang xe máy, giữ thông tin còn lại.",
+      "action": "continue",
+      "native": 1,
+      "expectedDecision": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Huế",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2036-04-23",
+          "endDate": "2036-04-24",
+          "adults": 2,
+          "totalBudget": 9000000,
+          "transportation": "motorbike"
+        }
+      },
+      "expectedRevision": 5,
+      "rawFailureRule": "Redundant clarify is valid schema but raw semantic FAIL; retain needs_input,no tool,no repair/retry"
+    },
+    {
+      "id": "P-CONFIRM",
+      "viewport": "desktop",
+      "condition": "ONLY if P-TRANSPORT safely clarifies transportation and owner approves this explicit confirmation branch",
+      "message": "Phương tiện: motorbike",
+      "action": "continue",
+      "native": 1,
+      "expectedDecision": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Huế",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2036-04-23",
+          "endDate": "2036-04-24",
+          "adults": 2,
+          "totalBudget": 9000000,
+          "transportation": "motorbike"
+        }
+      },
+      "expectedRevision": 6,
+      "notRetry": "New explicit user click/input with fresh UUID, scored independently; P-TRANSPORT FAIL stays FAIL"
+    },
+    {
+      "id": "P-DESKTOP-END",
+      "viewport": "desktop",
+      "method": "DELETE",
+      "path": "/api/agent/verified-history/$desktop.id",
+      "native": 0,
+      "quota": 1
+    },
+    {
+      "id": "P-MOBILE",
+      "viewport": "mobile",
+      "message": "Lập lịch trình; Nơi xuất phát: Huế; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2036-04-22; Ngày kết thúc: 2036-04-23; Số người lớn: 2; Ngân sách cả nhóm: 6400000 VND; Phương tiện: car",
+      "action": "start",
+      "native": 1,
+      "expectedDecision": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Huế",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2036-04-22",
+          "endDate": "2036-04-23",
+          "adults": 2,
+          "totalBudget": 6400000,
+          "transportation": "car"
+        }
+      },
+      "expectedRevision": 1
+    },
+    {
+      "id": "P-MOBILE-END",
+      "viewport": "mobile",
+      "method": "DELETE",
+      "path": "/api/agent/verified-history/$mobile.id",
+      "native": 0,
+      "quota": 1
+    }
+  ],
+  "reviewBeforeExecution": [
+    "Owner selects fixture profile and approves creation+exact-ID cleanup and separate Ollama cap",
+    "Recheck all fixture/collision/FK/baseline data/source hashes and direct Planner expected after fixture; do not change original input/expected silently",
+    "Draft messages/corrections must be validated and byte/body/hash manifest locked before execution; new proposal does not replace historical manifests",
+    "Capture exact native bodies OFFLINE only after approved fixture/state setup; original SYSTEM/schema/gate unchanged",
+    "Stop safety/runtime failure; semantic raw mismatch keeps FAIL and expected unchanged,conditional explicit confirmation only in approved branch",
+    "Destination correction to another city has no eligible data contract here; choose date correction as allowed,not a destination-positive PASS. Separate data/manifest approval if destination must change"
+  ],
+  "scoringLayers": [
+    "Raw NLU",
+    "G2 verified history",
+    "Execution safety",
+    "Real Planner/Catalog/DB fidelity with synthetic fixture provenance",
+    "Browser UX",
+    "Runtime"
+  ],
+  "fidelity": "Actual production read-only plan_trip result from real DB containing separately approved TEST FIXTURE Place(s),not mock itinerary/fake injected prices. No real-world pricing/attraction validity claim.",
+  "currentNativeCalls": 0,
+  "currentPlannerExecutions": 0
+}

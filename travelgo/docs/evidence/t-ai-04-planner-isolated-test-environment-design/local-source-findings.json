@@ -1,0 +1,54 @@
+{
+  "at": "2026-11-11T12:53:16.464Z",
+  "scope": "STATIC_SOURCE_AND_SAVED_EVIDENCE_ONLY",
+  "currentDockerOrDatabaseObserved": false,
+  "findings": [
+    {
+      "file": "docker-compose.yml",
+      "sha256": "dd3e9557c908cba7dba1854536d5414c1cb41e6a29b43452d6f08c17b864c6dc",
+      "finding": "Local file has shared dev postgres/pgAdmin/network and external persistent dev volumes; published DB port mapping does not specify loopback interface. This is local config, not a fresh Docker runtime observation. No secret values copied."
+    },
+    {
+      "file": "backend/src/config/database.ts",
+      "sha256": "bfdcc507fe63038aee614f54361e3374f798f86d35efa49a9d7fc3908d19465d",
+      "finding": "Pool max10; generic DB_SSL branch does not validate peer certificate. No readonly/non-superuser boundary in base constructor."
+    },
+    {
+      "file": "backend/src/config/env.ts",
+      "sha256": "ed628bb4dfb3049fe258f40755232c332294d0b437c1a9ccf0c20dce9a052f30",
+      "finding": "Environment defaults permit generic dev/superuser configuration; isolated launcher must require explicit target/role and no fallback. No .env values read."
+    },
+    {
+      "file": "backend/src/utils/testDatabaseGuard.ts",
+      "sha256": "43340e359a8a5ed587c4cb5ea6025ac75098bfcd87a0e3a4de2421d233c411e8",
+      "finding": "Old loopback/test-name/old-sentinel gate explicitly rejects DB_SSL=true; new TLS identity needs a separate stronger test-only cohort, not production edits."
+    },
+    {
+      "file": "docs/evidence/t-ai-04-planner-multi-connection-maintenance-acceptance/managed-connections.cjs",
+      "sha256": "c3160b4d09b8d8b80a21ae53d8c85c5e1718847179fc425d9f0f40978af4f86b",
+      "finding": "Actual startup RO/unique tokens and lifecycle safeguards retained conceptually, but constructor forces ssl:false and old registry binds target; new adapter needs independent acceptance."
+    },
+    {
+      "file": "docs/evidence/t-ai-04-planner-live-targeted-revalidation-resume/cleanup-lifecycle.cjs",
+      "sha256": "eec3a5d0c191752da781735cd11780dfab845ed34692d995a48313670ec021c8",
+      "finding": "Old isolation proof/baseline expectations cannot accept new admission policy or Trip0 without separately scoped versioned contract; do not fake locks."
+    },
+    {
+      "file": "backend/src/repositories/placeRepository.ts",
+      "sha256": "8edd8de32edf5778f8c234b5f358bbcf8ef24b17df8755b0a976fbb9ff03c5df",
+      "finding": "Real catalog loads Place with Business association; preserve business eligibility and serializer inputs."
+    },
+    {
+      "file": "backend/src/services/recommendationService.ts",
+      "sha256": "a153ac6cc44e870ed9e7a4bd206c7613957ba91497333e6256f63fb8a98fd6d3",
+      "finding": "Ranking uses text/preferences/rating/reviews/price/coordinates/tie IDs; sanitizing only obvious contact fields is not a parity proof."
+    },
+    {
+      "file": "backend/src/services/authService.ts",
+      "sha256": "d985b86518515e2278e874592865a96196a3a56be3e1d8cb3567e121179a09dd",
+      "finding": "Auth profile bootstrap reads User and UserRole; proposed new baseline needs synthetic same-principal auth row, no real user clone."
+    }
+  ],
+  "oldExpectedChanged": false,
+  "oldSourceChanged": false
+}

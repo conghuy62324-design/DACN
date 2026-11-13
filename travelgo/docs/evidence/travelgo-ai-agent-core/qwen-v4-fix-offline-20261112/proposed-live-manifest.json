@@ -1,0 +1,92 @@
+{
+  "status": "PROPOSED_NOT_EXECUTABLE_NOT_APPROVED_NOT_RUN",
+  "createdAt": "2026-11-13T03:16:53.075Z",
+  "sourceHashes": {
+    "backend/src/agent/coreProvider.ts": "e1242fcafeddde51c6b9f1b98c9f5754a3bf9328e05444e3f74438f19208ea22",
+    "backend/src/agent/vietnameseConversation.ts": "ce9212b65cedd99b213d233062dd49b86e95ec3816e0efcf14a36460512e9479",
+    "backend/src/agent/naturalGrounding.ts": "5dad9de3ababa6515d9cc28abaddc66e3d3225b3fc7711bb12512ec1e3abd5e1",
+    "backend/src/services/agentCoreService.ts": "08c7f49859dbadaae3018f6c0c64db4108efc713d4b27e9ef63699c4fc4a11aa",
+    "backend/src/agent/structuredOutput.ts": "b1e953230d6783ff80c63d7ab9a12812e06cae27752e4fb4dc7d173c49d3ecea",
+    "backend/src/agent/naturalContract.ts": "55043b4d8270076924da55af3396fb227935df59711bf3cc4eb479e308c4fb4d",
+    "backend/src/agent/geographicEvidence.ts": "6bb9c131d24e546c7fbf8c4863093ccd0476ba0e213c5839fda9115b3b62ef5d",
+    "backend/src/tests/agentQwenV4Fix.test.ts": "aab79c0441de0416b032854efc09f89e6250f593ee8c513043b3d986389652e9"
+  },
+  "model": {
+    "tag": "qwen3:4b-instruct-2507-q4_K_M",
+    "digest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+    "context": 16384,
+    "temperature": 0,
+    "numPredict": 2048,
+    "deadlineMs": 15000,
+    "concurrency": 1
+  },
+  "limits": {
+    "warmLoadMaximum": 1,
+    "inferenceMaximum": 3,
+    "retry": 0,
+    "nativeUsedByThisTask": 0
+  },
+  "prerequisites": [
+    "Fresh owner approval, current-source manifest lock, principal quota scan at+createdAt, unchanged cap20/hour with conservative reserve10",
+    "RAM>=6144MiB, GPU<=10%, allocation plus512MiB VRAM reserve, exclusive known ownership",
+    "Native readiness/version/tag/digest and resident context16384; exact schema accepted without fallback",
+    "Fresh read-only staging identity/checksum and eligible facts locked before inference; no database writes"
+  ],
+  "cases": [
+    {
+      "id": "L1_NEW",
+      "input": "minh ngam nghia chuyen len nha trangg a, ban hieu minh nham toi dau hong?",
+      "expected": {
+        "kind": "natural",
+        "operation": "plan_trip",
+        "updates": [
+          {
+            "field": "destinationCity",
+            "value": "Nha Trang",
+            "quote": "nha trangg"
+          }
+        ],
+        "otherUpdatesForbidden": true,
+        "confirmationRequired": true,
+        "toolsBeforeConfirmation": 0
+      },
+      "scoring": "Raw Qwen must independently pass typed schema and semantics. A server fuzzy proposal/fallback alone is not model PASS."
+    },
+    {
+      "id": "L2_NEW",
+      "setup": [
+        "di da lat 3n2d",
+        "2ng 5tr",
+        "tu sg"
+      ],
+      "input": "ngan sach vua noi nhe, tang chut cho thoai mai; xe nao de minh nghi da",
+      "expected": {
+        "kind": "natural",
+        "operation": "chat",
+        "updates": [],
+        "budget": 5000000,
+        "transportation": "UNSET",
+        "preserveAllVerifiedSlots": true,
+        "clarificationRequired": true,
+        "tools": 0
+      }
+    },
+    {
+      "id": "L3_NEW",
+      "input": "tim nha hang o da lat",
+      "facts": "Lock fresh APPROVED/ACTIVE staging restaurant facts and source hashes before inference; do not reuse historical facts as fresh DB evidence.",
+      "expected": {
+        "model": "Only grounded factIds/lead from supplied facts, no authored claims or tool selection claim",
+        "renderer": "Each selected option has source name/location, known price or explicit unknown-price message, source reason or category/city reason, unit/availability caveat and DEMO notice when applicable",
+        "forbidden": [
+          "invented price",
+          "invented rating/review",
+          "price per person/dish without verified unit",
+          "availability assertion"
+        ]
+      },
+      "scoring": "Separate raw selection/schema safety from complete server presentation. Historical L3 paired-price-ID criterion and FAIL remain unchanged."
+    }
+  ],
+  "fullBrowserAgentE2E": "NOT_RUN_REQUIRES_SEPARATE_SCOPE"
+}

@@ -1,3 +1,4 @@
+import {LocationCombobox} from '../components/common/LocationCombobox';
 import React, { useState, useEffect } from 'react';
 import { TicketService } from '../services/ticketService';
 import { Ticket } from '../types';
@@ -99,32 +100,12 @@ export const TicketsPage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
             <div>
               <label className="block text-xs font-bold text-slate-500 mb-1">Điểm đi</label>
-              <select
-                value={fromCity}
-                onChange={(e) => setFromCity(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none"
-              >
-                <option value="all">Tất cả điểm đi</option>
-                <option value="Hà Nội">Hà Nội</option>
-                <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
-                <option value="Huế">Huế</option>
-                <option value="Đà Nẵng">Đà Nẵng</option>
-              </select>
+              <LocationCombobox label="Điểm đi" value={fromCity} onChange={setFromCity}/>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-500 mb-1">Điểm đến</label>
-              <select
-                value={toCity}
-                onChange={(e) => setToCity(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none"
-              >
-                <option value="all">Tất cả điểm đến</option>
-                <option value="Đà Nẵng">Đà Nẵng</option>
-                <option value="Phú Quốc">Phú Quốc</option>
-                <option value="Sapa">Sapa</option>
-                <option value="Bà Nà Hills">Bà Nà Hills</option>
-              </select>
+              <LocationCombobox label="Điểm đến" value={toCity} onChange={setToCity}/>
             </div>
 
             <div>

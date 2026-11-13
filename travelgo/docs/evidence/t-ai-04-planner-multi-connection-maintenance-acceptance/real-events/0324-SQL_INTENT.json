@@ -1,0 +1,12 @@
+{
+  "payloadSha256": "6bc3699fb59f710d5e946614c4546f0d514571c63e201e829114b4dba8a70d78",
+  "payload": {
+    "at": "2026-11-11T09:56:29.670Z",
+    "type": "SQL_INTENT",
+    "number": 105,
+    "instanceId": "a0d91a82-ea20-4f4c-8911-e7bb0259b20a",
+    "kind": "final-verifier",
+    "sql": "SELECT l.pid,c.relname,l.mode,l.granted FROM pg_locks l JOIN pg_class c ON c.oid=l.relation JOIN pg_namespace n ON n.oid=c.relnamespace WHERE l.database=(SELECT oid FROM pg_database WHERE datname=current_database()) AND n.nspname='public' AND l.pid=ANY($1::int[]) ORDER BY l.pid,c.relname,l.mode",
+    "valuesSha256": "1d5da260e3275b1e87957d9a63b38d5eedca6aa96b048615056e8cfeab09463c"
+  }
+}

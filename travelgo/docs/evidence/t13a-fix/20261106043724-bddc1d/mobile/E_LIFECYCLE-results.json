@@ -1,0 +1,473 @@
+{
+  "title": "E_LIFECYCLE real API activity edit/reopen + UI start/GPS-denied/checkin/retry/complete",
+  "project": "mobile",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "browser": "Microsoft Edge Chromium headless",
+  "mobile": "viewport/touch emulation, not physical device",
+  "matrix": [
+    {
+      "id": "ENV_PROXY_DB",
+      "expected": "Frontend proxy reaches this run backend and exact test DB",
+      "status": "PASS",
+      "actual": {
+        "runId": "20261106043724-bddc1d",
+        "pid": 15020,
+        "port": 5313,
+        "nodeEnv": "test",
+        "host": "127.0.0.1",
+        "database": "travelgo_ai_m0_test",
+        "username": "postgres",
+        "sentinel": "PASS"
+      }
+    },
+    {
+      "id": "SAVED_TRIP_API_EDIT",
+      "expected": "Real browser fetch edits existing Trip, DB/reopen totals/IDs/warnings follow current data",
+      "status": "PASS",
+      "actual": {
+        "id": "3829f258-47f7-473f-897a-fc775e1c0294",
+        "total": 3570000,
+        "selectedPlaceIds": [
+          "e98c3ff2-0bbd-4c5d-9716-7ebbdb18b025",
+          "d4286dfe-ee46-4caa-8f68-9a7ac0952635",
+          "ac0d7249-ea75-46e6-b75d-f7bd25c523f5",
+          "e116fe85-28aa-4ca1-a72f-a9175c5088d1",
+          "21b04245-f6d6-4ea1-ac0b-3ad10b65bac6"
+        ],
+        "budgetStatus": "over_budget",
+        "overBudgetVND": 3470000
+      }
+    },
+    {
+      "id": "BUDGET_EDIT_CURRENT",
+      "expected": "Budget edits clear then restore current warning without changing prices",
+      "status": "PASS"
+    },
+    {
+      "id": "START_GPS_MANUAL",
+      "expected": "Start enables manual check-in even with real geolocation permission denied",
+      "status": "PASS"
+    },
+    {
+      "id": "CHECKIN_RETRY",
+      "expected": "UI check-in + real retry persist once and do not duplicate progress",
+      "status": "PASS",
+      "actual": {
+        "progress": 13,
+        "checkins": 1
+      }
+    },
+    {
+      "id": "COMPLETE_ACTUAL_PROGRESS",
+      "expected": "Complete keeps partial progress, does not force 100%",
+      "status": "PASS"
+    },
+    {
+      "id": "LAYOUT_trip-complete-partial",
+      "expected": "No document horizontal overflow",
+      "actual": {
+        "width": 390,
+        "scrollWidth": 390,
+        "culprits": []
+      },
+      "status": "PASS"
+    }
+  ],
+  "traffic": [
+    {
+      "method": "GET",
+      "path": "/api/__t13a/identity",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/places",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/blogs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/places",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/blogs",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/places/e98c3ff2-0bbd-4c5d-9716-7ebbdb18b025",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/places/e98c3ff2-0bbd-4c5d-9716-7ebbdb18b025",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tours/plan",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/trips",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200,
+      "origin": "browser fetch -> Vite proxy -> real API"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "endpoint": "/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200,
+      "origin": "browser fetch -> Vite proxy -> real API"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200,
+      "origin": "browser fetch -> Vite proxy -> real API"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "endpoint": "/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200,
+      "origin": "browser fetch -> Vite proxy -> real API"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200,
+      "origin": "browser fetch -> Vite proxy -> real API"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "endpoint": "/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200,
+      "origin": "browser fetch -> Vite proxy -> real API"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294/start",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294/checkin",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294/checkin",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "endpoint": "/trips/3829f258-47f7-473f-897a-fc775e1c0294/checkin",
+      "status": 200,
+      "origin": "browser fetch -> Vite proxy -> real API"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294/complete",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/3829f258-47f7-473f-897a-fc775e1c0294",
+      "status": 200
+    }
+  ],
+  "external": [
+    {
+      "url": "https://example.test/suspended.jpg",
+      "error": "net::ERR_NAME_NOT_RESOLVED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3278/1862.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3278/1861.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3279/1861.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3278/1863.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3279/1863.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3279/1862.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3278/1862.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3278/1863.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3279/1863.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3278/1862.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3278/1863.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3279/1863.png",
+      "error": "net::ERR_ABORTED"
+    }
+  ],
+  "testStatus": "passed"
+}

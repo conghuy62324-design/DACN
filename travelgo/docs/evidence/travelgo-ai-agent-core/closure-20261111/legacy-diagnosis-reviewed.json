@@ -1,0 +1,317 @@
+{
+  "at": "2026-11-11T15:56:19.359Z",
+  "results": [
+    {
+      "suite": "agentReadinessAbort",
+      "classification": "HISTORICAL_CONTRACT_OR_HARNESS_INCOMPATIBILITY_NOT_NEW_CORE_V2_REGRESSION",
+      "cause": "Current completeness correctly requires destinationCity AND dailyBudgetPerPerson; the old clarify-only expectation omits budget.",
+      "testSourceUnchanged": true,
+      "historicalBeforeM1": {
+        "at": "2026-11-10T14:55:30.042Z",
+        "evidence": "docs/evidence/t-ai-04-g2-live-multi-turn-validation/final-verified/execution.json",
+        "execution": {
+          "name": "readiness-33",
+          "exitCode": 1,
+          "passed": 32,
+          "failed": 1,
+          "expectedCount": 33,
+          "log": "readiness-33.log"
+        }
+      },
+      "originalM1Result": "FAIL_PRESERVED",
+      "newContractProposal": "agentLegacyCurrentContractV2.test.ts; separate probes, NOT original suite PASS",
+      "historicalInterpretation": "Historical run before M1 already had contract incompatibilities; preserve exact failed cases."
+    },
+    {
+      "suite": "agentG1SafeContract",
+      "classification": "RAW_FIXTURE_LACKS_READINESS_METADATA_HISTORICAL_COMPATIBILITY_SHIM_26_PASS",
+      "cause": "Old transport parses init.body for every fetch, including readiness GET with no body. A new GET-aware fixture is required, not bypassing readiness.",
+      "testSourceUnchanged": true,
+      "historicalBeforeM1": {
+        "at": "2026-11-10T14:55:30.042Z",
+        "evidence": "docs/evidence/t-ai-04-g2-live-multi-turn-validation/final-verified/execution.json",
+        "execution": {
+          "name": "actual-policy-agentG1SafeContract",
+          "exitCode": 0,
+          "passed": 26,
+          "failed": 0,
+          "expectedCount": 26,
+          "resultFile": "actual-policy-agentG1SafeContract.json"
+        }
+      },
+      "originalM1Result": "FAIL_PRESERVED",
+      "newContractProposal": "agentLegacyCurrentContractV2.test.ts; separate probes, NOT original suite PASS",
+      "historicalInterpretation": "Historical result used readiness compatibility shim; this PASS is NOT evidence that the original raw fixture passed.",
+      "historicalFailedCases": []
+    },
+    {
+      "suite": "agentFoundation",
+      "classification": "HISTORICAL_CONTRACT_OR_HARNESS_INCOMPATIBILITY_NOT_NEW_CORE_V2_REGRESSION",
+      "cause": "The historical shared chat fixture combines two intents. Current single-intent completeness blocks before provider/tool, so expected toolCalls=2 is obsolete for that input.",
+      "testSourceUnchanged": true,
+      "historicalBeforeM1": {
+        "at": "2026-11-10T14:55:30.042Z",
+        "evidence": "docs/evidence/t-ai-04-g2-live-multi-turn-validation/final-verified/execution.json",
+        "execution": {
+          "name": "actual-policy-agentFoundation",
+          "exitCode": 1,
+          "passed": 17,
+          "failed": 5,
+          "expectedCount": 22,
+          "resultFile": "actual-policy-agentFoundation.json"
+        }
+      },
+      "originalM1Result": "FAIL_PRESERVED",
+      "newContractProposal": "agentLegacyCurrentContractV2.test.ts; separate probes, NOT original suite PASS",
+      "historicalInterpretation": "Historical run before M1 already had contract incompatibilities; preserve exact failed cases.",
+      "historicalFailedCases": [
+        {
+          "name": "explicit preferences allowed with opt-out; no behavioral lookup or persisted context",
+          "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== 2\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:127:22\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:276:101)"
+        },
+        {
+          "name": "tool backend failure and deadline are safe and do not fabricate success",
+          "error": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:156:5\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:276:101)"
+        },
+        {
+          "name": "real Planner adapter with synthetic catalog preserves estimates, provenance, no re-pricing",
+          "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'needs_input'\n- 'completed'\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:170:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:276:101)"
+        },
+        {
+          "name": "empty catalog produces explicit no-result/search and unavailable/planner, never fallback fabrication",
+          "error": "TypeError: Cannot read properties of undefined (reading 'places')\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:206:50\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:276:101)"
+        },
+        {
+          "name": "malformed Planner result is rejected, no itinerary returned",
+          "error": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:220:9\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:276:101)"
+        }
+      ]
+    },
+    {
+      "suite": "agentDecisionFormatSafety",
+      "classification": "RAW_FIXTURE_LACKS_READINESS_METADATA_HISTORICAL_COMPATIBILITY_SHIM_17_PASS",
+      "cause": "First current failure occurs in a raw fake transport predating readiness GET/envelope handling, before the intended invalid-decision assertion. Historical shim passed17/17. The v2 proposal isolates malformed decision validation using complete current input and GET-aware, token-count-bearing envelopes; original assertions stay untouched.",
+      "testSourceUnchanged": true,
+      "historicalBeforeM1": {
+        "at": "2026-11-10T14:55:30.042Z",
+        "evidence": "docs/evidence/t-ai-04-g2-live-multi-turn-validation/final-verified/execution.json",
+        "execution": {
+          "name": "actual-policy-agentDecisionFormatSafety",
+          "exitCode": 0,
+          "passed": 17,
+          "failed": 0,
+          "expectedCount": 17,
+          "resultFile": "actual-policy-agentDecisionFormatSafety.json"
+        }
+      },
+      "originalM1Result": "FAIL_PRESERVED",
+      "newContractProposal": "agentLegacyCurrentContractV2.test.ts; separate probes, NOT original suite PASS",
+      "historicalInterpretation": "Historical result used readiness compatibility shim; this PASS is NOT evidence that the original raw fixture passed.",
+      "historicalFailedCases": []
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "classification": "HISTORICAL_CONTRACT_OR_HARNESS_INCOMPATIBILITY_NOT_NEW_CORE_V2_REGRESSION",
+      "cause": "Old cases expect provider output before completeness checks; current contract resolves missing required roles before calling a provider.",
+      "testSourceUnchanged": true,
+      "historicalBeforeM1": {
+        "at": "2026-11-10T14:55:30.042Z",
+        "evidence": "docs/evidence/t-ai-04-g2-live-multi-turn-validation/final-verified/execution.json",
+        "execution": {
+          "name": "actual-policy-agentMissingSlotRecovery",
+          "exitCode": 1,
+          "passed": 13,
+          "failed": 20,
+          "expectedCount": 33,
+          "resultFile": "actual-policy-agentMissingSlotRecovery.json"
+        }
+      },
+      "originalM1Result": "FAIL_PRESERVED",
+      "newContractProposal": "agentLegacyCurrentContractV2.test.ts; separate probes, NOT original suite PASS",
+      "historicalInterpretation": "Historical run before M1 already had contract incompatibilities; preserve exact failed cases.",
+      "historicalFailedCases": [
+        {
+          "name": "historical S01 offline replay: raw FAIL/schema reject retained; safe UX needs_input with zero execution",
+          "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== 1\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:79:22\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "prompt explicitly treats omitted field as missing; examples and request stay within unchanged contract",
+          "error": "TypeError: Cannot read properties of undefined (reading 'body')\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:93:29\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "recover one omitted plan required field: departureCity",
+          "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:118:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "recover one omitted plan required field: destinationCity",
+          "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:118:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "recover one omitted plan required field: startDate",
+          "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:118:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "recover one omitted plan required field: endDate",
+          "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:118:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "recover one omitted plan required field: adults",
+          "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:118:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "recover one omitted plan required field: totalBudget",
+          "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:118:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "recover one omitted plan required field: transportation",
+          "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:118:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "multiple missing fields preserve AGENT_TOOLS order, never Planner defaults",
+          "error": "TypeError: Cannot convert undefined or null to object\n    at Object.hasOwn (<anonymous>)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:138:35\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "model guessing car remains raw FAIL and independent G1 gate blocks, without recovery or mutation",
+          "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ []\n- [\n-   {\n-     arguments: {\n-       adults: 2,\n-       departureCity: 'Hà Nội',\n-       destinationCity: 'Quy Nhơn',\n-       endDate: '2036-03-12',\n-       startDate: '2036-03-10',\n-       totalBudget: 8000000,\n-       transportation: 'car'\n-     },\n-     kind: 'tool',\n-     name: 'plan_trip'\n-   }\n- ]\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:177:22\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "unsupported decision remains unsupported and does not trigger recovery from missing user slots",
+          "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'needs_input'\n- 'unsupported'\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:205:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "unknown tool, missing argument object and extra root/argument keys remain invalid",
+          "error": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:215:9\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "all schema errors are checked: missing key cannot conceal wrong type/date/enum/negative budget",
+          "error": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:225:9\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "contradicted or invented supplied argument does not recover, even with the correct missing key",
+          "error": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:233:9\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "malformed JSON stays invalid output, no broad parse-error recovery",
+          "error": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:258:5\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "network, HTTP rejection/quota/unavailable remain errors even with trustworthy missing slots",
+          "error": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:267:9\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "timeout and ordinary invalid-output HttpError cannot impersonate classified missing-slot rejection",
+          "error": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:276:5\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "auth, external consent and rate limit still precede recovery and consume normal quota",
+          "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== 1\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:299:22\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        },
+        {
+          "name": "HTTP MOCK_ONLY: authenticated recovery is 200 needs_input; malformed/network failures remain safe 502",
+          "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:368:34\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:101)"
+        }
+      ]
+    },
+    {
+      "suite": "agentTransport",
+      "classification": "HISTORICAL_CONTRACT_OR_HARNESS_INCOMPATIBILITY_NOT_NEW_CORE_V2_REGRESSION",
+      "cause": "Raw old native fixture predates version/tags/ps readiness. Historical readiness-compatible fixture is separate and must not replace original assertions.",
+      "testSourceUnchanged": true,
+      "historicalBeforeM1": {
+        "at": "2026-11-10T14:55:30.042Z",
+        "evidence": "docs/evidence/t-ai-04-g2-live-multi-turn-validation/final-verified/execution.json",
+        "execution": {
+          "name": "actual-policy-agentTransport",
+          "exitCode": 1,
+          "passed": 18,
+          "failed": 1,
+          "expectedCount": 19,
+          "resultFile": "actual-policy-agentTransport.json"
+        }
+      },
+      "originalM1Result": "FAIL_PRESERVED",
+      "newContractProposal": "agentLegacyCurrentContractV2.test.ts; separate probes, NOT original suite PASS",
+      "historicalInterpretation": "Historical run before M1 already had contract incompatibilities; preserve exact failed cases.",
+      "historicalFailedCases": [
+        {
+          "name": "prompt excludes account/private context and acknowledgement, no shared account state",
+          "error": "TypeError: Cannot read properties of undefined (reading 'includes')\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentTransport.server-policy-audit.js:200:38\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentTransport.server-policy-audit.js:267:101)"
+        }
+      ]
+    }
+  ],
+  "unchangedRuntime": [
+    {
+      "file": "backend/src/services/agentService.ts",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/services/registeredCatalogService.ts",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/agent/currentCompleteness.ts",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/agent/currentTurnProof.ts",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/agent/liveProvider.ts",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/agent/ollamaReadiness.ts",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/agent/toolProvenance.ts",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/agent/requestLimits.ts",
+      "unchanged": true
+    }
+  ],
+  "productionLegacyFixes": 0,
+  "assertionsChanged": 0,
+  "originalCasesSkipped": 0,
+  "newVersionedProbes": {
+    "contract": "LEGACY_CURRENT_CONTRACT_V2_PROPOSAL",
+    "tier": "OFFLINE_MOCK_ONLY_NOT_ORIGINAL_SUITE_PASS",
+    "passed": 6,
+    "failed": 0,
+    "originalAssertionsChanged": 0,
+    "actualDB": 0,
+    "actualModel": 0,
+    "results": [
+      {
+        "name": "agentReadinessAbort-v2: completeness asks all missing search fields before readiness",
+        "status": "PASS"
+      },
+      {
+        "name": "agentG1SafeContract-v2: transport fixture includes three readiness GETs before one POST",
+        "status": "PASS"
+      },
+      {
+        "name": "agentFoundation-v2: complete current grammar executes while honoring consent",
+        "status": "PASS"
+      },
+      {
+        "name": "agentDecisionFormatSafety-v2: malformed raw is tested after valid current input",
+        "status": "PASS"
+      },
+      {
+        "name": "agentMissingSlotRecovery-v2: transport missing is resolved before provider guess",
+        "status": "PASS"
+      },
+      {
+        "name": "agentTransport-v2: invalid readiness metadata returns 503 with zero inference",
+        "status": "PASS"
+      }
+    ]
+  },
+  "reviewedAt": "2026-11-11T16:02:35.910Z",
+  "verdict": "DO_NOT_RELABEL_ORIGINAL_FAILS_AS_GREEN"
+}

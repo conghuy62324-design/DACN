@@ -1,0 +1,231 @@
+{
+  "name": "advisory_only",
+  "tier": "OFFLINE_MODEL_OR_SENSOR_NOT_POSTGRES",
+  "result": {
+    "name": "advisory_only",
+    "facts": {
+      "writerGranted": true,
+      "validProtectionStart": false
+    },
+    "events": [
+      {
+        "sequence": 1,
+        "type": "TRANSACTION_BEGUN",
+        "protectionActive": false,
+        "fixtureVisible": false,
+        "tx": "A",
+        "role": "TASK",
+        "registration": "REGISTERED"
+      },
+      {
+        "sequence": 2,
+        "type": "APPLICATION_ADVISORY_LOCK_MODEL",
+        "protectionActive": false,
+        "fixtureVisible": false,
+        "held": true,
+        "tableDmlEnforced": false
+      },
+      {
+        "sequence": 3,
+        "type": "TRANSACTION_BEGUN",
+        "protectionActive": false,
+        "fixtureVisible": false,
+        "tx": "W",
+        "role": "EXTERNAL_WRITER",
+        "registration": "UNKNOWN"
+      },
+      {
+        "sequence": 4,
+        "type": "LOCK_REQUEST",
+        "protectionActive": false,
+        "fixtureVisible": false,
+        "tx": "W",
+        "role": "EXTERNAL_WRITER",
+        "registration": "UNKNOWN",
+        "tableId": "public.users",
+        "mode": "ROW_EXCLUSIVE"
+      },
+      {
+        "sequence": 5,
+        "type": "GRANTED",
+        "protectionActive": false,
+        "fixtureVisible": false,
+        "tx": "W",
+        "role": "EXTERNAL_WRITER",
+        "registration": "UNKNOWN",
+        "tableId": "public.users",
+        "mode": "ROW_EXCLUSIVE",
+        "transactionStatus": "ACTIVE",
+        "origin": "IMMEDIATE",
+        "stateAtGrant": {
+          "transactions": [
+            {
+              "id": "A",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "connection": "OPEN",
+              "status": "ACTIVE",
+              "waiting": null
+            },
+            {
+              "id": "W",
+              "role": "EXTERNAL_WRITER",
+              "registration": "UNKNOWN",
+              "connection": "OPEN",
+              "status": "ACTIVE",
+              "waiting": null
+            }
+          ],
+          "relations": [
+            {
+              "tableId": "public.ai_model_registry",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.audit_logs",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.blog_posts",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.booking_status_history",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.bookings",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.business_members",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.businesses",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.partner_applications",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.places",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.recommendation_candidates",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.recommendation_impressions",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.recommendation_requests",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.recommendation_visible_impressions",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.reviews",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.schema_migrations",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.spatial_ref_sys",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.tickets",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.tour_places",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.tours",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.trip_sessions",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.user_events",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.user_favorites",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.user_roles",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.user_telemetry_consents",
+              "held": [],
+              "queue": []
+            },
+            {
+              "tableId": "public.users",
+              "held": [
+                {
+                  "tx": "W",
+                  "mode": "ROW_EXCLUSIVE"
+                }
+              ],
+              "queue": []
+            }
+          ],
+          "pendingFixture": {},
+          "fixtureVisible": false,
+          "protectionActive": false
+        }
+      }
+    ],
+    "proof": {
+      "status": "PROTECTION_INTERVAL_NOT_ESTABLISHED",
+      "counterexamples": [],
+      "intervalsStarted": 0,
+      "intervalsEnded": 0,
+      "intervalStillOpen": false,
+      "universalProof": false
+    }
+  },
+  "network": {
+    "pid": 26564,
+    "postgresConnectAttempts": 0,
+    "networkAttempts": 0
+  }
+}

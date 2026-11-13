@@ -1,0 +1,458 @@
+{
+  "task": "T13-B-02",
+  "runId": "20261107121815-e5bf91",
+  "lockedAt": "2026-11-07T12:18:15.114Z",
+  "scopePath": "docs/HUGO_T13_B_SCOPE_AND_MATRIX.md",
+  "approvedScopeSha256": "2f26c201d218ffd956bedb20f7f71c81bd8396e0a9829eb6217f5043f7b91f23",
+  "selectedCore": [
+    "R03",
+    "A05",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "B05",
+    "B06"
+  ],
+  "previouslyPassedNotRerun": [
+    "R01",
+    "R02",
+    "R04",
+    "R05",
+    "A02",
+    "A03",
+    "A04"
+  ],
+  "totalCore": 43,
+  "totalOptional": 8,
+  "totalGaps": 9,
+  "expectedRuntimeInstances": 14,
+  "excludedMobileA1": [
+    "R03",
+    "B06"
+  ],
+  "cases": [
+    {
+      "id": "R01",
+      "approvedRow": "| R01 CORE U2 | C, P_A, SA-only login; mở dashboard đúng role, public Customer area, reload và menu mobile | C dùng Customer; P vào Partner; SA vào Admin; role/identity khớp `/auth/me` và DB grants. Sidebar mở/đóng, route giữ sau reload; không gộp SA-only thành PARTNER. E + grants/menu. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "R02",
+      "approvedRow": "| R02 CORE U2+A1 | Anonymous/C vào admin và partner; P vào admin; SA-only vào partner; sửa localStorage user.roles rồi gọi API thật | Anonymous API401, UI login; token sai role403 FORBIDDEN/UI403; cache sửa không cấp quyền API và reload `/auth/me` khôi phục. Target rows không đổi; không logout token hợp lệ chỉ vì403. Mở rộng deny probes admin moderation/approval, legacy Place/Tour mutations, review moderation. Anonymous probe thêm GET `/reviews/me`, POST `/places/:id/reviews`, PATCH/DELETE `/reviews/:id`, Favorite GET/POST/DELETE và consent GET/PUT; tất cả401, dùng payload hợp lệ để không nhầm lỗi DTO với lỗi quyền. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "R03",
+      "approvedRow": "| R03 CORE A1 | P_A/P_B đổi Business/resource IDs ở GET/PATCH/DELETE/submit, POST với foreign businessId, dashboard/list query; đủ Place/Tour/Ticket/Blog và Booking list/get/status | Membership scope không leak; foreign valid ID403 theo service, status body mismatch403 BOOKING_ACCESS_DENIED; không chuyển owner qua PATCH businessId, trường bị whitelist bỏ. DB owner/status/payload/timestamp target không đổi sau request bị từ chối; list không trả tài nguyên Business kia. Endpoint cụ thể ghi đủ trong results. |",
+      "selected": true,
+      "channel": "A1",
+      "status": "NOT RUN",
+      "expansion": [
+        "API once: A→B and B→A GET/PATCH/DELETE/submit Place/Tour/Ticket/Blog; POST foreign business; own PATCH businessId ignored; membership lists and dashboard/business reads; Booking list/get/status/legacy alias and body mismatch; exact rows unchanged on denial; stop unsafe branch if mutation unexpectedly succeeds"
+      ]
+    },
+    {
+      "id": "R04",
+      "approvedRow": "| R04 CORE A1 | Đăng ký fixture C với role/roles/businessId/userId giả mạo; submit application thêm status/reviewedBy/userId | Register201 nhưng chỉ CUSTOMER và legacy user; application201 PENDING của token, không duyệt tự động/không grant SA/PARTNER. DB grant/membership/audit không xuất hiện ngoài flow approval. Valid payload dùng whitelist hiện có, không đòi unknown-field luôn400. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "R05",
+      "approvedRow": "| R05 CORE U2+A1 | C mới được A03 approve; giữ token trước grant, reload `/auth/me`, rồi logout/login lại | DB và `/me` có PARTNER sau approve; token cũ partner API403, login mới cấp token có PARTNER rồi truy cập own Business200. UI có thể đọc role mới từ `/me` trước token đổi: ghi limitation, không coi cần refresh-token là acceptance. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "R06",
+      "approvedRow": "| R06 CORE U2+A1 | P_A (hoặc SA) → logout → C_B cùng tab, direct URL trang trước; trì hoãn response thật của phiên cũ rồi chuyển account | Không render dữ liệu private account trước trong phiên mới; API vẫn đúng principal; request cũ không cấp role mới. Favorite/Review/Consent state kiểm chi tiết F05/C07; ghi UI/network/DB riêng, không suy từ AuthContext đã PASS. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "A01",
+      "approvedRow": "| A01 CORE U2+A1 | SA mở dashboard trước/sau fixture application/resource/Booking; reload, điều hướng hàng chờ | `source=DATABASE`, counts/status khớp SQL tại cùng checkpoint (role counts có overlap). So delta fixture hoặc toàn số liệu cùng snapshot, không giả DB trống. Tiền theo công thức thực mục4, nhãn chưa chốt ghi GAP-05. E + aggregate SQL đã che dữ liệu nền. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "A02",
+      "approvedRow": "| A02 CORE U2+A1 | C submit hồ sơ hợp lệ; thiếu trường/email/type/tọa độ ngoài range; reload trạng thái; POST lại khi pending | UI validation/lỗi đúng, không success giả; valid201 PENDING, own GET200; invalid400 errors; sequential duplicate409 ACTIVE_APPLICATION_EXISTS, một pending row. C_B GET /me không thấy hồ sơ C_A. Giữ dữ liệu form khi submit lỗi; cancel confirm/prompt Admin không mutation. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "A03",
+      "approvedRow": "| A03 CORE U2+A1 | SA duyệt application C→APPROVED, reload; gửi approve lặp và hai PATCH đồng thời trên application riêng |200 và **một** Business ACTIVE, membership MANAGE_BUSINESS/MANAGE_BOOKINGS, PARTNER grant, decision actor/time và audit đúng. Sau terminal PATCH409 APPLICATION_ALREADY_DECIDED; race đúng một quyết định thành công, không tạo Business trùng. E + các ID liên kết/transaction outcomes; không đòi fault-injection rollback mới nếu chưa có harness. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "A04",
+      "approvedRow": "| A04 CORE U2+A1 | Hai application riêng: reject và needs-info, thiếu reason/decision sai; reload Customer; Admin quyết định tiếp needs-info | Non-approval thiếu reason400 REASON_REQUIRED, status lạ400 INVALID_DECISION; reject có lý do200 không tạo Business/grant; needs-info200 hiện phản hồi, vẫn không tạo Business. Needs-info→APPROVED được, terminal reject quyết định lại409. Không kiểm “Customer bổ sung hồ sơ” bằng control không tồn tại (GAP-02). |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "A05",
+      "approvedRow": "| A05 CORE U2+A1 | Tài nguyên fixture Place/Tour/Blog DRAFT→submit→PENDING→reject→edit/resubmit→approve→suspend; list/detail public trước/sau, thử `?status=DRAFT` | Moderator200, reject cần reason400 khi thiếu; statusinvalid400; audit actor/entity/previous/new đúng. Public list không lộ DRAFT/PENDING/REJECTED/SUSPENDED kể cả status query, detail404; APPROVED list/detail200, reload giữ trạng thái. Partner edit APPROVED/PENDING409; suspend giữ row/FK/Booking/Review. API DRAFT recovery kiểm riêng trong A1, không tạo nút UI giả. |",
+      "selected": true,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": [
+        "UI both: Place/Tour/Blog DRAFT→submit PENDING→reject reason→edit/resubmit→approve→suspend; public list/detail/status query at every status; audit and reload; API DRAFT recovery, invalid statuses/reason and locked updates; preserve Booking/Review fixture rows after suspend"
+      ]
+    },
+    {
+      "id": "A06",
+      "approvedRow": "| A06 CORE A1 | SA GET businesses/bookings phân trang và pending applications alias; C/P gọi cùng endpoints | SA200, fixture IDs/total/page/limit khớp DB, pending alias chỉ pending; C/P403, anonymous401. Không báo `/admin/businesses`/bookings placeholder đã có E2E list UI; phần browser nghiệp vụ này NOT RUN/GAP-01. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "B01",
+      "approvedRow": "| B01 CORE U2+A1 | P_A có hai Business fixture; P_EMPTY không membership; chọn Business/reload | Dashboard/list chỉ Business membership; metrics và Booking liên quan đúng Business, nguồn DATABASE. P_EMPTY businesses=[], selectedBusiness=null, metrics=null, UI empty trung thực; foreign dashboard403. Không giả định selector preference được persist nếu source không lưu. |",
+      "selected": true,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": [
+        "UI both and real API/SQL: two businesses A/A2 vs foreign B; selector/reload membership-scoped dashboard metrics and lists, no assumption selected preference survives reload; PARTNER with zero memberships has true empty state"
+      ]
+    },
+    {
+      "id": "B02",
+      "approvedRow": "| B02 CORE U2 | Tạo Place hotel/restaurant/attraction fixture qua form; edit DRAFT, reload; list/search/status/submit/archive; mở lại và save Place có priceFrom=0 | POST201 own Business DRAFT, PATCH200 cùng ID; giá/tọa độ/nội dung đúng input và DB. Submit PENDING; archive SUSPENDED, row còn; form/save/list sau reload khớp server. Giá0 giữ0, form không diễn giải0 thành dữ liệu chưa có; không gọi priceFrom là quote xác nhận Booking. Deep pagination theo O01. |",
+      "selected": true,
+      "channel": "U2",
+      "status": "NOT RUN",
+      "expansion": [
+        "UI both: create hotel/restaurant/attraction, edit/save same IDs, search/filter/submit/archive/cancel; priceFrom=0 must display0 after reload and persist after no-op save; preserve data"
+      ]
+    },
+    {
+      "id": "B03",
+      "approvedRow": "| B03 CORE U2 | Tour fixture create/edit/save/reload/submit/archive qua Partner; approval dùng A05; variant durationDays=1/durationNights=0 mở lại rồi save | DRAFT201; cùng Tour ID khi sửa; durationDays/Nights/price/capacity giữ đúng; nights0 hợp lệ vẫn hiện0 và lưu được, không bị required chặn do rỗng sau reload. Submit200→PENDING; archive200→SUSPENDED. Không biến Tour thành Place; Booking snapshot cũ không reprice khi catalog đổi. Không thêm công thức hoặc weight mới. |",
+      "selected": true,
+      "channel": "U2",
+      "status": "NOT RUN",
+      "expansion": [
+        "UI both: Tour create/edit/save/reload/submit/archive; 1 day/0 nights display0 and no-op save succeeds; existing Booking snapshot remains when fixture catalog price changes; no B07/B08 acceptance"
+      ]
+    },
+    {
+      "id": "B04",
+      "approvedRow": "| B04 CORE U2+A1 | Ticket fixture create ACTIVE, edit/reload, archive; mở form rồi save không sửa thời gian; thử gọi submit Ticket chỉ như route diagnostic | Server ACTIVE201, price/capacity/seats đúng, edit200; DELETE200→INACTIVE và row giữ, public biến mất404. Save không sửa không được làm trôi instant của departureTime/arrivalTime đã lưu; chụp API ISO, giá trị input và DB trước/sau, ghi browser/server timezone. Policy giờ nhập mới cần GAP-09; không tự đổi UTC/local expected. Không đòi PENDING/APPROVED hay endpoint submit cho Ticket; UI nhãn “nháp” nếu trái server phải ghi finding. Không tạo payment. |",
+      "selected": true,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": [
+        "UI both + API: Ticket ACTIVE create/edit/reload/archive INACTIVE and public404; no-op save preserves departureTime/arrivalTime instants in Asia/Ho_Chi_Minh browser/server; capture raw input/ISO/DB and delta; missing submit route diagnostic only"
+      ]
+    },
+    {
+      "id": "B05",
+      "approvedRow": "| B05 CORE U2 | Business Blog create/edit draft/save/reload/submit/archive; Admin/public cùng A05 | POST201 DRAFT, author/business server đúng; PATCH cùng ID200; submit PENDING, archive SUSPENDED; không mất nội dung sau reload. Không mở Customer Blog like/trip conversion thành scope mới. |",
+      "selected": true,
+      "channel": "U2",
+      "status": "NOT RUN",
+      "expansion": [
+        "UI both: Blog create/edit content/reload/submit/archive; server author/business preserved; public moderation covered by A05"
+      ]
+    },
+    {
+      "id": "B06",
+      "approvedRow": "| B06 CORE A1 | Member chỉ MANAGE_BUSINESS, chỉ MANAGE_BOOKINGS, permissions=[]; valid/invalid DTO resource, edit locked status; alias Bookings so endpoint mới | Create/archive và update Place/Tour/Ticket thiếu MANAGE_BUSINESS403; Booking list/get/status thiếu MANAGE_BOOKINGS403 theo contract Phase3, **bao gồm alias cũ** (nghi ngờ source không đạt). Giá/capacity âm, tọa độ ngoài range, ngày Ticket sai400 VALIDATION_ERROR; không mutation. Submit/Blog update đang membership-only: characterization theo source, chưa kết luận phải403 trước quyết định GAP-03. Không nới expected Booking để hợp thức alias. |",
+      "selected": true,
+      "channel": "A1",
+      "status": "NOT RUN",
+      "expansion": [
+        "API once: only MANAGE_BUSINESS, only MANAGE_BOOKINGS, empty permissions; create/archive and Place/Tour/Ticket update require MANAGE_BUSINESS; new Booking list/get/status plus legacy alias require MANAGE_BOOKINGS; expect403 for weak alias, retain FAIL if200; negative DTO400 no mutation; submit/Blog update characterization membership-only, no invented policy"
+      ]
+    },
+    {
+      "id": "B07",
+      "approvedRow": "| B07 CORE U2+A1 | Customer fixture tạo Booking hotel/restaurant; P_A mở đúng Business/Booking, confirm→complete; Customer reload history; SA xử lý một Booking riêng qua status API; mở trực tiếp/reload Booking của Business thứ hai mà P_A cũng có quyền |200 đúng PENDING→CONFIRMED→COMPLETED; server snapshot unit/total không đổi, history/audit từng transition đúng actor/old/new. Payment vẫn unpaid, không có external call. Repeat transition hoặc terminal→confirmed409 INVALID_BOOKING_TRANSITION, không thêm history/event/trừ kho; dùng làm Booking đủ điều kiện V01. Direct URL phải chọn/cho chọn đúng Business trước mutation, không success giả hay đổi Booking khác; API vẫn từ chối mismatched businessId403. Nhánh UI này có source risk GAP-09, chưa tái hiện. Cần duyệt fixture completed tại GAP-07. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "B08",
+      "approvedRow": "| B08 CORE U2+A1 | Booking Tour/Ticket fixture riêng: Partner UI reject PENDING, API cancel CONFIRMED; retry, Customer reload | Reject/cancel200 đúng state; inventory hoàn **một lần**, repeat409 không hoàn lại/không tạo history/event thêm. Booking của foreign Business403, target không đổi. Không mở refund/payment, không dùng các Booking nền. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "V01",
+      "approvedRow": "| V01 CORE U2+A1 | A có completed hotel/restaurant Booking B07; tab Review chọn Booking, submit, reload; B/public xem | POST201 VERIFIED, source CUSTOMER_SUBMISSION/environment=test, bookingId/owner/verifiedAt server; UI badge xác thực, persisted sau reload. Public serializer không lộ bookingId/userId/moderationReason; DB linkage chính xác. Aggregate Place từ published fixtures; không lấy giá/tiêu chí UI để giả provenance. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "V02",
+      "approvedRow": "| V02 CORE U2+A1 | User opt-out không Booking review Place fixture, thiếu criteria; reload; thêm case chỉ một criterion qua API |201 UNVERIFIED PUBLISHED, vẫn hoạt động khi opt-out, aiUsageAllowed=false; criteria thiếu null/flagfalse, chỉ criterion gửi có số/flagtrue; không tự cho5. UI nói chưa xác thực, không fake badge; server author từ user. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "V03",
+      "approvedRow": "| V03 CORE A1 | Rating0/6/1.5, comment ngắn/quá dài, criteria sai/unknown; spoof userId,verificationStatus,aiUsageAllowed,source; invalid Booking UUID |400: rating hoặc giá trị criterion ngoài1–5 → INVALID_REVIEW_RATING; comment → INVALID_REVIEW_COMMENT; criterion key lạ → INVALID_REVIEW_CRITERIA; criteria không phải object → INVALID_REVIEW; spoof → SPOOFED_REVIEW_FIELD; UUID Booking → INVALID_REVIEW_BOOKING. Row/aggregate không đổi; không đặt rule moderation PENDING mới vì create hiện auto-PUBLISHED. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "V04",
+      "approvedRow": "| V04 CORE A1 | Booking foreign/missing valid UUID, PENDING/CONFIRMED, completed sai Place hoặc Tour; B PATCH/DELETE review A với payload update hợp lệ | Foreign/missing404 REVIEW_BOOKING_NOT_FOUND; chưa complete409 REVIEW_BOOKING_NOT_COMPLETED; sai target/type409 REVIEW_BOOKING_TARGET_MISMATCH. Owner mutation foreign404 REVIEW_NOT_FOUND; review/Booking/aggregate giữ nguyên. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "V05",
+      "approvedRow": "| V05 CORE A1 | Hai POST cùng completed Booking fixture, sequential retry và parallel race | Chỉ một201/one Review; các lần còn lại409 REVIEW_ALREADY_EXISTS, count/aggregate tăng một lần. Không áp idempotency response201 Booking sang Review; UI disabled pending cũng được quan sát trong V01. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "V06",
+      "approvedRow": "| V06 CORE A1 | Owner PATCH rating/comment đầy đủ + criteria, rồi reload public UI; thử đổi bookingId/provenance |200 cùng Review ID, provenance/moderation không đổi, aggregate đúng; sửa bookingId400 SPOOFED_REVIEW_FIELD. Hidden review edit vẫn hidden, không tự publish. UI editor Review **NOT RUN vì không có**, chỉ API update + UI quan sát. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "V07",
+      "approvedRow": "| V07 CORE A1 + U2 quan sát | SA PATCH HIDDEN/REJECTED/PUBLISHED fixture Review; Customer/public reload; C/P thử moderation và invalidreason/status | SA200 audit/actor/time/reason đúng; hidden/rejected vắng public và không tính aggregate, own GET vẫn có; republish hiện lại, rating/count khớp. C/P403; invalid moderation400 INVALID_REVIEW_MODERATION. Không có Admin Review UI; chỉ API quyết định, Customer UI quan sát ở hai viewport. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "V08",
+      "approvedRow": "| V08 CORE U2+A1 | Owner cancel rồi confirm delete Review; reload; retry DELETE | Hủy dialog không DELETE/DB change; confirm200 deleted=true, row xóa/audit REVIEW_DELETED, aggregate cập nhật; repeat404 REVIEW_NOT_FOUND. Booking giữ nguyên; favorite không mất. Khả năng review lại Booking sau hard-delete là hiện trạng, không đặt quota mới. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "F01",
+      "approvedRow": "| F01 CORE U2 | Fixture Place APPROVED trong Explore/detail/hotel/restaurant; nhấn heart, mở `/favorites` | POST201 changed=true, row unique đúng token user/Place; UI heart/list khớp API/DB, nguồn server; các link đi Place ID đúng. Không dùng Tour riêng/Ticket/Blog ID làm happy path. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "F02",
+      "approvedRow": "| F02 CORE U2 | Reload, logout/login cùng account, mở trực tiếp `/favorites`; legacy `travelgo_favorites` chứa mục giả | GET server khôi phục đúng rows, không nhập danh sách giả từ localStorage; loading/empty/error theo trạng thái thật. Không coi dữ liệu client là Favorite đã lưu. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "F03",
+      "approvedRow": "| F03 CORE U2 | Remove từ list/detail, cancel nếu surface có confirm (không ép UI phải có), reload | DELETE200 changed=true, row mất/heart và list đồng bộ; empty state khi xóa mục cuối; place/catalog giữ nguyên. Không báo xóa khi API chưa thành công. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "F04",
+      "approvedRow": "| F04 CORE A1 | Repeated/concurrent POST rồi DELETE cùng user+Place; consent both để đếm outcome | Add đầu201 hoặc một winner201, duplicate200 changed=false ALREADY_FAVORITE; one row/one FAVORITE outcome. Remove winner200 changed=true, còn lại200 changed=false NOT_FAVORITE; zero row/one UNFAVORITE outcome. DB unique/row lock không phát event trùng. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "F05",
+      "approvedRow": "| F05 CORE U2+A1 | A favorite một Place, B favorite một Place khác; đổi account kể cả GET/mutation A trả trễ; B gửi DELETE Place A, GET thêm userId=A | GET luôn owner B; B DELETE Place A chỉ ảnh hưởng favorite của B (nếu không có changed=false), A giữ nguyên. UI không hiển thị Favorite A sau chuyển B; private response cũ không ghi đè state B. Anonymous mutation401; heart anonymous dẫn login. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "F06",
+      "approvedRow": "| F06 CORE A1 | Place UUID sai/missing/SUSPENDED; body thêm userId/role/environment hoặc invalidversion/session | Invalid ID400 INVALID_PLACE_ID; missing/unpublished add404 PLACE_NOT_VISIBLE; whitelist400 SPOOFED_FAVORITE_FIELD và validation codes hiện có. Không mutation/event. Với favorite đã có rồi Place bị suspend: ghi đúng hiện trạng list vẫn giữ liên kết; policy hiển thị archived cần GAP-04, không tự yêu cầu xóa dữ liệu. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "F07",
+      "approvedRow": "| F07 CORE U2+A1 | Opt-out favorite/remove; consent on tạo request+visible thật rồi favorite attribution, request/session/user giả | Opt-out functional201/200 nhưng recorded=false ANALYTICS_OPT_OUT, không outcome mới. Consent on chỉ mutation thay đổi state có SERVER outcome đúng request/session/user/test environment; foreign/mismatched request400 INVALID_RECOMMENDATION_ATTRIBUTION, không mutation. Không gửi FAVORITE trực tiếp bằng client events để thay server outcome. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "C01",
+      "approvedRow": "| C01 CORE U2+A1 | Anonymous browse Home/Explore rồi user mới chưa quyết định; mở Customer page, decline rồi reload | Anonymous dùng public fallback/catalog, không bắt login để browse/không có consent banner của user. User GET hasDecision=false, false/false, policy1.0 retention90; banner hiện. Sau decline PUT200 hasDecision=true false/false, row đúng owner và settings mở lại được. Fresh valid events/ack không ghi do opt-out; **không yêu cầu recommendation_requests/candidates0**, xem mục4. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "C02",
+      "approvedRow": "| C02 CORE U2+A1 | Bật both qua UI, ở fixture card đủ visibility rule; click/view rồi reload | Consent200 true/true; event/ack thật có environment=test/owner/source/personalizationAllowed=true/expiry90ngày theo server. Request+candidate có flags true; không tính returned candidate như visible. Screenshot + network/DB timestamps, không train/export dữ liệu. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "C03",
+      "approvedRow": "| C03 CORE U2+A1 | Chọn analytics-only; Explore request có explicit preferences/budget; Favorite/Review mới | Consent200 true/false; event mới personalizationAllowed=false. Request hiện tại vẫn dùng criteria explicit nhưng persisted preferences=[] và không lưu budget chi tiết; UI limitation trung thực. Review mới aiUsageAllowed=false, functional Favorite/Review/Booking vẫn dùng được. Không đổi recommendation score weights. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "C04",
+      "approvedRow": "| C04 CORE U2+A1 | Từ both → nút decline/delete; đã có event/request/impression/Review/Favorite/Booking/Trip fixture; reload | PUT200 false/false + deleteExistingEvents=true; đúng **IDs cũ của owner** event/request/children mất; Review còn nhưng aiUsageAllowed=false/policy=null; functional rows và account B không đổi. Lưu snapshot ngay sau transaction; request mới sau reload phải có flagsfalse, không kết luận delete fail vì request mới. Booking attribution SET NULL nếu liên kết request bị xóa là side effect FK hiện có, không coi functional row phải byte-identical ở field đó. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "C05",
+      "approvedRow": "| C05 CORE A1 | PUT booleans sai, true personalization/false analytics, deleteExistingEvents sai; GET/PUT anonymous; thêm userId=B vào body/query | Invalid400 INVALID_CONSENT/anonymous401; không sửa bất kỳ consent/event/review. Field userId không chọn owner: valid flags vẫn chỉ cập nhật token A, B giữ nguyên (controller/service chỉ dùng flags, không bắt buộc unknown-field400). |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "C06",
+      "approvedRow": "| C06 CORE A1 | Consent on: exact replay clientEventId và ackId; changed payload reuse ID; spoof serverfields/FAVORITE/Booking outcome/GPS context; visibility/dwell không đủ | Exact replay202 recorded=false duplicate=true và một row; ID reused payload khác409 CLIENT_EVENT_ID_CONFLICT/CLIENT_ACK_ID_CONFLICT. Spoof400 SPOOFED_SERVER_FIELD, FAVORITE400 USE_FAVORITES_API; unsupported outcome400 INVALID_EVENT_TYPE; raw GPS/unknown context400 INVALID_CONTEXT; VIEW với context.dwellMs<2000 có code VIEW_DWELL_TOO_SHORT. ACK rule `viewport-50pct-2000ms-v1`: ratio0.5–1, dwell2000–3600000ms integer; sai400 INVALID_VISIBILITY, version sai400 INVALID_VISIBILITY_RULE, thời gian ngoài cửa sổ -15phút/+60giây400 VISIBILITY_REPLAY_REJECTED. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "C07",
+      "approvedRow": "| C07 CORE U2+A1 | A opt-in, B opt-out; chuyển cùng tab khi GET/PUT consent A còn chờ; dùng request A để ack/event với B | UI/state/network không dùng consent A cho B sau switch; GET/PUT chỉ token user, fresh events B không ghi. Attribution foreign request400 INVALID_RECOMMENDATION_ATTRIBUTION khi đi đến validation (B opt-in fixture riêng cho negative attribution); không đòi400 khi service opt-out short-circuit. Raw IDs và rows A/B đối chiếu riêng. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    },
+    {
+      "id": "C08",
+      "approvedRow": "| C08 CORE U2 | Abort một request PUT consent **trước transport**, hoặc lỗi API thật nếu có fixture hợp lệ; retry rồi reload. Tương tự Favorite mutation fail và application/resource save fail | Không thông báo thành công giả, không biến DB state cũ thành đã lưu; control hết pending, không mất input nghiệp vụ, retry gửi thật và chỉ đổi state sau success. Phải lưu UI lỗi/console và DB trước/sau; thiếu error feedback ghi FAIL/GAP theo phạm vi assertion đã duyệt, không mock200 hoặc sửa expected để né. Không chủ động ngắt DB chung. |",
+      "selected": false,
+      "channel": "U2+A1",
+      "status": "NOT RUN",
+      "expansion": []
+    }
+  ],
+  "optional": [
+    {
+      "id": "O01",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "O02",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "O03",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "O04",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "O05",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "O06",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "O07",
+      "status": "NOT RUN"
+    },
+    {
+      "id": "O08",
+      "status": "NOT RUN"
+    }
+  ],
+  "timezone": "Asia/Ho_Chi_Minh",
+  "viewports": {
+    "desktop": {
+      "width": 1440,
+      "height": 900
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "isMobile": true,
+      "hasTouch": true
+    }
+  },
+  "policies": {
+    "gap03": "Alias expected403 is frozen; Blog update/submit characterize existing membership-only policy",
+    "gap04": "Resource public status contract; no new Business ACTIVE public-content policy",
+    "gap09": "0 price/0 nights/no-op timestamp invariant; no B07 direct Booking URL test",
+    "safety": "All target IDs must be ledger fixtures. Stop branch on unexpected unauthorized mutation, no non-fixture mutation. Known permission leak uses only fixture Bookings; no further alias escalation.",
+    "fixture": "Register real temporary actors; guarded PARTNER/SA/Business/membership setup; resource/UI/API creations; PENDING unpaid Booking prerequisite, guarded UNVERIFIED test Review for retention only; no lifecycle/Review acceptance"
+  },
+  "prohibitions": [
+    "No application changes",
+    "No old suite/seed/demo accounts",
+    "No reset/seed/migration/truncate/volume delete",
+    "No Map investigation/fix",
+    "No other CORE/OPTIONAL",
+    "No push/deploy"
+  ]
+}

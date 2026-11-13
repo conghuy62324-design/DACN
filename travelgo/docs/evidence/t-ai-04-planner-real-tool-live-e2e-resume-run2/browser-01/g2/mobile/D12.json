@@ -1,0 +1,115 @@
+{
+  "tier": "MOCK_ONLY",
+  "status": "passed",
+  "title": "D12 reset cancels in-flight turn follows response revision and blocks late reply",
+  "requests": [
+    {
+      "message": "Lập lịch trình, tôi đã chọn xe máy",
+      "conversation": {
+        "action": "start",
+        "requestId": "4c0dc685-f5fa-4e28-99f2-647185b5ba0c",
+        "consentVersion": "LOCAL_DEMO_SLOTS_V1"
+      }
+    },
+    {
+      "message": "Pending",
+      "conversation": {
+        "action": "continue",
+        "requestId": "3e37ea8d-edc3-49e2-bd8f-d33c88b543ff",
+        "consentVersion": "LOCAL_DEMO_SLOTS_V1",
+        "id": "11111111-1111-4111-8111-111111111111",
+        "revision": 1
+      }
+    },
+    {
+      "message": "After reset",
+      "conversation": {
+        "action": "continue",
+        "requestId": "e0682764-c703-4a9a-98ca-462d05273b12",
+        "consentVersion": "LOCAL_DEMO_SLOTS_V1",
+        "id": "11111111-1111-4111-8111-111111111111",
+        "revision": 3
+      }
+    }
+  ],
+  "calls": [
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "owner": "A"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "owner": "A"
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "owner": "A"
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "owner": "A"
+    },
+    {
+      "method": "GET",
+      "path": "/api/agent/verified-history/privacy",
+      "owner": "A"
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "body": {
+        "message": "Lập lịch trình, tôi đã chọn xe máy",
+        "conversation": {
+          "action": "start",
+          "requestId": "4c0dc685-f5fa-4e28-99f2-647185b5ba0c",
+          "consentVersion": "LOCAL_DEMO_SLOTS_V1"
+        }
+      },
+      "owner": "A"
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "body": {
+        "message": "Pending",
+        "conversation": {
+          "action": "continue",
+          "requestId": "3e37ea8d-edc3-49e2-bd8f-d33c88b543ff",
+          "consentVersion": "LOCAL_DEMO_SLOTS_V1",
+          "id": "11111111-1111-4111-8111-111111111111",
+          "revision": 1
+        }
+      },
+      "owner": "A"
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/verified-history/11111111-1111-4111-8111-111111111111/reset",
+      "body": {},
+      "owner": "A"
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "body": {
+        "message": "After reset",
+        "conversation": {
+          "action": "continue",
+          "requestId": "e0682764-c703-4a9a-98ca-462d05273b12",
+          "consentVersion": "LOCAL_DEMO_SLOTS_V1",
+          "id": "11111111-1111-4111-8111-111111111111",
+          "revision": 3
+        }
+      },
+      "owner": "A"
+    }
+  ],
+  "errors": [],
+  "liveInference": 0,
+  "database": false,
+  "toolFidelity": "NOT EVALUATED"
+}

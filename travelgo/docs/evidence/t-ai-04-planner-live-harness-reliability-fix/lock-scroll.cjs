@@ -1,0 +1,2 @@
+const c=require('./common.cjs'),previous=c.json(c.prefix+'offline-input-lock-05.json');
+c.write('offline-input-lock-06.json',{at:new Date().toISOString(),tier:'OFFLINE_ONLY_NOT_LIVE_APPROVAL',reason:'Use ordinary scroll of actual nested chat container, then retain exact viewport assertions; no CSS/DOM/expected replacement.',hashes:Object.fromEntries(Object.keys(previous.hashes).map(f=>[f,c.sha(c.read(c.prefix+f))]))});

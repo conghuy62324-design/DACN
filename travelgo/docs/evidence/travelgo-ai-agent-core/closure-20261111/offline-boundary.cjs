@@ -1,0 +1,6 @@
+const fs=require('node:fs'),path=require('node:path'),net=require('node:net');
+Object.assign(process.env,{LLM_LIVE_ENABLED:'false',LLM_USAGE_APPROVED:'false',AGENT_CORE_LLM_ENABLED:'false',GOOGLE_MAPS_USAGE_APPROVED:'false',PUBLIC_STAGING_WRITES_APPROVED:'false',ALLOW_TEST_DB_WRITES:'false'});
+const audit={pid:process.pid,postgres:0,externalNetwork:0},pg=require(path.resolve(__dirname,'../../../../backend/node_modules/pg'));
+const denied=()=>{audit.postgres++;throw Error('CLOSURE_OFFLINE_DATABASE_FORBIDDEN');};pg.Client.prototype.connect=denied;pg.Pool.prototype.connect=denied;
+const connect=net.Socket.prototype.connect;net.Socket.prototype.connect=function(...args){const first=Array.isArray(args[0])?args[0][0]:args[0],o=typeof first==='object'?first:{port:first,host:args[1]},host=o?.host||'localhost',port=Number(o?.port);if(!['127.0.0.1','localhost','::1'].includes(host)||[5432,15432,11434].includes(port)){audit.externalNetwork++;throw Error('CLOSURE_OFFLINE_NETWORK_FORBIDDEN');}return connect.apply(this,args);};
+process.on('exit',()=>{const d=path.join(__dirname,'offline-audit');fs.mkdirSync(d,{recursive:true});fs.writeFileSync(path.join(d,process.pid+'-'+Date.now()+'.json'),JSON.stringify(audit),{flag:'wx'});});

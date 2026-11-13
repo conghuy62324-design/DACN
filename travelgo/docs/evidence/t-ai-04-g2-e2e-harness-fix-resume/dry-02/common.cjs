@@ -1,0 +1,1 @@
+const c=require('../common.cjs');const evidence=__dirname,prefix=c.prefix+'dry-02/';module.exports={...c,evidence,prefix,write:(n,v)=>c.fs.writeFileSync(c.path.join(evidence,n),JSON.stringify(v,null,2)+'\n',{flag:'wx'})};

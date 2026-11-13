@@ -1,0 +1,132 @@
+{
+  "id": "M03",
+  "request": {
+    "history": [],
+    "message": "Lập lịch trình; Nơi xuất phát: Cần Thơ; Điểm đến: Bến Tre; Ngày bắt đầu: 2037-06-10; Ngày kết thúc: 2037-06-12; Phương tiện: xe máy"
+  },
+  "expected": {
+    "kind": "clarify",
+    "fields": [
+      "adults",
+      "totalBudget"
+    ]
+  },
+  "nlu": "FAIL",
+  "validation": "PASS",
+  "ux": "PASS",
+  "safety": "PASS",
+  "providerException": {
+    "capturedAt": "2026-11-10T05:34:43.648Z",
+    "beforeServiceRecovery": true,
+    "type": "MissingReadSlotsRejection",
+    "name": "HttpError",
+    "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+    "statusCode": 502,
+    "message": "Đầu ra LLM thiếu tham số bắt buộc; chưa chạy công cụ.",
+    "typedMissingSlots": true,
+    "toolName": "plan_trip",
+    "fields": [
+      "adults",
+      "totalBudget"
+    ]
+  },
+  "missingRequiredOnly": true,
+  "requiredMissing": [
+    "adults",
+    "totalBudget"
+  ],
+  "diagnosticSchemaErrors": [
+    {
+      "keyword": "required",
+      "instancePath": "",
+      "params": {
+        "missingProperty": "adults"
+      }
+    },
+    {
+      "keyword": "required",
+      "instancePath": "",
+      "params": {
+        "missingProperty": "totalBudget"
+      }
+    }
+  ],
+  "recoveryEligible": true,
+  "recoveryApplied": true,
+  "recoveryFields": [
+    "adults",
+    "totalBudget"
+  ],
+  "recoveryUx": "PASS",
+  "apiHttpStatus": "NOT RUN_DIRECT_ORCHESTRATOR",
+  "httpStatus": 200,
+  "rawModelDecision": "{\"kind\":\"tool\",\"name\":\"plan_trip\",\"arguments\":{\"departureCity\":\"Cần Thơ\",\"destinationCity\":\"Bến Tre\",\"startDate\":\"2037-06-10\",\"endDate\":\"2037-06-12\",\"transportation\":\"motorbike\"}}",
+  "parsedModelDecision": {
+    "kind": "tool",
+    "name": "plan_trip",
+    "arguments": {
+      "departureCity": "Cần Thơ",
+      "destinationCity": "Bến Tre",
+      "startDate": "2037-06-10",
+      "endDate": "2037-06-12",
+      "transportation": "motorbike"
+    }
+  },
+  "providerDecision": null,
+  "jsonValid": true,
+  "originalSchemaValid": false,
+  "runtimeValid": false,
+  "runtimeError": null,
+  "semanticValid": false,
+  "transportValid": true,
+  "gate": {
+    "status": "NOT_APPLICABLE"
+  },
+  "provenRequired": [],
+  "fakeToolInvocationCount": 0,
+  "fakeToolDecisions": [],
+  "serviceStatus": "needs_input",
+  "serviceMissingFields": [
+    "adults",
+    "totalBudget"
+  ],
+  "error": null,
+  "elapsedMs": 12053,
+  "timeoutExceeded": false,
+  "tokens": {
+    "prompt": 2163,
+    "output": 60
+  },
+  "durationsNs": {
+    "total": 12017916500,
+    "load": 9819950600,
+    "promptEval": 864588000,
+    "eval": 1291891000
+  },
+  "resourcesBefore": {
+    "freeRAMMiB": 3563,
+    "totalRAMMiB": 16202,
+    "gpu": {
+      "name": "NVIDIA GeForce RTX 4060",
+      "driver": "560.94",
+      "totalMiB": 8188,
+      "freeMiB": 5162,
+      "usedMiB": 2796
+    }
+  },
+  "resourcesAfter": {
+    "freeRAMMiB": 2741,
+    "totalRAMMiB": 16202,
+    "gpu": {
+      "name": "NVIDIA GeForce RTX 4060",
+      "driver": "560.94",
+      "totalMiB": 8188,
+      "freeMiB": 339,
+      "usedMiB": 7619
+    }
+  },
+  "requestBodySha256": "e52cfed7bf7de53d25ca56e4aaf93a7ce9929ee63f8efe938f7fc7cfecc714b8",
+  "model": "qwen3:4b-instruct-2507-q4_K_M",
+  "modelDigest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+  "tier": "LIVE_LLM_LOCAL_FAKE_TOOL"
+}

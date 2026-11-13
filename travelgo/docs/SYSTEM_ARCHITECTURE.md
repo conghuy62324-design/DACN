@@ -60,11 +60,14 @@ graph TD
 - **Trách nhiệm:**
   - Tiếp nhận HTTP Request.
   - Kiểm tra và xác thực dữ liệu đầu vào (Input Validation & Sanitization).
-  - Trích xuất token xác thực và kiểm tra quyền người dùng (`User` vs `Admin`).
+  - Xác minh Bearer access token HMAC hai phần, có `iat`/`exp`; kiểm RBAC `CUSTOMER`/`PARTNER`/`SUPER_ADMIN` và quyền business tương ứng. Không dùng JWT chuẩn ba phần.
   - Gọi các hàm tương ứng trong Service Layer.
   - Định dạng chuẩn mã phản hồi (`HTTP 200, 201, 400, 401, 404, 500`) và cấu trúc JSON đồng nhất: `{ success: boolean, data?: any, message?: string }`.
 
+Auth đối chiếu 30/10/2026: frontend lưu token/user cache trong localStorage, reload xác minh `/auth/me`; logout/401 xóa phiên client. Chưa có refresh-token endpoint hoặc server-side revocation. Xem [contract auth hiện hành](HUGO_AUTH_CONTRACT.md); logout local không làm token cũ mất hiệu lực ở server.
+
 ### 2.3. Service Layer (Business Logic & Core Algorithms)
+
 - **Trách nhiệm:** Trái tim xử lý nghiệp vụ của toàn bộ hệ thống HuGo Travel.
   1. `RatingService`: Xử lý thuật toán **Bayesian Average Rating** giúp triệt tiêu đánh giá ảo và thiên vị mẫu nhỏ.
   2. `GeoService`: Hệ thống thông tin địa lý (GIS) tính toán khoảng cách đường chim bay **Haversine**, ước tính thời gian di chuyển và thuật toán **Nearest Neighbor Spatial Clustering** để nhóm các địa điểm gần nhau vào cùng một ngày du lịch.

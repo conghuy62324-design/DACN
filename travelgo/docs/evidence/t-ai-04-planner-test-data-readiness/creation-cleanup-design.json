@@ -1,0 +1,116 @@
+{
+  "status": "PROPOSED_NOT_EXECUTED",
+  "executionAuthorized": false,
+  "profileSelectionRequired": true,
+  "exactIds": {
+    "minimum": [
+      "f7433d4a-5f49-4991-8add-b55435b02eb0"
+    ],
+    "optionalAdditional": [
+      "5a1e8835-770c-41a2-8699-74deba239a86"
+    ]
+  },
+  "outgoingDependencies": "No parent creation:business_id NULL; independent Place row(s) only",
+  "incomingDependencies": [
+    {
+      "conname": "blog_posts_place_id_fkey",
+      "table_name": "blog_posts",
+      "referenced_table": "places",
+      "contype": "f",
+      "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE SET NULL"
+    },
+    {
+      "conname": "bookings_place_id_fkey",
+      "table_name": "bookings",
+      "referenced_table": "places",
+      "contype": "f",
+      "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE SET NULL"
+    },
+    {
+      "conname": "tickets_place_id_fkey",
+      "table_name": "tickets",
+      "referenced_table": "places",
+      "contype": "f",
+      "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE SET NULL"
+    },
+    {
+      "conname": "tour_places_place_id_fkey",
+      "table_name": "tour_places",
+      "referenced_table": "places",
+      "contype": "f",
+      "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE RESTRICT"
+    },
+    {
+      "conname": "user_favorites_place_id_fkey",
+      "table_name": "user_favorites",
+      "referenced_table": "places",
+      "contype": "f",
+      "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE CASCADE"
+    }
+  ],
+  "creationLedgerSchema": {
+    "status": "PROPOSED_NOT_EXECUTED -> APPROVED_PENDING -> INTENT -> INSERTED -> VERIFIED -> CLEANUP_INTENT -> REMOVED -> RESTORED, or BLOCKED",
+    "fields": [
+      "ownerApprovalReference",
+      "chosenProfile",
+      "targetHost/port/db/sentinel",
+      "runId",
+      "fixtureProposalSha256",
+      "baselineMigration/schema hashes",
+      "baseline25 table fingerprints",
+      "baselineTrip27 fingerprint",
+      "exact table/id/slug/all insert values",
+      "per-row intent timestamp",
+      "per-row committed/returned DB row hash including timestamps",
+      "affectedRowCount",
+      "public-loader verification",
+      "all API/native attempts",
+      "cleanup dependency counts",
+      "cleanup exact row hash predicate",
+      "cleanup affectedRowCount",
+      "post-cleanup25 table fingerprints",
+      "failure/stop reason"
+    ]
+  },
+  "creationOrder": [
+    "Separate owner authorization must cover creation AND exact-ID cleanup; choose one or two rows and freeze IDs/attributes before any write",
+    "Establish exclusive maintenance/test window: stop other app writers, verify same isolated DB/sentinel12 checksums/schema; inability to exclude other writers blocks fixture creation",
+    "Fresh READ ONLY baseline of25 tables and27 Trip, then recheck IDs/slugs absent and no Trip JSON references. Current collision check is not future authorization",
+    "Use a separate narrowly scoped, approved maintenance transaction/runner. Never enable writes on the Agent runtime connection. Exact parameterized Place row(s) only; no seed/migrate/upsert/ON CONFLICT/UPDATE existing rows",
+    "Write creation intent ledger before dispatch; capture inserted DB timestamps and normalized row hash before marking committed. On existing ID/slug stop; never adopt a pre-existing row as ours",
+    "After fixture commit turn maintenance write allowance off; validate actual loader membership/eligibility, expected cost oracle and fingerprint of every pre-existing row. Only places may gain the selected exact rows",
+    "Lock future live manifest/native request bodies and direct-service expectations after fixture verification and before any separately approved inference"
+  ],
+  "idempotency": "Fail closed by default. A rerun with existing UUID/slug never updates or assumes ownership; only original run ledger with exact committed hashes can authorize cleanup/recovery. No random replacement ID after collision without new manifest review.",
+  "cleanupOrder": [
+    "Stop further model/tool/user interactions; revoke/dispose only in-memory Agent sessions",
+    "Revalidate target/sentinel/checksums/schema,exclusive window,creation ledger ownership and exact inserted row hash/slug/name; unknown commit or row drift => stop for owner review",
+    "Inspect every incoming FK using actual pg_catalog even for SET NULL/CASCADE, and scan all27 Trip selected_place_ids/itinerary JSON. Any reference or unexpected row delta blocks automatic cleanup; never edit/delete Trip/Booking/users/reviews/favorites or null external references",
+    "In separately approved maintenance transaction, remove ONLY ledger-owned exact primary key(s) with matching slug and complete committed row hash; expected affected count exactly number created; never prefix/city/category deletion or cascading helper. Proposed JSON operation only, no executable DML supplied in this task",
+    "Disable write allowance,read back absence of exact IDs/slugs and verify fingerprint25/25 equals pre-fixture baseline,Trip27 hash/count unchanged. Check existing places after excluding fixture IDs throughout",
+    "If cleanup verification fails, stop and preserve ledger/evidence; never restore with dump/truncate/seed or broad delete. Report residual IDs and request separately reviewed recovery; do not claim fixture cleanup or LIVE PASS"
+  ],
+  "futureOperations": [
+    {
+      "type": "PROPOSED_PARAMETERIZED_INSERT_ONLY",
+      "table": "public.places",
+      "records": "Only chosen profile exact values in fixture-proposal.json",
+      "expectedRows": "1 or explicitly approved2",
+      "executed": false
+    },
+    {
+      "type": "PROPOSED_PARAMETERIZED_DELETE_BY_EXACT_OWNED_ID_SLUG_AND_ROW_HASH",
+      "table": "public.places",
+      "ids": "Creation ledger committed inserted IDs only",
+      "expectedRows": "Same number actually created",
+      "executed": false
+    }
+  ],
+  "fingerprintProtection": {
+    "duringFixture": "All24 other public table fingerprints identical; places baseline rows identical when excluding only fixture IDs; count22+N",
+    "afterCleanup": "25/25 exact baseline; places22;trip_sessions27; no cleanup changes to baseline rows",
+    "unrelatedConcurrentWrites": "Stop/review rather than modifying data to force fingerprint equality"
+  },
+  "jsonReferences": "trip_sessions JSON has no places FK. FK-only cleanup proof is insufficient.",
+  "currentCleanup": "NOT APPLICABLE:0 inserted rows in this task"
+}

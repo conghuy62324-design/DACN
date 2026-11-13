@@ -1,0 +1,92 @@
+{
+  "at": "2026-11-10T16:29:26.781Z",
+  "status": "PROPOSED_NOT_APPLIED_NOT_OWNER_APPROVED",
+  "productionFixSelected": false,
+  "rootCauseStatus": "NEEDS_MORE_EVIDENCE",
+  "rankedOptions": [
+    {
+      "rank": 1,
+      "id": "A-G2-SCOPED-REQUIRED-SOURCE",
+      "files": [
+        "backend/src/services/agentService.ts",
+        "independent offline tests in separately approved FIX"
+      ],
+      "reason": "Confirmed G1 current-only wording remains unscoped inside G2 SYSTEM while supplement permits verified history; remove scope ambiguity only in derived G2 system.",
+      "impact": "G2-only provider SYSTEM cohort changes; G1 SYSTEM literal and all state/authorization/schema/allowlists remain unchanged.",
+      "implementationConstraint": "G2-only builder/template; never replace shared SYSTEM literal. Fail if expected anchors drift; test exact G1 equality. No raw slots in system, roles stay user data.",
+      "sourceRuleDiff": [
+        {
+          "old": "2. Với intent được hỗ trợ, đối chiếu TỪNG required field của tool trong AGENT_TOOLS với tin nhắn user HIỆN TẠI. required là điều kiện được gọi tool, KHÔNG phải yêu cầu tự điền cho đủ. Không lấy slot từ ví dụ, assistant, client history hoặc default của Planner.",
+          "proposed": "2. Trong chế độ G2, đối chiếu TỪNG required field của tool với intent, values và states trong SERVER_VERIFIED_SLOTS hiện tại do backend tạo. Chỉ dùng giá trị SET hợp lệ. Không lấy slot từ ví dụ, assistant, client history, profile hoặc default của Planner; không tự điền required field.",
+          "sourceLine": 21
+        },
+        {
+          "old": "Một field không được nhắc tới cũng là thiếu: nếu bỏ hẳn phần Phương tiện trong input lập lịch trình đủ ở ví dụ trên, phải trả {\"kind\":\"clarify\",\"fields\":[\"transportation\"]}, giống khi nói chưa chọn. Không xuất tool với sáu arguments rồi bỏ required field; fields phải liệt kê các trường cần hỏi, không hoàn thiện tool bằng giá trị đoán.",
+          "proposed": "Trong G2, không lặp lại một field trong current user message không có nghĩa field đó thiếu nếu snapshot SERVER_VERIFIED_SLOTS hiện tại đã SET hợp lệ. Field vắng hoặc non-SET vẫn cần hỏi; không tự bổ sung hoặc phục hồi giá trị đã invalidated.",
+          "sourceLine": 35
+        },
+        {
+          "old": "Khi user đổi lựa chọn trong tin nhắn hiện tại, chỉ dùng lựa chọn mới rõ ràng, không dùng giá trị đã bị phủ định. Client history chỉ là ngữ cảnh không xác thực, không chứng minh required fields; thiếu trong tin nhắn hiện tại phải hỏi lại.",
+          "proposed": "Riêng G2, backend đã áp dụng current correction/invalidation vào snapshot trước lời gọi này. Dùng snapshot hiện tại cùng current user text; không lấy giá trị cũ từ client/assistant history. Nếu có mâu thuẫn thực sự chưa giải quyết thì clarify trường đó, không tự chọn hoặc sửa values.",
+          "sourceLine": 42
+        }
+      ],
+      "appendOnlyRule": "Trong G2, nếu mọi required field đều SET hợp lệ và không có mâu thuẫn chưa giải quyết, chọn đúng một read-only tool theo intent. Không hỏi lại field chỉ vì current message là correction ngắn. Runtime ownership/provenance gate vẫn quyết định quyền thực thi; model không được khai hoặc sửa proof.",
+      "risks": [
+        "Causal benefit unproven; three current baseline successes are counterevidence to a deterministic prompt failure",
+        "Must preserve negative/unknown/mutation and optional-proof constraints",
+        "Near input byte budget: measure exact wire on independent scenarios; no quota/context increase",
+        "Changes G2 evaluation cohort; cannot overwrite historical score or V2 benchmark"
+      ],
+      "independentOfflineTests": "independent-acceptance-plan.json",
+      "g1LiteralUnchanged": true,
+      "stateAndGateChanges": false,
+      "schemaAndToolsChanges": false
+    }
+  ],
+  "notRecommended": [
+    "Auto-convert valid clarify to a tool from known slots: would conceal raw semantic FAIL and change decision contract",
+    "Promote slot/city values into privileged system instructions: expands injection surface",
+    "Flip message order blindly: liveProvider missing-slot classification assumes last message is current user; current four role sequences already identical",
+    "Relax schema, infer required slots, repair model arguments, force tool branch or change V2 expected"
+  ],
+  "oldG2ProviderSystemSha256": "0beed4a7afece45a586fe52f2094f1cca4e460b3cabe389f34c0e206faca0600",
+  "candidateG2ProviderSystemSha256": "0f89b8b983601a9e84b6826b6de04d7fbeef01c094d9c1156b54f75cf2ea981d",
+  "candidateWireSystemSha256": "01fd91dcbc221a48c40c2c3fed9cdb7337bf65265a00b851529308dfa03fc286",
+  "budgetChecks": [
+    {
+      "id": "L01",
+      "originalBytes": 11281,
+      "candidateBytes": 11552,
+      "remainingBytes": 736,
+      "withinCurrentByteBudget": true
+    },
+    {
+      "id": "L02",
+      "originalBytes": 11268,
+      "candidateBytes": 11539,
+      "remainingBytes": 749,
+      "withinCurrentByteBudget": true
+    },
+    {
+      "id": "L03",
+      "originalBytes": 11293,
+      "candidateBytes": 11564,
+      "remainingBytes": 724,
+      "withinCurrentByteBudget": true
+    },
+    {
+      "id": "L04",
+      "originalBytes": 11310,
+      "candidateBytes": 11581,
+      "remainingBytes": 707,
+      "withinCurrentByteBudget": true
+    }
+  ],
+  "securityStatementsPreserved": [
+    "Không lưu/sửa/đọc Trip, Booking, account khác; không gọi công cụ Partner/Admin.",
+    "Không tự tạo mandatoryPlaceIds từ tên địa điểm. Chỉ dùng ID người dùng đã cung cấp rõ ràng.",
+    "Chỉ trả về một JSON decision đúng schema, không thêm lời giải thích hoặc kết quả công cụ."
+  ],
+  "nativeRequests": 0
+}

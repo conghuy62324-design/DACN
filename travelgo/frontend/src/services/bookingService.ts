@@ -14,8 +14,8 @@ export const BookingService = {
     notes?: string;
     recommendationRequestId?: string;
     recommendationSessionId?: string;
-  }): Promise<Booking> {
-    const res: any = await api.post('/bookings', payload, { headers: { 'Idempotency-Key': crypto.randomUUID() } });
+  }, idempotencyKey: string): Promise<Booking> {
+    const res: any = await api.post('/bookings', payload, { headers: { 'Idempotency-Key': idempotencyKey } });
     return res.data;
   },
 

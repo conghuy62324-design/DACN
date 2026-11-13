@@ -1,0 +1,28 @@
+diff --git "a/C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-live-targeted-revalidation\\run-live.corrected.cjs" "b/C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-adapter-binding-acceptance-fix\\run-live.corrected.cjs"
+index b1811aa..8411501 100644
+--- "a/C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-live-targeted-revalidation\\run-live.corrected.cjs"
++++ "b/C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-adapter-binding-acceptance-fix\\run-live.corrected.cjs"
+@@ -6,6 +6,7 @@ const assert=require('node:assert/strict');
+ const {createFence,errorRecord}=require('./fail-fast.cjs');
+ const {assertPublicFidelity}=require('./public-json.cjs');
+ const {readUiStrings}=require('./browser-checks.cjs');
++const {validateCleanupDecision}=require('./cleanup-lifecycle.cjs');
+ const PRE=Object.freeze(['manifest','request','session','authOwnership','toolSafety','nativeCap','quotaTtl','dbIsolation','runtimeSecurity']);
+ const POST=Object.freeze(['response','rawExpected','sessionRevision','toolExecution','dbMutation','runtimeSecurity']);
+ async function runPlannerHarness({cases,ports,emit=()=>{}}){
+@@ -36,8 +37,13 @@ async function runPlannerHarness({cases,ports,emit=()=>{}}){
+     // Even successful teardown closes every Agent/native/tool channel first.
+     fence.close();cleanup.invoked=true;
+     try{
+-      assert.equal(await ports.cleanupPrecondition(ctx),true,'CLEANUP_PRECONDITION_FAILED');cleanup.precondition='PASS';
+-      assert.equal(await ports.cleanup(ctx),true,'CLEANUP_ACTION_FAILED');cleanup.action='PASS';
++      const decision=await ports.cleanupPrecondition(ctx);
++      if(validateCleanupDecision(decision)==='NOT_APPLICABLE'){
++        cleanup.precondition='NOT_APPLICABLE';cleanup.action='NOT_APPLICABLE';cleanup.reason=decision.reason;
++      }else{
++        cleanup.precondition='PASS';
++        assert.equal(await ports.cleanup(ctx),true,'CLEANUP_ACTION_FAILED');cleanup.action='PASS';
++      }
+     }catch(error){cleanup.precondition=cleanup.precondition==='PASS'?'PASS':'FAIL';cleanup.action=cleanup.precondition==='FAIL'?'BLOCKED':'FAIL';cleanup.failure=errorRecord(error);fence.fail(error,'cleanup');}
+     finally{try{await ports.dispose(ctx);cleanup.dispose='PASS';}catch(error){cleanup.dispose='FAIL';cleanup.disposeFailure=errorRecord(error);fence.fail(error,'dispose');}}
+   }

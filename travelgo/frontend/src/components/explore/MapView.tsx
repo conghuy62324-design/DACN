@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { Place } from '../../types';
-import { formatCurrencyVND } from '../../utils/formatters';
+import { placeMarker, placePopup } from '../../utils/mapPopup';
+import { GoogleMap } from '../maps/GoogleMap';
+import { googleMapsSelected } from '../../utils/googleMapsLoader';
 
 interface MapViewProps {
   places: Place[];
@@ -9,7 +11,10 @@ interface MapViewProps {
   onSelectPlace: (place: Place) => void;
 }
 
-export const MapView: React.FC<MapViewProps> = ({ places, selectedPlace, onSelectPlace }) => {
+export const MapView: React.FC<MapViewProps> = props => googleMapsSelected()
+  ? <GoogleMap points={props.places.map(p=>({id:p.id,name:p.name,latitude:p.latitude,longitude:p.longitude}))} selectedId={props.selectedPlace?.id} onSelect={id=>{const place=props.places.find(p=>p.id===id);if(place)props.onSelectPlace(place);}} height={700}/>
+  : <LegacyMapView {...props}/>;
+const LegacyMapView: React.FC<MapViewProps> = ({ places, selectedPlace, onSelectPlace }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<{ [id: string]: L.Marker }>({});
@@ -63,13 +68,7 @@ export const MapView: React.FC<MapViewProps> = ({ places, selectedPlace, onSelec
 
       const customIcon = L.divIcon({
         className: 'custom-leaflet-marker',
-        html: `
-          <div class="custom-marker-pin ${categoryColor} ${
-          isSelected ? 'ring-4 ring-orange-400 scale-125 z-50' : ''
-        }">
-            <span style="font-size: 11px; font-weight: 800;">★ ${place.rating.toFixed(1)}</span>
-          </div>
-        `,
+        html: placeMarker(place.rating, categoryColor, isSelected),
         iconSize: [36, 36],
         iconAnchor: [18, 18],
         popupAnchor: [0, -20],
@@ -77,20 +76,7 @@ export const MapView: React.FC<MapViewProps> = ({ places, selectedPlace, onSelec
 
       const marker = L.marker([place.latitude, place.longitude], { icon: customIcon }).addTo(map);
 
-      // Popup Content
-      const popupHtml = `
-        <div style="width: 220px; font-family: Inter, sans-serif; padding: 2px;">
-          <img src="${place.heroImage}" alt="${place.name}" style="width: 100%; height: 110px; object-fit: cover; border-radius: 8px; margin-bottom: 8px;" />
-          <h4 style="font-weight: 700; font-size: 13px; color: #0f172a; margin: 0 0 4px 0; line-height: 1.3;">${place.name}</h4>
-          <p style="font-size: 11px; color: #64748b; margin: 0 0 6px 0;">${place.city} • ${place.category.toUpperCase()}</p>
-          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 6px;">
-            <span style="font-weight: 800; color: #ea580c; font-size: 13px;">${formatCurrencyVND(place.priceFrom)}</span>
-            <span style="font-size: 10px; background: #ecfdf5; color: #047857; padding: 2px 6px; border-radius: 4px; font-weight: 700;">Bayesian: ${place.bayesianRating.toFixed(2)}</span>
-          </div>
-        </div>
-      `;
-
-      marker.bindPopup(popupHtml);
+      marker.bindPopup(placePopup(place));
 
       marker.on('click', () => {
         onSelectPlace(place);

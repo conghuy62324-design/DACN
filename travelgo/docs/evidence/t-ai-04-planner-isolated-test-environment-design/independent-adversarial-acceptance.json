@@ -1,0 +1,472 @@
+{
+  "at": "2026-11-11T12:45:58.972Z",
+  "tier": "OFFLINE_DESIGN_MODEL_ONLY",
+  "status": "PASS",
+  "passed": 45,
+  "failed": 0,
+  "requiredNamedCases": 18,
+  "all25PhaseCredentialCombinations": 450,
+  "modelTestsDoNotProveActualEnvironment": true,
+  "brokenAssumptionCasesRetainFailureDecision": true,
+  "independence": "Fixed parent golden decisions; separate child model, source lock before execution, per-process network fence. No human/sub-agent independent reviewer claimed.",
+  "results": [
+    {
+      "name": "positive_lifecycle",
+      "decision": "VERIFIED_MODEL_ONLY",
+      "recovery": "CLOSE_OWNED_AFTER_FINGERPRINT",
+      "requirement": "valid task writer/readers",
+      "status": "PASS",
+      "observedDecision": "VERIFIED_MODEL_ONLY",
+      "childExit": 0,
+      "evidence": "cases/positive_lifecycle.json"
+    },
+    {
+      "name": "unauthorized_application_writer",
+      "decision": "REJECT_AUTH",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "unauthorized application writer",
+      "status": "PASS",
+      "observedDecision": "REJECT_AUTH",
+      "childExit": 0,
+      "evidence": "cases/unauthorized_application_writer.json"
+    },
+    {
+      "name": "unauthorized_database_credential",
+      "decision": "REJECT_AUTH",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "unauthorized database credential",
+      "status": "PASS",
+      "observedDecision": "REJECT_AUTH",
+      "childExit": 0,
+      "evidence": "cases/unauthorized_database_credential.json"
+    },
+    {
+      "name": "shared_superuser_path",
+      "decision": "REJECT_AUTH",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "shared dev postgres superuser",
+      "status": "PASS",
+      "observedDecision": "REJECT_AUTH",
+      "childExit": 0,
+      "evidence": "cases/shared_superuser_path.json"
+    },
+    {
+      "name": "existing_session_before_test",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "existing authenticated session",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/existing_session_before_test.json"
+    },
+    {
+      "name": "writer_attempt_during_test",
+      "decision": "REJECT_AUTH",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "writer during I",
+      "status": "PASS",
+      "observedDecision": "REJECT_AUTH",
+      "childExit": 0,
+      "evidence": "cases/writer_attempt_during_test.json"
+    },
+    {
+      "name": "writer_after_fixture_commit",
+      "decision": "REJECT_AUTH",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "COMMIT does not alter auth",
+      "status": "PASS",
+      "observedDecision": "REJECT_AUTH",
+      "childExit": 0,
+      "evidence": "cases/writer_after_fixture_commit.json"
+    },
+    {
+      "name": "runtime_using_writer_identity",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "runtime accidentally using writer credentials",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/runtime_using_writer_identity.json"
+    },
+    {
+      "name": "maintenance_identity_mismatch",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "maintenance writer identity mismatch",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/maintenance_identity_mismatch.json"
+    },
+    {
+      "name": "database_endpoint_mismatch",
+      "decision": "REJECT_ENDPOINT",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "database endpoint mismatch",
+      "status": "PASS",
+      "observedDecision": "REJECT_ENDPOINT",
+      "childExit": 0,
+      "evidence": "cases/database_endpoint_mismatch.json"
+    },
+    {
+      "name": "container_identity_mismatch",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "container identity mismatch",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/container_identity_mismatch.json"
+    },
+    {
+      "name": "network_identity_mismatch",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "network identity mismatch",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/network_identity_mismatch.json"
+    },
+    {
+      "name": "unknown_privileged_client",
+      "decision": "BOUNDARY_BREACH",
+      "recovery": "RETAIN_QUARANTINE_SECURITY_REVIEW",
+      "requirement": "unknown authenticated privileged path",
+      "status": "PASS",
+      "observedDecision": "BOUNDARY_BREACH",
+      "childExit": 1,
+      "evidence": "cases/unknown_privileged_client.json"
+    },
+    {
+      "name": "crash_before_insert",
+      "decision": "STOP_SAFE_ABORT",
+      "recovery": "VERIFY_ROLLBACK_NEW_SCOPE",
+      "requirement": "crash before INSERT",
+      "status": "PASS",
+      "observedDecision": "STOP_SAFE_ABORT",
+      "childExit": 1,
+      "evidence": "cases/crash_before_insert.json"
+    },
+    {
+      "name": "crash_after_insert_before_commit",
+      "decision": "STOP_SAFE_ABORT",
+      "recovery": "VERIFY_ROLLBACK_NEW_SCOPE",
+      "requirement": "known rollback before COMMIT",
+      "status": "PASS",
+      "observedDecision": "STOP_SAFE_ABORT",
+      "childExit": 1,
+      "evidence": "cases/crash_after_insert_before_commit.json"
+    },
+    {
+      "name": "crash_after_commit",
+      "decision": "STOP_QUARANTINE",
+      "recovery": "RETAIN_QUARANTINE_LEDGER_REVIEW",
+      "requirement": "crash after COMMIT",
+      "status": "PASS",
+      "observedDecision": "STOP_QUARANTINE",
+      "childExit": 1,
+      "evidence": "cases/crash_after_commit.json"
+    },
+    {
+      "name": "crash_during_planner",
+      "decision": "STOP_QUARANTINE",
+      "recovery": "RETAIN_QUARANTINE_LEDGER_REVIEW",
+      "requirement": "crash during Planner",
+      "status": "PASS",
+      "observedDecision": "STOP_QUARANTINE",
+      "childExit": 1,
+      "evidence": "cases/crash_during_planner.json"
+    },
+    {
+      "name": "cleanup_failure",
+      "decision": "STOP_QUARANTINE",
+      "recovery": "RETAIN_QUARANTINE_LEDGER_REVIEW",
+      "requirement": "cleanup failure",
+      "status": "PASS",
+      "observedDecision": "STOP_QUARANTINE",
+      "childExit": 1,
+      "evidence": "cases/cleanup_failure.json"
+    },
+    {
+      "name": "database_restart",
+      "decision": "STOP_QUARANTINE",
+      "recovery": "RETAIN_QUARANTINE_LEDGER_REVIEW",
+      "requirement": "restart with persistent deny policy",
+      "status": "PASS",
+      "observedDecision": "STOP_QUARANTINE",
+      "childExit": 1,
+      "evidence": "cases/database_restart.json"
+    },
+    {
+      "name": "failed_final_fingerprint",
+      "decision": "STOP_QUARANTINE",
+      "recovery": "RETAIN_QUARANTINE_LEDGER_REVIEW",
+      "requirement": "failed final fingerprint",
+      "status": "PASS",
+      "observedDecision": "STOP_QUARANTINE",
+      "childExit": 1,
+      "evidence": "cases/failed_final_fingerprint.json"
+    },
+    {
+      "name": "ambiguous_commit",
+      "decision": "STOP_QUARANTINE",
+      "recovery": "RETAIN_QUARANTINE_LEDGER_REVIEW",
+      "requirement": "lost COMMIT acknowledgement",
+      "status": "PASS",
+      "observedDecision": "STOP_QUARANTINE",
+      "childExit": 1,
+      "evidence": "cases/ambiguous_commit.json"
+    },
+    {
+      "name": "runtime_cert_requests_writer_role",
+      "decision": "REJECT_AUTH",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "certificate subject/role binding",
+      "status": "PASS",
+      "observedDecision": "REJECT_AUTH",
+      "childExit": 0,
+      "evidence": "cases/runtime_cert_requests_writer_role.json"
+    },
+    {
+      "name": "outside_network",
+      "decision": "REJECT_NETWORK",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "unapproved network source",
+      "status": "PASS",
+      "observedDecision": "REJECT_NETWORK",
+      "childExit": 0,
+      "evidence": "cases/outside_network.json"
+    },
+    {
+      "name": "server_certificate_mismatch",
+      "decision": "REJECT_ENDPOINT",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "server pin mismatch",
+      "status": "PASS",
+      "observedDecision": "REJECT_ENDPOINT",
+      "childExit": 0,
+      "evidence": "cases/server_certificate_mismatch.json"
+    },
+    {
+      "name": "plaintext_connection",
+      "decision": "REJECT_AUTH",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "TLS required",
+      "status": "PASS",
+      "observedDecision": "REJECT_AUTH",
+      "childExit": 0,
+      "evidence": "cases/plaintext_connection.json"
+    },
+    {
+      "name": "public_write_grant",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "PUBLIC write privilege",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/public_write_grant.json"
+    },
+    {
+      "name": "security_definer_write_path",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "callable privileged side effect",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/security_definer_write_path.json"
+    },
+    {
+      "name": "owner_membership",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "owner membership including SET ROLE",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/owner_membership.json"
+    },
+    {
+      "name": "role_escalation",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "CREATEROLE/predefined write roles",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/role_escalation.json"
+    },
+    {
+      "name": "admin_admission_enabled",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "provisioner/superuser path present",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/admin_admission_enabled.json"
+    },
+    {
+      "name": "prepared_transaction",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "unresolved prepared transaction",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/prepared_transaction.json"
+    },
+    {
+      "name": "background_writer_job",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "replication/scheduler/background writer",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/background_writer_job.json"
+    },
+    {
+      "name": "shared_dev_volume",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "shared PGDATA",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/shared_dev_volume.json"
+    },
+    {
+      "name": "dev_network_attached",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "shared development network",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/dev_network_attached.json"
+    },
+    {
+      "name": "owner_identity_not_approved",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "new database owner approval missing",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/owner_identity_not_approved.json"
+    },
+    {
+      "name": "baseline_not_approved",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "new baseline approval missing",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/baseline_not_approved.json"
+    },
+    {
+      "name": "old_cleanup_lock_proof",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "old all25 lock proof cannot be faked",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/old_cleanup_lock_proof.json"
+    },
+    {
+      "name": "unaccepted_tls_adapter",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "old ssl:false adapter not accepted",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/unaccepted_tls_adapter.json"
+    },
+    {
+      "name": "leaked_readonly_private_key",
+      "decision": "BOUNDARY_BREACH",
+      "recovery": "RETAIN_QUARANTINE_SECURITY_REVIEW",
+      "requirement": "ACL denial may follow parse-stage RX",
+      "status": "PASS",
+      "observedDecision": "BOUNDARY_BREACH",
+      "childExit": 1,
+      "evidence": "cases/leaked_readonly_private_key.json"
+    },
+    {
+      "name": "leaked_writer_private_key",
+      "decision": "BOUNDARY_BREACH",
+      "recovery": "RETAIN_QUARANTINE_SECURITY_REVIEW",
+      "requirement": "full writer capability stolen",
+      "status": "PASS",
+      "observedDecision": "BOUNDARY_BREACH",
+      "childExit": 1,
+      "evidence": "cases/leaked_writer_private_key.json"
+    },
+    {
+      "name": "writer_privilege_expansion",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "unapproved writer table privilege",
+      "status": "PASS",
+      "observedDecision": "STOP_BEFORE_READY",
+      "childExit": 1,
+      "evidence": "cases/writer_privilege_expansion.json"
+    },
+    {
+      "name": "cleanup_row_hash_drift",
+      "decision": "STOP_QUARANTINE",
+      "recovery": "RETAIN_QUARANTINE_LEDGER_REVIEW",
+      "requirement": "row mismatch blocks exact cleanup",
+      "status": "PASS",
+      "observedDecision": "STOP_QUARANTINE",
+      "childExit": 1,
+      "evidence": "cases/cleanup_row_hash_drift.json"
+    },
+    {
+      "name": "restart_with_policy_drift",
+      "decision": "BOUNDARY_BREACH",
+      "recovery": "RETAIN_QUARANTINE_SECURITY_REVIEW",
+      "requirement": "restart does not authorize policy drift",
+      "status": "PASS",
+      "observedDecision": "BOUNDARY_BREACH",
+      "childExit": 1,
+      "evidence": "cases/restart_with_policy_drift.json"
+    },
+    {
+      "name": "all25_all_phases_denial",
+      "decision": "REJECT_AUTH",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "25 tables x six phases x three outside credential classes",
+      "status": "PASS",
+      "observedDecision": "REJECT_AUTH",
+      "childExit": 0,
+      "evidence": "cases/all25_all_phases_denial.json"
+    },
+    {
+      "name": "same_instance_shared_admin_counterexample",
+      "decision": "BOUNDARY_BREACH",
+      "recovery": "RETAIN_QUARANTINE_SECURITY_REVIEW",
+      "requirement": "Option B lacks boundary against existing shared superuser",
+      "status": "PASS",
+      "observedDecision": "BOUNDARY_BREACH",
+      "childExit": 1,
+      "evidence": "cases/same_instance_shared_admin_counterexample.json"
+    }
+  ],
+  "integrity": {
+    "status": "PASS",
+    "protectedFiles": 11240,
+    "priorSealedArtifacts": 166,
+    "priorReportUnchanged": true,
+    "compiledModules": 84,
+    "changed": []
+  }
+}

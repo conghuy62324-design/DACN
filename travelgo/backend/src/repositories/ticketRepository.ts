@@ -1,6 +1,8 @@
 import { Op } from 'sequelize';
 import { Business, Ticket } from '../models/index.js';
 import { PageQuery, pageOptions, paged, searchLike } from './query.js';
+import {resolveLocation} from '../geography/vietnam.js';
+import {locationWhere} from '../geography/query.js';
 
 export interface TicketListQuery extends PageQuery { type?: string; fromCity?: string; toCity?: string; maxPrice?: number; }
 export class TicketRepository {
@@ -10,8 +12,10 @@ export class TicketRepository {
     if (scope.businessIds) where.businessId = { [Op.in]: scope.businessIds };
     if (query.status) where.status = query.status;
     if (query.type && query.type !== 'all') where.type = query.type;
-    if (query.fromCity && query.fromCity !== 'all') where.departureCity = searchLike(query.fromCity);
-    if (query.toCity && query.toCity !== 'all') where.arrivalCity = searchLike(query.toCity);
+    const geography:any[]=[];
+    if(query.fromCity&&query.fromCity!=='all')geography.push(resolveLocation(query.fromCity)?locationWhere(query.fromCity,'Ticket.departureCity'):{departureCity:searchLike(query.fromCity)});
+    if(query.toCity&&query.toCity!=='all')geography.push(resolveLocation(query.toCity)?locationWhere(query.toCity,'Ticket.arrivalCity'):{arrivalCity:searchLike(query.toCity)});
+    if(geography.length)where[Op.and]=geography;
     if (query.maxPrice) where.price = { [Op.lte]: query.maxPrice };
     if (query.search) where.title = searchLike(query.search);
     const result = await Ticket.findAndCountAll({ where, include: [{ model: Business, as: 'business', attributes: ['id','name','type'] }], order: [['departureTime','ASC']], limit, offset, distinct: true });

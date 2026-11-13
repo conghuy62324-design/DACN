@@ -1,0 +1,7 @@
+'use strict';
+const c=require('./common.cjs'),assert=c.assert;
+for(const f of ['offline-acceptance-02.json','integration-acceptance-03.json'])assert.equal(c.json(c.prefix+f).status,'PASS',f);
+const files=['common.cjs','route-policy.cjs','ownership-registry.cjs','managed-connections.cjs','closing-guard.cjs','integration.cjs','maintenance.candidate.cjs','maintenance.base.cjs','readonly-db.base.cjs','runtime-adapters.base.cjs','real-guards.cjs','cleanup-lifecycle.cjs','fail-fast.cjs','run-live.corrected.cjs','public-json.cjs','browser-checks.cjs','ui-strings.json','sensor-client.cjs','acceptance-child.cjs','acceptance-parent.cjs','integration-child.cjs','integration-parent.cjs','trace-readonly.cjs','network-boundary.cjs','collect-route.ps1','freeze-phase-a.cjs'];
+const sourceHashes=Object.fromEntries(files.map(f=>[f,c.sha(c.fs.readFileSync(c.path.join(__dirname,f)))]));
+const audits=c.fs.readdirSync(c.path.join(__dirname,'network-audit')).map(f=>c.json(c.prefix+'network-audit/'+f));for(const a of audits){assert.deepEqual(a.sockets,[]);assert.deepEqual(a.blocked,[]);assert.equal(a.http,0);}
+c.write('phase-a-gate.json',{at:new Date().toISOString(),status:'PASS',passed:51,failed:0,ownership39:c.json(c.prefix+'offline-acceptance-02.json').passed,integration12:c.json(c.prefix+'integration-acceptance-03.json').passed,sourceHashes,networkProcesses:audits.length,postgresSockets:0,http:0,integrity:c.integrity(),scope:'OFFLINE_ONLY_PARENT_CHILD_AND_INSTALLED_SEQUELIZE_SENSOR_DOUBLES'});console.log('PHASE_A_51_PASS_FROZEN');

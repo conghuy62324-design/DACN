@@ -27,20 +27,23 @@ export const TripService = {
     return res.success;
   },
 
-  async checkinPlace(
+  async checkinActivity(
     tripId: string,
-    placeId: string,
-    placeName: string,
+    activityId: string,
     geo?: { latitude: number; longitude: number; accuracyMeters?: number },
     notes?: string
   ): Promise<{ success: boolean; trip: TripSession; checkin: TripCheckin; message: string }> {
     const res: any = await api.post(`/trips/${tripId}/checkin`, {
-      placeId,
-      placeName,
+      activityId,
       geo,
       notes,
     });
     return res;
+  },
+
+  async startTrip(tripId: string): Promise<TripSession> {
+    const res: any = await api.post(`/trips/${tripId}/start`);
+    return res.data;
   },
 
   async completeTrip(tripId: string): Promise<TripSession> {

@@ -1,0 +1,348 @@
+# TASK T-AI-04-PLANNER-CONNECTION-OWNERSHIP-ADDRESS-NORMALIZATION
+
+Vai trò: Senior PostgreSQL Engineer, Node.js Engineer, Security Engineer và E2E Automation Lead của TravelGo.
+
+## MỤC TIÊU
+
+Khắc phục lỗi so sánh địa chỉ IP trong candidate PostgreSQL Connection Ownership Guard.
+
+Current status:
+
+`OWNERSHIP_GUARD_FIX_PASS_OFFLINE_TRACE_BLOCKED`
+
+Root cause quan sát:
+
+- Docker container: `172.18.0.3`
+- PostgreSQL server: `172.18.0.3/32`
+- Docker gateway: `172.18.0.1`
+- PostgreSQL client: `172.18.0.1/32`
+
+Candidate đang so sánh các giá trị này như chuỗi nguyên bản, dẫn đến `FORWARD_SERVER_IDENTITY_MISMATCH`.
+
+Phải sửa đúng representation, không được nới ownership trust boundary.
+
+Task gồm hai giai đoạn:
+
+- PHASE A: Offline normalization fix + independent acceptance.
+- PHASE B: Một controlled READ ONLY PostgreSQL trace, chỉ nếu PHASE A PASS.
+
+Không chạy Planner LIVE, tạo fixture hoặc gọi Ollama.
+
+## 1. BASELINE
+
+Đọc đầy đủ:
+
+- `docs/HUGO_T_AI_04_PLANNER_CONNECTION_OWNERSHIP_GUARD_FIX_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_CONNECTION_OWNERSHIP_DIAGNOSIS_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_LIVE_TARGETED_REVALIDATION_RESUME_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_ADAPTER_BINDING_ACCEPTANCE_FIX_REPORT.md`
+
+Đọc các evidence liên quan:
+
+- `trace-result.json`
+- `route-before-trace.json`
+- `trace-events/003-RAW_SELF_IDENTITY.json`
+- `route-policy.cjs`
+- `ownership-registry.cjs`
+- `managed-connections.cjs`
+- `maintenance.candidate.cjs`
+- Independent offline acceptance suites.
+
+Giữ nguyên historical verdict:
+
+- 51/51 candidate offline PASS.
+- Actual trace FAIL CLOSED.
+- PostgreSQL client closed1/1.
+- PID9686 UNKNOWN.
+- R01–R03 NOT RUN.
+- P1/P2 OPEN.
+
+Không sửa evidence cũ để biến FAIL thành PASS.
+
+## 2. PHASE A — STRICT IP NORMALIZATION
+
+Thiết kế một bộ parser/canonicalizer có kiểm soát.
+
+Không dùng giải pháp đơn giản như:
+
+`address.split('/')[0]`
+
+Bắt buộc phân biệt:
+
+- IPv4 host address.
+- IPv4 host `/32`.
+- IPv6 host address.
+- IPv6 host `/128`.
+- Network prefix không phải host.
+- Malformed address.
+- Unsupported address family.
+
+Ví dụ:
+
+| Input | Expected |
+|---|---|
+| `172.18.0.3` | IPv4 host hợp lệ |
+| `172.18.0.3/32` | Cùng host 172.18.0.3 |
+| `172.18.0.3/24` | REJECT cho host identity |
+| `172.18.0.0/24` | REJECT |
+| `172.18.0.1/32` | IPv4 host hợp lệ, khác 172.18.0.3 |
+| `::1` | IPv6 host hợp lệ |
+| `::1/128` | Cùng host ::1 |
+| `::1/64` | REJECT cho host identity |
+| Malformed CIDR | REJECT |
+| Wrong address family | REJECT |
+
+So sánh bằng canonical address representation hoặc validated address bytes.
+
+Không so sánh IPv4 với IPv6 chỉ dựa trên text.
+
+IPv4-mapped IPv6, zone IDs, ambiguous encodings và các định dạng ngoài contract phải bị từ chối trừ khi được định nghĩa và kiểm chứng riêng.
+
+## 3. KHÔNG NỚI TRUST BOUNDARY
+
+Chỉ thay đổi lớp chuẩn hóa biểu diễn địa chỉ.
+
+Giữ nguyên các kiểm tra:
+
+- Independent Docker/WSL route proof.
+- Verified listener identity.
+- Exact target host/port.
+- Database identity.
+- Database sentinel.
+- PostgreSQL role.
+- Startup application_name/token.
+- Physical connection object.
+- Protocol PID.
+- Self-query PID.
+- backend_start.
+- Client endpoint.
+- Lifecycle registration.
+- Immutable ownership snapshots.
+- READ ONLY startup and transaction state.
+- Closing maintenance guard.
+
+Không whitelist:
+
+- PID9686.
+- Empty application_name.
+- Unknown source IP.
+- Unknown client.
+- Any connection chỉ vì cùng database.
+
+Forwarded connection vẫn phải có đầy đủ independent route proof.
+
+Không đổi direct TCP policy để bỏ qua port mismatch.
+
+## 4. REGRESSION INPUT TỪ RAW EVIDENCE
+
+Dùng chính raw identity của trace trước làm fixture kiểm thử offline.
+
+Yêu cầu:
+
+1. Đọc raw evidence nguyên bản.
+2. Kiểm hash của file gốc.
+3. Parse `172.18.0.3/32` như IPv4 host.
+4. Parse `172.18.0.1/32` như IPv4 host.
+5. So với Docker container/gateway addresses đã khóa.
+6. Giữ nguyên kiểm tra PID/backend_start/token/route.
+7. Không thay đổi các field raw.
+8. Không tự giả lập registration PASS cho historical trace.
+
+Nếu dùng saved metadata, ghi rõ:
+
+`OFFLINE_REPLAY_OF_HISTORICAL_RAW_DATA`
+
+Không nhận đây là PostgreSQL trace mới.
+
+## 5. INDEPENDENT NEGATIVE TESTS
+
+Bổ sung tests cho:
+
+- Exact bare IPv4 và /32 equivalence.
+- Exact IPv6 và /128 equivalence.
+- Wrong network prefix.
+- Wrong server address.
+- Wrong gateway address.
+- Wrong database.
+- Wrong port mapping.
+- Wrong physical target.
+- Expired/stale route evidence.
+- Unexpected listener.
+- Backend PID mismatch.
+- backend_start mismatch.
+- Startup token mismatch.
+- Copied application_name.
+- Missing registration.
+- Pending connection.
+- Closed connection.
+- PID reuse.
+- Unknown external connection.
+- Snapshot mutation.
+- Evidence writer failure.
+
+Mọi test không hợp lệ phải FAIL CLOSED.
+
+## 6. OFFLINE INTEGRATION ACCEPTANCE
+
+Không chỉ test helper parser riêng lẻ.
+
+Phải chạy actual candidate ownership registry, route policy, managed connection lifecycle và maintenance bridge với sensor doubles.
+
+Bắt buộc:
+
+- Original 51 checks PASS sau thay đổi.
+- New address tests PASS.
+- New route negative tests PASS.
+- Unknown connection vẫn FAIL CLOSED.
+- Fail-fast vẫn hoạt động.
+- R01 FAIL → R02/R03 NOT RUN.
+- Agent/native/tool/operator callbacks0 sau stop.
+- Cleanup giữ exact preconditions.
+- Resource dispose đúng một lần.
+- Evidence ghi trước assertion.
+- No production source changes.
+- No PostgreSQL/Ollama network trong PHASE A.
+
+Nếu bất kỳ acceptance FAIL, STOP tại PHASE A.
+
+Không tiến hành trace thật.
+
+## 7. PHASE B — CONTROLLED READ ONLY TRACE
+
+Chỉ thực hiện khi toàn bộ PHASE A PASS.
+
+Phạm vi phê duyệt mới:
+
+- Tối đa 1 PostgreSQL connection.
+- Không reconnect.
+- Không retry.
+- Không tạo connection thứ hai.
+- Chỉ `127.0.0.1:5432`.
+- Chỉ database `travelgo_ai_m0_test`.
+- Startup READ ONLY.
+- Chỉ SELECT self-identity/metadata/sentinel cần thiết.
+- Không truy vấn bảng Trip/Booking/User.
+- Không entity INSERT/UPDATE/DELETE.
+- Không tạo fixture.
+- Không Direct Planner.
+- Không Ollama GET/POST.
+- Không Browser LIVE.
+
+Trước khi mở connection:
+
+1. Verify exact Docker container.
+2. Verify independent forwarding route.
+3. Verify listener identity.
+4. Verify source closure hashes.
+5. Verify database target.
+6. Verify no unexpected source drift.
+
+Sau khi connect:
+
+1. Capture physical connection lifecycle.
+2. Capture exact startup payload.
+3. Capture raw PostgreSQL self identity.
+4. Persist raw evidence trước assertion.
+5. Check READ ONLY, timeout, database/user/sentinel.
+6. Normalize host-only inet representations.
+7. Verify full physical identity.
+8. Verify backend PID and backend_start.
+9. Verify startup token.
+10. Verify route policy.
+11. Verify ownership registration.
+12. Verify registered snapshot nếu các bước trước hợp lệ.
+13. Close/dispose exactly once.
+
+Nếu FAIL:
+
+- STOP.
+- Save original error.
+- No second connection.
+- No retry.
+- Dispose task-created connection.
+- Record precise blocker.
+- Do not modify source and rerun trace trong cùng task.
+
+Không kiểm PID9686 bằng cách suy luận từ PID mới.
+
+## 8. GIỚI HẠN KẾT LUẬN
+
+Phân biệt rõ:
+
+**A — ADDRESS_NORMALIZATION_PASS_OFFLINE_AND_SELF_TRACE**
+
+- Offline tests PASS.
+- Controlled READ ONLY self-provenance trace PASS.
+- Exact forwarded identity verified.
+- Current managed connection ownership PASS.
+- Resource disposed.
+
+Trạng thái này chỉ xác minh trace của kết nối mới. Không tự tuyên bố toàn bộ multi-connection maintenance/Planner LIVE đã PASS.
+
+**B — ADDRESS_NORMALIZATION_PASS_OFFLINE_TRACE_BLOCKED**
+
+- Offline tests PASS.
+- Actual trace FAIL hoặc incomplete.
+- Unknown vẫn FAIL CLOSED.
+
+**C — ADDRESS_NORMALIZATION_FIX_INCOMPLETE**
+
+- Parser, security tests hoặc offline integration chưa đạt.
+
+Không gọi B/C là LIVE-ready.
+
+## 9. INTEGRITY
+
+Không sửa:
+
+- Production Agent.
+- Planner/Catalog/Recommendation.
+- Auth/consent/limits.
+- Tool schemas.
+- SYSTEM prompts.
+- Existing DB schema.
+- DB roles/grants.
+- Original benchmark/V2.
+- Historical results.
+- Source code của PostgreSQL/Sequelize libraries.
+
+Chỉ thêm/sửa test-only candidate harness trong evidence task mới.
+
+Không commit/push/deploy.
+
+## 10. BÁO CÁO
+
+Tạo:
+
+`docs/HUGO_T_AI_04_PLANNER_CONNECTION_OWNERSHIP_ADDRESS_NORMALIZATION_REPORT.md`
+
+Evidence:
+
+`docs/evidence/t-ai-04-planner-connection-ownership-address-normalization/`
+
+Bao gồm:
+
+1. Baseline.
+2. Exact root cause.
+3. Strict IP/CIDR canonicalization.
+4. Source diff.
+5. Independent positive/negative cases.
+6. Saved raw replay.
+7. Original 51-check regression.
+8. Offline maintenance/guard integration.
+9. Fresh Docker route proof.
+10. Controlled READ ONLY trace, nếu được chạy.
+11. Registration/lifecycle verdict.
+12. Resource disposal.
+13. Security boundaries.
+14. Source/benchmark integrity.
+15. PID9686 historical status.
+16. P1/P2.
+17. Remaining blockers.
+18. NEXT TASK PLAN.
+
+Nếu trạng thái A đạt, chỉ đề xuất nhiệm vụ xác minh multi-connection maintenance integration và targeted Planner LIVE theo các guard tương ứng.
+
+Không tự INSERT fixture, chạy R01–R03, dùng Ollama hoặc V2 LIVE.
+
+**DỪNG SAU BÁO CÁO.**

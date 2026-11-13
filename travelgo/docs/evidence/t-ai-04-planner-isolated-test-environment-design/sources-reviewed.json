@@ -1,0 +1,63 @@
+{
+  "at": "2026-11-11T12:53:16.465Z",
+  "retrieval": "Official documentation/source read with web tool, separately from network-fenced Node model. Not PG/Docker runtime access.",
+  "sources": [
+    {
+      "url": "https://www.postgresql.org/docs/15/ddl-priv.html",
+      "use": "CONNECT is startup-only; object/PUBLIC privileges, owners and effective grant paths must be audited."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/15/role-attributes.html",
+      "use": "Superuser/CREATEROLE authority and role defaults are not least-privilege enforcement."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/15/role-membership.html",
+      "use": "NOINHERIT alone does not remove SET ROLE paths."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/15/auth-pg-hba-conf.html",
+      "use": "Ordered exact authentication rules; include local/TCP/IPv4/IPv6 paths."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/15/auth-cert.html",
+      "use": "TLS client certificate can bind certificate subject to requested role."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/15/libpq-ssl.html",
+      "use": "Server certificate chain/name verification; pg Node implementation options must be accepted separately."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/15/sql-lock.html",
+      "use": "Per-relation lock acquisition, transaction release and explicit LOCK privilege requirements."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/15/sql-set-transaction.html",
+      "use": "Read-only transaction characteristic; default may be overridden."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/15/sql-createfunction.html",
+      "use": "Privileged function execution and security-definer review obligation."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/15/ddl-rowsecurity.html",
+      "use": "RLS is per-row authorization, not admission or TRUNCATE protection."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/postgres/postgres/REL_15_STABLE/src/backend/parser/parse_clause.c",
+      "use": "setTargetTable obtains RowExclusiveLock before recording executor requiredPerms."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/postgres/postgres/REL_15_STABLE/src/backend/executor/execMain.c",
+      "use": "InitPlan/ExecCheckRTPerms permission checks; supports inference about transient parse-stage RX."
+    },
+    {
+      "url": "https://docs.docker.com/engine/network/drivers/bridge/",
+      "use": "Host/same-network reachability and published ports; network alone is not authentication."
+    },
+    {
+      "url": "https://docs.docker.com/compose/how-tos/use-secrets/",
+      "use": "Per-service secret file mounts; not protection from host/Docker administrator."
+    }
+  ],
+  "sourceInference": "An authenticated readonly outside client can acquire transient automatic RX before ACL denial; therefore no external authenticated session is part of the strict proof."
+}

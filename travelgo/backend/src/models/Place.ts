@@ -1,5 +1,6 @@
 import { DataTypes, Model, Optional } from 'sequelize';
 import { sequelize } from '../config/database.js';
+import type { CatalogMetadata } from '../services/catalogPolicy.js';
 
 export interface PlaceAttributes {
   id: string;
@@ -29,6 +30,8 @@ export interface PlaceAttributes {
   openingHours: Record<string, unknown>;
   contactInfo: Record<string, unknown>;
   status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
+  catalogMetadata?: CatalogMetadata;
+  approvedAt?: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -63,6 +66,8 @@ export class Place extends Model<PlaceAttributes, PlaceCreationAttributes> imple
   public openingHours!: Record<string, unknown>;
   public contactInfo!: Record<string, unknown>;
   public status!: 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
+  public catalogMetadata!: CatalogMetadata;
+  public approvedAt!: Date | null;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -165,6 +170,10 @@ Place.init(
     openingHours: { type: DataTypes.JSONB, allowNull: false, defaultValue: {} },
     contactInfo: { type: DataTypes.JSONB, allowNull: false, defaultValue: {} },
     status: { type: DataTypes.STRING(30), allowNull: false, defaultValue: 'APPROVED' },
+    ...(process.env.CATALOG_METADATA_ENABLED==='true'?{
+      catalogMetadata: { type: DataTypes.JSONB, allowNull: false, defaultValue: {} },
+      approvedAt: { type: DataTypes.DATE, allowNull: true },
+    }:{}),
   },
   {
     sequelize,

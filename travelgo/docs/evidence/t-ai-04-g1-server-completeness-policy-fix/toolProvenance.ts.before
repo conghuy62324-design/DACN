@@ -1,0 +1,176 @@
+import { AGENT_TOOLS, type MissingField, type ToolDecision, type ToolName } from './tools.js';
+
+export type ProvenanceResult = { status: 'ALLOW' } |
+  { status: 'NEEDS_INPUT'; missing: MissingField[] } | { status: 'REJECT' };
+
+// G1 deliberately recognizes a narrow set of explicit current-turn forms. This
+// is a safety gate, not a general Vietnamese NLU parser. Unknown forms fail closed.
+const fold = (value: string) => value.normalize('NFC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('vi');
+const uncertain = /\b(?:không|chưa|chẳng|chả|đừng|khong|chua)\b|\?/iu;
+const unsafeIntent = /(?:^|[\s;,.])(?:ignore (?:previous|all|system)|system override|bỏ qua (?:chỉ dẫn|hướng dẫn|quy tắc)|lưu trip|save trip|tạo booking|đặt (?:booking|vé|phòng|dịch vụ)|xóa (?:trip|booking)|sửa (?:trip|booking))(?=$|[\s;,.])/iu;
+const ambiguousContext = /["“”]|(?:assistant|người khác|tài khoản khác)\s*:|(?:nhưng|nếu|có thể|chưa chắc)(?=$|[\s;,.])/iu;
+function supportedSegments(message: string): boolean {
+  const segments = message.split(/[;,\n]/u).map(part => part.trim().replace(/[.!?]$/u, '').trim()).filter(Boolean);
+  const intent = /^(?:lập lịch trình|lên lịch trình|tìm địa điểm|tìm nơi|tìm khách sạn|plan trip|search places)$/iu;
+  const label = /^(?:nơi xuất phát|xuất phát|từ|điểm đến|đến|ngày bắt đầu|bắt đầu|ngày kết thúc|kết thúc|số người lớn|người lớn|ngân sách cả nhóm|ngân sách chuyến đi|ngân sách mỗi người mỗi ngày|ngân sách mỗi người\/ngày|phương tiện|số trẻ em|trẻ em|danh mục)\s*:\s*.+$/iu;
+  const correction = /^(?:tôi không đi [\p{L}\s]+|tôi muốn đi [\p{L}\s]+|tôi chọn (?:ô tô|xe máy)|tôi muốn đi bằng (?:ô tô|xe máy)|à đổi sang (?:ô tô|xe máy))$/iu;
+  return segments.length > 0 && segments.every(segment => intent.test(segment) || label.test(segment) || correction.test(segment));
+}
+function unresolvedNegation(message: string): boolean {
+  const words = [...message.matchAll(/(?:^|[\s;,.])(không|chưa|chẳng|chả|đừng)(?=$|[\s;,.])/giu)]
+    .map(match => fold(match[1]));
+  if (!words.length) return false;
+  // One explicit destination correction is the sole supported negated form.
+  return words.length !== 1 || words[0] !== 'không' ||
+    !/không\s+đi\s+[^,;.\n]+,\s*tôi\s+muốn\s+đi\s+[^,;.\n]+/iu.test(message);
+}
+
+function labeled(message: string, labels: readonly string[]): string[] {
+  const parts = message.split(/[;,\n]/u);
+  const found: string[] = [];
+  for (const part of parts) {
+    for (const label of labels) {
+      const match = part.trim().match(new RegExp(`^${label}\\s*:\\s*(.+)$`, 'iu'));
+      if (match) found.push(match[1].trim());
+    }
+  }
+  return found;
+}
+
+function unique(values: string[]): string | undefined {
+  const clean = values.map(v => v.trim()).filter(v => v && !uncertain.test(v));
+  return clean.length && clean.every(v => fold(v) === fold(clean[0])) ? clean[0] : undefined;
+}
+
+function amount(raw: string): number | undefined {
+  const value = fold(raw).replace(/\s*vnd$/u, '');
+  const match = value.match(/^(\d+(?:[.,]\d+)?)\s*(triệu|trieu|k|nghìn|nghin)?$/u);
+  if (!match) return undefined;
+  const number = Number(match[1].replace(',', '.'));
+  const scale = match[2] === 'triệu' || match[2] === 'trieu' ? 1_000_000 :
+    ['k', 'nghìn', 'nghin'].includes(match[2] || '') ? 1_000 : 1;
+  const result = number * scale;
+  return Number.isSafeInteger(result) ? result : undefined;
+}
+
+function destination(message: string): string | undefined {
+  const explicit = labeled(message, ['điểm đến', 'đến']);
+  if (explicit.length) {
+    const value = unique(explicit);
+    const negatives = [...message.matchAll(/không\s+đi\s+([^,;.\n]+)/giu)].map(m => m[1]);
+    return value && negatives.some(v => fold(v) === fold(value)) ? undefined : value;
+  }
+  const positive = [...message.matchAll(/\b(?:tôi|mình)\s+muốn\s+đi\s+([^,;.\n]+)|\bđiểm\s+đến\s+là\s+([^,;.\n]+)/giu)]
+    .map(m => m[1] || m[2]);
+  return unique(positive);
+}
+
+function transportation(message: string): string | undefined {
+  if (/chưa\s+(?:chọn|quyết định)\s+phương tiện|không\s+chọn\s+phương tiện/iu.test(message)) return undefined;
+  const explicit = labeled(message, ['phương tiện']);
+  let phrases = explicit;
+  if (!phrases.length) {
+    phrases = [...message.matchAll(/(?:chọn|đi bằng|bằng|đổi sang)\s+(ô tô|xe máy|car|motorbike)(?=$|[\s,;.])/giu)]
+      .filter(m => !uncertain.test(message.slice(Math.max(0, m.index! - 12), m.index)))
+      .map(m => m[1]);
+    // A correction is only accepted when explicitly introduced by "đổi sang".
+    if (phrases.length > 1 && /đổi sang\s+(ô tô|xe máy|car|motorbike)(?=$|[\s,;.])/iu.test(message)) phrases = phrases.slice(-1);
+  }
+  const value = unique(phrases);
+  if (!value) return undefined;
+  const normalized = fold(value);
+  if (normalized === 'ô tô' || normalized === 'car') {
+    return /không\s+đi\s+(?:bằng\s+)?(?:ô tô|car)(?=$|[\s;,.])/iu.test(message) ? undefined : 'car';
+  }
+  if (normalized === 'xe máy' || normalized === 'motorbike') {
+    return /không\s+đi\s+(?:bằng\s+)?(?:xe máy|motorbike)(?=$|[\s;,.])/iu.test(message) ? undefined : 'motorbike';
+  }
+  return undefined;
+}
+
+function observed(message: string, field: string): unknown {
+  switch (field) {
+    case 'departureCity': return unique(labeled(message, ['nơi xuất phát', 'xuất phát', 'từ']));
+    case 'destinationCity': return destination(message);
+    case 'startDate': return /chưa\s+(?:chọn|chốt|xác định)\s+ngày/iu.test(message) ? undefined : unique(labeled(message, ['ngày bắt đầu', 'bắt đầu']));
+    case 'endDate': return /chưa\s+(?:chọn|chốt|xác định)\s+ngày/iu.test(message) ? undefined : unique(labeled(message, ['ngày kết thúc', 'kết thúc']));
+    case 'adults': {
+      const value = unique([...labeled(message, ['số người lớn', 'người lớn']),
+        ...[...message.matchAll(/\b(\d+)\s+người lớn\b/giu)].map(m => m[1])]);
+      return value && /^\d+$/u.test(value) ? Number(value) : undefined;
+    }
+    case 'totalBudget': {
+      if (/chưa\s+(?:chọn|chốt|xác định)\s+ngân sách/iu.test(message)) return undefined;
+      const value = unique(labeled(message, ['ngân sách cả nhóm', 'ngân sách chuyến đi']));
+      return value ? amount(value) : undefined;
+    }
+    case 'dailyBudgetPerPerson': {
+      const value = unique(labeled(message, ['ngân sách mỗi người mỗi ngày', 'ngân sách mỗi người/ngày']));
+      return value ? amount(value) : undefined;
+    }
+    case 'transportation': return transportation(message);
+    case 'children': {
+      const value = unique([...labeled(message, ['số trẻ em', 'trẻ em']),
+        ...[...message.matchAll(/\b(\d+)\s+trẻ em\b/giu)].map(m => m[1])]);
+      return value && /^\d+$/u.test(value) ? Number(value) : undefined;
+    }
+    case 'category': return unique(labeled(message, ['danh mục']));
+    default: return undefined;
+  }
+}
+
+function equalValue(actual: unknown, proof: unknown): boolean {
+  if (typeof actual === 'string' && typeof proof === 'string') return fold(actual) === fold(proof);
+  return actual === proof;
+}
+
+/** Recovery-only observation: no model tool name/history/default can select this intent.
+ * Reuses G1's grammar/extractors. Negation/ambiguity outside its positive grammar
+ * returns null rather than guessing which field a user meant to unset.
+ */
+export function readCurrentRequiredSlots(currentMessage: string): {
+  toolName: ToolName; values: Record<string, unknown>;
+} | null {
+  if (typeof currentMessage !== 'string' || unsafeIntent.test(currentMessage) || ambiguousContext.test(currentMessage) ||
+    !supportedSegments(currentMessage) || unresolvedNegation(currentMessage)) return null;
+  const intents = currentMessage.split(/[;,\n]/u).map(part => part.trim().replace(/[.!?]$/u, '').trim()).flatMap(part => {
+    if (/^(?:lập lịch trình|lên lịch trình|plan trip)$/iu.test(part)) return ['plan_trip' as const];
+    if (/^(?:tìm địa điểm|tìm nơi|tìm khách sạn|search places)$/iu.test(part)) return ['search_places' as const];
+    return [];
+  });
+  if (intents.length !== 1) return null;
+  const spec = AGENT_TOOLS.find(tool => tool.name === intents[0]);
+  const values: Record<string, unknown> = {};
+  for (const field of spec.parameters.required) {
+    const value = observed(currentMessage, field);
+    if (value !== undefined) values[field] = value;
+  }
+  return { toolName: spec.name, values };
+}
+
+export function checkToolProvenance(decision: ToolDecision, currentMessage: string): ProvenanceResult {
+  const spec = AGENT_TOOLS.find(tool => tool.name === decision.name);
+  if (!spec || typeof currentMessage !== 'string' || unsafeIntent.test(currentMessage)) return { status: 'REJECT' };
+  const hasIntent = decision.name === 'plan_trip'
+    ? /(?:lập|lên) lịch trình|plan trip/iu.test(currentMessage)
+    : /tìm (?:địa điểm|nơi|khách sạn)|search places/iu.test(currentMessage);
+  if (!hasIntent) return { status: 'NEEDS_INPUT', missing: [...spec.parameters.required] as MissingField[] };
+  if (!supportedSegments(currentMessage) || ambiguousContext.test(currentMessage) || unresolvedNegation(currentMessage)) {
+    return { status: 'NEEDS_INPUT', missing: [...spec.parameters.required] as MissingField[] };
+  }
+  const missing: MissingField[] = [];
+  for (const field of spec.parameters.required) {
+    const proof = observed(currentMessage, field);
+    if (proof === undefined || !equalValue(decision.arguments[field], proof)) missing.push(field as MissingField);
+  }
+  if (missing.length) return { status: 'NEEDS_INPUT', missing };
+  for (const [field, actual] of Object.entries(decision.arguments)) {
+    if ((spec.parameters.required as readonly string[]).includes(field)) continue;
+    // Existing Planner defaults are harmless only for optional fields. Required
+    // fields always need current-turn proof above.
+    const harmlessDefault = (field === 'children' && actual === 0) ||
+      (field === 'pacing' && actual === 'balanced') || (field === 'preferences' && Array.isArray(actual) && actual.length === 0);
+    if (!harmlessDefault && !equalValue(actual, observed(currentMessage, field))) return { status: 'REJECT' };
+  }
+  return { status: 'ALLOW' };
+}

@@ -1,0 +1,16 @@
+const c=require('./common.cjs'),{execFileSync}=require('node:child_process');
+async function main(){
+c.integrity();if(!c.fs.existsSync(c.path.join(c.evidence,'integrity-before.json'))){c.write('integrity-before.json',{at:new Date().toISOString(),hashes:c.snapshot(),baseline:c.integrity()});
+c.fs.copyFileSync('C:/Users/Danh/.codex/attachments/3e065968-afff-47ef-82bb-f8c757c8a40a/Pasted text.txt',c.path.join(c.evidence,'owner-task.txt'),c.fs.constants.COPYFILE_EXCL);}
+const record={at:new Date().toISOString(),status:'BLOCKED',nativePosts:0};let db;
+try{record.local=c.noProxy();record.rate=c.rate();c.assert.equal(record.rate.futureDatedEntries.length,0);record.resources=c.resources();record.ollama=await c.metadata();
+const lines=execFileSync('netstat.exe',['-ano','-p','tcp'],{encoding:'utf8',timeout:5000});const line=lines.split(/\r?\n/).find(x=>/127\.0\.0\.1:11434\s+\S+\s+LISTENING/.test(x));c.assert.ok(line);const pid=Number(line.trim().split(/\s+/).at(-1));const name=execFileSync('powershell.exe',['-NoProfile','-Command',`Get-Process -Id ${pid} | Select-Object -ExpandProperty ProcessName`],{encoding:'utf8',timeout:10000}).trim();c.assert.equal(name,'ollama');record.listener={pid,process:name,endpoint:'127.0.0.1:11434'};
+db=require('./readonly-db.cjs');const guard=await db.guard();c.write('db-preflight.json',guard);c.write('fingerprint-before.json',await db.fingerprint());
+const {RecommendationRepository}=require(c.path.join(c.root,'backend/dist/repositories/recommendationRepository.js'));
+const catalog=await RecommendationRepository.getApprovedPlaces(),publicFields=catalog.map(p=>({id:p.id,name:p.name,city:p.city,province:p.province,category:p.category,priceFrom:p.priceFrom,catalogPriceAvailable:p.catalogPriceAvailable,latitude:p.latitude,longitude:p.longitude,status:p.status,businessStatus:p.business?.status??null}));
+c.write('catalog-inventory.json',{at:new Date().toISOString(),source:'REAL_POSTGRESQL_APPROVED_CATALOG',count:publicFields.length,places:publicFields,cities:[...new Set(publicFields.map(p=>p.city))].map(city=>({city,categories:publicFields.filter(p=>p.city===city).map(p=>p.category)}))});
+const [principal]=await db.sequelize.query('SELECT id FROM users WHERE id=:id',{replacements:{id:c.principal}});record.authentication={approvedPrincipalSource:c.principalSource,principalHash:c.principalHash,databaseAccountExists:principal.length===1,preference:'Real login if existing approved test account/credentials; otherwise explicit test-signed JWT through production authentication middleware, not real-login E2E'};
+record.db={guard:'PASS',readOnly:true,tableCount:Object.keys(c.json(c.prefix+'fingerprint-before.json').tables).length,audit:db.audit};record.status='PASS_READONLY_AND_GET_ONLY';
+}catch(error){record.reason=String(error.message).slice(0,800);record.code=error.code||null;}
+finally{if(db)await db.sequelize.close();c.write(process.argv.includes('--recheck')?'preflight-recheck.json':'preflight-initial.json',record);console.log(JSON.stringify({status:record.status,reason:record.reason,modelResident:record.ollama?.resident,remainingQuota:record.rate?.remainingConservativeSlots,db:record.db,nativePosts:0}));}
+}main().catch(error=>{console.error(error);process.exitCode=1;});

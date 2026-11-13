@@ -1,0 +1,406 @@
+# TASK T-AI-04-G2-LIVE-MULTI-TURN-VALIDATION
+
+Vai trò: Senior AI Engineer, Backend Engineer, Security Engineer và QA Lead của HuGo Travel.
+
+Đây là task LIVE VALIDATION cho G2 Verified History đã triển khai ở chế độ local/demo.
+
+**Chủ dự án phê duyệt tối đa 05 POST Ollama local**, gồm:
+- Tối đa 01 operator load-only POST nếu model chưa resident.
+- Tối đa 04 genuine inference POST qua Agent.
+- Không retry, hidden warm-up hoặc POST khác.
+
+Không sửa production source trong task này.
+
+## 1. Baseline
+
+Đọc kỹ:
+
+- `docs/HUGO_T_AI_04_G2_VERIFIED_HISTORY_REPORT.md`
+- `docs/HUGO_T_AI_04_G1_NATURAL_LANGUAGE_PROOF_FIX_REPORT.md`
+- `docs/HUGO_T_AI_04_G1_SERVER_COMPLETENESS_LIVE_VALIDATION_REPORT.md`
+- `docs/HUGO_T_AI_04_G1_COMPATIBILITY_V2_READINESS_REPORT.md`
+
+Baseline:
+
+- G2 offline: 68/68 PASS.
+- Natural Proof: 79/79 PASS.
+- Compatibility: 61/61 PASS.
+- Correction: 42/42 PASS.
+- Completeness: 52/52 PASS.
+- Legacy: 145 PASS / 36 FAIL.
+- P1 raw NLU OPEN.
+- P2 runtime OPEN.
+- G2 chỉ local/demo, mặc định tắt.
+- Frontend chưa tích hợp G2.
+- Không có G2 LIVE result trước task này.
+
+## 2. Mục tiêu
+
+Kiểm chứng bằng Qwen3 thật:
+
+1. Tạo phiên hội thoại server-owned.
+2. Cung cấp thông tin lập lịch trình qua nhiều lượt.
+3. Backend ghi nhớ các trường đã xác minh.
+4. Khi đủ thông tin, model chọn đúng plan_trip.
+5. Đổi ngân sách và vẫn giữ đúng những thông tin không thay đổi.
+6. Hủy một lựa chọn và không thực thi với giá trị cũ.
+7. Bổ sung lựa chọn mới rồi gọi đúng tool.
+8. Đổi địa điểm trong cùng phiên.
+9. Không lấy proof từ client history.
+10. Không có tool call trái phép.
+
+Chỉ kiểm backend G2 LIVE, chưa phải Browser/Frontend E2E.
+
+## 3. Design và approval checks
+
+Trước LIVE phải xác nhận:
+
+- G2 chỉ bật bằng `AGENT_G2_MODE=local-demo` trong process test được phép.
+- Không thay `.env` toàn cục.
+- Không bật G2 trên môi trường không được duyệt.
+- Không đổi Auth/JWT.
+- Consent notice `LOCAL_DEMO_SLOTS_V1` giữ nguyên.
+- TTL 15 phút.
+- Session owner, revision và requestId đúng contract.
+- Model chỉ nhận verified server slots, không nhận client history làm proof.
+- G2 wire SYSTEM cohort và schema đúng source/hash đã khóa.
+
+Đọc source hiện tại trước khi xây harness.
+
+Nếu contract đã thay đổi so với report, dừng và báo BLOCKED.
+
+## 4. Khóa LIVE manifest trước POST
+
+Tạo bộ tình huống kỹ thuật mới, không trùng V2 APPROVED hoặc historical L/G probes.
+
+Sử dụng địa điểm, ngày và ngân sách hợp lệ trong grammar G2 đã hỗ trợ.
+
+Khóa:
+
+- Exact input từng lượt.
+- Session action.
+- Expected revision/state transition.
+- Expected model kind/tool/arguments.
+- Expected missingFields.
+- Expected decision origin.
+- Expected execution gate.
+- Expected number of tool calls.
+- Exact provider body hash.
+- Scoring PASS/FAIL/NOT EVALUATED.
+- POST budget và stop conditions.
+
+Không thay input hoặc expected sau khi thấy model output.
+
+Không dùng history V2 immutable để tạo sẵn verified session.
+
+## 5. Phase A — Deterministic G2, zero inference
+
+Qua production HTTP Agent router/auth và real server-owned in-memory session store:
+
+A01 — Tạo session với một plan intent có thông tin chưa đầy đủ.
+
+A02 — Bổ sung required slots trong cùng authenticated session.
+
+Các lượt trước khi hoàn chỉnh phải trả:
+
+- Exact missingFields.
+- SERVER_COMPLETENESS hoặc VERIFIED_HISTORY_COMPLETENESS phù hợp.
+- 0 provider.
+- 0 Ollama readiness GET trong chính Agent turn.
+- 0 inference POST.
+- 0 tool.
+- Raw NLU NOT EVALUATED.
+
+Mỗi request phải dùng fresh UUID requestId.
+
+Continue phải dùng exact server-created conversation ID và revision hiện tại.
+
+Không sử dụng client history để điền dữ liệu.
+
+Kiểm privacy notice, consent/version acknowledgement, authenticated owner và normal quota accounting.
+
+## 6. Phase B — Four genuine LIVE inferences
+
+### L01 — Hoàn chỉnh lịch trình qua nhiều lượt
+
+Sau A01/A02, bổ sung các trường còn thiếu cuối cùng.
+
+Expected:
+
+- Owned G2 session có đầy đủ verified required slots.
+- Model trả plan_trip với chính xác các giá trị đã cung cấp.
+- Original schema/runtime PASS.
+- Gate ALLOW nếu arguments đúng independent verified proof.
+- Một fake read-only tool invocation.
+- Không lấy thông tin từ client history.
+
+### L02 — Đổi ngân sách
+
+Trong cùng session, gửi correction hợp lệ, ví dụ đổi ngân sách nhóm sang giá trị mới đã khóa.
+
+Expected:
+
+- New totalBudget override prior budget.
+- Các trường khác giữ nguyên verified value.
+- Model trả đúng plan_trip với ngân sách mới.
+- Gate không ALLOW budget cũ.
+- Tối đa một fake tool.
+
+### D05 — Hủy lựa chọn phương tiện, zero inference
+
+Trong cùng session, gửi explicit unset/negation đã được grammar hỗ trợ.
+
+Expected:
+
+- Transportation cũ bị INVALIDATED/UNPROVEN theo contract.
+- Backend trả needs_input transportation.
+- 0 provider/GET/POST/tool.
+- Không tự lấy lại phương tiện cũ.
+- Raw NLU NOT EVALUATED.
+
+### L03 — Chọn phương tiện mới
+
+Gửi positive correction được hỗ trợ.
+
+Expected:
+
+- Verified transportation mới được SET.
+- Model trả plan_trip với phương tiện mới.
+- Gate chỉ ALLOW arguments có proof hiện hành.
+- Một fake read-only tool nếu raw đúng.
+
+### L04 — Đổi địa điểm đến
+
+Gửi destination correction hợp lệ trong cùng session.
+
+Expected:
+
+- Destination mới override destination cũ.
+- Các slot khác được giữ theo policy.
+- Model trả đúng destination mới.
+- Gate không ALLOW địa điểm cũ.
+- Không tự sửa model arguments.
+- Tối đa một fake read-only tool.
+
+Tổng inference L01–L04 không vượt quá 04 POST.
+
+Nếu model trả raw sai:
+- Chấm raw NLU FAIL.
+- Đánh giá safety gate độc lập.
+- Không sửa output hoặc retry.
+
+Nếu có unauthorized tool execution hoặc stale-value ALLOW:
+- Đánh dấu safety blocker.
+- Dừng LIVE run.
+- Không tự sửa production trong task này.
+
+## 7. Lifecycle và isolation
+
+Sau các LIVE cases, kiểm bằng những request không cần inference:
+
+- Conversation revision.
+- Reset hoặc revoke.
+- Session không thể tiếp tục sau revoke.
+- Invalid/expired/stale revision fail closed.
+- Không trả session metadata của account khác.
+- Không dùng client-provided history làm server proof.
+
+Nếu cần principal phụ để kiểm ownership, chỉ dùng trong negative access check, không dùng principal phụ để chạy inference hoặc vượt quota.
+
+Không vượt qua authentication hoặc giả lập session owner.
+
+Không restart backend giữa các lượt multi-turn; restart sẽ làm mất state theo contract local/demo.
+
+## 8. Model readiness và POST preparation
+
+Dùng đúng model:
+
+`qwen3:4b-instruct-2507-q4_K_M`
+
+Digest approved:
+
+`0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0`
+
+Giữ:
+
+- Local Ollama `127.0.0.1:11434`.
+- JSON mode.
+- stream false.
+- temperature 0.
+- num_ctx 16384.
+- num_predict 2048.
+- Application timeout 15000ms.
+- Concurrency 1.
+- No Cloud/proxy.
+
+Preflight GET version/tags/ps, exact digest/context/residency và GPU/RAM.
+
+Nếu model nonresident:
+- Được phép đúng một load-only POST operator.
+- Khóa request body/hash/keep-alive/deadline trước khi chạy.
+- Tính load-only vào tổng cap 5.
+- Không coi load-only là NLU inference.
+- Kiểm readiness lại trước L01.
+
+Nếu preparation thất bại hoặc model bị eviction sau đó, dừng; không tự nạp lần hai.
+
+Không tăng timeout hoặc thay model để đạt PASS.
+
+## 9. Rate limit và accounting
+
+Giữ cùng principal đã được duyệt cho các inference và các lượt G2 chính.
+
+AgentLimits mặc định 20 normal turns/principal/rolling hour.
+
+Chú ý: deterministic G2 turns cũng tiêu quota bình thường.
+
+Trước khi chạy:
+
+1. Scan historical rolling ledger.
+2. Đọc cả timestamp `at` và `createdAt`.
+3. Kiểm actual remaining slots.
+4. Tính toàn bộ deterministic + LIVE turns.
+5. Kiểm 15-minute session TTL.
+6. Kiểm keep-alive model 5 phút.
+7. Kiểm budget 5 native POST.
+
+Nếu không đủ quota cho toàn bộ chuỗi đã khóa, báo BLOCKED/NOT RUN; không reset, đổi principal hoặc bypass AgentLimits.
+
+Không giả định lịch chạy V2 cũ còn hợp lệ.
+
+Operator load-only được ghi ledger riêng, không giả là đã đi qua AgentLimits.
+
+## 10. REAL / MOCK boundaries
+
+Được sử dụng thật:
+
+- G2 session store.
+- Auth HTTP middleware.
+- AgentOrchestrator.
+- Shared proof reader.
+- Completeness.
+- Original schema/Ajv/runtime.
+- G2 merged-proof execution gate.
+- Production Ollama provider.
+- Native Ollama inference.
+
+Được fake để tránh PostgreSQL:
+
+- Consent store.
+- Read-only tool executor.
+
+Fake executor chỉ ghi exact tool arguments và trả marker MOCK_ONLY.
+
+Không trình bày fake itinerary/cost/catalog là dữ liệu thật.
+
+Không gọi Planner/Catalog/PostgreSQL thật trong task này.
+
+## 11. Scoring
+
+Báo riêng bốn nhóm:
+
+### Raw NLU
+- Expected vs raw.
+- Exact kind/tool/arguments.
+- Schema/runtime.
+- Semantic PASS/FAIL.
+- Timeout/no raw = NOT EVALUATED semantic, nhưng vẫn ghi reliability failure.
+
+### Verified History
+- Session owner.
+- Revision.
+- Slot SET/INVALIDATED.
+- Current correction precedence.
+- TTL/replay/concurrency state.
+- MissingFields.
+- Decision origin.
+
+### Safety
+- Gate ALLOW/NEEDS_INPUT/REJECT.
+- Old values blocked.
+- Fake executor count.
+- No unauthorized mutation.
+- No stale tool after reset/revoke.
+
+### Runtime
+- Readiness.
+- POST count.
+- Latency/token.
+- Memory/VRAM.
+- GPU watchdog warnings.
+- Timeout/abort/settlement.
+
+Không gộp deterministic UX PASS thành raw NLU PASS.
+
+Không dùng G2 provider cohort để ghi đè điểm benchmark V2 G1 cũ.
+
+## 12. Regression và integrity
+
+Sau LIVE chạy:
+
+- 68 G2 tests.
+- 79 Natural Proof tests.
+- 61 Compatibility tests.
+- 42 Correction tests.
+- 52 Completeness tests.
+- Original 181 legacy cases.
+- Readiness/abort diagnostics.
+- Foundation single-intent controls.
+- Backend build.
+
+Giữ actual legacy và isolated downstream results riêng.
+
+Không sửa assertion hoặc evidence cũ.
+
+Kiểm SHA-256 trước/sau cho source, V2 lock và historical artifacts.
+
+Không truy cập PostgreSQL.
+
+Không migration/reset/seed/truncate.
+
+Không sửa Trip/Booking/Planner/Catalog/pricing.
+
+Không frontend integration hoặc Browser E2E.
+
+Không commit/push/deploy.
+
+## 13. Báo cáo
+
+Tạo:
+
+`docs/HUGO_T_AI_04_G2_LIVE_MULTI_TURN_VALIDATION_REPORT.md`
+
+Evidence:
+
+`docs/evidence/t-ai-04-g2-live-multi-turn-validation/`
+
+Bắt buộc có:
+
+1. Approval/manifest.
+2. Preflight và quota.
+3. Native POST ledger.
+4. Deterministic turns.
+5. L01–L04 raw LIVE results.
+6. Session/revision state.
+7. Correction precedence.
+8. Auth/consent/isolation.
+9. Tool invocation.
+10. Ollama runtime/latency/resources.
+11. Regression compatibility.
+12. Source/benchmark integrity.
+13. P1/P2 status.
+14. NEXT TASK PLAN.
+
+Kết luận chỉ được là LIVE probe PASS trong phạm vi thực tế nếu đủ tiêu chí.
+
+Không tự tuyên bố G2 durable production-ready, frontend-ready hoặc full V2 PASS.
+
+Sau khi task này PASS, NEXT TASK đề xuất:
+
+`T-AI-04-G2-FRONTEND-INTEGRATION-AND-LOGOUT`
+
+Task frontend phải xử lý opt-in local/demo, conversation ID/revision/requestId, trạng thái hết hạn, reset/revoke và logout đúng contract.
+
+Không tự triển khai NEXT TASK.
+
+Dừng sau báo cáo.

@@ -1,0 +1,333 @@
+# TASK T-AI-04-PLANNER-MAINTENANCE-CONNECTION-OWNERSHIP-DIAGNOSIS
+
+Vai trò: Senior PostgreSQL Engineer, Backend Engineer, E2E Automation Engineer và Security QA Lead của TravelGo.
+
+## MỤC TIÊU
+
+Chẩn đoán nguyên nhân `STOP_PRELIVE_UNRECOGNIZED_DB_CONNECTION` trong lượt Planner LIVE Targeted Revalidation Resume.
+
+Đối tượng cần điều tra:
+
+- Historical PostgreSQL PID: `9686`
+- `application_name`: empty
+- `state`: idle
+- `wait_event`: ClientRead
+- Phát hiện tại closing maintenance guard sau Direct Planner.
+
+Phải xác định liệu kết nối chưa được nhận diện có thể xuất phát từ:
+
+1. Task-owned Sequelize pool.
+2. Maintenance/preflight connection.
+3. Connection bootstrap hoặc connection registration race.
+4. Connection lifecycle chưa cleanup.
+5. Một client độc lập không thuộc harness.
+
+Không được suy đoán ownership từ PID, trạng thái idle hoặc application_name rỗng.
+
+Đây là task **OFFLINE DIAGNOSIS + CONTROLLED READ-ONLY PROVENANCE TRACE**.
+
+Không chạy Planner LIVE, tạo fixture hoặc gọi Ollama.
+
+## 1. BASELINE
+
+Đọc đầy đủ:
+
+- `docs/HUGO_T_AI_04_PLANNER_LIVE_TARGETED_REVALIDATION_RESUME_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_ADAPTER_BINDING_ACCEPTANCE_FIX_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_LIVE_HARNESS_RELIABILITY_FIX_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_REAL_TOOL_LIVE_E2E_RESUME_RUN2_REPORT.md`
+
+Đọc evidence:
+
+- Maintenance implementation.
+- Runtime adapters.
+- Real guards.
+- Connection/pool initialization.
+- Closing guard failure.
+- Original activity observation.
+- Cleanup ledger.
+- Final DB fingerprint.
+- Master stop/result.
+- Source and manifest hashes.
+
+Bảo toàn tất cả historical evidence.
+
+Baseline:
+
+- Phase A 64/64 PASS.
+- Fresh quota20, reserve7.
+- Direct Planner R01/R02/R03 business results PASS.
+- Closing maintenance ownership guard FAIL.
+- R01–R03 LIVE NOT RUN.
+- Ollama POST0.
+- Historical DB restoration25/25, Trip27/27.
+- P1 NLU/P2 runtime OPEN.
+
+## 2. PHASE A — STATIC SOURCE INVESTIGATION
+
+Trước khi truy cập PostgreSQL, kiểm source và luồng khởi tạo connection.
+
+Xác định tất cả nơi có thể tạo kết nối:
+
+- Sequelize constructor.
+- Sequelize pool acquisition/release.
+- `authenticate()`.
+- ConnectionManager.
+- `afterConnect`.
+- Direct Planner/Catalog repositories.
+- Maintenance connections.
+- Fingerprint/read-only verification.
+- Cleanup/final audit connections.
+- Any other harness-created PG client.
+
+Với từng connection factory, xác định:
+
+- Nơi khởi tạo.
+- Thời điểm mở.
+- PostgreSQL application_name.
+- Cách lấy backend PID.
+- Cơ chế đăng ký ownership.
+- Cách xác minh connection identity.
+- Thời điểm close/release/dispose.
+- Có thể tồn tại sau direct Planner hay không.
+
+Kiểm tra kỹ khoảng thời gian:
+
+- Trước fixture INSERT.
+- Trong maintenance lock.
+- Sau fixture COMMIT.
+- Trong Direct Planner.
+- Khi closing guard chạy.
+- Khi cleanup/dispose.
+
+Không mặc định một connection thuộc harness chỉ vì kết nối đến đúng test DB.
+
+## 3. OFFLINE CONNECTION OWNERSHIP TESTS
+
+Tạo independent sensor tests, không sử dụng PostgreSQL thật.
+
+Mô phỏng:
+
+A. Task-owned connection đăng ký trước khi kiểm guard.
+
+B. Task-owned connection xuất hiện trong quá trình pool bootstrap.
+
+C. Connection được mở nhưng registration chưa hoàn tất.
+
+D. Connection đã release về pool nhưng PostgreSQL session vẫn tồn tại.
+
+E. Maintenance connection hợp lệ.
+
+F. External unknown connection.
+
+G. Empty application_name.
+
+H. PID reuse với backend_start khác.
+
+I. Missing/invalid ownership metadata.
+
+J. Connection xuất hiện sau ownership snapshot.
+
+K. Connection đóng giữa hai lần quan sát.
+
+L. Connection registration hoặc cleanup bị lỗi.
+
+Mỗi trường hợp phải chứng minh guard quyết định theo bằng chứng chứ không theo phỏng đoán.
+
+Nếu ownership không đủ chứng cứ:
+
+`UNKNOWN_CONNECTION_FAIL_CLOSED`
+
+Không cho phép silent whitelist.
+
+## 4. PHASE B — CONTROLLED READ-ONLY POSTGRESQL TRACE
+
+Chỉ thực hiện nếu offline diagnostics đạt yêu cầu.
+
+Database duy nhất:
+
+`travelgo_ai_m0_test`
+
+Cho phép đọc metadata kết nối, không truy vấn dữ liệu nghiệp vụ ngoài identity/sentinel cần thiết.
+
+Preflight:
+
+- Exact host/port/database.
+- Sentinel.
+- Approved schema context.
+- READ ONLY session.
+- No entity writes.
+
+Sử dụng `pg_stat_activity` và connection metadata được PostgreSQL hỗ trợ.
+
+Ghi các thông tin cần thiết:
+
+- Backend PID.
+- backend_start.
+- application_name.
+- usename.
+- datname.
+- client_addr/client_port.
+- backend_type.
+- state.
+- wait_event_type/wait_event.
+- Connection factory identifier được harness ghi tại thời điểm mở.
+- Connection creation/registration/disposal events.
+
+Không ghi JWT, password, connection URI chứa secret hoặc raw user data.
+
+Không giả định PID9686 hiện vẫn tồn tại.
+
+Nếu PID cũ đã biến mất, báo `HISTORICAL_PID_NOT_OBSERVABLE`, không kết luận nó là connection thuộc task.
+
+## 5. OWNERSHIP ATTRIBUTION
+
+Phải có bằng chứng ghép nối giữa:
+
+- Connection do harness chủ động tạo.
+- Physical PostgreSQL backend identity.
+- Backend PID.
+- backend_start.
+- Connection lifecycle.
+- Registration event.
+- Disposal event.
+
+Chỉ xác nhận `TASK_OWNED` nếu bằng chứng liên kết đủ mạnh.
+
+Không tự thêm PID9686 hoặc empty application_name vào allowlist.
+
+Không đăng ký tất cả connections đến test DB là owned.
+
+Không dựa vào trạng thái idle để bỏ guard.
+
+Nếu không xác minh được, giữ `UNKNOWN` và FAIL CLOSED.
+
+## 6. ISOLATION VÀ CLEANUP CONTRACT
+
+Giữ nguyên:
+
+- Runtime PostgreSQL READ ONLY.
+- Maintenance isolation.
+- Exact-ID fixture ownership checks.
+- Row-hash checks.
+- FK/Trip JSON checks.
+- Cleanup preconditions.
+- Global fail-fast.
+- Resource dispose.
+- Agent/native dispatch fences.
+
+Không sửa guard để chấp nhận unknown connections.
+
+Không thay maintenance locks hoặc cleanup eligibility nhằm lấy PASS.
+
+Nếu xác định bug ở registration/lifecycle của harness:
+
+- Tạo proposed patch riêng.
+- Giải thích root cause.
+- Bổ sung regression/failure injection.
+- Kiểm offline với sensor doubles.
+- Không chạy Planner LIVE để xác nhận patch trong task này.
+
+Nếu cần thay production connection management, chỉ đề xuất task riêng, không tự sửa.
+
+## 7. NEGATIVE ACCEPTANCE
+
+Bắt buộc kiểm:
+
+1. Owned connection hợp lệ được nhận diện.
+2. External unknown connection bị từ chối.
+3. PID đúng nhưng backend_start sai bị từ chối.
+4. Empty application_name không được tự coi là owned.
+5. Registration missing bị từ chối.
+6. Late registration không tự vượt closing guard.
+7. Unknown connection khiến global STOP.
+8. STOP trước model inference.
+9. No subsequent Agent/tool dispatch.
+10. Cleanup vẫn tuân thủ exact ownership/preconditions.
+11. Original error không bị cleanup error che.
+12. Source/benchmark/historical evidence nguyên vẹn.
+
+Không đổi expected để hợp thức hóa một unknown connection.
+
+## 8. GIỚI HẠN QUYỀN
+
+Được phép:
+
+- Đọc source.
+- Tạo harness diagnosis/tests mới.
+- Chạy offline sensor tests.
+- Thực hiện controlled READ ONLY PostgreSQL connection metadata trace nếu đạt preflight.
+
+Không được phép:
+
+- INSERT/UPDATE/DELETE.
+- Tạo fixture.
+- Chạy Direct Planner execution.
+- Gửi request Ollama GET/POST.
+- Preload/unload model.
+- Chạy Browser LIVE.
+- Terminate backend PID.
+- Sửa grants/role.
+- Bỏ qua PostgreSQL ownership guard.
+- Thay production Agent/Planner/Auth.
+- Thay SYSTEM, schemas hoặc validators.
+- Chạy V2 LIVE.
+- Commit/push/deploy.
+
+Nếu read-only identity hoặc source-integrity guard không đạt, STOP.
+
+## 9. KẾT LUẬN
+
+Phân loại theo bằng chứng:
+
+### VERIFIED_HARNESS_CONNECTION_LIFECYCLE_ISSUE
+Đã có bằng chứng lỗi thuộc cơ chế connection registration/lifecycle của harness.
+
+### VERIFIED_EXTERNAL_OR_UNOWNED_CONNECTION
+Đã chứng minh kết nối không thuộc phạm vi được phép.
+
+### OWNERSHIP_UNRESOLVED_FAIL_CLOSED
+Không đủ bằng chứng xác định ownership; guard tiếp tục chặn an toàn.
+
+Chỉ đề xuất sửa hoặc tích hợp guard dựa trên kết luận thực tế.
+
+Không nhận Planner LIVE PASS.
+
+Không đóng P1/P2.
+
+## 10. BÁO CÁO
+
+Tạo:
+
+`docs/HUGO_T_AI_04_PLANNER_CONNECTION_OWNERSHIP_DIAGNOSIS_REPORT.md`
+
+Evidence:
+
+`docs/evidence/t-ai-04-planner-connection-ownership-diagnosis/`
+
+Báo cáo gồm:
+
+1. Baseline.
+2. Static connection-factory inventory.
+3. Pool lifecycle analysis.
+4. PID9686 historical evidence.
+5. Offline sensor tests.
+6. READ ONLY provenance observations.
+7. Ownership attribution.
+8. Race-condition findings.
+9. Proposed fix, nếu có bằng chứng.
+10. Negative acceptance.
+11. Source/benchmark integrity.
+12. P1/P2 status.
+13. Remaining blocker.
+14. NEXT TASK PLAN.
+
+Nếu xác minh được lỗi harness, NEXT TASK đề xuất:
+
+`T-AI-04-PLANNER-CONNECTION-OWNERSHIP-GUARD-FIX`
+
+Nếu chẩn đoán và guard đã đủ bằng chứng để nghiệm thu, đề xuất targeted LIVE resume riêng với scope/quota/fixture approval mới.
+
+Không tự triển khai bất kỳ NEXT TASK nào.
+
+**DỪNG SAU BÁO CÁO.**

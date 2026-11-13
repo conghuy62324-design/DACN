@@ -177,7 +177,7 @@ const tests: TestCase[] = [
         totalBudget: 1000000, // Quá ít cho 3 ngày
         transportation: 'car',
         preferences: ['am-thuc'],
-        pacing: 'relaxed',
+        pacing: 'balanced', // This scenario tests budget status; generate now supports balanced only.
       });
 
       return tightPlan.budgetStatus === 'over_budget' && tightPlan.costDifferenceVND < 0;

@@ -1,0 +1,37 @@
+diff --git "a/C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-live-targeted-revalidation\\runtime-adapters.cjs" "b/C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-adapter-binding-acceptance-fix\\runtime-adapters.cjs"
+index bab32b9..d262b6c 100644
+--- "a/C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-live-targeted-revalidation\\runtime-adapters.cjs"
++++ "b/C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-adapter-binding-acceptance-fix\\runtime-adapters.cjs"
+@@ -75,6 +75,21 @@ const runtime={
+  assertHistory(item){if(item.id==='OP-LOAD'){c.assert.equal(current.providerCalls,0);return;}c.assert.equal(current.quotaConsumed,1);if(item.expected.revision)c.assert.equal(current.metadata.revision,item.expected.revision);if(item.expected.raw){c.assert.equal(current.committed.ownerHash,c.principalHash);for(const[k,v]of Object.entries(item.expected.raw.arguments)){c.assert.equal(current.committed.slots[k].state,'SET');c.assert.deepEqual(current.committed.slots[k].value,v);}current.history='PASS';}if(item.expected.revoked)c.assert.equal(store.sessions.has(bindings['$'+item.viewport+'.id']),false);},
+  assertExecuted(item){c.assert.equal(current.executed.length,item.expected.toolCalls);for(const x of current.executed){c.assert.equal(x.arguments.name,'plan_trip');c.assert.ok(x.dbQueriesAfter>x.dbQueriesBefore);c.assert.ok(current.gates.some(g=>g.result.status==='ALLOW'));assertPublicFidelity(current.api.body.data.result,x.result);}current.safety='PASS';},
+ };
++const {createCleanupLifecycle}=require('./cleanup-lifecycle.cjs');
++const cleanupLifecycle=createCleanupLifecycle({
++ expectedIds:['f7433d4a-5f49-4991-8add-b55435b02eb0','5a1e8835-770c-41a2-8699-74deba239a86'],
++ async readState(){return{committed:maintenance.committed,ambiguous:maintenance.ambiguous,createdRows:maintenance.inserted?.length||0};},
++ async readOwnership(){
++  const file=c.path.join(c.evidence,'fixture-committed-ledger.json');if(!c.fs.existsSync(file))return null;
++  const ledger=c.json(c.prefix+'fixture-committed-ledger.json');
++  return{owned:c.sha(c.fs.readFileSync(file))===plan.fixtureLedgerSha256,ledger};
++ },
++ async readRows(){return maintenance.fixtureRows();},
++ async readReferences(){return maintenance.references();},
++ async verifyIsolation(index){return maintenance.assertFixtures('cleanup-contract-'+index);},
++ async removeOwnedFixtures(){await maintenance.cleanup();return c.json(c.prefix+'cleanup-result.json');},
++ async readResidualIds(){return(await maintenance.fixtureRows()).map(x=>x.row.id);}
++});
+ const ports={...bindRealGuards(runtime),
+  async execute(item,ctx){currentCtx=ctx;if(item.id==='OP-LOAD'){
+   const before=await c.metadata();c.write('model-before-load.json',{at:new Date().toISOString(),metadata:before,resources:c.resources(),rate:c.rate()});let loaded=false;if(!before.resident){c.assert.ok(c.resources().gpus[0].freeMiB>5102307901/1048576);ledger('OP-LOAD','OPERATOR_LOAD_OUTSIDE_AGENT_LIMITS',true);const response=await dispatch('OP-LOAD',plan.load.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(plan.load.body),signal:AbortSignal.any([ctx.signal,AbortSignal.timeout(60000)])},true);await Promise.all(captures);c.assert.equal(response.status,200);const post=nativePosts.find(x=>x.operator);c.assert.equal(post.envelope.response,'');c.assert.equal(post.envelope.done_reason,'load');loaded=true;}const metadata=await c.metadata();c.assert.ok(metadata.ready);return{loaded,metadata};
+@@ -87,8 +102,8 @@ const ports={...bindRealGuards(runtime),
+   return observe();
+  });},
+  async assertUi(item,o){if(item.id==='OP-LOAD'){c.assert.ok(o.metadata.ready);}else{const page=item.viewport==='mobile'?mob.page:desk.page;if(item.expected.status==='completed'){await ui.assertCompletedUi(page,o.result,expect);c.assert.equal(o.result.itinerary.daysCount,2);c.assert.equal(o.result.itinerary.nightsCount,1);current.renderedText=await page.getByTestId('agent-turn').last().innerText();}else if(item.expected.status==='needs_input'){await expect(page.getByText('Agent \u0111ang y\u00eau c\u1ea7u b\u1ea1n x\u00e1c nh\u1eadn l\u1ea1i ph\u01b0\u01a1ng ti\u1ec7n.',{exact:true})).toBeVisible();await ui.assertConfirmationControls(page);}else{await expect(page.getByTestId('agent-turn')).toHaveCount(0);}c.assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:c.path.join(c.evidence,item.id+'.png'),fullPage:true});}current.ui='PASS';current.status='PASS';c.write('case-'+item.id+'.json',current);results.push(current);current=undefined;return true;},
+- async cleanupPrecondition(){await closeActivity();if(maintenance.committed){await maintenance.assertFixtures('cleanup-contract');await maintenance.foreignConnections();}c.assert.ok(!maintenance.ambiguous);return true;},
+- async cleanup(){await maintenance.cleanup();cleanupDone=true;c.assert.ok(['DB_RESTORED_25_25','N/A_NO_COMMITTED_INSERT'].includes(maintenance.cleanupStatus));return true;},
++ async cleanupPrecondition(){await closeActivity();return cleanupLifecycle.assess();},
++ async cleanup(){const result=await cleanupLifecycle.perform();cleanupDone=true;return result;},
+  async dispose(){await closeActivity();await maintenance.close();await db.sequelize.close();c.write('runtime-final.json',{at:new Date().toISOString(),results:results.map(x=>({id:x.id,status:x.status,raw:x.rawNlu})),current:current??null,quota:{initial:initialRate,consumed,after:c.rate()},nativePosts:nativePosts.map(x=>({id:x.id,operator:x.operator,http:x.httpStatus})),databaseAudit:db.audit,providerPending,remainingSessions:store.stats(),cleanupDone,cleanupStatus:maintenance.cleanupStatus,noRouteMocking:true,auth:'TEST_SIGNED_JWT bootstrap through production auth; not real login',uiChecks});}
+ };
+ async function closeActivity(){if(resourcesClosed)return;resourcesClosed=true;store.dispose();if(browser)await browser.close();if(backend)await new Promise(resolve=>backend.close(resolve));if(vite){try{require('node:child_process').execFileSync('taskkill.exe',['/PID',String(vite.pid),'/T','/F'],{stdio:'ignore'});}catch{vite.kill();}}c.assert.equal(providerPending,0);}

@@ -13,6 +13,7 @@ const expectedMigrations = [
   '20261012_08_server_side_favorites.sql',
   '20261012_09_verified_reviews.sql',
   '20261012_10_review_account_deletion_privacy.sql',
+  '20261028_11_trip_planner_metadata.sql',
 ];
 const expectedTables = [
   'audit_logs', 'blog_posts', 'booking_status_history', 'bookings', 'business_members',
@@ -37,6 +38,7 @@ const expectedIndexes = [
   'idx_reviews_ai_export',
 ];
 const expectedChecks = [
+  'trip_sessions_planner_metadata_check',
   'places_status_check', 'tickets_capacity_check', 'bookings_status_phase3_check',
   'bookings_quantity_check',
   'user_events_item_type_check', 'user_events_event_type_check',
@@ -77,6 +79,10 @@ async function run(): Promise<void> {
 
     const tables = await client.query("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'");
     assertContains(tables.rows.map((row) => row.table_name), expectedTables, 'tables');
+    const metadataColumn = await client.query("SELECT data_type, is_nullable FROM information_schema.columns WHERE table_schema='public' AND table_name='trip_sessions' AND column_name='planner_metadata'");
+    if (metadataColumn.rows[0]?.data_type !== 'jsonb' || metadataColumn.rows[0]?.is_nullable !== 'YES') {
+      throw new Error('trip_sessions.planner_metadata must be nullable JSONB; apply migration 11 on the guarded test target');
+    }
 
     const indexes = await client.query("SELECT indexname FROM pg_indexes WHERE schemaname='public'");
     assertContains(indexes.rows.map((row) => row.indexname), expectedIndexes, 'indexes');

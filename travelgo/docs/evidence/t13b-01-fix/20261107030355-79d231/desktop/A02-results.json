@@ -1,0 +1,1217 @@
+{
+  "id": "A02",
+  "project": "desktop",
+  "channel": "U2+A1 desktop probes",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "browser": "156.0.4314.58",
+  "mobileEmulation": false,
+  "status": "PASS",
+  "errors": [],
+  "checkpoints": [
+    {
+      "id": "ENV_IDENTITY",
+      "expected": "Proxy reaches this run exact guarded test database",
+      "startedAt": "2026-11-07T03:04:24.539Z",
+      "status": "PASS",
+      "actual": {
+        "runId": "20261107030355-79d231",
+        "pid": 7132,
+        "port": 5315,
+        "database": "travelgo_ai_m0_test",
+        "username": "postgres",
+        "server_address": "172.18.0.3/32",
+        "server_port": 5432,
+        "nodeEnv": "test",
+        "host": "127.0.0.1",
+        "sentinel": "PASS",
+        "writeOptIn": true,
+        "migrations": [
+          {
+            "filename": "20261010_01_init_travelgo_schema.sql",
+            "checksum": "fe7defe5c3c47c9230fe7c43fc301255a6bc0e998da71aba0fe2f747f9e52d50"
+          },
+          {
+            "filename": "20261011_02_rbac_partner_foundation.sql",
+            "checksum": "df7fd60cccf17d3f8a73f711825bb1e82a4606a17c42fce4c7fa214548c2cecd"
+          },
+          {
+            "filename": "20261011_03_persistent_travel_resources.sql",
+            "checksum": "1c4464625e57e27cadc560077fad83837b56c5385d8021e0592fdcb9039fabf7"
+          },
+          {
+            "filename": "20261011_04_hugo_intelligence_foundation.sql",
+            "checksum": "4f2519e0541bed02a5fd7811c1ef5f84be49e37dd0dc81d16c033c22a805b69d"
+          },
+          {
+            "filename": "20261012_05_user_behavior_telemetry.sql",
+            "checksum": "477200cecf2f7e8135c4473b901ae11237222083cb7fd4b9af900d2cb2bbbece"
+          },
+          {
+            "filename": "20261012_06_recommendation_exposure.sql",
+            "checksum": "9f90d12a55a57799977115b4b8922b70cba3d02649f48e4e08d54b2913a536cb"
+          },
+          {
+            "filename": "20261012_07_recommendation_booking_retention.sql",
+            "checksum": "bf885a9161b6420e096c10a3cc37de6a45715ffc2b375e38a8ec8104998cc3de"
+          },
+          {
+            "filename": "20261012_08_server_side_favorites.sql",
+            "checksum": "87980fcdf39c7fbf7e6641bb0219f64c727605ea8f8127f2ad6f62d4107d75f8"
+          },
+          {
+            "filename": "20261012_09_verified_reviews.sql",
+            "checksum": "8842947ab9cd52890cc371bf75877e191f801fd12bedb19c5c06d46080c1670e"
+          },
+          {
+            "filename": "20261012_10_review_account_deletion_privacy.sql",
+            "checksum": "4219afac618257e7970f878b83b30c72eb2fe0fe106af04e81c5083e8bc48c52"
+          },
+          {
+            "filename": "20261028_11_trip_planner_metadata.sql",
+            "checksum": "90c42676606d4d5e7458edde139b9c5b945dd3ca0d574490a581ad6bcd98a034"
+          },
+          {
+            "filename": "20261030_12_booking_request_fingerprint.sql",
+            "checksum": "09465ec9a3d3c3de1215ad6eaa1d1cf4e8d18aed43423ce6c7b4feea817e9bc5"
+          }
+        ],
+        "indexes": [
+          {
+            "indexname": "business_members_business_id_user_id_key",
+            "indexdef": "CREATE UNIQUE INDEX business_members_business_id_user_id_key ON public.business_members USING btree (business_id, user_id)"
+          },
+          {
+            "indexname": "business_members_pkey",
+            "indexdef": "CREATE UNIQUE INDEX business_members_pkey ON public.business_members USING btree (id)"
+          },
+          {
+            "indexname": "idx_business_members_user",
+            "indexdef": "CREATE INDEX idx_business_members_user ON public.business_members USING btree (user_id)"
+          },
+          {
+            "indexname": "idx_partner_applications_one_active",
+            "indexdef": "CREATE UNIQUE INDEX idx_partner_applications_one_active ON public.partner_applications USING btree (user_id) WHERE ((status)::text = ANY ((ARRAY['PENDING'::character varying, 'NEEDS_MORE_INFO'::character varying])::text[]))"
+          },
+          {
+            "indexname": "idx_partner_applications_status_created",
+            "indexdef": "CREATE INDEX idx_partner_applications_status_created ON public.partner_applications USING btree (status, created_at DESC)"
+          },
+          {
+            "indexname": "partner_applications_pkey",
+            "indexdef": "CREATE UNIQUE INDEX partner_applications_pkey ON public.partner_applications USING btree (id)"
+          },
+          {
+            "indexname": "user_roles_pkey",
+            "indexdef": "CREATE UNIQUE INDEX user_roles_pkey ON public.user_roles USING btree (id)"
+          },
+          {
+            "indexname": "user_roles_user_id_role_key",
+            "indexdef": "CREATE UNIQUE INDEX user_roles_user_id_role_key ON public.user_roles USING btree (user_id, role)"
+          }
+        ],
+        "constraints": [
+          {
+            "conname": "business_members_business_id_fkey",
+            "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE"
+          },
+          {
+            "conname": "business_members_business_id_user_id_key",
+            "definition": "UNIQUE (business_id, user_id)"
+          },
+          {
+            "conname": "business_members_pkey",
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "conname": "business_members_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "conname": "partner_applications_business_type_check",
+            "definition": "CHECK (((business_type)::text = ANY ((ARRAY['HOTEL'::character varying, 'HOMESTAY'::character varying, 'RESORT'::character varying, 'RESTAURANT'::character varying, 'TOUR_OPERATOR'::character varying])::text[])))"
+          },
+          {
+            "conname": "partner_applications_pkey",
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "conname": "partner_applications_reviewed_by_fkey",
+            "definition": "FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "conname": "partner_applications_status_check",
+            "definition": "CHECK (((status)::text = ANY ((ARRAY['PENDING'::character varying, 'APPROVED'::character varying, 'REJECTED'::character varying, 'NEEDS_MORE_INFO'::character varying, 'SUSPENDED'::character varying])::text[])))"
+          },
+          {
+            "conname": "partner_applications_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "conname": "user_roles_granted_by_fkey",
+            "definition": "FOREIGN KEY (granted_by) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "conname": "user_roles_pkey",
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "conname": "user_roles_role_check",
+            "definition": "CHECK (((role)::text = ANY ((ARRAY['CUSTOMER'::character varying, 'PARTNER'::character varying, 'SUPER_ADMIN'::character varying])::text[])))"
+          },
+          {
+            "conname": "user_roles_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "conname": "user_roles_user_id_role_key",
+            "definition": "UNIQUE (user_id, role)"
+          }
+        ]
+      },
+      "finishedAt": "2026-11-07T03:04:24.576Z"
+    },
+    {
+      "id": "FORM_VALIDATION",
+      "expected": "Required field blocks submit; invalid server email preserves all input and shows error",
+      "startedAt": "2026-11-07T03:04:25.507Z",
+      "status": "PASS",
+      "finishedAt": "2026-11-07T03:04:26.033Z"
+    },
+    {
+      "id": "LAYOUT_invalid-form",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 1440,
+        "scrollWidth": 1440
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "SUBMIT_RELOAD",
+      "expected": "Valid UI application201 PENDING, persisted and reload recovers status",
+      "startedAt": "2026-11-07T03:04:26.033Z",
+      "status": "PASS",
+      "actual": {
+        "id": "dafb7e68-1360-485b-a97c-6a579ed51e44",
+        "status": "PENDING",
+        "userId": "b1f5a81c-9527-4168-88b7-28744acbcd63",
+        "representativeName": "T13B01 desktop A02-C",
+        "businessName": "T13B01 SYNTHETIC desktop A02 4391534a",
+        "businessType": "HOTEL",
+        "email": "t13b01.79d231.desktop.a02-c.33b83ae0@example.test",
+        "phone": "0901234567",
+        "address": "SYNTHETIC TEST ONLY - no real business",
+        "city": "T13B01-20261107030355-79d231-desktop",
+        "latitude": "16.0500000",
+        "longitude": "108.2000000",
+        "imageUrls": [],
+        "verificationDetails": {
+          "taxCode": "SYNTHETIC TEST ONLY"
+        },
+        "updatedAt": "2026-11-07T03:04:26.348Z",
+        "createdAt": "2026-11-07T03:04:26.348Z",
+        "decisionReason": null,
+        "reviewedBy": null,
+        "reviewedAt": null
+      },
+      "finishedAt": "2026-11-07T03:04:26.709Z"
+    },
+    {
+      "id": "LAYOUT_pending-reload",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 1440,
+        "scrollWidth": 1440
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "APPLICATION_INVALID_API",
+      "expected": "Missing/email/type/coordinates400; duplicate409; other owner list empty",
+      "startedAt": "2026-11-07T03:04:26.709Z",
+      "status": "PASS",
+      "actual": {
+        "duplicate": "ACTIVE_APPLICATION_EXISTS",
+        "invalidVariants": 5
+      },
+      "finishedAt": "2026-11-07T03:04:26.771Z"
+    },
+    {
+      "id": "CANCEL_ADMIN_DIALOGS",
+      "expected": "Cancel reason prompt or approval confirm causes no PATCH or DB change",
+      "startedAt": "2026-11-07T03:04:26.771Z",
+      "status": "PASS",
+      "finishedAt": "2026-11-07T03:04:27.435Z"
+    },
+    {
+      "id": "LAYOUT_cancel-dialogs",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 1440,
+        "scrollWidth": 1440
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "LAYOUT_final",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 1440,
+        "scrollWidth": 1440
+      },
+      "status": "PASS"
+    }
+  ],
+  "traffic": [
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/__t13b01/identity",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/__t13b01/identity",
+      "response": {
+        "status": 200,
+        "body": {
+          "runId": "20261107030355-79d231",
+          "pid": 7132,
+          "port": 5315,
+          "database": "travelgo_ai_m0_test",
+          "username": "postgres",
+          "server_address": "172.18.0.3/32",
+          "server_port": 5432,
+          "nodeEnv": "test",
+          "host": "127.0.0.1",
+          "sentinel": "PASS",
+          "writeOptIn": true,
+          "migrations": [
+            {
+              "filename": "20261010_01_init_travelgo_schema.sql",
+              "checksum": "fe7defe5c3c47c9230fe7c43fc301255a6bc0e998da71aba0fe2f747f9e52d50"
+            },
+            {
+              "filename": "20261011_02_rbac_partner_foundation.sql",
+              "checksum": "df7fd60cccf17d3f8a73f711825bb1e82a4606a17c42fce4c7fa214548c2cecd"
+            },
+            {
+              "filename": "20261011_03_persistent_travel_resources.sql",
+              "checksum": "1c4464625e57e27cadc560077fad83837b56c5385d8021e0592fdcb9039fabf7"
+            },
+            {
+              "filename": "20261011_04_hugo_intelligence_foundation.sql",
+              "checksum": "4f2519e0541bed02a5fd7811c1ef5f84be49e37dd0dc81d16c033c22a805b69d"
+            },
+            {
+              "filename": "20261012_05_user_behavior_telemetry.sql",
+              "checksum": "477200cecf2f7e8135c4473b901ae11237222083cb7fd4b9af900d2cb2bbbece"
+            },
+            {
+              "filename": "20261012_06_recommendation_exposure.sql",
+              "checksum": "9f90d12a55a57799977115b4b8922b70cba3d02649f48e4e08d54b2913a536cb"
+            },
+            {
+              "filename": "20261012_07_recommendation_booking_retention.sql",
+              "checksum": "bf885a9161b6420e096c10a3cc37de6a45715ffc2b375e38a8ec8104998cc3de"
+            },
+            {
+              "filename": "20261012_08_server_side_favorites.sql",
+              "checksum": "87980fcdf39c7fbf7e6641bb0219f64c727605ea8f8127f2ad6f62d4107d75f8"
+            },
+            {
+              "filename": "20261012_09_verified_reviews.sql",
+              "checksum": "8842947ab9cd52890cc371bf75877e191f801fd12bedb19c5c06d46080c1670e"
+            },
+            {
+              "filename": "20261012_10_review_account_deletion_privacy.sql",
+              "checksum": "4219afac618257e7970f878b83b30c72eb2fe0fe106af04e81c5083e8bc48c52"
+            },
+            {
+              "filename": "20261028_11_trip_planner_metadata.sql",
+              "checksum": "90c42676606d4d5e7458edde139b9c5b945dd3ca0d574490a581ad6bcd98a034"
+            },
+            {
+              "filename": "20261030_12_booking_request_fingerprint.sql",
+              "checksum": "09465ec9a3d3c3de1215ad6eaa1d1cf4e8d18aed43423ce6c7b4feea817e9bc5"
+            }
+          ],
+          "indexes": [
+            {
+              "indexname": "business_members_business_id_user_id_key",
+              "indexdef": "CREATE UNIQUE INDEX business_members_business_id_user_id_key ON public.business_members USING btree (business_id, user_id)"
+            },
+            {
+              "indexname": "business_members_pkey",
+              "indexdef": "CREATE UNIQUE INDEX business_members_pkey ON public.business_members USING btree (id)"
+            },
+            {
+              "indexname": "idx_business_members_user",
+              "indexdef": "CREATE INDEX idx_business_members_user ON public.business_members USING btree (user_id)"
+            },
+            {
+              "indexname": "idx_partner_applications_one_active",
+              "indexdef": "CREATE UNIQUE INDEX idx_partner_applications_one_active ON public.partner_applications USING btree (user_id) WHERE ((status)::text = ANY ((ARRAY['PENDING'::character varying, 'NEEDS_MORE_INFO'::character varying])::text[]))"
+            },
+            {
+              "indexname": "idx_partner_applications_status_created",
+              "indexdef": "CREATE INDEX idx_partner_applications_status_created ON public.partner_applications USING btree (status, created_at DESC)"
+            },
+            {
+              "indexname": "partner_applications_pkey",
+              "indexdef": "CREATE UNIQUE INDEX partner_applications_pkey ON public.partner_applications USING btree (id)"
+            },
+            {
+              "indexname": "user_roles_pkey",
+              "indexdef": "CREATE UNIQUE INDEX user_roles_pkey ON public.user_roles USING btree (id)"
+            },
+            {
+              "indexname": "user_roles_user_id_role_key",
+              "indexdef": "CREATE UNIQUE INDEX user_roles_user_id_role_key ON public.user_roles USING btree (user_id, role)"
+            }
+          ],
+          "constraints": [
+            {
+              "conname": "business_members_business_id_fkey",
+              "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE"
+            },
+            {
+              "conname": "business_members_business_id_user_id_key",
+              "definition": "UNIQUE (business_id, user_id)"
+            },
+            {
+              "conname": "business_members_pkey",
+              "definition": "PRIMARY KEY (id)"
+            },
+            {
+              "conname": "business_members_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "conname": "partner_applications_business_type_check",
+              "definition": "CHECK (((business_type)::text = ANY ((ARRAY['HOTEL'::character varying, 'HOMESTAY'::character varying, 'RESORT'::character varying, 'RESTAURANT'::character varying, 'TOUR_OPERATOR'::character varying])::text[])))"
+            },
+            {
+              "conname": "partner_applications_pkey",
+              "definition": "PRIMARY KEY (id)"
+            },
+            {
+              "conname": "partner_applications_reviewed_by_fkey",
+              "definition": "FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL"
+            },
+            {
+              "conname": "partner_applications_status_check",
+              "definition": "CHECK (((status)::text = ANY ((ARRAY['PENDING'::character varying, 'APPROVED'::character varying, 'REJECTED'::character varying, 'NEEDS_MORE_INFO'::character varying, 'SUSPENDED'::character varying])::text[])))"
+            },
+            {
+              "conname": "partner_applications_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "conname": "user_roles_granted_by_fkey",
+              "definition": "FOREIGN KEY (granted_by) REFERENCES users(id) ON DELETE SET NULL"
+            },
+            {
+              "conname": "user_roles_pkey",
+              "definition": "PRIMARY KEY (id)"
+            },
+            {
+              "conname": "user_roles_role_check",
+              "definition": "CHECK (((role)::text = ANY ((ARRAY['CUSTOMER'::character varying, 'PARTNER'::character varying, 'SUPER_ADMIN'::character varying])::text[])))"
+            },
+            {
+              "conname": "user_roles_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "conname": "user_roles_user_id_role_key",
+              "definition": "UNIQUE (user_id, role)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/register",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/register",
+      "request": {
+        "fullName": "T13B01 desktop A02-SA",
+        "email": "t13b01.79d231.desktop.a02-sa.875d1f8d@example.test",
+        "password": "[REDACTED]",
+        "phone": "0901234567"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Đăng ký tài khoản thành công",
+          "data": {
+            "user": {
+              "id": "dffe2310-958f-4e7c-85da-c84635d24d38",
+              "fullName": "T13B01 desktop A02-SA",
+              "email": "t13b01.79d231.desktop.a02-sa.875d1f8d@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "CUSTOMER"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/blogs",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/places",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/blogs",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/places",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/login",
+      "request": {
+        "email": "t13b01.79d231.desktop.a02-sa.875d1f8d@example.test",
+        "password": "[REDACTED]"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "message": "Đăng nhập thành công",
+          "data": {
+            "user": {
+              "id": "dffe2310-958f-4e7c-85da-c84635d24d38",
+              "fullName": "T13B01 desktop A02-SA",
+              "email": "t13b01.79d231.desktop.a02-sa.875d1f8d@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "SUPER_ADMIN"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/register",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/register",
+      "request": {
+        "fullName": "T13B01 desktop A02-C",
+        "email": "t13b01.79d231.desktop.a02-c.33b83ae0@example.test",
+        "password": "[REDACTED]",
+        "phone": "0901234567"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Đăng ký tài khoản thành công",
+          "data": {
+            "user": {
+              "id": "b1f5a81c-9527-4168-88b7-28744acbcd63",
+              "fullName": "T13B01 desktop A02-C",
+              "email": "t13b01.79d231.desktop.a02-c.33b83ae0@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "CUSTOMER"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/register",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/register",
+      "request": {
+        "fullName": "T13B01 desktop A02-OTHER",
+        "email": "t13b01.79d231.desktop.a02-other.bdee17d3@example.test",
+        "password": "[REDACTED]",
+        "phone": "0901234567"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Đăng ký tài khoản thành công",
+          "data": {
+            "user": {
+              "id": "21b678f5-7fcd-4a86-bb05-fbe70327ed7a",
+              "fullName": "T13B01 desktop A02-OTHER",
+              "email": "t13b01.79d231.desktop.a02-other.bdee17d3@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "CUSTOMER"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PUT",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner-applications",
+      "status": 400
+    },
+    {
+      "channel": "UI form → real API",
+      "method": "POST",
+      "endpoint": "/partner-applications",
+      "request": {
+        "representativeName": "T13B01 desktop A02-C",
+        "businessName": "T13B01 SYNTHETIC desktop A02 4391534a",
+        "businessType": "HOTEL",
+        "email": "invalid-email",
+        "phone": "0901234567",
+        "address": "SYNTHETIC TEST ONLY - no real business",
+        "city": "T13B01-20261107030355-79d231-desktop",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "taxCode": "SYNTHETIC TEST ONLY",
+        "verificationDetails": {
+          "taxCode": "SYNTHETIC TEST ONLY"
+        }
+      },
+      "response": {
+        "status": 400,
+        "body": {
+          "success": false,
+          "message": "Dữ liệu gửi lên không hợp lệ",
+          "errors": [
+            "Email không hợp lệ"
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner-applications",
+      "status": 201
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "UI form → real API",
+      "method": "POST",
+      "endpoint": "/partner-applications",
+      "request": {
+        "representativeName": "T13B01 desktop A02-C",
+        "businessName": "T13B01 SYNTHETIC desktop A02 4391534a",
+        "businessType": "HOTEL",
+        "email": "t13b01.79d231.desktop.a02-c.33b83ae0@example.test",
+        "phone": "0901234567",
+        "address": "SYNTHETIC TEST ONLY - no real business",
+        "city": "T13B01-20261107030355-79d231-desktop",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "taxCode": "SYNTHETIC TEST ONLY",
+        "verificationDetails": {
+          "taxCode": "SYNTHETIC TEST ONLY"
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Hồ sơ đã được gửi và đang chờ xét duyệt",
+          "data": {
+            "id": "dafb7e68-1360-485b-a97c-6a579ed51e44",
+            "status": "PENDING",
+            "userId": "b1f5a81c-9527-4168-88b7-28744acbcd63",
+            "representativeName": "T13B01 desktop A02-C",
+            "businessName": "T13B01 SYNTHETIC desktop A02 4391534a",
+            "businessType": "HOTEL",
+            "email": "t13b01.79d231.desktop.a02-c.33b83ae0@example.test",
+            "phone": "0901234567",
+            "address": "SYNTHETIC TEST ONLY - no real business",
+            "city": "T13B01-20261107030355-79d231-desktop",
+            "latitude": "16.0500000",
+            "longitude": "108.2000000",
+            "imageUrls": [],
+            "verificationDetails": {
+              "taxCode": "SYNTHETIC TEST ONLY"
+            },
+            "updatedAt": "2026-11-07T03:04:26.348Z",
+            "createdAt": "2026-11-07T03:04:26.348Z",
+            "decisionReason": null,
+            "reviewedBy": null,
+            "reviewedAt": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner-applications/me",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": [
+            {
+              "id": "dafb7e68-1360-485b-a97c-6a579ed51e44",
+              "userId": "b1f5a81c-9527-4168-88b7-28744acbcd63",
+              "representativeName": "T13B01 desktop A02-C",
+              "businessName": "T13B01 SYNTHETIC desktop A02 4391534a",
+              "businessType": "HOTEL",
+              "email": "t13b01.79d231.desktop.a02-c.33b83ae0@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-desktop",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "PENDING",
+              "decisionReason": null,
+              "reviewedBy": null,
+              "reviewedAt": null,
+              "createdAt": "2026-11-07T03:04:26.348Z",
+              "updatedAt": "2026-11-07T03:04:26.348Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner-applications",
+      "status": 400
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner-applications",
+      "request": {
+        "representativeName": "T13B01 desktop A02-C",
+        "businessName": "",
+        "businessType": "HOTEL",
+        "email": "t13b01.79d231.desktop.a02-c.33b83ae0@example.test",
+        "phone": "0901234567",
+        "address": "SYNTHETIC TEST ONLY - no real business",
+        "city": "T13B01-20261107030355-79d231-desktop",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "verificationDetails": {
+          "taxCode": "SYNTHETIC TEST ONLY"
+        }
+      },
+      "response": {
+        "status": 400,
+        "body": {
+          "success": false,
+          "message": "Dữ liệu gửi lên không hợp lệ",
+          "errors": [
+            "Tên cơ sở không hợp lệ"
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner-applications",
+      "status": 400
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner-applications",
+      "request": {
+        "representativeName": "T13B01 desktop A02-C",
+        "businessName": "T13B01 SYNTHETIC desktop A02 4391534a",
+        "businessType": "HOTEL",
+        "email": "bad",
+        "phone": "0901234567",
+        "address": "SYNTHETIC TEST ONLY - no real business",
+        "city": "T13B01-20261107030355-79d231-desktop",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "verificationDetails": {
+          "taxCode": "SYNTHETIC TEST ONLY"
+        }
+      },
+      "response": {
+        "status": 400,
+        "body": {
+          "success": false,
+          "message": "Dữ liệu gửi lên không hợp lệ",
+          "errors": [
+            "Email không hợp lệ"
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner-applications",
+      "status": 400
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner-applications",
+      "request": {
+        "representativeName": "T13B01 desktop A02-C",
+        "businessName": "T13B01 SYNTHETIC desktop A02 4391534a",
+        "businessType": "INVALID",
+        "email": "t13b01.79d231.desktop.a02-c.33b83ae0@example.test",
+        "phone": "0901234567",
+        "address": "SYNTHETIC TEST ONLY - no real business",
+        "city": "T13B01-20261107030355-79d231-desktop",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "verificationDetails": {
+          "taxCode": "SYNTHETIC TEST ONLY"
+        }
+      },
+      "response": {
+        "status": 400,
+        "body": {
+          "success": false,
+          "message": "Dữ liệu gửi lên không hợp lệ",
+          "errors": [
+            "Loại hình kinh doanh không hợp lệ"
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner-applications",
+      "status": 400
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner-applications",
+      "request": {
+        "representativeName": "T13B01 desktop A02-C",
+        "businessName": "T13B01 SYNTHETIC desktop A02 4391534a",
+        "businessType": "HOTEL",
+        "email": "t13b01.79d231.desktop.a02-c.33b83ae0@example.test",
+        "phone": "0901234567",
+        "address": "SYNTHETIC TEST ONLY - no real business",
+        "city": "T13B01-20261107030355-79d231-desktop",
+        "latitude": 91,
+        "longitude": 108.2,
+        "verificationDetails": {
+          "taxCode": "SYNTHETIC TEST ONLY"
+        }
+      },
+      "response": {
+        "status": 400,
+        "body": {
+          "success": false,
+          "message": "Dữ liệu gửi lên không hợp lệ",
+          "errors": [
+            "Vĩ độ không hợp lệ"
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner-applications",
+      "status": 400
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner-applications",
+      "request": {
+        "representativeName": "T13B01 desktop A02-C",
+        "businessName": "T13B01 SYNTHETIC desktop A02 4391534a",
+        "businessType": "HOTEL",
+        "email": "t13b01.79d231.desktop.a02-c.33b83ae0@example.test",
+        "phone": "0901234567",
+        "address": "SYNTHETIC TEST ONLY - no real business",
+        "city": "T13B01-20261107030355-79d231-desktop",
+        "latitude": 16.05,
+        "longitude": 181,
+        "verificationDetails": {
+          "taxCode": "SYNTHETIC TEST ONLY"
+        }
+      },
+      "response": {
+        "status": 400,
+        "body": {
+          "success": false,
+          "message": "Dữ liệu gửi lên không hợp lệ",
+          "errors": [
+            "Kinh độ không hợp lệ"
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner-applications",
+      "status": 409
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner-applications",
+      "request": {
+        "representativeName": "T13B01 desktop A02-C",
+        "businessName": "T13B01 SYNTHETIC desktop A02 4391534a",
+        "businessType": "HOTEL",
+        "email": "t13b01.79d231.desktop.a02-c.33b83ae0@example.test",
+        "phone": "0901234567",
+        "address": "SYNTHETIC TEST ONLY - no real business",
+        "city": "T13B01-20261107030355-79d231-desktop",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "verificationDetails": {
+          "taxCode": "SYNTHETIC TEST ONLY"
+        }
+      },
+      "response": {
+        "status": 409,
+        "body": {
+          "success": false,
+          "message": "Bạn đã có hồ sơ đối tác đang được xử lý",
+          "code": "ACTIVE_APPLICATION_EXISTS"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner-applications/me",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": []
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/dashboard",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/partner-applications",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/partner-applications",
+      "status": 200
+    }
+  ],
+  "console": [
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+    },
+    {
+      "type": "error",
+      "message": "API Error: {success: false, message: Dữ liệu gửi lên không hợp lệ, errors: Array(1)}"
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    }
+  ],
+  "images": [
+    "A02-invalid-form.png",
+    "A02-invalid-form-full.png",
+    "A02-pending-reload.png",
+    "A02-pending-reload-full.png",
+    "A02-cancel-dialogs.png",
+    "A02-cancel-dialogs-full.png",
+    "A02-final.png",
+    "A02-final-full.png"
+  ],
+  "trace": null,
+  "dbSnapshot": "A02-db-final.json"
+}

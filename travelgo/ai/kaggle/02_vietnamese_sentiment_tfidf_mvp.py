@@ -39,7 +39,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer  # noqa: E402
 from sklearn.linear_model import LogisticRegression  # noqa: E402
 from sklearn.metrics import (  # noqa: E402
     ConfusionMatrixDisplay,
-    accuracy_score,
+    accuracy_score, 
     classification_report,
     confusion_matrix,
     f1_score,

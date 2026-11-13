@@ -1,0 +1,6 @@
+--- run-live.cjs (executed evidence; preserved)
++++ proposed path-binding compatibility fix (NOT APPLIED / NOT RUN)
+@@
+-function replace(value){if(typeof value==='string'&&bindings[value]!==undefined)return bindings[value];
++function replace(value){if(typeof value==='string')return Object.entries(bindings).reduce((text,[key,replacement])=>text.replaceAll(key,replacement),value);
+ Keep existing recursive array/object projection and all final exact equality/hash guards unchanged.

@@ -1,16 +1,25 @@
 import { TripSession as TripModel } from '../models/TripSession.js';
 import { TripRepository } from '../repositories/tripRepository.js';
 import { HttpError } from '../utils/httpError.js';
-import { validateTravelPreferences } from '../utils/travelPreferences.js';
+import { sequelize } from '../config/database.js';
+import { assertTripId, prepareTripSnapshot, prepareTripUpdate } from '../utils/tripSnapshot.js';
 import { GeneratedItinerary, ItineraryDay } from './tourPlannerService.js';
+import { reconcileCheckins, resolveCheckinActivity, tripProgress, validateCheckinBody } from '../utils/tripProgress.js';
+import { assessPlannerBudget } from '../utils/plannerFeasibility.js';
+import { createHash } from 'node:crypto';
 
 export interface TripCheckin {
-  placeId: string;
+  activityId?: string;
+  resolvedActivityId?: string;
+  placeId?: string;
   placeName: string;
   checkedInAt: string;
   latitude?: number;
   longitude?: number;
-  verifiedViaGeo: boolean;
+  verifiedViaGeo?: boolean;
+  hasAttachedLocation?: boolean;
+  accuracyMeters?: number;
+  excludedFromProgress?: string;
   notes?: string;
   photoUrl?: string;
 }
@@ -35,23 +44,26 @@ export interface TripSession {
   selectedPlaceIds: string[];
   checkins: TripCheckin[];
   progressPercent: number;
+  progress: { eligibleActivityIds: string[]; checkedActivityIds: string[]; unmatchedCheckinCount: number; ineligibleActivityCount: number };
   notes?: string;
   isPublic: boolean;
   createdAt: string;
   updatedAt: string;
-}
-
-interface TripUpdateInput {
-  name?: string;
-  notes?: string;
-  actualSpentVND?: number;
-  isPublic?: boolean;
-  itinerary?: ItineraryDay[];
-  preferences?: unknown;
+  costBasis?: string;
+  nightsCount?: number;
+  costAssumptions?: string[];
+  transportation?: 'car' | 'motorbike' | 'flight' | 'train';
+  adults?: number;
+  children?: number;
+  costDifferenceVND?: number;
+  budgetStatus?: 'within_budget' | 'over_budget';
+  overBudgetVND?: number;
+  constraintViolations?: string[];
 }
 
 const serialize = (model: any): TripSession => {
   const value = model.toJSON ? model.toJSON() : model;
+  const progress = tripProgress(value.itinerary, value.checkins);
   return {
     id: value.id,
     userId: value.userId,
@@ -70,12 +82,24 @@ const serialize = (model: any): TripSession => {
     preferences: Array.isArray(value.preferences) ? value.preferences : [],
     days: Array.isArray(value.itinerary) ? value.itinerary : [],
     selectedPlaceIds: Array.isArray(value.selectedPlaceIds) ? value.selectedPlaceIds : [],
-    checkins: Array.isArray(value.checkins) ? value.checkins : [],
-    progressPercent: value.progressPercent,
+    ...progress,
+    checkins: progress.checkins as TripCheckin[],
     notes: value.notes,
     isPublic: value.isPublic,
     createdAt: new Date(value.createdAt).toISOString(),
     updatedAt: new Date(value.updatedAt).toISOString(),
+    // Read without upgrading legacy units, changing modes or repricing old JSON.
+    ...(value.plannerMetadata && typeof value.plannerMetadata === 'object' ? {
+      costBasis: value.plannerMetadata.costBasis,
+      nightsCount: value.plannerMetadata.nightsCount,
+      costAssumptions: value.plannerMetadata.costAssumptions,
+      transportation: value.plannerMetadata.transportation,
+      adults: value.plannerMetadata.adults,
+      children: value.plannerMetadata.children,
+      ...(value.plannerMetadata.costBasis === 'GROUP_VND_V1' ? {
+        ...assessPlannerBudget(Number(value.totalBudgetVND), Number(value.estimatedCostVND)),
+      } : {}),
+    } : {}),
   };
 };
 
@@ -85,32 +109,18 @@ export class TripSessionService {
   }
 
   static async getTripById(id: string, userId: string) {
+    assertTripId(id);
     const trip = await TripRepository.findOwned(id, userId);
     return trip ? serialize(trip) : null;
   }
 
   static async createTripFromPlanner(itinerary: GeneratedItinerary, userId: string, _userName: string) {
-    const preferences = validateTravelPreferences(
-      (itinerary as GeneratedItinerary & { preferences?: unknown }).preferences
-    );
+    const snapshot = prepareTripSnapshot(itinerary);
     return serialize(await TripModel.create({
       userId,
-      name: itinerary.title,
-      destinationCity: itinerary.destinationCity,
-      departureCity: itinerary.departureCity,
-      startDate: itinerary.startDate,
-      endDate: itinerary.endDate,
-      daysCount: itinerary.daysCount,
-      totalBudgetVND: itinerary.totalBudgetUserVND,
-      estimatedCostVND: itinerary.totalEstimatedCostVND,
+      ...snapshot,
       actualSpentVND: 0,
-      pacing: itinerary.pacing,
       status: 'upcoming',
-      preferences,
-      itinerary: itinerary.days,
-      selectedPlaceIds: [...new Set(itinerary.days.flatMap((day) =>
-        day.activities.map((activity) => activity.placeId).filter(Boolean)
-      ) as string[])],
       selectedTourIds: [],
       checkins: [],
       progressPercent: 0,
@@ -118,17 +128,22 @@ export class TripSessionService {
     }));
   }
 
-  static async updateTrip(id: string, userId: string, updates: TripUpdateInput) {
-    const trip = await TripRepository.findOwned(id, userId);
-    if (!trip) return null;
-
-    const { preferences, ...otherUpdates } = updates;
-    const safeUpdates: Omit<TripUpdateInput, 'preferences'> & { preferences?: string[] } = otherUpdates;
-    if (preferences !== undefined) {
-      safeUpdates.preferences = validateTravelPreferences(preferences);
-    }
-    await trip.update(safeUpdates);
-    return serialize(trip);
+  static async updateTrip(id: string, userId: string, updates: unknown, expectedVersion?: string) {
+    assertTripId(id);
+    return sequelize.transaction(async (transaction) => {
+      const trip = await TripRepository.findOwned(id, userId, transaction);
+      if (!trip) return null;
+      if (expectedVersion !== undefined && createHash('sha256').update(JSON.stringify(serialize(trip))).digest('hex') !== expectedVersion) {
+        throw new HttpError(409, 'Trip đã thay đổi; hãy xem trước và xác nhận lại.', 'AGENT_TRIP_CHANGED');
+      }
+      const patch = prepareTripUpdate(updates, trip.toJSON());
+      if (patch.itinerary !== undefined) {
+        patch.checkins = reconcileCheckins(trip.itinerary, patch.itinerary, trip.checkins);
+        patch.progressPercent = tripProgress(patch.itinerary, patch.checkins).progressPercent;
+      }
+      if (Object.keys(patch).length) await trip.update(patch, { transaction });
+      return serialize(trip);
+    });
   }
 
   static async deleteTrip(id: string, userId: string) {
@@ -138,44 +153,44 @@ export class TripSessionService {
     return true;
   }
 
-  static async checkinPlace(
-    tripId: string,
-    userId: string,
-    placeId: string,
-    placeName: string,
-    geo?: { latitude: number; longitude: number; accuracyMeters?: number },
-    notes?: string
-  ) {
-    const trip = await TripRepository.findOwned(tripId, userId);
-    if (!trip) throw new HttpError(404, 'Không tìm thấy chuyến đi');
-    const checkins = [...(trip.checkins as TripCheckin[])];
-    const value: TripCheckin = {
-      placeId,
-      placeName,
-      checkedInAt: new Date().toISOString(),
-      latitude: geo?.latitude,
-      longitude: geo?.longitude,
-      verifiedViaGeo: !!geo,
-      notes,
-    };
-    const index = checkins.findIndex((item) => item.placeId === placeId);
-    if (index >= 0) checkins[index] = value;
-    else checkins.push(value);
-    const activities = (trip.itinerary as any[]).flatMap((day) => day.activities || []).length;
-    await trip.update({
-      checkins,
-      status: trip.status === 'upcoming' ? 'active' : trip.status,
-      progressPercent: activities ? Math.min(100, Math.round(checkins.length / activities * 100)) : 0,
+  static async checkinPlace(tripId: string, userId: string, body: unknown) {
+    assertTripId(tripId);
+    const input = validateCheckinBody(body);
+    return sequelize.transaction(async (transaction) => {
+      const trip = await TripRepository.findOwned(tripId, userId, transaction);
+      if (!trip) throw new HttpError(404, 'Không tìm thấy chuyến đi');
+      const activity = resolveCheckinActivity(trip.itinerary, input);
+      const existing = tripProgress(trip.itinerary, trip.checkins).checkins.find((c) => c.resolvedActivityId === activity.id);
+      if (existing && ['active', 'completed'].includes(trip.status)) {
+        return { success: true, trip: serialize(trip), checkin: existing, message: 'Activity đã được check-in; giữ nguyên bản ghi đầu tiên.' };
+      }
+      if (trip.status !== 'active') throw new HttpError(409, 'Chỉ check-in mới khi chuyến đi đang diễn ra. Hãy bắt đầu chuyến đi trước.', 'INVALID_TRIP_TRANSITION');
+      const value: TripCheckin = { activityId: activity.id, ...(activity.placeId ? { placeId: activity.placeId } : {}),
+        placeName: activity.title, checkedInAt: new Date().toISOString(), notes: input.notes,
+        ...(input.geo ? { latitude: input.geo.latitude, longitude: input.geo.longitude, accuracyMeters: input.geo.accuracyMeters } : {}), verifiedViaGeo: false };
+      const checkins = [...reconcileCheckins(trip.itinerary, trip.itinerary, trip.checkins), value];
+      await trip.update({ checkins, progressPercent: tripProgress(trip.itinerary, checkins).progressPercent }, { transaction });
+      return { success: true, trip: serialize(trip), checkin: { ...value, hasAttachedLocation: !!input.geo }, message: 'Đã check-in hoạt động.' };
     });
-    return { success: true, trip: serialize(trip), checkin: value, message: `Check-in thành công tại ${placeName}!` };
   }
 
-  static async completeTrip(id: string, userId: string) {
-    const trip = await TripRepository.findOwned(id, userId);
-    if (!trip) return null;
-    await trip.update({ status: 'completed', progressPercent: 100 });
-    return serialize(trip);
+  private static async transition(id: string, userId: string, action: 'start' | 'complete') {
+    assertTripId(id);
+    return sequelize.transaction(async (transaction) => {
+      const trip = await TripRepository.findOwned(id, userId, transaction);
+      if (!trip) return null;
+      const target = action === 'start' ? 'active' : 'completed';
+      if (trip.status === target) return serialize(trip);
+      const from = action === 'start' ? 'upcoming' : 'active';
+      if (trip.status !== from) throw new HttpError(409, 'Trạng thái chuyến đi không cho phép thao tác này.', 'INVALID_TRIP_TRANSITION');
+      const checkins = reconcileCheckins(trip.itinerary, trip.itinerary, trip.checkins);
+      await trip.update({ status: target, checkins, progressPercent: tripProgress(trip.itinerary, checkins).progressPercent }, { transaction });
+      return serialize(trip);
+    });
   }
+
+  static startTrip(id: string, userId: string) { return this.transition(id, userId, 'start'); }
+  static completeTrip(id: string, userId: string) { return this.transition(id, userId, 'complete'); }
 
   static async convertToBlogDraft(id: string, userId: string) {
     const trip = await this.getTripById(id, userId);

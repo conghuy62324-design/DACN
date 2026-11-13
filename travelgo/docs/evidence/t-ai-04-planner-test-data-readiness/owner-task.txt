@@ -1,0 +1,308 @@
+# TASK T-AI-04-PLANNER-TEST-DATA-READINESS
+
+Vai trò: Senior Database Engineer, Backend Architect, QA Engineer và AI Evaluation Lead của TravelGo.
+
+## Mục tiêu
+
+Giải quyết blocker `PLANNER_E2E_BLOCKED_DATA_READINESS` để chuẩn bị kiểm thử thành công luồng:
+
+Browser → G2 Agent → Qwen3 → plan_trip → Real Planner/Catalog → PostgreSQL → Browser.
+
+Đây là task READ-ONLY ANALYSIS + FIXTURE DESIGN.
+
+Được phép đọc source và dữ liệu từ database test sau khi kiểm tra an toàn.
+
+KHÔNG được thực hiện bất kỳ database write nào.
+
+## 1. Baseline
+
+Đọc:
+
+- `docs/HUGO_T_AI_04_G2_E2E_HARNESS_FIX_RESUME_REPORT.md`
+- `docs/HUGO_T_AI_04_G2_BROWSER_REAL_TOOL_E2E_REPORT.md`
+- `docs/HUGO_T_AI_04_G2_FRONTEND_INTEGRATION_LOGOUT_REPORT.md`
+- `docs/HUGO_T11_B_PLANNER_FEASIBILITY_REPORT.md`
+- Các báo cáo Planner T03-A/T03-B và T11 liên quan.
+
+Đọc production source:
+
+- Planner service/algorithm.
+- RecommendationService.
+- RecommendationRepository.
+- PlaceRepository.
+- Catalog eligibility/filtering.
+- Agent read-only plan_trip adapter.
+- Existing migrations/schema.
+- PostgreSQL test configuration.
+
+Baseline:
+
+- Desktop search LIVE PASS.
+- Mobile search LIVE PASS.
+- Real Catalog fidelity PASS.
+- Raw search NLU 2/2 PASS.
+- H01 FIXED.
+- 25/25 tables unchanged.
+- 27 existing Trip preserved.
+- Planner E02–E06 BLOCKED_DATA_READINESS.
+- P1 NLU/P2 runtime OPEN.
+
+Không thay các kết quả lịch sử.
+
+## 2. Database safety gate
+
+Database duy nhất được phép đọc:
+
+`travelgo_ai_m0_test`
+
+Xác minh:
+
+- Host/port/database name.
+- Database sentinel.
+- 12/12 migration checksum.
+- Existing schema.
+- Current table fingerprint.
+- READ ONLY transaction/session.
+- SQL SELECT/SHOW allowlist.
+
+Chú ý role `postgres` có quyền superuser. Không mặc định đây là role an toàn chỉ vì đã kết nối test DB.
+
+Nếu không bảo đảm READ ONLY thì dừng truy cập DB.
+
+KHÔNG:
+
+- INSERT.
+- UPDATE.
+- DELETE.
+- TRUNCATE.
+- CREATE/ALTER/DROP.
+- Migration.
+- Seed.
+- Reset.
+- Sửa dữ liệu thực thể.
+- Đụng 27 Trip hiện có.
+
+## 3. Phân tích lý do Planner không có dữ liệu
+
+Kiểm tra Catalog thật, không dựa vào giả định.
+
+Xác định:
+
+1. Số địa điểm hiện có theo thành phố.
+2. Phân loại attraction/hotel/restaurant/tour.
+3. Trạng thái active/approved/suspended.
+4. Điều kiện eligibility.
+5. City matching và normalization.
+6. Giá và currency.
+7. Dữ liệu địa điểm, tọa độ và các trường bắt buộc.
+8. Điều kiện ngày/thời gian nếu áp dụng.
+9. Planner filters và constraints.
+10. Nguyên nhân chính xác của `NO_SIGHTSEEING_FOR_DESTINATION`.
+
+Phải phân biệt:
+
+- Có dữ liệu nhưng bị filter.
+- Không có dữ liệu thuộc loại cần thiết.
+- Sai city/normalization.
+- Thiếu trường bắt buộc.
+- Không đủ số lượng theo thuật toán.
+- Vấn đề thực sự ở Planner.
+
+Không thay điều kiện eligibility chỉ để tạo PASS.
+
+## 4. Kiểm tra kịch bản Planner đã khóa
+
+Sử dụng original Planner E2E scenario:
+
+- Departure: Huế.
+- Destination: Đà Nẵng.
+- Start: 2036-04-22.
+- End: 2036-04-23.
+- Adults: 2.
+- TotalBudget: 6400000 VND.
+- Transportation: car.
+
+Kiểm source để xác định:
+
+- Số ngày/đêm.
+- Số điểm tham quan tối thiểu.
+- Yêu cầu khách sạn.
+- Yêu cầu nhà hàng.
+- Công thức chi phí.
+- Điều kiện khoảng cách/ETA.
+- Các giới hạn đầu vào.
+- Budget warning.
+- Required public catalog fields.
+
+Không tự ấn định số attraction cần thêm trước khi đọc thuật toán.
+
+Nếu source cho phép dùng dữ liệu hiện có mà không sửa input/expected, hãy ghi nhận phương án đó và bằng chứng.
+
+Nếu không, xác nhận chính xác những dữ liệu còn thiếu.
+
+## 5. Thiết kế fixture tối thiểu
+
+Chỉ THIẾT KẾ, không thực thi.
+
+Đề xuất bộ dữ liệu test nhỏ nhất giúp Planner có đủ điều kiện chạy.
+
+Với từng record dự kiến, xác định:
+
+- Entity/table.
+- Primary key strategy.
+- Foreign keys.
+- City/category.
+- Business status.
+- Required attributes.
+- Price/currency.
+- Coordinates nếu cần.
+- Quan hệ với Catalog/Planner.
+- Lý do cần record đó.
+
+Dùng tên/giá/địa điểm được xác định rõ là TEST FIXTURE, không trình bày như dữ liệu du lịch thật.
+
+Không reuse ID của dữ liệu nền.
+
+Không sửa hoặc xóa những record đã tồn tại.
+
+Kiểm yêu cầu bảo toàn 27 Trip.
+
+Thiết kế:
+
+1. Fixture creation ledger.
+2. Exact inserted IDs.
+3. Foreign-key dependency order.
+4. Idempotency/duplicate protection.
+5. Verification queries.
+6. Cleanup bằng đúng IDs đã tạo.
+7. Post-cleanup fingerprint.
+8. Quy trình dừng nếu cleanup không an toàn.
+
+Không soạn hoặc chạy SQL phá hủy bảng.
+
+Có thể tạo bản thiết kế SQL/JSON fixture trong thư mục evidence để review, nhưng đánh dấu `PROPOSED_NOT_EXECUTED`.
+
+## 6. Independent validation plan
+
+Thiết kế các ca nghiệm thu:
+
+A. Catalog đủ dữ liệu và eligibility đúng.
+
+B. Planner lập được lịch trình đúng ngày/đêm.
+
+C. Chi phí nhóm và ngân sách tính đúng.
+
+D. Transportation và ETA đúng contract.
+
+E. Thiếu attraction phải trả lỗi có kiểm soát.
+
+F. Ngân sách thấp phải cảnh báo, không cắt giá để ép vừa ngân sách.
+
+G. Empty catalog không được tạo dữ liệu giả.
+
+H. Agent tool chỉ đọc, không mutation.
+
+I. Planner result khớp direct service output.
+
+J. Frontend hiển thị đúng itinerary/cost/warnings.
+
+K. Cleanup bảo toàn database baseline.
+
+L. G2 session/corrections không dùng dữ liệu giả để tạo proof.
+
+Giữ baseline T11-B và những giới hạn Planner đã chấp thuận.
+
+Không đổi original test expectations.
+
+## 7. Kế hoạch LIVE sau khi dữ liệu được duyệt
+
+Đề xuất task kế tiếp:
+
+`T-AI-04-PLANNER-REAL-TOOL-LIVE-E2E`
+
+Chưa thực thi.
+
+Thiết kế các luồng ưu tiên:
+
+- G2 incomplete → complete plan.
+- Plan thành công với Planner thật.
+- Budget correction.
+- Destination hoặc date correction.
+- Transportation correction và fallback an toàn.
+- Desktop/mobile rendering.
+
+Tách riêng:
+
+- Raw NLU.
+- G2 verified history.
+- Execution safety.
+- Real Planner fidelity.
+- Browser UX.
+- Runtime.
+
+Không sử dụng mock itinerary hoặc fake prices để nhận FULL E2E PASS.
+
+Ngân sách Ollama cho task LIVE tiếp theo phải được phê duyệt riêng.
+
+Không lấy quyền POST còn dư của task cũ.
+
+## 8. Regression và integrity
+
+Trong task hiện tại:
+
+- Chạy các kiểm tra read-only cần thiết.
+- Không chạy Ollama.
+- Không preload model.
+- Không gọi inference.
+- Không thay production.
+- Không sửa benchmark V2.
+- Không thay Agent SYSTEM.
+- Không sửa Planner algorithm.
+- Không thay tool schema/gate.
+- Không commit/push/deploy.
+
+Kiểm hashes và fingerprint before/after.
+
+Nếu chỉ đọc source và phân tích tĩnh, báo chính xác suite nào NOT RUN.
+
+Không ghi số PASS kế thừa như một lượt chạy mới.
+
+## 9. Báo cáo
+
+Tạo:
+
+`docs/HUGO_T_AI_04_PLANNER_TEST_DATA_READINESS_REPORT.md`
+
+Evidence:
+
+`docs/evidence/t-ai-04-planner-test-data-readiness/`
+
+Báo cáo gồm:
+
+1. Baseline.
+2. Database guard.
+3. Catalog inventory.
+4. Planner eligibility rules.
+5. Root cause thiếu dữ liệu.
+6. Exact minimal data requirements.
+7. Proposed fixture records.
+8. SQL/FK dependencies.
+9. Creation/cleanup design.
+10. Fingerprint protection.
+11. Independent acceptance cases.
+12. LIVE E2E manifest proposal.
+13. Source integrity.
+14. P1/P2 status.
+15. NEXT TASK PLAN.
+
+Kết luận rõ một trong ba trạng thái:
+
+- `READY_WITH_EXISTING_DATA`
+- `FIXTURE_REQUIRED_OWNER_APPROVAL`
+- `BLOCKED_SOURCE_OR_DATA_CONTRACT`
+
+Nếu cần fixture, phải ghi `FIXTURE_REQUIRED_OWNER_APPROVAL` và **DỪNG**.
+
+Không tự tạo fixture hoặc chạy Planner LIVE.
+
+Chờ chủ dự án duyệt task tiếp theo.

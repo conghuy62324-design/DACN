@@ -1,3 +1,4 @@
+import {LocationCombobox} from '../common/LocationCombobox';
 import React from 'react';
 import { LockKeyhole, Search, SlidersHorizontal, Sparkles, WalletCards } from 'lucide-react';
 import { PREFERENCE_OPTIONS } from '../../constants/travelPreferences';
@@ -41,7 +42,6 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   isAuthenticated,
   personalizationEnabled,
 }) => {
-  const cities = ['Tất cả', 'Đà Nẵng', 'Phú Quốc', 'Sapa', 'Hạ Long', 'Hà Giang', 'Hội An'];
   const formattedBudget = budgetInput && /^\d+$/.test(budgetInput)
     ? `${Number(budgetInput).toLocaleString('vi-VN')} ₫/ngày/người`
     : undefined;
@@ -166,17 +166,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           </div>
 
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            <label className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
-              Tỉnh / Thành
-              <select
-                data-testid="explore-city"
-                value={city}
-                onChange={(event) => setCity(event.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 p-2 text-xs font-semibold normal-case tracking-normal text-slate-700 outline-none"
-              >
-                {cities.map((value) => <option key={value} value={value === 'Tất cả' ? 'all' : value}>{value}</option>)}
-              </select>
-            </label>
+            <LocationCombobox label="Địa phương nâng cao" value={city} onChange={setCity}/>
 
             <label className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
               Đánh giá tối thiểu

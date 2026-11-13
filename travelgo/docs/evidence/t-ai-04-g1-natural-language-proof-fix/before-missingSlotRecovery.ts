@@ -1,0 +1,74 @@
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import { HttpError } from '../utils/httpError.js';
+import { AGENT_TOOLS, parseDecision, type MissingField, type ToolName } from './tools.js';
+import { matchesDecisionSchema } from './decisionValidation.js';
+import { checkToolProvenance } from './toolProvenance.js';
+import { readValidatedCurrentSlots } from './currentCompleteness.js';
+
+// Diagnostic validators use the exact original tool schemas, with all errors so
+// a missing property cannot hide an extra key, wrong type, invalid enum or date.
+// No relaxed schema, defaults, coercion, property removal or argument completion.
+const ajv = new Ajv({ allErrors: true, strict: true });
+addFormats(ajv, ['date', 'uuid']);
+const validators = new Map(AGENT_TOOLS.map(spec => [spec.name, {
+  arguments: ajv.compile(spec.parameters),
+}]));
+
+function currentMissingSlots(message: string): { toolName: ToolName; fields: MissingField[] } | null {
+  const context = readValidatedCurrentSlots(message);
+  if (!context) return null;
+  const spec = AGENT_TOOLS.find(tool => tool.name === context.toolName)!;
+  const fields = spec.parameters.required.filter(field => context.values[field] === undefined) as MissingField[];
+  return fields.length ? { toolName: spec.name, fields } : null;
+}
+
+/** Provider output remains rejected with its original error code. Only safe
+ * tool/field names are retained internally; no raw text, arguments or secrets.
+ */
+export class MissingReadSlotsRejection extends HttpError {
+  constructor(readonly toolName: ToolName, readonly fields: readonly MissingField[]) {
+    super(502, 'Đầu ra LLM thiếu tham số bắt buộc; chưa chạy công cụ.', 'AGENT_INVALID_PROVIDER_OUTPUT');
+    this.fields = Object.freeze([...fields]);
+  }
+}
+
+/** Called only AFTER original schema failure. Reject every defect except absent
+ * required keys in an otherwise valid, allowlisted partial tool decision.
+ */
+export function classifyMissingReadSlots(raw: unknown, currentMessage: string): MissingReadSlotsRejection | null {
+  if (matchesDecisionSchema(raw)) return null;
+  let decision: ReturnType<typeof parseDecision>;
+  try { decision = parseDecision(raw); } catch { return null; }
+  if (decision.kind !== 'tool') return null;
+  const spec = AGENT_TOOLS.find(tool => tool.name === decision.name)!;
+  // Recovery is deliberately narrower than tool execution; optional arguments
+  // are not considered here, even when a normal full decision could use them.
+  if (Object.keys(decision.arguments).some(field => !(spec.parameters.required as readonly string[]).includes(field))) return null;
+  const validate = validators.get(spec.name)!.arguments;
+  if (validate(decision.arguments)) return null;
+  const errors = validate.errors;
+  if (!errors?.length || errors.some(error => error.keyword !== 'required' ||
+    !(spec.parameters.required as readonly string[]).includes(error.params.missingProperty))) return null;
+  const context = currentMissingSlots(currentMessage);
+  if (!context || context.toolName !== decision.name) return null;
+  const missing = spec.parameters.required.filter(field => decision.arguments[field] === undefined);
+  if (missing.length !== context.fields.length || missing.some(field => !context.fields.includes(field as MissingField))) return null;
+  // Independent G1 proof must agree on EVERY supplied argument, not merely on
+  // the raw tool name or list of omitted keys. This never executes a tool.
+  const gate = checkToolProvenance(decision, currentMessage);
+  if (gate.status !== 'NEEDS_INPUT' || gate.missing.length !== context.fields.length ||
+    gate.missing.some(field => !context.fields.includes(field))) return null;
+  return new MissingReadSlotsRejection(context.toolName, context.fields);
+}
+
+/** Recheck the authenticated current message at the service boundary. Ordinary
+ * invalid-output/network/backend errors cannot opt into recovery by error code.
+ */
+export function recoverMissingReadSlots(error: unknown, currentMessage: string): MissingField[] | null {
+  if (!(error instanceof MissingReadSlotsRejection)) return null;
+  const context = currentMissingSlots(currentMessage);
+  if (!context || context.toolName !== error.toolName || context.fields.length !== error.fields.length ||
+    context.fields.some(field => !error.fields.includes(field))) return null;
+  return [...context.fields];
+}

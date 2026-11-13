@@ -1,0 +1,71 @@
+{
+  "contract": "T11B_SCENARIOS_V3_FROZEN_BEFORE_RUN",
+  "specSha256": "63949242d2e24d462860de8f7bfb3f8b11c25f0b070420cd8f914626cea7739e",
+  "before": {
+    "total": 38,
+    "pass": 15,
+    "fail": 22,
+    "notRun": 1
+  },
+  "afterInMemory": {
+    "total": 38,
+    "pass": 37,
+    "fail": 0,
+    "notRun": 1
+  },
+  "P16ExternalDB": {
+    "result": "PASS",
+    "snapshotChecks": 16,
+    "lifecycleChecks": 12,
+    "source": "db/*",
+    "fingerprint": {
+      "result": "PASS",
+      "database": "travelgo_ai_m0_test",
+      "tables": 25,
+      "changed": []
+    }
+  },
+  "browser": {
+    "passed": 5,
+    "failed": 0,
+    "kind": "synthetic API replay; persistence separately verified via actual HTTP/PostgreSQL",
+    "evidence": "browser-final5/results.json"
+  },
+  "finalObservedCommands": [
+    {
+      "name": "frontend-build-unsandboxed",
+      "command": "npm.cmd run build",
+      "cwd": "travelgo/frontend",
+      "exitCode": 0,
+      "observedToolChunk": "1d8750",
+      "result": "tsc PASS; Vite 6.4.4, 1734 modules, built in 3.12s",
+      "evidence": "frontend-build-final.json"
+    },
+    {
+      "name": "backend-final-build",
+      "command": "npm.cmd run build",
+      "cwd": "travelgo/backend",
+      "exitCode": 0,
+      "observedToolChunk": "d9c4a2"
+    },
+    {
+      "name": "planner-feasibility-final",
+      "command": "node dist/tests/plannerFeasibility.test.js",
+      "cwd": "travelgo/backend",
+      "exitCode": 0,
+      "observedToolChunk": "035107",
+      "checks": 13,
+      "result": "PASS"
+    },
+    {
+      "name": "repository-pagination-final",
+      "command": "node dist/tests/recommendationRepositoryPagination.test.js",
+      "cwd": "travelgo/backend",
+      "exitCode": 0,
+      "observedToolChunk": "035107",
+      "checks": 2,
+      "result": "PASS"
+    }
+  ],
+  "unchangedHistoricalArtifactsAndRanking": true
+}

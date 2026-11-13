@@ -1,3 +1,4 @@
+import {LocationCombobox} from '../components/common/LocationCombobox';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -30,14 +31,6 @@ export const ToursPage: React.FC = () => {
   const [selectedDuration, setSelectedDuration] = useState<number | undefined>(undefined);
   const [sortBy, setSortBy] = useState('bayesian');
 
-  const CITIES = [
-    { id: 'all', name: 'Tất cả điểm đến' },
-    { id: 'Đà Nẵng', name: 'Đà Nẵng' },
-    { id: 'Đà Lạt', name: 'Đà Lạt' },
-    { id: 'Phú Quốc', name: 'Phú Quốc' },
-    { id: 'Sapa', name: 'Sapa' },
-    { id: 'Hà Nội', name: 'Hà Nội' },
-  ];
 
   const CATEGORIES = [
     { id: 'all', label: 'Tất cả thể loại' },
@@ -132,17 +125,7 @@ export const ToursPage: React.FC = () => {
 
             {/* Destination select */}
             <div className="md:col-span-3">
-              <select
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                className="w-full py-2.5 px-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-700"
-              >
-                {CITIES.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              <LocationCombobox label="Điểm đến tour" value={selectedCity} onChange={setSelectedCity}/>
             </div>
 
             {/* Category select */}

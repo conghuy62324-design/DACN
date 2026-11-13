@@ -1,0 +1,676 @@
+{
+  "at": "2026-11-10T19:05:12.587Z",
+  "task": "T-AI-04-G2-BROWSER-AND-REAL-TOOL-E2E",
+  "status": "LOCKED_BEFORE_ANY_NATIVE_POST",
+  "approvalSha256": "ab9b591895e683e5855c99b18f8e2f6caf8a805fad724496f6ebb565769a22db",
+  "principal": "9997f6db-bfa1-4377-96f3-5b5ea19dbf34",
+  "principalHash": "6b982d095bc6bc30c87955cd38c78afa9ef31d3447ef30f62e8684bbe8bce600",
+  "principalSource": "docs/evidence/t-ai-04-e-final/run-20261109T041645807Z-ae626a88/attempt-E04-B.json",
+  "secondaryPrincipal": "aaaaaaaa-7654-4321-8765-aaaaaaaaaaaa",
+  "secondaryScope": "Previous approved ownership-negative principal only;0 inference,1 quota turn; not rate-limit bypass",
+  "authentication": "TEST_SIGNED_JWT_THROUGH_PRODUCTION_AUTH_MIDDLEWARE. No DB account/credentials for main UUID. Harness GET /auth/me projects signed claims for frontend bootstrap; NOT real-login/AuthService.getById E2E. Agent router/auth/consent/tool services REAL.",
+  "model": "qwen3:4b-instruct-2507-q4_K_M",
+  "digest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+  "endpoint": "http://127.0.0.1:11434",
+  "consentVersion": "LOCAL_DEMO_SLOTS_V1",
+  "budget": {
+    "ownerNativeCap": 8,
+    "operatorCap": 1,
+    "inferenceOwnerCap": 7,
+    "allocatedInferenceCap": 2,
+    "unallocatedInferenceSlots": 5,
+    "mainQuotaTurns": 15,
+    "secondaryQuotaTurns": 1,
+    "conservativeOperatorEntry": 1,
+    "maxMainRollingEntries": 16,
+    "concurrency": 1,
+    "retry": 0,
+    "hiddenWarmup": 0,
+    "chainDeadlineMinutes": 15
+  },
+  "cases": [
+    {
+      "id": "D01",
+      "viewport": "desktop",
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "quota": 1,
+      "body": {
+        "message": "Lập lịch trình; Điểm đến: Đà Nẵng",
+        "conversation": {
+          "action": "start",
+          "requestId": "$FRESH_UUID",
+          "consentVersion": "LOCAL_DEMO_SLOTS_V1"
+        }
+      },
+      "expected": {
+        "http": 200,
+        "status": "needs_input",
+        "revision": 1,
+        "missingFields": [
+          "departureCity",
+          "startDate",
+          "endDate",
+          "adults",
+          "totalBudget",
+          "transportation"
+        ],
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "82b6abce093bc4f559e2cdecd3b533ab8f7682af4dd680403ced60cc43daafa1"
+    },
+    {
+      "id": "D02",
+      "viewport": "desktop",
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "quota": 1,
+      "body": {
+        "message": "Nơi xuất phát: Huế; Ngày bắt đầu: 2036-04-22; Ngày kết thúc: 2036-04-23; Số người lớn: 2; Ngân sách cả nhóm: 6400000 VND",
+        "conversation": {
+          "action": "continue",
+          "requestId": "$FRESH_UUID",
+          "consentVersion": "LOCAL_DEMO_SLOTS_V1",
+          "id": "$desktop.id",
+          "revision": 1
+        }
+      },
+      "expected": {
+        "http": 200,
+        "status": "needs_input",
+        "revision": 2,
+        "missingFields": [
+          "transportation"
+        ],
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "e5179e86362ac3099e428756a006907b35a2d3371fa7f0f7c3ca5021c0b65aff"
+    },
+    {
+      "id": "N-STALE",
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "quota": 1,
+      "body": {
+        "message": "Tôi chưa chọn phương tiện",
+        "conversation": {
+          "action": "continue",
+          "requestId": "$FRESH_UUID",
+          "consentVersion": "LOCAL_DEMO_SLOTS_V1",
+          "id": "$desktop.id",
+          "revision": 1
+        }
+      },
+      "expected": {
+        "http": 409,
+        "code": "AGENT_G2_REVISION_CONFLICT",
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "82ac6b5f97d6c789e93537b2d166b312b3a2074528f513f9c9268409fee0d7d8"
+    },
+    {
+      "id": "N-REPLAY",
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "quota": 1,
+      "body": {
+        "message": "Tôi chưa chọn phương tiện",
+        "conversation": {
+          "action": "continue",
+          "requestId": "$D02.requestId",
+          "consentVersion": "LOCAL_DEMO_SLOTS_V1",
+          "id": "$desktop.id",
+          "revision": 2
+        }
+      },
+      "expected": {
+        "http": 409,
+        "code": "AGENT_G2_REPLAY",
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "293f16af18d6e5608375fc571e358814108538d69527241a0b02a78f18723fa3"
+    },
+    {
+      "id": "N-HISTORY",
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "quota": 0,
+      "body": {
+        "message": "Tôi chưa chọn phương tiện",
+        "conversation": {
+          "action": "continue",
+          "requestId": "$FRESH_UUID",
+          "consentVersion": "LOCAL_DEMO_SLOTS_V1",
+          "id": "$desktop.id",
+          "revision": 2
+        },
+        "history": [
+          {
+            "role": "user",
+            "content": "Untrusted history"
+          },
+          {
+            "role": "assistant",
+            "content": "Not proof"
+          }
+        ]
+      },
+      "expected": {
+        "http": 400,
+        "code": "AGENT_G2_CLIENT_HISTORY_REJECTED",
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "ff6c2acb128883cb520a21ed063f7cd5f0a6fcee84137a15556821c239ee17b8"
+    },
+    {
+      "id": "N-OWNER",
+      "actor": "secondary",
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "quota": 1,
+      "body": {
+        "message": "Tôi chưa chọn phương tiện",
+        "conversation": {
+          "action": "continue",
+          "requestId": "$FRESH_UUID",
+          "consentVersion": "LOCAL_DEMO_SLOTS_V1",
+          "id": "$desktop.id",
+          "revision": 2
+        }
+      },
+      "expected": {
+        "http": 404,
+        "code": "AGENT_G2_SESSION_UNAVAILABLE",
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "74e7341aea4f84164c4fdc91c27cc46a997d1e12134775ed3c5967b2f40d6d08"
+    },
+    {
+      "id": "D-RESET",
+      "viewport": "desktop",
+      "method": "POST",
+      "path": "/api/agent/verified-history/$desktop.id/reset",
+      "quota": 1,
+      "body": {},
+      "expected": {
+        "http": 200,
+        "revision": 3,
+        "clearSlots": true,
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "id": "E01",
+      "viewport": "desktop",
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "quota": 1,
+      "body": {
+        "message": "Tìm địa điểm; Điểm đến: Đà Nẵng; Ngân sách mỗi người mỗi ngày: 462000 VND",
+        "conversation": {
+          "action": "continue",
+          "requestId": "$FRESH_UUID",
+          "consentVersion": "LOCAL_DEMO_SLOTS_V1",
+          "id": "$desktop.id",
+          "revision": 3
+        }
+      },
+      "expected": {
+        "http": 200,
+        "status": "completed",
+        "revision": 4,
+        "native": 1,
+        "toolCalls": 1,
+        "raw": {
+          "kind": "tool",
+          "name": "search_places",
+          "arguments": {
+            "destinationCity": "Đà Nẵng",
+            "dailyBudgetPerPerson": 462000
+          }
+        },
+        "serviceResult": {
+          "type": "places",
+          "source": "RecommendationService",
+          "places": [
+            {
+              "id": "b2f9a5cb-5258-421e-8050-1b3d55997fa7",
+              "name": "HuGo Seafood",
+              "category": "restaurant",
+              "city": "Đà Nẵng",
+              "province": "Đà Nẵng",
+              "priceFrom": 350000,
+              "catalogPriceAvailable": true
+            },
+            {
+              "id": "39a5483f-e3d0-4cf8-a9b9-65e6b0a33593",
+              "name": "HuGo Riverside Hotel",
+              "category": "hotel",
+              "city": "Đà Nẵng",
+              "province": "Đà Nẵng",
+              "priceFrom": 1200000,
+              "catalogPriceAvailable": true
+            }
+          ],
+          "warnings": [
+            "Giá là dữ liệu catalog, không phải báo giá đặt dịch vụ."
+          ]
+        }
+      },
+      "bodyTemplateSha256": "a1e9a5e4aa66bd8d984b17a74ee716fbdda352ec86cee86ca02e525cd2b171a2",
+      "nativeBody": {
+        "file": "body-E01.json",
+        "sha256": "62248fcef049971375e3746e53c970a636a41aff29891399050291e5f66c86f8",
+        "inputSha256": "9ace0f41de63c0f6a3471526709dda6d47d45635e69861c619a3586c2fd16277"
+      }
+    },
+    {
+      "id": "D-END",
+      "viewport": "desktop",
+      "method": "DELETE",
+      "path": "/api/agent/verified-history/$desktop.id",
+      "quota": 1,
+      "expected": {
+        "http": 200,
+        "revoked": true,
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    },
+    {
+      "id": "N-REVOKED",
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "quota": 1,
+      "body": {
+        "message": "Tìm địa điểm; Điểm đến: Đà Nẵng",
+        "conversation": {
+          "action": "continue",
+          "requestId": "$FRESH_UUID",
+          "consentVersion": "LOCAL_DEMO_SLOTS_V1",
+          "id": "$desktop.id",
+          "revision": 4
+        }
+      },
+      "expected": {
+        "http": 404,
+        "code": "AGENT_G2_SESSION_UNAVAILABLE",
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "df4036ead0918692c9ffc138791ed966cf15a0eaf734206f4adb8ddfa20baf63"
+    },
+    {
+      "id": "D-LOGOUT-START",
+      "viewport": "desktop",
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "quota": 1,
+      "body": {
+        "message": "Tìm địa điểm; Điểm đến: Đà Nẵng",
+        "conversation": {
+          "action": "start",
+          "requestId": "$FRESH_UUID",
+          "consentVersion": "LOCAL_DEMO_SLOTS_V1"
+        }
+      },
+      "expected": {
+        "http": 200,
+        "status": "needs_input",
+        "revision": 1,
+        "missingFields": [
+          "dailyBudgetPerPerson"
+        ],
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "80f9b09964c24b5c28cdaec7712e1424916e97a9a4feeff547599139bcfc5c47"
+    },
+    {
+      "id": "D-LOGOUT",
+      "viewport": "desktop",
+      "method": "DELETE",
+      "path": "/api/agent/verified-history",
+      "quota": 1,
+      "expected": {
+        "http": 200,
+        "revoked": true,
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    },
+    {
+      "id": "E07",
+      "viewport": "mobile",
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "quota": 1,
+      "body": {
+        "message": "Tìm địa điểm; Điểm đến: Đà Nẵng; Ngân sách mỗi người mỗi ngày: 638000 VND",
+        "conversation": {
+          "action": "start",
+          "requestId": "$FRESH_UUID",
+          "consentVersion": "LOCAL_DEMO_SLOTS_V1"
+        }
+      },
+      "expected": {
+        "http": 200,
+        "status": "completed",
+        "revision": 1,
+        "native": 1,
+        "toolCalls": 1,
+        "raw": {
+          "kind": "tool",
+          "name": "search_places",
+          "arguments": {
+            "destinationCity": "Đà Nẵng",
+            "dailyBudgetPerPerson": 638000
+          }
+        },
+        "serviceResult": {
+          "type": "places",
+          "source": "RecommendationService",
+          "places": [
+            {
+              "id": "b2f9a5cb-5258-421e-8050-1b3d55997fa7",
+              "name": "HuGo Seafood",
+              "category": "restaurant",
+              "city": "Đà Nẵng",
+              "province": "Đà Nẵng",
+              "priceFrom": 350000,
+              "catalogPriceAvailable": true
+            },
+            {
+              "id": "39a5483f-e3d0-4cf8-a9b9-65e6b0a33593",
+              "name": "HuGo Riverside Hotel",
+              "category": "hotel",
+              "city": "Đà Nẵng",
+              "province": "Đà Nẵng",
+              "priceFrom": 1200000,
+              "catalogPriceAvailable": true
+            }
+          ],
+          "warnings": [
+            "Giá là dữ liệu catalog, không phải báo giá đặt dịch vụ."
+          ]
+        }
+      },
+      "bodyTemplateSha256": "6a85d71e59e5e39978bdbdeebd20f3190a27e97f396ae7237dc91caf1846e79d",
+      "nativeBody": {
+        "file": "body-E07.json",
+        "sha256": "9a0c16488e40675e17d7d6c5cbbbfb3442c6b4d2ad8fdc4fae436ce931a72680",
+        "inputSha256": "01cb54de09941b513ae73fc70259a6fab60d1aa5e865527195b55971c8e5751a"
+      }
+    },
+    {
+      "id": "M-RESET",
+      "viewport": "mobile",
+      "method": "POST",
+      "path": "/api/agent/verified-history/$mobile.id/reset",
+      "quota": 1,
+      "body": {},
+      "expected": {
+        "http": 200,
+        "revision": 2,
+        "clearSlots": true,
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "id": "M-G2-PARTIAL",
+      "viewport": "mobile",
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "quota": 1,
+      "body": {
+        "message": "Lập lịch trình; Điểm đến: Đà Nẵng",
+        "conversation": {
+          "action": "continue",
+          "requestId": "$FRESH_UUID",
+          "consentVersion": "LOCAL_DEMO_SLOTS_V1",
+          "id": "$mobile.id",
+          "revision": 2
+        }
+      },
+      "expected": {
+        "http": 200,
+        "status": "needs_input",
+        "revision": 3,
+        "missingFields": [
+          "departureCity",
+          "startDate",
+          "endDate",
+          "adults",
+          "totalBudget",
+          "transportation"
+        ],
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "c44a8b92e3702436a529045536be55e4978e98a28bc3ca8473a79bd70a3695fd"
+    },
+    {
+      "id": "M-G1-SWITCH",
+      "viewport": "mobile",
+      "method": "DELETE",
+      "path": "/api/agent/verified-history",
+      "quota": 1,
+      "expected": {
+        "http": 200,
+        "revoked": true,
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    },
+    {
+      "id": "M-G1-PARTIAL",
+      "viewport": "mobile",
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "quota": 1,
+      "body": {
+        "message": "Lập lịch trình; Điểm đến: Đà Nẵng",
+        "history": []
+      },
+      "expected": {
+        "http": 200,
+        "status": "needs_input",
+        "mode": "STATELESS",
+        "missingFields": [
+          "departureCity",
+          "startDate",
+          "endDate",
+          "adults",
+          "totalBudget",
+          "transportation"
+        ],
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "75da3f64e7205ae6c3d2ce6c5544fb8b4c2ee37720606354e30a696272bb3511"
+    }
+  ],
+  "unrunCases": [
+    {
+      "id": "E02 completed Planner",
+      "status": "NOT RUN",
+      "reason": "BLOCKED_DATA_READINESS",
+      "rawNlu": "NOT EVALUATED",
+      "inferenceAllocated": 0
+    },
+    {
+      "id": "E03 budget correction",
+      "status": "NOT RUN",
+      "reason": "BLOCKED_DATA_READINESS",
+      "rawNlu": "NOT EVALUATED",
+      "inferenceAllocated": 0
+    },
+    {
+      "id": "E04 natural transportation correction",
+      "status": "NOT RUN",
+      "reason": "BLOCKED_DATA_READINESS",
+      "rawNlu": "NOT EVALUATED",
+      "inferenceAllocated": 0
+    },
+    {
+      "id": "E05 manual confirmation LIVE",
+      "status": "NOT RUN",
+      "reason": "BLOCKED_DATA_READINESS",
+      "rawNlu": "NOT EVALUATED",
+      "inferenceAllocated": 0
+    },
+    {
+      "id": "E06 destination/date correction",
+      "status": "NOT RUN",
+      "reason": "BLOCKED_DATA_READINESS",
+      "rawNlu": "NOT EVALUATED",
+      "inferenceAllocated": 0
+    }
+  ],
+  "dataReadinessSha256": "374ff27e969b8cc3e1c7fa966d0d6bb4c49475a2b7a4e2b9763a137f23d92c4f",
+  "bindings": {
+    "$FRESH_UUID": "Actual frontend crypto.randomUUID at dispatch; validate UUID unique across logical turns; no substitution into model body. API negative IDs generated once from this rule.",
+    "$desktop.id": "Only server-created D01 response ID; keep old binding for explicit revoked test.",
+    "$mobile.id": "Only server-created E07 response ID.",
+    "$D02.requestId": "Exact D02 UUID reused only for locked negative replay."
+  },
+  "scoring": {
+    "raw": "Native returned JSON before fallback. Required args exact numbers/city NFC/date/enum, original schema/parseDecision/validateTool. No raw on timeout => NOT EVALUATED + separate reliability FAIL. Optional args must original-validator/provenance valid; never repaired.",
+    "history": "Production store snapshots read-only; exact committed slots/revision/TTL and corrections where run.",
+    "safety": "Gate original result observed,one read tool max,zero DB writes/mutations,never fake executor.",
+    "fidelity": "Actual production executor delegates unchanged; compare exact public result with locked real DB direct service results; no itinerary fidelity claim without actual Planner output.",
+    "UI": "No Playwright route mocking. Actual browser→Vite→loopback Express production Agent router; render result equals API. Signed identity bootstrap explicitly separate from real login."
+  },
+  "load": {
+    "conditional": "Only if nonresident at guarded run.0 if resident exact context; STOP wrong resident/eviction/failure; never second load.",
+    "endpoint": "http://127.0.0.1:11434/api/generate",
+    "body": {
+      "model": "qwen3:4b-instruct-2507-q4_K_M",
+      "prompt": "",
+      "stream": false,
+      "format": "json",
+      "keep_alive": "5m",
+      "options": {
+        "temperature": 0,
+        "num_ctx": 16384,
+        "num_predict": 2048
+      }
+    },
+    "bodySha256": "1471ca7669b98e8e61606608299952e544050129941f9b8d0f65d2d0f3a553df",
+    "timeoutMs": 60000,
+    "expected": {
+      "http": 200,
+      "done": true,
+      "done_reason": "load",
+      "response": ""
+    }
+  },
+  "stop": [
+    "native cap8 or allocated cap2 inference",
+    "quota insufficient",
+    "source/request/session/model/digest drift",
+    "DB guard/fingerprint failure or write attempt",
+    "unauthorized execution/auth leak",
+    "resource/readiness/timeout abort/provider still pending",
+    "15min chain TTL insufficient"
+  ],
+  "sourceCompiled": {
+    "backend/dist/agent/conversation.js": "4c62390987c41dfe0681dddb1fd8bc9557fb175b4a40c622d0fcdf2f0285fe15",
+    "backend/dist/agent/currentCompleteness.js": "327a263c8a859530a820ec043ef75515721d9d7f43ba775809a955b0e8c9f56f",
+    "backend/dist/agent/currentTurnProof.js": "14cb69e08028274ed8d3e46155073e8e6bb477b26f1d6047817e93093bc4c5c3",
+    "backend/dist/agent/decisionSchema.js": "61d204ea1fe2ac7e870546c4d92579c9b4c7ccd2d0e64cb663120c360a567d3c",
+    "backend/dist/agent/decisionValidation.js": "a8583f5040c69366e44c7e638a59df14adf2cd17f0bba843fbd86c9ea69eb888",
+    "backend/dist/agent/limits.js": "f86e0089656b648b9a4f3077b971ec3c19f5fe774c2a040f627a06b4c64931ef",
+    "backend/dist/agent/liveProvider.js": "d89754657c671e8b4e98ec067919985c1bded35c40670ed6a2be5c5dcfff880e",
+    "backend/dist/agent/missingSlotRecovery.js": "41f91040ff351625eaaecabe741291d27e29e37410d62f2ab640179107d8ef66",
+    "backend/dist/agent/ollamaReadiness.js": "8027b5a84d1d294584be1cf43220417b0edbfdac03db9427924d1c345ce234ea",
+    "backend/dist/agent/privacy.js": "fc02b19c84666fa89927380b6c528f0f564a5831cb3dfa58d1eb4a6e49e935d1",
+    "backend/dist/agent/provider.js": "5be9e444c1b29a5277a88d9ffb1bb56063816e34c4bfa6d924fc43a432e0587c",
+    "backend/dist/agent/toolProvenance.js": "f56a10bc72ad51a9183624d48fe987ebb8ff0e26ecddf76925c5305b1c970a2d",
+    "backend/dist/agent/tools.js": "9f616c3eca3a4353b85c9a926e6724bf8b7c0dfbe2763e0fff4cbeee52e3a923",
+    "backend/dist/agent/verifiedHistory.js": "192cc6bb3eec6cda072b887fe5500fa6530f7ada420226135514db664073c00d",
+    "backend/dist/services/adminService.js": "8d79e1ee02094fdadad5f8f0345d8c5ac21c42ca6104cb3e986b3031b265dcae",
+    "backend/dist/services/agentService.js": "e7a26f2b127895ab522c18831092a1c6a5223795feb3462fae2cf1001a642a76",
+    "backend/dist/services/authService.js": "e96763294e3ead7eb292fe2f32ecfd2adc4901eab66c32655f92627f6d5b14d3",
+    "backend/dist/services/blogService.js": "7f656e835a7b2f99890effd1fe76b563d01a27c617501d06a2e400f6e6af09bc",
+    "backend/dist/services/bookingService.js": "be0e2b2d4b59e5e02a1f8299167c375bd7e749730ba80c5028a81370aa6f169d",
+    "backend/dist/services/businessAccessService.js": "105eaeeaff07413c90a121bbb5e30282179db363ddd1446f7753408737deb082",
+    "backend/dist/services/favoriteService.js": "23e208d8f7efbc022d24582cdfe52445e1eb29e5a2af93c35add3c512d8f87e2",
+    "backend/dist/services/geoService.js": "b8d90130abf388533111187399dc65a5b9f5ea2f0e92c3740e96a468e0c071bf",
+    "backend/dist/services/partnerApplicationService.js": "c30ebec9a974fc288cde7850e9424a4c3a10094d26b01daec42f7a6586fd1474",
+    "backend/dist/services/partnerService.js": "0f3200abafc7df24aad94dddb45f0992d3fbc886670997bbb9135c43b8a2b897",
+    "backend/dist/services/passwordService.js": "b1277a1020b2d7889acd3d0c56c0972f36f1c5d99d4e5925bfd9bef7e46fc67f",
+    "backend/dist/services/placeService.js": "dcd375383ae3fa133e0f8f763b23056675231783d8c1e54a0810a83a7428ffa2",
+    "backend/dist/services/ratingService.js": "6445454229cf679bf1f3aea9db6dc4347afb98344dc55d0edaf0b4afb77552c3",
+    "backend/dist/services/recommendationExposureService.js": "3e691d0584338ed56f30bd27a32580840425cdc830f9b2b9dd68d5cad5a4999e",
+    "backend/dist/services/recommendationService.js": "0198a2317713543a678345cdc97a770978ee965c350920cdf8a36c9f1f91c164",
+    "backend/dist/services/reviewService.js": "9474fed779d70a5b88099f811cc6b229bd59d9ee37666491f058c5730cb048ee",
+    "backend/dist/services/statsService.js": "d846ebc727e944a99ed1151f2e1de1dc092af2437777cb7feecfe386105c0311",
+    "backend/dist/services/telemetryService.js": "9abb4a3cc584da8aa21be454ae8365b76fb013c67b31e15b86b5d63e12ed36bc",
+    "backend/dist/services/ticketService.js": "db2f52c4bc3655ea49d97da7531dd8b79272c9e234e0cfe753522a9604f73ff5",
+    "backend/dist/services/tokenService.js": "6c901668683cf4880fb9aa3eac0c648a3b44225cbcdc09649114d156a2c26f54",
+    "backend/dist/services/tourPlannerService.js": "de6b0475a80870b3c770e051c0791847fe7468390f90e8c8d92843e34a421469",
+    "backend/dist/services/tourService.js": "eb82a2c3e9b5cb8655e5388462250c34af33b1f14c19bb6b45d565424d6be0a2",
+    "backend/dist/services/tripSessionService.js": "2d81c02e1444c923e36f390073403f516970231fcb086578047cb6a5a192fdb7",
+    "backend/dist/routes/adminRoutes.js": "bb50e6b94e9efb317878a254adccbd2eeefcb5b78d01cea9c8ece5f7367dc10f",
+    "backend/dist/routes/agentRoutes.js": "52d7b8978a6d7f778836ed9301d8c4554fe5c4b3e5a93118601c86ea70f418e1",
+    "backend/dist/routes/api.js": "d502e2a3f2d9196da750c876fedb667a224eb90fe1b24657c0b33abd69173dbb",
+    "backend/dist/routes/authRoutes.js": "5e950f5c621d866d22c5f8ac7b6573e48abdde07ec958bca32d426f81f8292fd",
+    "backend/dist/routes/blogRoutes.js": "5b7874670315e62c71305625233a2bab54bd80dd41452ae710acda5d3890e218",
+    "backend/dist/routes/bookingRoutes.js": "e6c54a1864b1d5f123b9aac20eeb58e755d8de698fd6309a909dd144e1869eb5",
+    "backend/dist/routes/favoriteRoutes.js": "c63bfd76881d72521d10c42d1e275ccff247207a6ad57b0847aa35c9164dfaf5",
+    "backend/dist/routes/intelligenceRoutes.js": "5b8cacaf1fd3cf9c99a6fb681732a5f1f785db01f5706213d68c54b9a34a5ec0",
+    "backend/dist/routes/partnerApplicationRoutes.js": "e7c3322864859b747f67c37f02b65746d0d888e1ede268396b8a862a14f23a14",
+    "backend/dist/routes/partnerRoutes.js": "371739d8e0f206680df0523a97991884a319d4bfa15e67cbd68aae38d6936e35",
+    "backend/dist/routes/placeRoutes.js": "a1eed62bdab3f3a177077082688b5f0f5e4d00bb71a13ea75d3dfeac69ff49e0",
+    "backend/dist/routes/reviewRoutes.js": "1b41b0a96686fb3a9d3c788cf750a629f0e5c8a2ecd933bcc8d81dae625caa84",
+    "backend/dist/routes/statsRoutes.js": "62e8c08a09645e72d6acb2becc9ab37cb19e0576937a33c489dcc9fa5416bfe4",
+    "backend/dist/routes/ticketRoutes.js": "352b061e881853510f54da01397ac8f21fceb3c35ddb0ae10d327432361bf5a8",
+    "backend/dist/routes/tourRoutes.js": "9c68fe3d8f82e91f5d1f2da49ec2e60ee773d1dd7e80f7f6839760b58913bfa8",
+    "backend/dist/routes/tripRoutes.js": "610199eebfce04f7ef12e85326c90f34b97278681404a4ca7c954af37c5e09fa",
+    "backend/dist/controllers/adminController.js": "a72365a32a756c85b6d31b864702bcfc47e4f878787dd622974b72860340b3a3",
+    "backend/dist/controllers/adminResourceController.js": "8c0f216f47ce8fdb067a0650f01126e502e89d4f66099b24cf27f6933b4c846a",
+    "backend/dist/controllers/agentController.js": "964cfc38aa3fcfdcbc88f2177904585610d9a666b6f50a2ea3ecc62ca4560022",
+    "backend/dist/controllers/authController.js": "78760663472568a34b1f57d17faabfd37b5932eb45da8611d278b2f38e707d9b",
+    "backend/dist/controllers/blogController.js": "f73d46baea98c539f7444de1280b4eb8f02ae00f0f16198686a92e4b0a335856",
+    "backend/dist/controllers/bookingController.js": "ac8ecd5124a854c2019d1c3840a406288922ceba51b26c822520b07dbc3b89f4",
+    "backend/dist/controllers/favoriteController.js": "516947734713d85579a662e08cd5fab283bab323f2b9a17d716ed2ce08c0408a",
+    "backend/dist/controllers/intelligenceController.js": "b0a2e0811ca778b19e0be33eb68307cd1d84ff72c72eb4a81588e50a72846ca3",
+    "backend/dist/controllers/partnerApplicationController.js": "8e50c49a469c6cd6c0da80304c4d109199d5b781350b9f74945af3e7de8c6905",
+    "backend/dist/controllers/partnerController.js": "db30a8b80e3f1806cf180db0935de23c0a84a2e94794fd1a57102cfa70127e8a",
+    "backend/dist/controllers/partnerResourceController.js": "4b962a97ec6c4a398f899e413802c83d10b8cf7bf5b9c4d8d6efd254206bec4c",
+    "backend/dist/controllers/placeController.js": "a61df47ba2bc0bc5049a6b81fabcfe4918a989e051b9cad24aaf027c58d63d4b",
+    "backend/dist/controllers/reviewController.js": "dc4fb0341fefc31f2aa786fc3ed34ebead68e5aa9c61c9b2fa62ea90d479eee7",
+    "backend/dist/controllers/statsController.js": "e83e1eae9cf5b02c419828f763b3998614f730a85f6ba20dcb0891a048a1e519",
+    "backend/dist/controllers/ticketController.js": "afb8b026644bdfe201d12851168ab454a52944e83be0eb3a7ca83bb2f27cc951",
+    "backend/dist/controllers/tourController.js": "a4e6d6bd4aec857b3ce413386eb0028d8e3cbddb36cf919143b1aae3fde47f74",
+    "backend/dist/controllers/tripController.js": "d40c02004243e8cad3fa3fea126e8aa773582e32e7d6cec05b644402f00b5c70",
+    "backend/dist/middlewares/authMiddleware.js": "3a3f79e9ae716ff1f9220aaadeecf95496a936123002161826a2b1b352212c77",
+    "backend/dist/middlewares/errorHandler.js": "4e5d5c9066cba17f6b06ed4490cc93bd6dfbe07eb166dd4e25b57f83a47a9322",
+    "backend/dist/config/database.js": "f27b44ac4a89ba3beceae74fe5c57b82ed73e5a35659179d448c707b7f5a50ea",
+    "backend/dist/config/env.js": "4b88b8c6808c25511cdaf504ccbce599be6a956652f15064066efd7751a54a91",
+    "backend/dist/utils/bookingValidation.js": "d0f0fca1e15c412dcc54b289084ad5a30b433ae643f474b871c50149b34966c8",
+    "backend/dist/utils/httpError.js": "91f03895ce8981774dcdddca8287f2e4193672ef1e2aea67e922ab34a50fcabd",
+    "backend/dist/utils/mockData.js": "82145a1f6ac2349bb08e9936390c64745a3f4fc7e9ed1bb0ad7a5a7f60917509",
+    "backend/dist/utils/plannerFeasibility.js": "d5365c50c0eac0a713b7f40f446f5dcf7c4603455d09f08e3083e4a851a19df7",
+    "backend/dist/utils/plannerValidation.js": "9e4a3443c247f36ddf222d1babf0c4316ee207a8976f44a75e7029f6a4a6914c",
+    "backend/dist/utils/testDatabaseGuard.js": "300d8ae2ee0af57ff6b35497881f353b0ca6c7b333fba0a675c89cf123b410e4",
+    "backend/dist/utils/travelPreferences.js": "176d11b4f9b69aad6a5f816dd3444565f7c6183cb5de47cf364a0dd1af14adbd",
+    "backend/dist/utils/tripProgress.js": "cc0724898aa6ebca54a07b005073b69acf06a5e2249153e5a2b7db7006ac04fe",
+    "backend/dist/utils/tripSnapshot.js": "21e37cc75f2efa1085282b2db76a4b1d2100c149770b651a48aab2593d4536f6",
+    "backend/dist/types/auth.js": "08f586b8c27399e98415584e4947aea2b86c749349735b2016a42ecf89c5a7eb"
+  }
+}

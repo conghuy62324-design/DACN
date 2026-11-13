@@ -1,0 +1,406 @@
+# TASK — TRAVELGO: MỞ RỘNG CATALOG DU LỊCH 10 ĐIỂM ĐẾN + BỘ LỌC THÔNG MINH + AI AGENT TỰ ĐỒNG ĐỒNG BỘ ĐỐI TÁC
+
+Bạn là Senior Full-stack Engineer, Database Engineer và AI Agent Engineer của dự án TravelGo.
+
+Đọc source hiện tại và báo cáo:
+
+`docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md`
+
+## MỤC TIÊU
+
+Mở rộng dữ liệu du lịch phục vụ trải nghiệm thực tế trên localhost và kiểm thử AI Agent.
+
+Yêu cầu chính:
+
+1. Có dữ liệu khách sạn, nhà hàng và điểm tham quan tại 10 điểm đến nổi tiếng Việt Nam.
+2. Mỗi điểm đến có ít nhất 5 khách sạn và 5 nhà hàng để so sánh, lựa chọn.
+3. Mỗi điểm đến có ít nhất 3–5 điểm tham quan để Planner lập lịch trình.
+4. Khách hàng có thể phân loại, tìm kiếm và lọc khách sạn/nhà hàng thuận tiện.
+5. AI Agent tự động sử dụng danh sách khách sạn/nhà hàng mới được phê duyệt trên TravelGo.
+6. Không cần chỉnh sửa code AI hoặc huấn luyện lại mô hình mỗi khi có đối tác mới.
+7. Giữ nguyên các nghiệp vụ Planner, Trip, Booking và các cơ chế bảo mật đã hoàn thiện.
+
+## PHASE 1 — MỞ RỘNG CATALOG 10 ĐIỂM ĐẾN
+
+Danh sách điểm đến:
+
+1. Đà Nẵng
+2. Đà Lạt
+3. Nha Trang
+4. Hội An
+5. Huế
+6. Hà Nội
+7. TP. Hồ Chí Minh
+8. Phú Quốc
+9. Hạ Long
+10. Sa Pa
+
+Mỗi địa phương cần:
+
+- 5 khách sạn/cơ sở lưu trú.
+- 5 nhà hàng.
+- Tối thiểu 3–5 điểm tham quan.
+
+Tổng mục tiêu: ít nhất 100 listing lưu trú/ăn uống và 30 điểm tham quan.
+
+### 1.1. Yêu cầu dữ liệu
+
+Mỗi khách sạn có thể có:
+
+- ID thật trong database.
+- Tên.
+- Điểm đến.
+- Địa chỉ.
+- Mô tả.
+- Loại hình lưu trú.
+- Phân khúc giá.
+- Giá khởi điểm và đơn vị tính nếu xác minh được.
+- Tiện ích.
+- Hình ảnh có quyền sử dụng.
+- Tọa độ nếu được xác minh.
+- Rating/review count nếu có nguồn hợp lệ.
+- Trạng thái hoạt động.
+- Trạng thái phê duyệt.
+- Business ID.
+- Nguồn dữ liệu.
+- Cờ DEMO nếu là dữ liệu thử nghiệm.
+
+Mỗi nhà hàng có thể có:
+
+- ID.
+- Tên.
+- Địa điểm.
+- Loại ẩm thực.
+- Phân khúc giá.
+- Giá khởi điểm và đơn vị tính nếu xác minh được.
+- Mô tả.
+- Tiện ích.
+- Hình ảnh hợp lệ.
+- Tọa độ.
+- Rating/review count có thật nếu có.
+- Trạng thái và Business ID.
+- Nguồn dữ liệu và nhãn DEMO nếu thích hợp.
+
+Mỗi điểm tham quan có:
+
+- Tên và ID.
+- Điểm đến/khu vực.
+- Vị trí.
+- Loại hình tham quan.
+- Mô tả.
+- Giờ hoạt động nếu được xác minh.
+- Giá vé nếu được xác minh.
+- Tọa độ nếu có nguồn hợp lệ.
+- Trạng thái APPROVED theo môi trường tương ứng.
+- Nguồn dữ liệu.
+
+Không tự bịa giá hiện hành, tình trạng còn phòng, rating, review, tên đối tác thật hoặc hình ảnh có bản quyền.
+
+Nếu chưa có thông tin được xác minh, lưu NULL/unknown và hiển thị rõ giới hạn.
+
+### 1.2. Quy tắc dữ liệu thật và DEMO
+
+Phân biệt hai nguồn:
+
+**REAL PARTNER:** Dữ liệu do đối tác thực sự đăng ký, được quản trị viên phê duyệt, Business ACTIVE và Place APPROVED.
+
+**DEMO/STAGING:** Dữ liệu tổng hợp để kiểm thử, có nhãn DEMO rõ ràng và không được giả làm đối tác thật.
+
+Được phép tạo mới môi trường staging LOCAL độc lập sau khi xác minh cấu hình, tài nguyên, database identity và quyền ghi.
+
+Không được seed vào:
+
+- `travelgo_dev`
+- `travelgo_ai_m0_test`
+- Database đang chứa 27 Trip cũ
+- Database production/shared
+
+Không reset hoặc chỉnh sửa Docker volumes hiện tại.
+
+Nếu chưa có staging, hãy triển khai một staging local riêng bằng cấu hình tách biệt, role không phải superuser, sentinel độc lập và tên tài nguyên không xung đột. Không ghi vào database khác khi không xác minh được target.
+
+Có thể tạo bộ dữ liệu DEMO có cấu trúc, giá giả định được dán nhãn, địa điểm tham quan có nguồn tham khảo phù hợp, nhưng tuyệt đối không trình bày DEMO như thông tin Booking thật.
+
+Seed phải idempotent, có namespace/cohort và có cơ chế cleanup chỉ tác động đến bản ghi do seed tạo.
+
+Không tự APPROVE các đơn đăng ký đối tác thật.
+
+## PHASE 2 — PHÂN LOẠI KHÁCH SẠN VÀ NHÀ HÀNG
+
+Tạo bộ lọc dễ sử dụng trên giao diện TravelGo.
+
+### 2.1. Phân loại khách sạn
+
+Phân theo:
+
+- Khách sạn.
+- Resort.
+- Homestay.
+- Villa.
+- Căn hộ lưu trú.
+- Nhà nghỉ, nếu catalog hỗ trợ.
+
+Lọc theo:
+
+- Điểm đến.
+- Khoảng giá.
+- Loại hình.
+- Tiện ích: Wi-Fi, hồ bơi, bãi đỗ xe, điều hòa, ăn sáng...
+- Rating nếu có dữ liệu xác minh.
+- Mức giá tăng/giảm.
+- Mức độ phù hợp.
+
+Không suy diễn số sao nếu chưa có trường phân hạng sao chính thức.
+
+### 2.2. Phân loại nhà hàng
+
+Phân theo:
+
+- Món Việt.
+- Hải sản.
+- Đặc sản địa phương.
+- Đồ chay.
+- BBQ/lẩu.
+- Buffet.
+- Ẩm thực quốc tế.
+- Quán ăn gia đình, nếu dữ liệu hỗ trợ.
+
+Lọc theo:
+
+- Thành phố/điểm đến.
+- Loại ẩm thực.
+- Khoảng giá.
+- Đánh giá có thật.
+- Tiện ích.
+- Mức độ phù hợp.
+
+Không tự kết luận thực đơn, chất gây dị ứng hoặc giá theo suất khi chưa có dữ liệu.
+
+### 2.3. Nguyên tắc thiết kế
+
+Kiểm tra schema `places`, `businesses` và các trường hiện có trước khi sửa.
+
+Tái sử dụng metadata/category hiện tại nếu đủ khả năng.
+
+Chỉ thêm migration/schema mới khi thật sự cần, có rollback và regression tests.
+
+Không tạo bảng Hotel/Restaurant riêng nếu điều đó làm trùng lặp mô hình Place/Business hiện có.
+
+## PHASE 3 — NÂNG CẤP GIAO DIỆN WEBSITE
+
+Tại các trang khám phá, dịch vụ, khách sạn, nhà hàng và Assistant:
+
+- Có tab Khách sạn / Nhà hàng / Điểm tham quan nếu phù hợp.
+- Có bộ lọc nhanh.
+- Có tìm kiếm theo điểm đến.
+- Có sắp xếp giá và mức độ phù hợp.
+- Có danh sách dạng card.
+- Có ảnh, tên, khu vực, giá có đơn vị rõ ràng.
+- Có link chi tiết dịch vụ.
+- Có nút xem trên AI/tư vấn bằng AI.
+- Responsive desktop/mobile.
+- Hiển thị trạng thái rỗng khi không có kết quả.
+- Có nhãn DEMO rõ ràng nếu dùng staging data.
+
+Giữ thiết kế hiện tại của TravelGo; không tạo lại toàn bộ UI.
+
+Bộ lọc phải hoạt động thật từ dữ liệu backend, không chỉ là giao diện trang trí.
+
+## PHASE 4 — AI AGENT TỰ ĐỘNG CẬP NHẬT ĐỐI TÁC
+
+Đây là yêu cầu quan trọng nhất.
+
+AI Agent phải truy xuất catalog trực tiếp từ services/repositories hiện có, thay vì dùng danh sách khách sạn/nhà hàng hard-code trong prompt hoặc source.
+
+### 4.1. Luồng đối tác
+
+Đối tác đăng ký → quản trị viên duyệt tài khoản/Business → đối tác tạo Place → gửi duyệt → quản trị viên APPROVE Place → listing đủ điều kiện xuất hiện trên website và trong kết quả AI Agent.
+
+AI không tự ý duyệt đối tác.
+
+Nếu Business SUSPENDED hoặc Place không còn APPROVED, kết quả mới của AI phải loại listing đó.
+
+### 4.2. Cập nhật tự động
+
+Khi có đối tác mới được duyệt:
+
+- AI nhìn thấy listing qua catalog service.
+- Không phải chỉnh sửa prompt.
+- Không phải thêm ID thủ công vào Agent.
+- Không phải huấn luyện lại Qwen.
+- Không phải khởi động lại hệ thống chỉ để cập nhật danh sách.
+
+Nếu có cache:
+
+- Invalidate khi Place được phê duyệt/sửa/ẩn hoặc Business thay đổi trạng thái.
+- Hoặc dùng TTL ngắn có kiểm soát.
+- Revalidate listing trước khi Planner/Booking/Trip confirmation sử dụng.
+
+Không để listing đã bị khóa tiếp tục được Agent đề xuất từ cache cũ.
+
+### 4.3. Agent recommendation
+
+Khi khách nhập:
+
+“Đi Đà Lạt 3 ngày 2 đêm, 2 người, tìm khách sạn dưới 800k và nhà hàng đặc sản.”
+
+Agent phải:
+
+1. Nhận diện Đà Lạt.
+2. Lấy khách sạn trong catalog hợp lệ.
+3. Áp dụng bộ lọc giá.
+4. Lấy nhà hàng phù hợp.
+5. Xếp hạng bằng RecommendationService hiện tại.
+6. Giải thích lý do đề xuất dựa trên dữ liệu có thật.
+7. Gọi Planner nếu người dùng muốn tạo lịch trình.
+8. Giữ giá, nguồn và giới hạn dữ liệu chính xác.
+
+Khi khách hỏi:
+
+“Có khách sạn nào mới đăng ký ở Đà Nẵng không?”
+
+Agent phải lấy danh sách listing mới được APPROVED nếu hệ thống lưu thông tin thời điểm duyệt hợp lệ.
+
+Không đồng nhất thời điểm đăng ký với thời điểm phê duyệt.
+
+Khi khách nói:
+
+“Khách sạn này mắc quá, đổi rẻ hơn.”
+
+Agent phải dùng selected hotel và catalog mới nhất để tìm lựa chọn hợp lệ khác.
+
+Không được bịa khách sạn mới khi query không có kết quả.
+
+## PHASE 5 — HOÀN THIỆN SEARCH API VÀ DỮ LIỆU
+
+Kiểm tra và hoàn thiện các API/service phục vụ:
+
+- Search hotels.
+- Search restaurants.
+- Search attractions.
+- Listing details.
+- Destination filtering.
+- Category/subcategory filtering.
+- Price filtering.
+- Amenities/cuisine filtering.
+- Sorting/pagination.
+- Approved listing discovery.
+- Dynamic Agent catalog refresh.
+
+Tái sử dụng các service hiện có.
+
+Backend phải kiểm tra authorization, public visibility và approved status.
+
+Frontend không được gửi SQL hoặc danh sách candidates giả để ép AI lựa chọn.
+
+Không tạo API thứ hai trùng chức năng nếu endpoint hiện tại có thể mở rộng.
+
+## PHASE 6 — KIỂM THỬ THẬT
+
+### 6.1. Database
+
+Kiểm chứng:
+
+- Mỗi điểm đến có đủ 5 hotel và 5 restaurant trong staging.
+- Có ít nhất 3 điểm tham quan đủ điều kiện.
+- Không trùng UUID.
+- Không trùng bản ghi khi chạy seed lần hai.
+- Business/Place relations hợp lệ.
+- DEMO không lọt vào public/production catalog.
+- Không thay đổi 25 bảng và 27 Trip của database baseline gốc.
+
+### 6.2. Frontend
+
+Kiểm thử:
+
+- Tìm khách sạn Đà Nẵng.
+- Lọc khách sạn Đà Lạt dưới một ngưỡng giá có đơn vị rõ ràng.
+- Tìm nhà hàng hải sản Nha Trang.
+- Lọc resort tại Phú Quốc.
+- Sắp xếp giá.
+- Không có kết quả.
+- Mở chi tiết.
+- Chuyển khách sạn/nhà hàng vào AI Assistant.
+
+Desktop/mobile phải PASS.
+
+### 6.3. Dynamic partner registration
+
+Kiểm thử trong staging:
+
+1. Tạo partner test thuộc cohort.
+2. Tạo Business/Place theo quy trình thật.
+3. Place DRAFT chưa xuất hiện trong AI.
+4. Place PENDING chưa xuất hiện.
+5. Place APPROVED, Business ACTIVE → xuất hiện trong website/Agent.
+6. Sửa giá hợp lệ → Agent truy xuất giá mới.
+7. Suspend Business hoặc Place → Agent không còn đề xuất.
+8. Revalidate trước khi xác nhận Trip/Booking.
+
+Không dùng mock để thay thế toàn bộ acceptance này.
+
+### 6.4. Planner
+
+Kiểm thử tạo lịch trình từ catalog staging đã đủ sightseeing.
+
+Xác minh:
+
+- Đúng điểm đến.
+- Đúng số ngày/đêm.
+- Khách sạn/nhà hàng/điểm tham quan tồn tại trong staging.
+- Lựa chọn phù hợp bộ lọc.
+- Chi phí có nhãn estimated khi dữ liệu chưa đủ.
+- Không tự tạo Place ngoài database.
+- Không bỏ qua Business/Place status.
+
+### 6.5. Model
+
+Không tự chạy thêm Ollama/Qwen inference trong task này nếu chưa được cấp phép riêng. Dùng logic tool và deterministic acceptance trước.
+
+Không sử dụng paid API, Google Maps hoặc Gemini.
+
+## PHASE 7 — BÁO CÁO CUỐI
+
+Cập nhật báo cáo Master hiện tại:
+
+`docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md`
+
+Bổ sung mục:
+
+**CATALOG EXPANSION + LIVE PARTNER SYNC**
+
+Ghi rõ:
+
+- Điểm đến được bổ sung.
+- Số khách sạn.
+- Số nhà hàng.
+- Số điểm tham quan.
+- Dữ liệu REAL PARTNER hay DEMO.
+- Các trường xác minh/chưa xác minh.
+- Giao diện và bộ lọc.
+- AI catalog integration.
+- Dynamic partner approval test.
+- Planner test.
+- Backend/frontend tests.
+- Database integrity.
+- Lỗi còn lại.
+
+Không tạo hàng loạt báo cáo phụ hoặc task nghiên cứu.
+
+## YÊU CẦU CUỐI
+
+Thực hiện triển khai, không chỉ phân tích.
+
+Không xây lại Agent Core, Planner, Trip hay Booking.
+
+Không tự APPROVE đối tác thật.
+
+Không thay đổi database gốc, xóa 27 Trip hoặc ghi đè dữ liệu cũ.
+
+Chỉ tạo dữ liệu DEMO trong staging độc lập, hoặc đưa dữ liệu thật vào qua luồng quản trị được phê duyệt.
+
+Không commit/push/deploy.
+
+Không Google Maps, GPS, VPS.
+
+Mục tiêu cuối: **TravelGo có catalog du lịch phong phú ở 10 điểm đến, khách dễ tìm và lọc dịch vụ; AI Agent luôn sử dụng dữ liệu được phép hiển thị mới nhất của các đối tác trên website.**

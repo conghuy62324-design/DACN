@@ -1,0 +1,36 @@
+{
+  "at": "2026-11-11T10:04:37.637Z",
+  "status": "HANDOFF_COMPLETED_BUT_ALL25_NO_GAP_NOT_PROVEN",
+  "automatedSmokeStatus": "PASS",
+  "aAll25Sre": {
+    "pid": 20514,
+    "at": "2026-11-11T09:56:29.403Z"
+  },
+  "registeredProbeConflict": "55P03",
+  "queuedB": {
+    "pid": 20515,
+    "blockedBy": 20514,
+    "at": "2026-11-11T09:56:29.415Z"
+  },
+  "bAll25Share": {
+    "pid": 20515,
+    "at": "2026-11-11T09:56:29.428Z"
+  },
+  "eventOrderVerified": true,
+  "locksReleased": true,
+  "all25WriterContinuityVerified": false,
+  "reason": "A single LOCK TABLE list acquires relations sequentially. Waiting on the first relation does not queue protection on every later relation. Pre/post snapshots and one pre-handoff NOWAIT probe do not prove a gap-free all25 transfer.",
+  "inferenceNotObservedWriterIntrusion": true,
+  "noEntityMutationObserved": true,
+  "primarySources": [
+    {
+      "url": "https://www.postgresql.org/docs/15/sql-lock.html",
+      "support": "LOCK list relations are acquired sequentially in specified order."
+    },
+    {
+      "url": "https://github.com/postgres/postgres/blob/REL_15_STABLE/src/backend/commands/lockcmds.c",
+      "support": "LockTableCommand loops relations and acquires each through RangeVarGetRelidExtended."
+    }
+  ],
+  "noFurtherPgQueriesForReview": true
+}

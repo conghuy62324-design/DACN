@@ -1,5 +1,7 @@
 # HuGo Intelligence 2.0 — M3-D Place to Itinerary Report
 
+> **Đính chính thuật ngữ auth 30/10/2026 (T07):** “JWT” trong báo cáo lịch sử này cần hiểu là access token HMAC hai phần của dự án, không phải JWT chuẩn ba phần. Chưa có refresh-token endpoint/server-side revocation; logout local không thu hồi token. Xem [contract hiện hành](HUGO_AUTH_CONTRACT.md). Kết quả kiểm thử lịch sử bên dưới giữ nguyên, không được coi là test T07 chạy lại.
+
 Ngày hoàn thành: 2026-10-15 (Asia/Ho_Chi_Minh)  
 Trạng thái: **COMPLETE — END-TO-END PASS**  
 Phạm vi: Recommendation Place → Place Detail → Tour Planner → Save/Reopen Trip  

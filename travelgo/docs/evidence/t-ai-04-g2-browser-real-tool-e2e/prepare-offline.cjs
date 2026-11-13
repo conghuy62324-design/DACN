@@ -1,0 +1,4 @@
+const c=require('./common.cjs');c.integrity();
+const files=['run-regression.cjs','offline-guard.cjs','downstream-control.cjs','observe-legacy.cjs','run-foundation-compat.cjs','run-additional-offline.cjs','run-frontend.cjs','run-browser.cjs','run-build.cjs'];
+for(const file of files)c.fs.copyFileSync(c.path.join(c.root,c.previous,file),c.path.join(c.evidence,file),c.fs.constants.COPYFILE_EXCL);
+c.write('offline-runner-provenance.json',{at:new Date().toISOString(),source:c.previous,copies:files.map(file=>({file,sha256:c.sha(c.read(c.previous+file)),byteIdentical:true})),newNativeGuard:'deny-native.cjs preload: no PostgreSQL connects; no Ollama/native non-loopback network; only offline ephemeral loopback HTTP permitted',assertionsChanged:0,productionChanges:0});console.log('Offline runners prepared;0 requests executed.');

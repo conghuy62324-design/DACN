@@ -1,0 +1,694 @@
+{
+  "scenario": "handoff-error",
+  "tier": "OFFLINE_MULTI_CONNECTION_SENSOR_CHILD",
+  "error": {
+    "message": "INJECTED_HANDOFF_FAILURE",
+    "code": null
+  },
+  "observed": {
+    "lockCalls": [
+      {
+        "pid": 20001,
+        "sql": "BEGIN READ WRITE"
+      },
+      {
+        "pid": 20001,
+        "sql": "LOCK_A"
+      },
+      {
+        "pid": 20003,
+        "sql": "BEGIN READ WRITE"
+      },
+      {
+        "pid": 20003,
+        "sql": "LOCK TABLE public.\"places\" IN ROW EXCLUSIVE MODE NOWAIT"
+      },
+      {
+        "pid": 20003,
+        "sql": "ROLLBACK"
+      },
+      {
+        "pid": 20001,
+        "sql": "ROLLBACK"
+      }
+    ],
+    "simTransactionsRemaining": 0
+  },
+  "cleanup": {
+    "status": "RESOURCE_CLEANUP_PASS",
+    "allOwnedDisposed": true,
+    "noOwnedResidual": true,
+    "errors": [],
+    "residual": [],
+    "locks": [],
+    "unknown": [],
+    "records": [
+      {
+        "instanceId": "9c9d43aa-6ea2-46ec-a9a9-ffb48e6ed17d",
+        "kind": "observer",
+        "disposed": true,
+        "identity": {
+          "pid": 20001,
+          "backend_start": "2026-11-11T08:00:00.123456Z",
+          "application_name": "og-maintenance-a-23f95e6fc4db4e7cbbb9e450f454be0d",
+          "datname": "travelgo_ai_m0_test",
+          "usename": "postgres",
+          "backend_type": "client backend",
+          "client_addr": "127.0.0.1",
+          "client_port": 61001
+        }
+      },
+      {
+        "instanceId": "5bc90ee6-948d-4f03-8c26-bf788aec0172",
+        "kind": "observer",
+        "disposed": true,
+        "identity": {
+          "pid": 20002,
+          "backend_start": "2026-11-11T08:00:00.123456Z",
+          "application_name": "og-maintenance-b-9cfcd7de4fe4467093f43104b8518099",
+          "datname": "travelgo_ai_m0_test",
+          "usename": "postgres",
+          "backend_type": "client backend",
+          "client_addr": "127.0.0.1",
+          "client_port": 61001
+        }
+      },
+      {
+        "instanceId": "9bb68a63-41fb-45d3-9682-1fc10191181e",
+        "kind": "observer",
+        "disposed": true,
+        "identity": {
+          "pid": 20003,
+          "backend_start": "2026-11-11T08:00:00.123456Z",
+          "application_name": "og-probe-8e216486bfec45e8b276ab2deeb0d529",
+          "datname": "travelgo_ai_m0_test",
+          "usename": "postgres",
+          "backend_type": "client backend",
+          "client_addr": "127.0.0.1",
+          "client_port": 61001
+        }
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "number": 1,
+      "at": "2026-11-11T09:52:08.464Z",
+      "kind": "observer",
+      "instanceId": "9c9d43aa-6ea2-46ec-a9a9-ffb48e6ed17d",
+      "factory": "maintenance-a"
+    },
+    {
+      "number": 2,
+      "at": "2026-11-11T09:52:08.466Z",
+      "kind": "observer",
+      "instanceId": "5bc90ee6-948d-4f03-8c26-bf788aec0172",
+      "factory": "maintenance-b"
+    },
+    {
+      "number": 3,
+      "at": "2026-11-11T09:52:08.466Z",
+      "kind": "observer",
+      "instanceId": "9bb68a63-41fb-45d3-9682-1fc10191181e",
+      "factory": "probe"
+    }
+  ],
+  "created": 3,
+  "disposed": 3,
+  "events": [
+    {
+      "sequence": 1,
+      "at": "2026-11-11T09:52:08.464Z",
+      "type": "CREATE",
+      "id": "9c9d43aa-6ea2-46ec-a9a9-ffb48e6ed17d",
+      "factory": "maintenance-a",
+      "token": "23f95e6fc4db4e7cbbb9e450f454be0d",
+      "application_name": "og-maintenance-a-23f95e6fc4db4e7cbbb9e450f454be0d",
+      "state": "CREATED",
+      "config": {
+        "host": "127.0.0.1",
+        "port": 5432,
+        "database": "travelgo_ai_m0_test",
+        "user": "postgres"
+      },
+      "identity": null,
+      "physical": null
+    },
+    {
+      "type": "FACTORY_INSTANCE_CREATED",
+      "kind": "observer",
+      "instanceId": "9c9d43aa-6ea2-46ec-a9a9-ffb48e6ed17d",
+      "factory": "maintenance-a"
+    },
+    {
+      "type": "PHYSICAL_CONNECT_ATTEMPT",
+      "number": 1,
+      "at": "2026-11-11T09:52:08.464Z",
+      "kind": "observer",
+      "instanceId": "9c9d43aa-6ea2-46ec-a9a9-ffb48e6ed17d",
+      "factory": "maintenance-a"
+    },
+    {
+      "sequence": 2,
+      "at": "2026-11-11T09:52:08.465Z",
+      "type": "PHYSICAL_OPEN",
+      "instanceId": "9c9d43aa-6ea2-46ec-a9a9-ffb48e6ed17d",
+      "factory": "maintenance-a",
+      "state": "PENDING_REGISTRATION",
+      "physical": {
+        "expectedEndpoint": {
+          "host": "127.0.0.1",
+          "port": 5432
+        },
+        "localAddress": "127.0.0.1",
+        "localPort": 61001,
+        "remoteAddress": "127.0.0.1",
+        "remotePort": 5432
+      },
+      "startup": {
+        "application_name": "og-maintenance-a-23f95e6fc4db4e7cbbb9e450f454be0d",
+        "options": "-c default_transaction_read_only=on -c statement_timeout=15000 -c idle_in_transaction_session_timeout=30000 -c timezone=UTC",
+        "database": "travelgo_ai_m0_test",
+        "user": "postgres"
+      }
+    },
+    {
+      "type": "SQL_INTENT",
+      "number": 1,
+      "instanceId": "9c9d43aa-6ea2-46ec-a9a9-ffb48e6ed17d",
+      "kind": "observer",
+      "sql": "SELECT current_database() AS database,current_user AS role,pg_backend_pid() AS pg_backend_pid,a.pid,to_char(a.backend_start AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') AS backend_start,a.application_name,a.usename,a.datname,a.backend_type,a.client_addr::text AS client_addr,a.client_port,inet_client_addr()::text AS inet_client_addr,inet_client_port() AS inet_client_port,inet_server_addr()::text AS server_addr,inet_server_port() AS server_port,current_setting('transaction_read_only') AS transaction_read_only,current_setting('default_transaction_read_only') AS default_transaction_read_only,current_setting('statement_timeout') AS statement_timeout,shobj_description((SELECT oid FROM pg_database WHERE datname=current_database()),'pg_database') AS sentinel FROM pg_stat_activity a WHERE a.pid=pg_backend_pid()",
+      "valuesSha256": null
+    },
+    {
+      "type": "SQL_COMPLETED",
+      "number": 1,
+      "instanceId": "9c9d43aa-6ea2-46ec-a9a9-ffb48e6ed17d",
+      "durationMs": 0,
+      "rowCount": null
+    },
+    {
+      "sequence": 3,
+      "at": "2026-11-11T09:52:08.465Z",
+      "type": "RAW_SELF_IDENTITY",
+      "instanceId": "9c9d43aa-6ea2-46ec-a9a9-ffb48e6ed17d",
+      "row": {
+        "database": "travelgo_ai_m0_test",
+        "role": "postgres",
+        "pid": 20001,
+        "pg_backend_pid": 20001,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-maintenance-a-23f95e6fc4db4e7cbbb9e450f454be0d",
+        "usename": "postgres",
+        "datname": "travelgo_ai_m0_test",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001,
+        "inet_client_addr": "127.0.0.1",
+        "inet_client_port": 61001,
+        "server_addr": "127.0.0.1",
+        "server_port": 5432,
+        "default_transaction_read_only": "on",
+        "transaction_read_only": "on",
+        "statement_timeout": "15s",
+        "sentinel": "hugotravel-isolated-test-database-v1"
+      }
+    },
+    {
+      "sequence": 4,
+      "at": "2026-11-11T09:52:08.466Z",
+      "type": "REGISTRATION_PASS",
+      "instanceId": "9c9d43aa-6ea2-46ec-a9a9-ffb48e6ed17d",
+      "state": "REGISTERED",
+      "identity": {
+        "pid": 20001,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-maintenance-a-23f95e6fc4db4e7cbbb9e450f454be0d",
+        "datname": "travelgo_ai_m0_test",
+        "usename": "postgres",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001
+      }
+    },
+    {
+      "sequence": 5,
+      "at": "2026-11-11T09:52:08.466Z",
+      "type": "CREATE",
+      "id": "5bc90ee6-948d-4f03-8c26-bf788aec0172",
+      "factory": "maintenance-b",
+      "token": "9cfcd7de4fe4467093f43104b8518099",
+      "application_name": "og-maintenance-b-9cfcd7de4fe4467093f43104b8518099",
+      "state": "CREATED",
+      "config": {
+        "host": "127.0.0.1",
+        "port": 5432,
+        "database": "travelgo_ai_m0_test",
+        "user": "postgres"
+      },
+      "identity": null,
+      "physical": null
+    },
+    {
+      "type": "FACTORY_INSTANCE_CREATED",
+      "kind": "observer",
+      "instanceId": "5bc90ee6-948d-4f03-8c26-bf788aec0172",
+      "factory": "maintenance-b"
+    },
+    {
+      "type": "PHYSICAL_CONNECT_ATTEMPT",
+      "number": 2,
+      "at": "2026-11-11T09:52:08.466Z",
+      "kind": "observer",
+      "instanceId": "5bc90ee6-948d-4f03-8c26-bf788aec0172",
+      "factory": "maintenance-b"
+    },
+    {
+      "sequence": 6,
+      "at": "2026-11-11T09:52:08.466Z",
+      "type": "PHYSICAL_OPEN",
+      "instanceId": "5bc90ee6-948d-4f03-8c26-bf788aec0172",
+      "factory": "maintenance-b",
+      "state": "PENDING_REGISTRATION",
+      "physical": {
+        "expectedEndpoint": {
+          "host": "127.0.0.1",
+          "port": 5432
+        },
+        "localAddress": "127.0.0.1",
+        "localPort": 61001,
+        "remoteAddress": "127.0.0.1",
+        "remotePort": 5432
+      },
+      "startup": {
+        "application_name": "og-maintenance-b-9cfcd7de4fe4467093f43104b8518099",
+        "options": "-c default_transaction_read_only=on -c statement_timeout=15000 -c idle_in_transaction_session_timeout=30000 -c timezone=UTC",
+        "database": "travelgo_ai_m0_test",
+        "user": "postgres"
+      }
+    },
+    {
+      "type": "SQL_INTENT",
+      "number": 2,
+      "instanceId": "5bc90ee6-948d-4f03-8c26-bf788aec0172",
+      "kind": "observer",
+      "sql": "SELECT current_database() AS database,current_user AS role,pg_backend_pid() AS pg_backend_pid,a.pid,to_char(a.backend_start AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') AS backend_start,a.application_name,a.usename,a.datname,a.backend_type,a.client_addr::text AS client_addr,a.client_port,inet_client_addr()::text AS inet_client_addr,inet_client_port() AS inet_client_port,inet_server_addr()::text AS server_addr,inet_server_port() AS server_port,current_setting('transaction_read_only') AS transaction_read_only,current_setting('default_transaction_read_only') AS default_transaction_read_only,current_setting('statement_timeout') AS statement_timeout,shobj_description((SELECT oid FROM pg_database WHERE datname=current_database()),'pg_database') AS sentinel FROM pg_stat_activity a WHERE a.pid=pg_backend_pid()",
+      "valuesSha256": null
+    },
+    {
+      "type": "SQL_COMPLETED",
+      "number": 2,
+      "instanceId": "5bc90ee6-948d-4f03-8c26-bf788aec0172",
+      "durationMs": 0,
+      "rowCount": null
+    },
+    {
+      "sequence": 7,
+      "at": "2026-11-11T09:52:08.466Z",
+      "type": "RAW_SELF_IDENTITY",
+      "instanceId": "5bc90ee6-948d-4f03-8c26-bf788aec0172",
+      "row": {
+        "database": "travelgo_ai_m0_test",
+        "role": "postgres",
+        "pid": 20002,
+        "pg_backend_pid": 20002,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-maintenance-b-9cfcd7de4fe4467093f43104b8518099",
+        "usename": "postgres",
+        "datname": "travelgo_ai_m0_test",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001,
+        "inet_client_addr": "127.0.0.1",
+        "inet_client_port": 61001,
+        "server_addr": "127.0.0.1",
+        "server_port": 5432,
+        "default_transaction_read_only": "on",
+        "transaction_read_only": "on",
+        "statement_timeout": "15s",
+        "sentinel": "hugotravel-isolated-test-database-v1"
+      }
+    },
+    {
+      "sequence": 8,
+      "at": "2026-11-11T09:52:08.466Z",
+      "type": "REGISTRATION_PASS",
+      "instanceId": "5bc90ee6-948d-4f03-8c26-bf788aec0172",
+      "state": "REGISTERED",
+      "identity": {
+        "pid": 20002,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-maintenance-b-9cfcd7de4fe4467093f43104b8518099",
+        "datname": "travelgo_ai_m0_test",
+        "usename": "postgres",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001
+      }
+    },
+    {
+      "sequence": 9,
+      "at": "2026-11-11T09:52:08.466Z",
+      "type": "CREATE",
+      "id": "9bb68a63-41fb-45d3-9682-1fc10191181e",
+      "factory": "probe",
+      "token": "8e216486bfec45e8b276ab2deeb0d529",
+      "application_name": "og-probe-8e216486bfec45e8b276ab2deeb0d529",
+      "state": "CREATED",
+      "config": {
+        "host": "127.0.0.1",
+        "port": 5432,
+        "database": "travelgo_ai_m0_test",
+        "user": "postgres"
+      },
+      "identity": null,
+      "physical": null
+    },
+    {
+      "type": "FACTORY_INSTANCE_CREATED",
+      "kind": "observer",
+      "instanceId": "9bb68a63-41fb-45d3-9682-1fc10191181e",
+      "factory": "probe"
+    },
+    {
+      "type": "PHYSICAL_CONNECT_ATTEMPT",
+      "number": 3,
+      "at": "2026-11-11T09:52:08.466Z",
+      "kind": "observer",
+      "instanceId": "9bb68a63-41fb-45d3-9682-1fc10191181e",
+      "factory": "probe"
+    },
+    {
+      "sequence": 10,
+      "at": "2026-11-11T09:52:08.466Z",
+      "type": "PHYSICAL_OPEN",
+      "instanceId": "9bb68a63-41fb-45d3-9682-1fc10191181e",
+      "factory": "probe",
+      "state": "PENDING_REGISTRATION",
+      "physical": {
+        "expectedEndpoint": {
+          "host": "127.0.0.1",
+          "port": 5432
+        },
+        "localAddress": "127.0.0.1",
+        "localPort": 61001,
+        "remoteAddress": "127.0.0.1",
+        "remotePort": 5432
+      },
+      "startup": {
+        "application_name": "og-probe-8e216486bfec45e8b276ab2deeb0d529",
+        "options": "-c default_transaction_read_only=on -c statement_timeout=15000 -c idle_in_transaction_session_timeout=30000 -c timezone=UTC",
+        "database": "travelgo_ai_m0_test",
+        "user": "postgres"
+      }
+    },
+    {
+      "type": "SQL_INTENT",
+      "number": 3,
+      "instanceId": "9bb68a63-41fb-45d3-9682-1fc10191181e",
+      "kind": "observer",
+      "sql": "SELECT current_database() AS database,current_user AS role,pg_backend_pid() AS pg_backend_pid,a.pid,to_char(a.backend_start AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') AS backend_start,a.application_name,a.usename,a.datname,a.backend_type,a.client_addr::text AS client_addr,a.client_port,inet_client_addr()::text AS inet_client_addr,inet_client_port() AS inet_client_port,inet_server_addr()::text AS server_addr,inet_server_port() AS server_port,current_setting('transaction_read_only') AS transaction_read_only,current_setting('default_transaction_read_only') AS default_transaction_read_only,current_setting('statement_timeout') AS statement_timeout,shobj_description((SELECT oid FROM pg_database WHERE datname=current_database()),'pg_database') AS sentinel FROM pg_stat_activity a WHERE a.pid=pg_backend_pid()",
+      "valuesSha256": null
+    },
+    {
+      "type": "SQL_COMPLETED",
+      "number": 3,
+      "instanceId": "9bb68a63-41fb-45d3-9682-1fc10191181e",
+      "durationMs": 0,
+      "rowCount": null
+    },
+    {
+      "sequence": 11,
+      "at": "2026-11-11T09:52:08.466Z",
+      "type": "RAW_SELF_IDENTITY",
+      "instanceId": "9bb68a63-41fb-45d3-9682-1fc10191181e",
+      "row": {
+        "database": "travelgo_ai_m0_test",
+        "role": "postgres",
+        "pid": 20003,
+        "pg_backend_pid": 20003,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-probe-8e216486bfec45e8b276ab2deeb0d529",
+        "usename": "postgres",
+        "datname": "travelgo_ai_m0_test",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001,
+        "inet_client_addr": "127.0.0.1",
+        "inet_client_port": 61001,
+        "server_addr": "127.0.0.1",
+        "server_port": 5432,
+        "default_transaction_read_only": "on",
+        "transaction_read_only": "on",
+        "statement_timeout": "15s",
+        "sentinel": "hugotravel-isolated-test-database-v1"
+      }
+    },
+    {
+      "sequence": 12,
+      "at": "2026-11-11T09:52:08.466Z",
+      "type": "REGISTRATION_PASS",
+      "instanceId": "9bb68a63-41fb-45d3-9682-1fc10191181e",
+      "state": "REGISTERED",
+      "identity": {
+        "pid": 20003,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-probe-8e216486bfec45e8b276ab2deeb0d529",
+        "datname": "travelgo_ai_m0_test",
+        "usename": "postgres",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001
+      }
+    },
+    {
+      "sequence": 13,
+      "at": "2026-11-11T09:52:08.470Z",
+      "type": "CLOSING_GUARD_PASS",
+      "snapshotSequence": 12,
+      "observed": 3
+    },
+    {
+      "sequence": 14,
+      "at": "2026-11-11T09:52:08.470Z",
+      "type": "CLOSING_GUARD_PASS",
+      "snapshotSequence": 13,
+      "observed": 3
+    },
+    {
+      "type": "PROBE_CONFLICT_VERIFIED",
+      "pid": 20003,
+      "sqlstate": "55P03",
+      "dmlIssued": false
+    },
+    {
+      "sequence": 15,
+      "at": "2026-11-11T09:52:08.471Z",
+      "type": "DISPOSE_START",
+      "instanceId": "9c9d43aa-6ea2-46ec-a9a9-ffb48e6ed17d"
+    },
+    {
+      "sequence": 16,
+      "at": "2026-11-11T09:52:08.471Z",
+      "type": "DISPOSE_PASS",
+      "instanceId": "9c9d43aa-6ea2-46ec-a9a9-ffb48e6ed17d",
+      "identity": {
+        "pid": 20001,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-maintenance-a-23f95e6fc4db4e7cbbb9e450f454be0d",
+        "datname": "travelgo_ai_m0_test",
+        "usename": "postgres",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001
+      }
+    },
+    {
+      "type": "FACTORY_INSTANCE_DISPOSED",
+      "instanceId": "9c9d43aa-6ea2-46ec-a9a9-ffb48e6ed17d",
+      "kind": "observer"
+    },
+    {
+      "sequence": 17,
+      "at": "2026-11-11T09:52:08.471Z",
+      "type": "DISPOSE_START",
+      "instanceId": "5bc90ee6-948d-4f03-8c26-bf788aec0172"
+    },
+    {
+      "sequence": 18,
+      "at": "2026-11-11T09:52:08.471Z",
+      "type": "DISPOSE_PASS",
+      "instanceId": "5bc90ee6-948d-4f03-8c26-bf788aec0172",
+      "identity": {
+        "pid": 20002,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-maintenance-b-9cfcd7de4fe4467093f43104b8518099",
+        "datname": "travelgo_ai_m0_test",
+        "usename": "postgres",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001
+      }
+    },
+    {
+      "type": "FACTORY_INSTANCE_DISPOSED",
+      "instanceId": "5bc90ee6-948d-4f03-8c26-bf788aec0172",
+      "kind": "observer"
+    },
+    {
+      "sequence": 19,
+      "at": "2026-11-11T09:52:08.471Z",
+      "type": "DISPOSE_START",
+      "instanceId": "9bb68a63-41fb-45d3-9682-1fc10191181e"
+    },
+    {
+      "sequence": 20,
+      "at": "2026-11-11T09:52:08.471Z",
+      "type": "DISPOSE_PASS",
+      "instanceId": "9bb68a63-41fb-45d3-9682-1fc10191181e",
+      "identity": {
+        "pid": 20003,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-probe-8e216486bfec45e8b276ab2deeb0d529",
+        "datname": "travelgo_ai_m0_test",
+        "usename": "postgres",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001
+      }
+    },
+    {
+      "type": "FACTORY_INSTANCE_DISPOSED",
+      "instanceId": "9bb68a63-41fb-45d3-9682-1fc10191181e",
+      "kind": "observer"
+    }
+  ],
+  "fence": {
+    "stopped": true,
+    "closed": true,
+    "current": "MULTI_SENSOR",
+    "firstFailure": {
+      "caseId": "MULTI_SENSOR",
+      "phase": "multi-scenario",
+      "error": {
+        "name": "Error",
+        "message": "INJECTED_HANDOFF_FAILURE",
+        "stack": "Error: INJECTED_HANDOFF_FAILURE\n    at m.queueGuardWrapped (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\multi-child.cjs:32:69)\n    at runLockSmoke (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\lock-smoke.cjs:8:23)\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\multi-child.cjs:33:22"
+      }
+    },
+    "secondaryFailures": [
+      {
+        "caseId": "MULTI_SENSOR",
+        "phase": "dispatch:agent",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\multi-child.cjs:40:119"
+        }
+      },
+      {
+        "caseId": "MULTI_SENSOR",
+        "phase": "dispatch:native",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\multi-child.cjs:40:119"
+        }
+      },
+      {
+        "caseId": "MULTI_SENSOR",
+        "phase": "dispatch:tool",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\multi-child.cjs:40:119"
+        }
+      },
+      {
+        "caseId": "MULTI_SENSOR",
+        "phase": "dispatch:operator",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\multi-child.cjs:40:119"
+        }
+      }
+    ],
+    "events": [
+      {
+        "sequence": 1,
+        "type": "CASE_START",
+        "caseId": "MULTI_SENSOR"
+      },
+      {
+        "sequence": 2,
+        "type": "GLOBAL_STOP",
+        "caseId": "MULTI_SENSOR",
+        "phase": "multi-scenario",
+        "error": {
+          "name": "Error",
+          "message": "INJECTED_HANDOFF_FAILURE",
+          "stack": "Error: INJECTED_HANDOFF_FAILURE\n    at m.queueGuardWrapped (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\multi-child.cjs:32:69)\n    at runLockSmoke (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\lock-smoke.cjs:8:23)\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\multi-child.cjs:33:22"
+        }
+      },
+      {
+        "sequence": 3,
+        "type": "GLOBAL_STOP",
+        "caseId": "MULTI_SENSOR",
+        "phase": "dispatch:agent",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\multi-child.cjs:40:119"
+        }
+      },
+      {
+        "sequence": 4,
+        "type": "GLOBAL_STOP",
+        "caseId": "MULTI_SENSOR",
+        "phase": "dispatch:native",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\multi-child.cjs:40:119"
+        }
+      },
+      {
+        "sequence": 5,
+        "type": "GLOBAL_STOP",
+        "caseId": "MULTI_SENSOR",
+        "phase": "dispatch:tool",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\multi-child.cjs:40:119"
+        }
+      },
+      {
+        "sequence": 6,
+        "type": "GLOBAL_STOP",
+        "caseId": "MULTI_SENSOR",
+        "phase": "dispatch:operator",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-multi-connection-maintenance-acceptance\\multi-child.cjs:40:119"
+        }
+      }
+    ],
+    "agentDispatches": [],
+    "nativeDispatches": [],
+    "toolDispatches": [],
+    "operatorDispatches": [],
+    "retry": 0
+  },
+  "lateRejected": 4,
+  "lateDispatched": 0,
+  "network": {
+    "pid": 15140,
+    "mode": "OFFLINE",
+    "sockets": [],
+    "blocked": [],
+    "http": 0
+  }
+}

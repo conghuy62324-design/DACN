@@ -1,7 +1,9 @@
 import { api } from './api';
 import { Place, Review } from '../types';
+export type CatalogSearchParams={preferences?:string;dailyBudgetPerPerson?:number;locationId?:string;category?:string;city?:string;search?:string;minRating?:number;sortBy?:string;page?:number;limit?:number;minPriceFrom?:number;maxPriceFrom?:number;accommodationType?:string;cuisine?:string;amenities?:string;approvedSince?:string};
 
 export const PlaceService = {
+  async getPage(params:CatalogSearchParams){const res:any=await api.get('/places',{params});return {items:(res.data||[]) as Place[],meta:res.meta as {total:number;page:number;limit:number;pages:number}};},
   async getPlaces(params?: {
     category?: string;
     city?: string;

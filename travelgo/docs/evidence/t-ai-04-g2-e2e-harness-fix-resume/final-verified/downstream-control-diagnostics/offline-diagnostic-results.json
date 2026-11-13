@@ -1,0 +1,185 @@
+{
+  "tier": "MOCK_ONLY_OFFLINE",
+  "passed": 13,
+  "failed": 0,
+  "results": [
+    {
+      "name": "outer 15000ms deadline propagates abort to cooperative fetch; no response, recovery or tool",
+      "status": "PASS"
+    },
+    {
+      "name": "standalone provider keeps its own 15000ms timeout with a never-aborted caller signal",
+      "status": "PASS"
+    },
+    {
+      "name": "already-aborted request never reaches fake fetch",
+      "status": "PASS"
+    },
+    {
+      "name": "body-read abort also produces timeout without fallback execution",
+      "status": "PASS"
+    },
+    {
+      "name": "uncooperative fetch cannot cause late tool execution; concurrency slot remains held until actual settlement",
+      "status": "PASS"
+    },
+    {
+      "name": "network failures keep their safe error and never become needs_input",
+      "status": "PASS"
+    },
+    {
+      "name": "one/multiple missing-only raw tool outputs retain model failure while recovery asks exact fields",
+      "status": "PASS"
+    },
+    {
+      "name": "complete tool arguments/provenance still allow exactly one fake read tool",
+      "status": "PASS"
+    },
+    {
+      "name": "unknown/malformed model output cannot opt into recovery",
+      "status": "PASS"
+    },
+    {
+      "name": "negation/unset stay outside deterministic recovery; no grammar expansion",
+      "status": "PASS"
+    },
+    {
+      "name": "client history is not trusted current-turn provenance, including another account",
+      "status": "PASS"
+    },
+    {
+      "name": "auth/consent/rate gates keep normal ordering and no bypass",
+      "status": "PASS"
+    },
+    {
+      "name": "grammar coverage probe makes no general Vietnamese NLU claim",
+      "status": "PASS"
+    }
+  ],
+  "observations": [
+    {
+      "kind": "DIAGNOSTIC_NOT_ACCEPTANCE",
+      "condition": "Injected fetch ignores abort then returns a valid response",
+      "providerReturnedDecisionAfterAbort": false,
+      "sourceGap": "No success-path signal check after await fetch/body; outer service still prevents late tool execution.",
+      "actualOllamaClaim": "Not proof of native fetch/server behavior. Historical server cancellation is analyzed separately."
+    },
+    {
+      "kind": "GRAMMAR_COVERAGE",
+      "rows": [
+        {
+          "label": "structured incomplete",
+          "input": "Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Quy Nhơn; Ngày bắt đầu: 2038-03-10; Ngày kết thúc: 2038-03-12; Số người lớn: 2; Ngân sách cả nhóm: 7000000 VND",
+          "recognized": true,
+          "missingObservedFieldsOnly": [
+            "transportation"
+          ],
+          "note": "Observation coverage only, not a production pre-decision policy or LLM score"
+        },
+        {
+          "label": "structured complete",
+          "input": "Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Quy Nhơn; Ngày bắt đầu: 2038-03-10; Ngày kết thúc: 2038-03-12; Số người lớn: 2; Ngân sách cả nhóm: 7000000 VND; Phương tiện: xe máy",
+          "recognized": true,
+          "missingObservedFieldsOnly": [],
+          "note": "Observation coverage only, not a production pre-decision policy or LLM score"
+        },
+        {
+          "label": "natural prose",
+          "input": "Tôi muốn đi Quy Nhơn ba ngày với hai người, ngân sách bảy triệu.",
+          "recognized": false,
+          "missingObservedFieldsOnly": null,
+          "note": "Observation coverage only, not a production pre-decision policy or LLM score"
+        },
+        {
+          "label": "short follow-up",
+          "input": "Xe máy nhé.",
+          "recognized": false,
+          "missingObservedFieldsOnly": null,
+          "note": "Observation coverage only, not a production pre-decision policy or LLM score"
+        },
+        {
+          "label": "explicit unset",
+          "input": "Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Quy Nhơn; Ngày bắt đầu: 2038-03-10; Ngày kết thúc: 2038-03-12; Số người lớn: 2; Ngân sách cả nhóm: 7000000 VND; Phương tiện: chưa chọn",
+          "recognized": false,
+          "missingObservedFieldsOnly": null,
+          "note": "Observation coverage only, not a production pre-decision policy or LLM score"
+        },
+        {
+          "label": "mixed intents",
+          "input": "Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Quy Nhơn; Ngày bắt đầu: 2038-03-10; Ngày kết thúc: 2038-03-12; Số người lớn: 2; Ngân sách cả nhóm: 7000000 VND; Tìm địa điểm",
+          "recognized": false,
+          "missingObservedFieldsOnly": null,
+          "note": "Observation coverage only, not a production pre-decision policy or LLM score"
+        },
+        {
+          "label": "mutation",
+          "input": "Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Quy Nhơn; Ngày bắt đầu: 2038-03-10; Ngày kết thúc: 2038-03-12; Số người lớn: 2; Ngân sách cả nhóm: 7000000 VND; lưu Trip",
+          "recognized": false,
+          "missingObservedFieldsOnly": null,
+          "note": "Observation coverage only, not a production pre-decision policy or LLM score"
+        }
+      ]
+    }
+  ],
+  "traces": [
+    {
+      "test": "cooperative abort",
+      "logicalOnly": true,
+      "events": [
+        {
+          "at": 0,
+          "event": "timer_scheduled",
+          "id": 1,
+          "delayMs": 15000
+        },
+        {
+          "at": 0,
+          "event": "timer_cleared",
+          "id": 1
+        },
+        {
+          "at": 0,
+          "event": "timer_scheduled",
+          "id": 2,
+          "delayMs": 15000
+        },
+        {
+          "at": 0,
+          "event": "timer_scheduled",
+          "id": 3,
+          "delayMs": 15000
+        },
+        {
+          "at": 0,
+          "event": "timer_scheduled",
+          "id": 4,
+          "delayMs": 2000
+        },
+        {
+          "at": 0,
+          "event": "timer_cleared",
+          "id": 4
+        },
+        {
+          "at": 15000,
+          "event": "fetch_abort_received"
+        },
+        {
+          "at": 15000,
+          "event": "timer_cleared",
+          "id": 2
+        },
+        {
+          "at": 15000,
+          "event": "timer_cleared",
+          "id": 3
+        }
+      ],
+      "serviceError": "AGENT_TIMEOUT",
+      "toolCalls": 0
+    }
+  ],
+  "inferencePosts": 0,
+  "databaseAccess": "NONE",
+  "actualOllamaInference": "NOT RUN"
+}

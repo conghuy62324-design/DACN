@@ -1,0 +1,418 @@
+# TASK T-AI-04-PLANNER-MULTI-CONNECTION-MAINTENANCE-OWNERSHIP-ACCEPTANCE
+
+Vai trò: Senior PostgreSQL Engineer, Node.js/Sequelize Engineer, Security QA Engineer và E2E Automation Lead của TravelGo.
+
+## MỤC TIÊU
+
+Nghiệm thu cơ chế PostgreSQL connection ownership trong môi trường nhiều kết nối thật.
+
+Baseline đã đạt:
+
+`ADDRESS_NORMALIZATION_PASS_OFFLINE_AND_SELF_TRACE`
+
+Cần chứng minh tiếp:
+
+1. Sequelize bootstrap connection được nhận diện đúng.
+2. Các physical pooled connections được đăng ký ownership chính xác.
+3. Concurrent pool acquisitions không tạo registration race bị bỏ qua.
+4. Release-to-pool và disposal được theo dõi đúng lifecycle.
+5. Maintenance A/B connections được nhận diện độc lập.
+6. Closing guard không chấp nhận unknown connections.
+7. All-25-table maintenance isolation và lock handoff hoạt động thực tế.
+8. Mọi kết nối do task tạo được đóng hoặc hủy đúng cách.
+9. Dữ liệu TravelGo không thay đổi.
+
+Đây là **MULTI-CONNECTION OWNERSHIP ACCEPTANCE**, chưa phải Planner LIVE.
+
+## 1. BASELINE
+
+Đọc:
+
+- `docs/HUGO_T_AI_04_PLANNER_CONNECTION_OWNERSHIP_ADDRESS_NORMALIZATION_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_CONNECTION_OWNERSHIP_GUARD_FIX_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_CONNECTION_OWNERSHIP_DIAGNOSIS_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_LIVE_TARGETED_REVALIDATION_RESUME_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_ADAPTER_BINDING_ACCEPTANCE_FIX_REPORT.md`
+
+Đọc các candidate modules:
+
+- host-address.
+- route-policy.
+- ownership-registry.
+- managed-connections.
+- maintenance bridge.
+- RealGuards.
+- cleanup-lifecycle.
+- corrected orchestrator.
+- source/dependency closure.
+- Original acceptance suites.
+
+Giữ nguyên:
+
+- Original 51 offline tests.
+- New 84 normalization tests.
+- Single connection trace PASS.
+- Historical PID9686 UNKNOWN.
+- Historical Planner LIVE NOT RUN.
+- P1/P2 OPEN.
+
+Không sửa historical evidence, expected hoặc benchmark.
+
+## 2. OWNER SCOPE VÀ GIỚI HẠN
+
+Chỉ sử dụng:
+
+`127.0.0.1:5432/travelgo_ai_m0_test`
+
+Phạm vi được duyệt có điều kiện:
+
+- Offline sensor acceptance.
+- Controlled real PostgreSQL multi-connection trace.
+- Tối đa 10 physical PostgreSQL connection attempts, tính cả bootstrap, maintenance, observer và probe.
+- Không reconnect/retry failed connections.
+- Startup READ ONLY trên runtime/observer connections.
+- Maintenance connections riêng được phép transaction READ WRITE **chỉ để thực thi LOCK TABLE/transaction controls**, không được DML.
+- Test-only table-lock acquisition, conflict probe và lock handoff.
+- Read-only fingerprint trước/sau.
+- Ghi lifecycle/ownership evidence.
+- Đóng toàn bộ task-owned clients.
+
+Không được:
+
+- INSERT/UPDATE/DELETE/TRUNCATE.
+- ALTER/DDL/migrate/seed/reset.
+- Tạo/xóa fixture.
+- Sửa Trip/Booking/User.
+- Gọi Ollama GET/POST.
+- Chạy Planner.
+- Chạy Browser LIVE.
+- Sửa production.
+- Terminate hoặc adopt unknown PID.
+- Reset limiter.
+- Commit/push/deploy.
+- Chạy V2 LIVE.
+
+Khóa bảng là thao tác ảnh hưởng tạm thời đến concurrency. Chỉ được thực hiện khi database test cô lập, không có writer không xác định và toàn bộ safety preflight PASS.
+
+## 3. PHASE A — OFFLINE SOURCE/INTEGRATION GATE
+
+Trước mọi PostgreSQL connection:
+
+1. Xác minh source closure hashes.
+2. Kiểm toàn bộ managed physical connection factories.
+3. Kiểm startup READ ONLY tại physical startup.
+4. Kiểm Sequelize version/bootstrap lifecycle.
+5. Kiểm pool acquisition/release/destroy.
+6. Kiểm PID/backend_start/token correlation.
+7. Kiểm immutable ownership snapshots.
+8. Kiểm normalized Docker/WSL route proof.
+9. Kiểm pending registration.
+10. Kiểm error/disposal lifecycle.
+11. Kiểm unknown FAIL CLOSED.
+12. Kiểm cleanup/fail-fast integration.
+
+Chạy lại toàn bộ 135 offline checks, giữ nguyên assertions.
+
+Bổ sung independent tests cho:
+
+- Hai pool clients acquire đồng thời.
+- Bootstrap client tách khỏi pooled client.
+- Registration race tại physical open.
+- Stale snapshot sau client disconnect.
+- PID reuse.
+- Một client released nhưng backend vẫn idle.
+- Một unknown client xuất hiện giữa two snapshots.
+- Maintenance lock handoff bị lỗi.
+- Observer/probe chưa có ownership proof.
+- Missing connection registry entry.
+- Cleanup/dispose partial failure.
+- Connection cap exceeded.
+
+Nếu bất kỳ offline check FAIL:
+
+`STOP_PHASE_A`
+
+Không truy cập PostgreSQL.
+
+## 4. PHASE B — FRESH DATABASE/ROUTE PREFLIGHT
+
+Trước khi tạo multi-connection trace:
+
+- Kiểm exact Docker container identity.
+- Kiểm independent forwarding route.
+- Kiểm WSL/Docker listener identity.
+- Kiểm schema/connection source integrity.
+- Kiểm expected DB endpoint.
+- Kiểm source closure unchanged.
+- Chuẩn bị write-once event ledger.
+
+Sau kết nối preflight READ ONLY, xác minh:
+
+- Database `travelgo_ai_m0_test`.
+- Sentinel `hugotravel-isolated-test-database-v1`.
+- 12/12 migration checksums.
+- Approved schema fingerprint.
+- Baseline 25-table fingerprints.
+- 27 Trip hashes.
+- No task-owned fixture existing.
+- Current connection inventory.
+
+Nếu có unknown external client hoặc mismatch không thể chứng minh an toàn:
+
+STOP trước bước lock hoặc mutation.
+
+Không whitelist unknown client.
+
+## 5. PHASE C — REAL MULTI-CONNECTION PROVENANCE
+
+Sử dụng actual installed Sequelize và pg Client, không sensor doubles trong phần kiểm chứng này.
+
+Mở có kiểm soát:
+
+- Bootstrap/metadata client nếu source thực tế yêu cầu.
+- Tối đa hai pooled runtime clients.
+- Maintenance clients A/B.
+- Observer/probe clients khi cần.
+
+Mọi physical connection phải nằm trong tổng cap10.
+
+Không ép khởi tạo connection ngoài source chỉ để tăng số lượng PASS.
+
+Với từng client ghi:
+
+- Factory ID.
+- Instance ID.
+- Creation token.
+- Startup application_name.
+- Physical connection event.
+- Startup READ ONLY state nếu là reader.
+- Protocol PID.
+- Self-query PID.
+- backend_start.
+- Database/user/sentinel.
+- Client/server endpoint.
+- Route proof.
+- Registration timestamp.
+- Ownership state.
+- Release/disposal event.
+
+Raw evidence phải persist trước assertion.
+
+Đối chiếu registry với actual `pg_stat_activity`.
+
+Kiểm:
+
+1. Pool bootstrap.
+2. Concurrent acquisition.
+3. Registration trước closing guard.
+4. Released idle pooled connection.
+5. Maintenance connections A/B.
+6. Immutable snapshot.
+7. Disposal và retirement.
+
+Nếu một physical connection chưa được chứng minh ownership, STOP.
+
+Không tự thêm unknown PID vào allowlist.
+
+## 6. PHASE D — REAL MAINTENANCE LOCK SMOKE
+
+Chỉ thực hiện khi Phase A/B/C PASS.
+
+Đây là test khóa tạm thời, không sửa persisted entity rows.
+
+Bắt buộc:
+
+- Database identity vẫn khớp.
+- Không có external writer.
+- Maintenance A/B được chứng minh ownership.
+- Runtime readers READ ONLY.
+- Lock timeout/statement timeout được giới hạn.
+- Có guaranteed finally rollback/release.
+- Không giữ locks sau task.
+
+Kiểm real maintenance:
+
+1. Mở bounded maintenance transaction.
+2. Acquire approved table locks trên đúng 25 bảng.
+3. Xác minh ownership các lock-holding sessions.
+4. Dùng registered controlled probe kiểm conflict bằng NOWAIT.
+5. Expected conflict phải bị từ chối theo PostgreSQL lock semantics.
+6. Không phát hành INSERT/UPDATE/DELETE để kiểm conflict.
+7. Thực hiện bounded A/B lock handoff.
+8. Xác minh không có khoảng hở cho writer theo cơ chế handoff được thiết kế.
+9. Release locks bằng commit/rollback phù hợp.
+10. Xác minh không còn task-owned locks.
+
+Không thay đổi production locking policy.
+
+Không coi một lần NOWAIT failure đơn lẻ là bằng chứng toàn bộ handoff PASS; phải có ownership, lock inventory và event ordering.
+
+Nếu preflight/ownership/lock/handoff bất kỳ bước nào FAIL:
+
+- STOP.
+- Không retry.
+- Rollback/release task-owned transactions.
+- Dispose task-owned clients.
+- Giữ nguyên raw failure evidence.
+
+Không terminate external sessions.
+
+## 7. PHASE E — CLOSING OWNERSHIP GUARD
+
+Chạy closing guard với actual connection inventory.
+
+Bắt buộc:
+
+- Tất cả task-owned active connections có full proof.
+- Pending registration không được coi là owned.
+- Released pooled session vẫn có full proof.
+- Closed sessions bị retire khỏi registry.
+- backend_start mismatch bị từ chối.
+- Unknown connection bị từ chối.
+- Snapshot không được refresh âm thầm.
+- Direct/forwarded route policy giữ nguyên.
+- Không bỏ qua blank application_name.
+
+Kiểm negative unknown behavior offline bằng independent injection.
+
+Không tạo external unowned connection thật chỉ để ép guard FAIL.
+
+PID9686 lịch sử vẫn UNKNOWN.
+
+## 8. PHASE F — RESOURCE CLEANUP
+
+Sau PASS hoặc STOP:
+
+- Chặn mọi dispatch mới.
+- Release/rollback mọi task-owned transactions.
+- Release all25 locks.
+- Close maintenance clients.
+- Close Sequelize pool.
+- Close observer/probe clients.
+- Xác minh không có task-owned live sessions còn lại.
+- Xác minh không có task-owned locks còn lại.
+- Kiểm connection attempts và disposal ledger.
+
+Nếu nguồn ownership chưa đầy đủ, không terminate PID bằng suy đoán.
+
+Nếu còn task-owned session không thể cleanup:
+
+`RESOURCE_CLEANUP_BLOCKED`
+
+Ghi PID/backend_start/instance/ledger và yêu cầu owner review.
+
+Không che original failure bằng cleanup failure.
+
+## 9. FINAL DATABASE INTEGRITY
+
+Sau khi các connections/locks đã được giải phóng:
+
+- Mở READ ONLY verification được tính trong cap10 nếu còn đủ allowance.
+- So fingerprint25/25 với BEFORE.
+- Kiểm Place22/22.
+- Kiểm Trip27/27 content hashes.
+- Kiểm approved fixture IDs vẫn absent.
+- Kiểm DML statement count0.
+- Kiểm no persisted mutation.
+
+Nếu không còn connection allowance để verify, không tạo thêm connection ngoài cap; báo `FINAL_FINGERPRINT_NOT_RUN` và không nhận full gate PASS.
+
+Không gọi `DB_RESTORED_25_25` khi không có DB writes/fixtures.
+
+Dùng `DB_UNCHANGED_25_25` chỉ khi có phép đo mới chứng minh.
+
+## 10. SOURCE/SECURITY INTEGRITY
+
+Giữ nguyên:
+
+- Production Agent.
+- Planner/Catalog.
+- PostgreSQL schema.
+- Auth/consent/limits.
+- SYSTEM/tool schema/gate.
+- V2 benchmark.
+- Historical evidence.
+- Original expected.
+- Approved fixture proposal.
+
+Các code changes chỉ thuộc test-only harness/evidence mới.
+
+Không gọi Ollama hoặc browser.
+
+Không commit/push/deploy.
+
+## 11. EXIT GATE
+
+Chỉ kết luận:
+
+### A — MULTI_CONNECTION_MAINTENANCE_ACCEPTANCE_PASS
+
+Khi:
+
+- Offline acceptance PASS.
+- Real multi-connection provenance PASS.
+- Bootstrap/pool lifecycle được chứng minh.
+- All25 maintenance locks/ownership PASS.
+- Actual handoff PASS.
+- Unknown FAIL CLOSED vẫn được giữ.
+- Resource disposal PASS.
+- Fresh final DB fingerprint25/25 PASS.
+- Trip27/27 PASS.
+- No persisted writes.
+- No Ollama/browser execution.
+
+### B — MULTI_CONNECTION_ACCEPTANCE_PARTIAL
+
+Một số bước đã đạt nhưng không đủ full integration proof.
+
+Không nhận LIVE-ready.
+
+### C — MULTI_CONNECTION_ACCEPTANCE_BLOCKED
+
+Ownership, isolation, resource hoặc integrity guard FAIL.
+
+Không chạy tiếp Planner LIVE.
+
+PID9686 không được đổi thành TASK_OWNED từ kết quả của những PID mới.
+
+## 12. BÁO CÁO
+
+Tạo:
+
+`docs/HUGO_T_AI_04_PLANNER_MULTI_CONNECTION_MAINTENANCE_ACCEPTANCE_REPORT.md`
+
+Evidence:
+
+`docs/evidence/t-ai-04-planner-multi-connection-maintenance-acceptance/`
+
+Báo cáo gồm:
+
+1. Owner scope.
+2. Historical baseline.
+3. Offline acceptance.
+4. Fresh DB/route preflight.
+5. Actual physical connection inventory.
+6. Bootstrap and pool lifecycle.
+7. Connection provenance.
+8. Maintenance A/B ownership.
+9. All25 lock acquisition.
+10. Probe conflict and handoff.
+11. Closing guard.
+12. Disposal and resource cleanup.
+13. Final DB fingerprints.
+14. Network/SQL audit.
+15. Source/benchmark integrity.
+16. Historical PID9686.
+17. P1/P2 status.
+18. Remaining limitations.
+19. NEXT TASK PLAN.
+
+Nếu exit gate A đạt, NEXT TASK đề xuất:
+
+`T-AI-04-PLANNER-LIVE-TARGETED-FINAL-REVALIDATION`
+
+Task LIVE sau đó cần owner approval mới, fresh Agent quota, exact fixture creation/cleanup, independent direct oracle, locked manifest/body hashes và một native POST budget riêng.
+
+Không tự triển khai NEXT TASK.
+
+**DỪNG SAU BÁO CÁO.**

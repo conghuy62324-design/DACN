@@ -1,0 +1,22 @@
+{
+  "task": "T-AI-03-A",
+  "tier": "PROVIDER_MOCK_ONLY + REAL_BACKEND + REAL_POSTGRESQL",
+  "viewports": { "desktop": [1440, 900], "mobile": [390, 844] },
+  "cases": [
+    { "id": "C01", "expected": "Anonymous /assistant redirects to login; unauthenticated Agent API returns 401" },
+    { "id": "C02", "expected": "Fixture Customer logs in using real Auth API, real JWT and can access Assistant" },
+    { "id": "C03", "expected": "search_places uses real public catalog; zero and null price stay distinct; suspended fixture hidden" },
+    { "id": "C04", "expected": "plan_trip uses real Planner; UI cost equals server result, GROUP_VND_V1 and over-budget warning shown" },
+    { "id": "C05", "expected": "Second turn sends exact server-returned history; one allowed tool decision per request" },
+    { "id": "C06", "expected": "needs_input from backend displays clarification" },
+    { "id": "C07", "expected": "unsupported from backend displays scope without mutation" },
+    { "id": "C08", "expected": "nonfeasible Planner destination yields tool_unavailable, no fabricated itinerary" },
+    { "id": "C09", "expected": "real privacy GET and 428; no automatic consent/retry; explicit consent grants only one request" },
+    { "id": "C10", "expected": "unconfigured provider yields 503 and Planner fallback link" },
+    { "id": "C11", "expected": "real Agent route rejects invalid body 400 and invalid JWT 401" },
+    { "id": "C12", "expected": "rate limit 429, malformed provider 502, timeout 504 are sanitized in UI" },
+    { "id": "C13", "expected": "logout/login B clears history; delayed A response cannot appear in B" },
+    { "id": "C14", "expected": "refresh and new conversation clear in-memory history" },
+    { "id": "C15", "expected": "No Trip/Booking mutation; application DB read-only and full fingerprint matches after exact fixture cleanup" }
+  ]
+}

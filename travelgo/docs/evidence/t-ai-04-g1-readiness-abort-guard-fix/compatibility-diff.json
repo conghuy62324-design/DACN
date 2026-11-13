@@ -1,0 +1,30 @@
+{
+  "tier": "MOCK_ONLY",
+  "edits": [
+    {
+      "label": "transport POST abort scheduling",
+      "before": "const pending = p.generate(input, outer.signal);",
+      "after": "const pending = p.generate(input, outer.signal);\n    // Readiness GET fixture must settle before this historical POST-abort observation.\n    for (let tick = 0; tick < 100; tick++) await Promise.resolve();"
+    },
+    {
+      "label": "isolated output directory root",
+      "before": "path.resolve(__dirname, '../../..')",
+      "after": "path.resolve(__dirname, '../../../..')"
+    },
+    {
+      "label": "standalone deadline fixture scheduling",
+      "before": "  await clock.advance(15000); const out = await result;\n  assert.equal(aborted, true);",
+      "after": "  await flush(); // Settle synthetic readiness GETs at logical time zero before advancing the standalone provider deadline.\n  await clock.advance(15000); const out = await result;\n  assert.equal(aborted, true);"
+    }
+  ],
+  "assertionsChanged": 0,
+  "sources": {
+    "transportCompiled": "467308f4c80470da1749b1014eb89a2f67537a3fd28f8555d4e7c99349c10b71",
+    "diagnosticsOriginal": "fe77ed47bf2a95f47ac5b711f9b2cb16a0a4c37de064ccfd4543e17693eff719"
+  },
+  "derived": {
+    "transport": "c89e7a97e401b8a137388c5038aa0a8a6e6fe1c465be8ff3cd026302ac4b6d74",
+    "diagnostics": "d8cd82ed05795fc194657d99f8d6f84e7a18a34a52f941c67ffee5c280fd150e"
+  },
+  "fixture": "legacy-ready-shim.cjs synthesizes only three GETs; old POST fake receives unchanged request"
+}

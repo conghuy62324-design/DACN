@@ -1,0 +1,278 @@
+{
+  "scenario": "duplicate-registration",
+  "tier": "OFFLINE_SENSOR_CHILD",
+  "error": {
+    "name": "AssertionError",
+    "message": "REGISTRATION_STATE_INVALID\n+ actual - expected\n\n+ 'REGISTERED'\n- 'PENDING_REGISTRATION'\n"
+  },
+  "guardPassed": false,
+  "events": [
+    {
+      "sequence": 1,
+      "at": "2026-11-11T09:17:33.200Z",
+      "type": "CREATE",
+      "id": "e9176d60-1e90-4d54-b453-5c0b3ed3d751",
+      "factory": "test-reader",
+      "token": "b14767564a6b4c038373998ab0b34b72",
+      "application_name": "og-test-reader-b14767564a6b4c038373998ab0b34b72",
+      "state": "CREATED",
+      "config": {
+        "host": "127.0.0.1",
+        "port": 5432,
+        "database": "travelgo_ai_m0_test",
+        "user": "postgres"
+      },
+      "identity": null,
+      "physical": null
+    },
+    {
+      "sequence": 2,
+      "at": "2026-11-11T09:17:33.201Z",
+      "type": "PHYSICAL_OPEN",
+      "instanceId": "e9176d60-1e90-4d54-b453-5c0b3ed3d751",
+      "factory": "test-reader",
+      "state": "PENDING_REGISTRATION",
+      "physical": {
+        "expectedEndpoint": {
+          "host": "127.0.0.1",
+          "port": 5432
+        },
+        "localAddress": "127.0.0.1",
+        "localPort": 61001,
+        "remoteAddress": "127.0.0.1",
+        "remotePort": 5432
+      },
+      "startup": {
+        "application_name": "og-test-reader-b14767564a6b4c038373998ab0b34b72",
+        "options": "-c default_transaction_read_only=on -c statement_timeout=15000 -c idle_in_transaction_session_timeout=30000",
+        "database": "travelgo_ai_m0_test",
+        "user": "postgres"
+      }
+    },
+    {
+      "sequence": 3,
+      "at": "2026-11-11T09:17:33.201Z",
+      "type": "RAW_SELF_IDENTITY",
+      "instanceId": "e9176d60-1e90-4d54-b453-5c0b3ed3d751",
+      "row": {
+        "database": "travelgo_ai_m0_test",
+        "role": "postgres",
+        "pid": 20001,
+        "pg_backend_pid": 20001,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-test-reader-b14767564a6b4c038373998ab0b34b72",
+        "usename": "postgres",
+        "datname": "travelgo_ai_m0_test",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001,
+        "inet_client_addr": "127.0.0.1",
+        "inet_client_port": 61001,
+        "server_addr": "127.0.0.1",
+        "server_port": 5432,
+        "default_transaction_read_only": "on",
+        "transaction_read_only": "on",
+        "statement_timeout": "15s",
+        "sentinel": "hugotravel-isolated-test-database-v1"
+      }
+    },
+    {
+      "sequence": 4,
+      "at": "2026-11-11T09:17:33.202Z",
+      "type": "REGISTRATION_PASS",
+      "instanceId": "e9176d60-1e90-4d54-b453-5c0b3ed3d751",
+      "state": "REGISTERED",
+      "identity": {
+        "pid": 20001,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-test-reader-b14767564a6b4c038373998ab0b34b72",
+        "datname": "travelgo_ai_m0_test",
+        "usename": "postgres",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001
+      }
+    },
+    {
+      "sequence": 5,
+      "at": "2026-11-11T09:17:33.202Z",
+      "type": "REGISTRATION_FAIL",
+      "instanceId": "e9176d60-1e90-4d54-b453-5c0b3ed3d751",
+      "message": "REGISTRATION_STATE_INVALID\n+ actual - expected\n\n+ 'REGISTERED'\n- 'PENDING_REGISTRATION'\n"
+    },
+    {
+      "sequence": 6,
+      "at": "2026-11-11T09:17:33.202Z",
+      "type": "DISPOSE_START",
+      "instanceId": "e9176d60-1e90-4d54-b453-5c0b3ed3d751"
+    },
+    {
+      "sequence": 7,
+      "at": "2026-11-11T09:17:33.202Z",
+      "type": "DISPOSE_PASS",
+      "instanceId": "e9176d60-1e90-4d54-b453-5c0b3ed3d751",
+      "identity": {
+        "pid": 20001,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-test-reader-b14767564a6b4c038373998ab0b34b72",
+        "datname": "travelgo_ai_m0_test",
+        "usename": "postgres",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001
+      }
+    }
+  ],
+  "clientsCreated": 1,
+  "clientsDisposed": 1,
+  "cleanupCount": 0,
+  "lateRejected": 4,
+  "lateDispatched": 0,
+  "fence": {
+    "stopped": true,
+    "closed": false,
+    "current": "OWNERSHIP",
+    "firstFailure": {
+      "caseId": "OWNERSHIP",
+      "phase": "ownership",
+      "error": {
+        "name": "AssertionError",
+        "message": "REGISTRATION_STATE_INVALID\n+ actual - expected\n\n+ 'REGISTERED'\n- 'PENDING_REGISTRATION'\n",
+        "stack": "AssertionError [ERR_ASSERTION]: REGISTRATION_STATE_INVALID\n+ actual - expected\n\n+ 'REGISTERED'\n- 'PENDING_REGISTRATION'\n\n    at OwnershipRegistry.register (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\ownership-registry.cjs:15:10)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\acceptance-child.cjs:47:51"
+      }
+    },
+    "secondaryFailures": [
+      {
+        "caseId": "OWNERSHIP",
+        "phase": "acceptance-scenario",
+        "error": {
+          "name": "AssertionError",
+          "message": "REGISTRATION_STATE_INVALID\n+ actual - expected\n\n+ 'REGISTERED'\n- 'PENDING_REGISTRATION'\n",
+          "stack": "AssertionError [ERR_ASSERTION]: REGISTRATION_STATE_INVALID\n+ actual - expected\n\n+ 'REGISTERED'\n- 'PENDING_REGISTRATION'\n\n    at OwnershipRegistry.register (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\ownership-registry.cjs:15:10)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\acceptance-child.cjs:47:51"
+        }
+      },
+      {
+        "caseId": "OWNERSHIP",
+        "phase": "dispatch:agent",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\acceptance-child.cjs:60:134"
+        }
+      },
+      {
+        "caseId": "OWNERSHIP",
+        "phase": "dispatch:native",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\acceptance-child.cjs:60:134"
+        }
+      },
+      {
+        "caseId": "OWNERSHIP",
+        "phase": "dispatch:tool",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\acceptance-child.cjs:60:134"
+        }
+      },
+      {
+        "caseId": "OWNERSHIP",
+        "phase": "dispatch:operator",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\acceptance-child.cjs:60:134"
+        }
+      }
+    ],
+    "events": [
+      {
+        "sequence": 1,
+        "type": "CASE_START",
+        "caseId": "OWNERSHIP"
+      },
+      {
+        "sequence": 2,
+        "type": "GLOBAL_STOP",
+        "caseId": "OWNERSHIP",
+        "phase": "ownership",
+        "error": {
+          "name": "AssertionError",
+          "message": "REGISTRATION_STATE_INVALID\n+ actual - expected\n\n+ 'REGISTERED'\n- 'PENDING_REGISTRATION'\n",
+          "stack": "AssertionError [ERR_ASSERTION]: REGISTRATION_STATE_INVALID\n+ actual - expected\n\n+ 'REGISTERED'\n- 'PENDING_REGISTRATION'\n\n    at OwnershipRegistry.register (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\ownership-registry.cjs:15:10)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\acceptance-child.cjs:47:51"
+        }
+      },
+      {
+        "sequence": 3,
+        "type": "GLOBAL_STOP",
+        "caseId": "OWNERSHIP",
+        "phase": "acceptance-scenario",
+        "error": {
+          "name": "AssertionError",
+          "message": "REGISTRATION_STATE_INVALID\n+ actual - expected\n\n+ 'REGISTERED'\n- 'PENDING_REGISTRATION'\n",
+          "stack": "AssertionError [ERR_ASSERTION]: REGISTRATION_STATE_INVALID\n+ actual - expected\n\n+ 'REGISTERED'\n- 'PENDING_REGISTRATION'\n\n    at OwnershipRegistry.register (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\ownership-registry.cjs:15:10)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\acceptance-child.cjs:47:51"
+        }
+      },
+      {
+        "sequence": 4,
+        "type": "GLOBAL_STOP",
+        "caseId": "OWNERSHIP",
+        "phase": "dispatch:agent",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\acceptance-child.cjs:60:134"
+        }
+      },
+      {
+        "sequence": 5,
+        "type": "GLOBAL_STOP",
+        "caseId": "OWNERSHIP",
+        "phase": "dispatch:native",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\acceptance-child.cjs:60:134"
+        }
+      },
+      {
+        "sequence": 6,
+        "type": "GLOBAL_STOP",
+        "caseId": "OWNERSHIP",
+        "phase": "dispatch:tool",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\acceptance-child.cjs:60:134"
+        }
+      },
+      {
+        "sequence": 7,
+        "type": "GLOBAL_STOP",
+        "caseId": "OWNERSHIP",
+        "phase": "dispatch:operator",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\acceptance-child.cjs:60:134"
+        }
+      }
+    ],
+    "agentDispatches": [],
+    "nativeDispatches": [],
+    "toolDispatches": [],
+    "operatorDispatches": [],
+    "retry": 0
+  },
+  "network": {
+    "pid": 19916,
+    "mode": "OFFLINE",
+    "sockets": [],
+    "blocked": [],
+    "http": 0
+  },
+  "actualEntityWrites": 0
+}

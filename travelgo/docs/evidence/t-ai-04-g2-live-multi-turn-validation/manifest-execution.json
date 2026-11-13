@@ -1,0 +1,549 @@
+{
+  "at": "2026-11-10T14:49:57.296Z",
+  "task": "T-AI-04-G2-LIVE-MULTI-TURN-VALIDATION",
+  "approval": "Current owner task; max5 native POST/one conditional load/four genuine Agent inference; no retry",
+  "principalHash": "6b982d095bc6bc30c87955cd38c78afa9ef31d3447ef30f62e8684bbe8bce600",
+  "principalSource": "docs/evidence/t-ai-04-e-final/run-20261109T041645807Z-ae626a88/attempt-E04-B.json",
+  "model": "qwen3:4b-instruct-2507-q4_K_M",
+  "digest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+  "env": {
+    "LLM_PROVIDER": "ollama",
+    "LLM_LIVE_ENABLED": "true",
+    "LLM_USAGE_APPROVED": "true",
+    "OLLAMA_LOCAL_ONLY_CONFIRMED": "true",
+    "OLLAMA_MODEL": "qwen3:4b-instruct-2507-q4_K_M",
+    "OLLAMA_MODEL_DIGEST": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+    "OLLAMA_BASE_URL": "http://127.0.0.1:11434",
+    "AGENT_G2_MODE": "local-demo"
+  },
+  "ttlMs": 900000,
+  "consentVersion": "LOCAL_DEMO_SLOTS_V1",
+  "g2WireSystemSha256": "76e1aa153284ef953685d1f2289dc788ac2e962b763c0a3404495268459632a0",
+  "cases": [
+    {
+      "id": "A01",
+      "phase": "DETERMINISTIC",
+      "action": "start",
+      "message": "Lập lịch trình; Điểm đến: Lạng Sơn",
+      "revision": 1,
+      "values": {
+        "destinationCity": "Lạng Sơn"
+      },
+      "missingFields": [
+        "departureCity",
+        "startDate",
+        "endDate",
+        "adults",
+        "totalBudget",
+        "transportation"
+      ],
+      "origin": "SERVER_COMPLETENESS",
+      "requestId": "e36a8316-fb3b-4f8b-b23e-e38a153e28c6",
+      "expectedStatus": "needs_input",
+      "expectedToolCalls": 0,
+      "expectedProviderCalls": 0,
+      "expectedReadinessGets": 0,
+      "expectedNativePosts": 0,
+      "expectedGate": "NOT_APPLICABLE_INCOMPLETE",
+      "rawNlu": "NOT EVALUATED",
+      "expectedSlotStates": {
+        "departureCity": "OMITTED",
+        "destinationCity": "SET",
+        "startDate": "OMITTED",
+        "endDate": "OMITTED",
+        "adults": "OMITTED",
+        "totalBudget": "OMITTED",
+        "transportation": "OMITTED"
+      }
+    },
+    {
+      "id": "A02",
+      "phase": "DETERMINISTIC",
+      "action": "continue",
+      "message": "Nơi xuất phát: Thái Bình; Ngày bắt đầu: 2053-09-18; Ngày kết thúc: 2053-09-20; Số người lớn: 3; Ngân sách cả nhóm: 7600000 VND",
+      "revision": 2,
+      "values": {
+        "departureCity": "Thái Bình",
+        "destinationCity": "Lạng Sơn",
+        "startDate": "2053-09-18",
+        "endDate": "2053-09-20",
+        "adults": 3,
+        "totalBudget": 7600000
+      },
+      "missingFields": [
+        "transportation"
+      ],
+      "origin": "VERIFIED_HISTORY_COMPLETENESS",
+      "requestId": "8cc82d17-7ae0-4b3f-9f79-8cdb5bc9c4f2",
+      "expectedStatus": "needs_input",
+      "expectedToolCalls": 0,
+      "expectedProviderCalls": 0,
+      "expectedReadinessGets": 0,
+      "expectedNativePosts": 0,
+      "expectedGate": "NOT_APPLICABLE_INCOMPLETE",
+      "rawNlu": "NOT EVALUATED",
+      "expectedSlotStates": {
+        "departureCity": "SET",
+        "destinationCity": "SET",
+        "startDate": "SET",
+        "endDate": "SET",
+        "adults": "SET",
+        "totalBudget": "SET",
+        "transportation": "OMITTED"
+      }
+    },
+    {
+      "id": "L01",
+      "phase": "LIVE_LLM",
+      "action": "continue",
+      "message": "Chọn ô tô, giữ các thông tin còn lại.",
+      "revision": 3,
+      "values": {
+        "departureCity": "Thái Bình",
+        "destinationCity": "Lạng Sơn",
+        "startDate": "2053-09-18",
+        "endDate": "2053-09-20",
+        "adults": 3,
+        "totalBudget": 7600000,
+        "transportation": "car"
+      },
+      "missingFields": [],
+      "origin": "MODEL",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Thái Bình",
+          "destinationCity": "Lạng Sơn",
+          "startDate": "2053-09-18",
+          "endDate": "2053-09-20",
+          "adults": 3,
+          "totalBudget": 7600000,
+          "transportation": "car"
+        }
+      },
+      "requestId": "e84ab618-2471-47ee-8335-77b5a939c47d",
+      "expectedStatus": "completed",
+      "expectedToolCalls": 1,
+      "expectedProviderCalls": 1,
+      "expectedReadinessGets": 3,
+      "expectedNativePosts": 1,
+      "expectedGate": "ALLOW",
+      "rawNlu": "EXACT_EXPECTED_COMPARISON",
+      "bodyFile": "body-L01.json",
+      "bodySha256": "09d9317ce6e5b816c29ee0305bc4d262e7b9d0ca10b1d36ec3d5181eee6dd8ed",
+      "expectedSlotStates": {
+        "departureCity": "SET",
+        "destinationCity": "SET",
+        "startDate": "SET",
+        "endDate": "SET",
+        "adults": "SET",
+        "totalBudget": "SET",
+        "transportation": "SET"
+      }
+    },
+    {
+      "id": "L02",
+      "phase": "LIVE_LLM",
+      "action": "continue",
+      "message": "Ngân sách cả nhóm: 8200000 VND",
+      "revision": 4,
+      "values": {
+        "departureCity": "Thái Bình",
+        "destinationCity": "Lạng Sơn",
+        "startDate": "2053-09-18",
+        "endDate": "2053-09-20",
+        "adults": 3,
+        "totalBudget": 8200000,
+        "transportation": "car"
+      },
+      "missingFields": [],
+      "origin": "MODEL",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Thái Bình",
+          "destinationCity": "Lạng Sơn",
+          "startDate": "2053-09-18",
+          "endDate": "2053-09-20",
+          "adults": 3,
+          "totalBudget": 8200000,
+          "transportation": "car"
+        }
+      },
+      "oldArguments": {
+        "totalBudget": 7600000
+      },
+      "requestId": "6fd3cdd8-48d5-49cb-ba9a-4584df86b00d",
+      "expectedStatus": "completed",
+      "expectedToolCalls": 1,
+      "expectedProviderCalls": 1,
+      "expectedReadinessGets": 3,
+      "expectedNativePosts": 1,
+      "expectedGate": "ALLOW",
+      "rawNlu": "EXACT_EXPECTED_COMPARISON",
+      "bodyFile": "body-L02.json",
+      "bodySha256": "bb364bda966e210013944b305aa28d69f7ac1866f3814bd395886a3e1dd4ea6c",
+      "expectedSlotStates": {
+        "departureCity": "SET",
+        "destinationCity": "SET",
+        "startDate": "SET",
+        "endDate": "SET",
+        "adults": "SET",
+        "totalBudget": "SET",
+        "transportation": "SET"
+      }
+    },
+    {
+      "id": "D05",
+      "phase": "DETERMINISTIC",
+      "action": "continue",
+      "message": "Tôi hủy phương tiện, giữ các thông tin còn lại.",
+      "revision": 5,
+      "values": {
+        "departureCity": "Thái Bình",
+        "destinationCity": "Lạng Sơn",
+        "startDate": "2053-09-18",
+        "endDate": "2053-09-20",
+        "adults": 3,
+        "totalBudget": 8200000
+      },
+      "missingFields": [
+        "transportation"
+      ],
+      "origin": "VERIFIED_HISTORY_COMPLETENESS",
+      "invalidated": {
+        "transportation": "UNPROVEN"
+      },
+      "requestId": "e9c99e3c-260e-43a1-bc06-d49dde06af2f",
+      "expectedStatus": "needs_input",
+      "expectedToolCalls": 0,
+      "expectedProviderCalls": 0,
+      "expectedReadinessGets": 0,
+      "expectedNativePosts": 0,
+      "expectedGate": "NOT_APPLICABLE_INCOMPLETE",
+      "rawNlu": "NOT EVALUATED",
+      "expectedSlotStates": {
+        "departureCity": "SET",
+        "destinationCity": "SET",
+        "startDate": "SET",
+        "endDate": "SET",
+        "adults": "SET",
+        "totalBudget": "SET",
+        "transportation": "UNPROVEN"
+      }
+    },
+    {
+      "id": "L03",
+      "phase": "LIVE_LLM",
+      "action": "continue",
+      "message": "Đổi sang xe máy, giữ các thông tin còn lại.",
+      "revision": 6,
+      "values": {
+        "departureCity": "Thái Bình",
+        "destinationCity": "Lạng Sơn",
+        "startDate": "2053-09-18",
+        "endDate": "2053-09-20",
+        "adults": 3,
+        "totalBudget": 8200000,
+        "transportation": "motorbike"
+      },
+      "missingFields": [],
+      "origin": "MODEL",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Thái Bình",
+          "destinationCity": "Lạng Sơn",
+          "startDate": "2053-09-18",
+          "endDate": "2053-09-20",
+          "adults": 3,
+          "totalBudget": 8200000,
+          "transportation": "motorbike"
+        }
+      },
+      "oldArguments": {
+        "transportation": "car"
+      },
+      "requestId": "13d78456-34c1-4128-99fc-0e87cd08b5f7",
+      "expectedStatus": "completed",
+      "expectedToolCalls": 1,
+      "expectedProviderCalls": 1,
+      "expectedReadinessGets": 3,
+      "expectedNativePosts": 1,
+      "expectedGate": "ALLOW",
+      "rawNlu": "EXACT_EXPECTED_COMPARISON",
+      "bodyFile": "body-L03.json",
+      "bodySha256": "fb89433dd525fb78b9cc9ab00cea903d8e22743ed8986585aeb5bd7a40d4d986",
+      "expectedSlotStates": {
+        "departureCity": "SET",
+        "destinationCity": "SET",
+        "startDate": "SET",
+        "endDate": "SET",
+        "adults": "SET",
+        "totalBudget": "SET",
+        "transportation": "SET"
+      }
+    },
+    {
+      "id": "L04",
+      "phase": "LIVE_LLM",
+      "action": "continue",
+      "message": "Đổi điểm đến thành Hà Giang, giữ các thông tin còn lại.",
+      "revision": 7,
+      "values": {
+        "departureCity": "Thái Bình",
+        "destinationCity": "Hà Giang",
+        "startDate": "2053-09-18",
+        "endDate": "2053-09-20",
+        "adults": 3,
+        "totalBudget": 8200000,
+        "transportation": "motorbike"
+      },
+      "missingFields": [],
+      "origin": "MODEL",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Thái Bình",
+          "destinationCity": "Hà Giang",
+          "startDate": "2053-09-18",
+          "endDate": "2053-09-20",
+          "adults": 3,
+          "totalBudget": 8200000,
+          "transportation": "motorbike"
+        }
+      },
+      "oldArguments": {
+        "destinationCity": "Lạng Sơn"
+      },
+      "requestId": "2946077e-b8b0-4a18-ac83-f4d34a471f96",
+      "expectedStatus": "completed",
+      "expectedToolCalls": 1,
+      "expectedProviderCalls": 1,
+      "expectedReadinessGets": 3,
+      "expectedNativePosts": 1,
+      "expectedGate": "ALLOW",
+      "rawNlu": "EXACT_EXPECTED_COMPARISON",
+      "bodyFile": "body-L04.json",
+      "bodySha256": "8cd40987e9affaaf5e004839a96333f09e953ffcb4d3641b83c83c866e6bc92f",
+      "expectedSlotStates": {
+        "departureCity": "SET",
+        "destinationCity": "SET",
+        "startDate": "SET",
+        "endDate": "SET",
+        "adults": "SET",
+        "totalBudget": "SET",
+        "transportation": "SET"
+      }
+    }
+  ],
+  "lifecycle": {
+    "secondaryPrincipal": "aaaaaaaa-7654-4321-8765-aaaaaaaaaaaa",
+    "note": "Only authenticated negative ownership check; never inference or session owner replacement",
+    "checks": [
+      {
+        "id": "N-AUTH",
+        "method": "GET",
+        "path": "/verified-history/privacy",
+        "actor": "anonymous",
+        "status": 401,
+        "normalQuota": 0
+      },
+      {
+        "id": "N-PRIVACY",
+        "method": "GET",
+        "path": "/verified-history/privacy",
+        "status": 200,
+        "normalQuota": 0
+      },
+      {
+        "id": "N-ACK",
+        "method": "POST",
+        "path": "/chat",
+        "message": "Lập lịch trình; Điểm đến: Lạng Sơn",
+        "action": "start",
+        "consentVersion": "WRONG_VERSION",
+        "requestId": "c9ddfd7f-6325-4648-9a2c-61118b049b42",
+        "status": 428,
+        "code": "AGENT_G2_CONSENT_REQUIRED",
+        "normalQuota": 1
+      },
+      {
+        "id": "N-CONSENT",
+        "method": "POST",
+        "path": "/chat",
+        "message": "Lập lịch trình; Điểm đến: Lạng Sơn",
+        "action": "start",
+        "requestId": "181bd517-4f0a-452b-94cc-e9d38d7a0c47",
+        "consentUnavailable": true,
+        "status": 503,
+        "code": "AGENT_CONSENT_UNAVAILABLE",
+        "normalQuota": 1
+      },
+      {
+        "id": "N-HISTORY",
+        "method": "POST",
+        "path": "/chat",
+        "message": "Ngân sách cả nhóm: 8200000 VND",
+        "history": [
+          {
+            "role": "user",
+            "content": "Lập lịch trình từ Ninh Bình đến Cao Bằng, từ 10/10/2054 đến 12/10/2054, 9 người lớn, 99 triệu đồng cả nhóm, ô tô."
+          },
+          {
+            "role": "assistant",
+            "content": "Đây là lịch sử phía client không xác thực; không cấp quyền và không chứng minh dữ liệu cho phiên server."
+          }
+        ],
+        "requestId": "8fc0ab73-b9b5-497b-b0d5-b7097a39fbb9",
+        "status": 400,
+        "code": "AGENT_G2_CLIENT_HISTORY_REJECTED",
+        "normalQuota": 0
+      },
+      {
+        "id": "N-INVALID-ID",
+        "method": "POST",
+        "path": "/chat",
+        "message": "Ngân sách cả nhóm: 8200000 VND",
+        "invalidId": true,
+        "requestId": "82f8f97d-1488-4302-be1c-a45d461c1cc4",
+        "status": 400,
+        "code": "AGENT_G2_INVALID_INPUT",
+        "normalQuota": 0
+      },
+      {
+        "id": "N-OWNER",
+        "method": "POST",
+        "path": "/chat",
+        "actor": "secondary",
+        "message": "Ngân sách cả nhóm: 8200000 VND",
+        "requestId": "09e8aa2c-a3b0-4bd6-b8cf-6e1c48bc6403",
+        "status": 404,
+        "code": "AGENT_G2_SESSION_UNAVAILABLE",
+        "normalQuota": 1
+      },
+      {
+        "id": "N-STALE",
+        "method": "POST",
+        "path": "/chat",
+        "message": "Ngân sách cả nhóm: 8200000 VND",
+        "revision": 6,
+        "requestId": "98c1a4c2-5196-4cbc-a548-9c825ff62252",
+        "status": 409,
+        "code": "AGENT_G2_REVISION_CONFLICT",
+        "normalQuota": 1
+      },
+      {
+        "id": "N-REPLAY",
+        "method": "POST",
+        "path": "/chat",
+        "message": "Ngân sách cả nhóm: 8200000 VND",
+        "replayRequestId": "6fd3cdd8-48d5-49cb-ba9a-4584df86b00d",
+        "status": 409,
+        "code": "AGENT_G2_REPLAY",
+        "normalQuota": 1
+      },
+      {
+        "id": "N-RESET",
+        "method": "POST",
+        "path": "/verified-history/{id}/reset",
+        "status": 200,
+        "revision": 8,
+        "normalQuota": 1
+      },
+      {
+        "id": "N-RESET-STALE",
+        "method": "POST",
+        "path": "/chat",
+        "message": "Đổi sang xe máy, giữ các thông tin còn lại.",
+        "revision": 7,
+        "requestId": "c6d5d299-db79-477c-a019-c98a22d19b5c",
+        "status": 409,
+        "code": "AGENT_G2_REVISION_CONFLICT",
+        "normalQuota": 1
+      },
+      {
+        "id": "N-REVOKE",
+        "method": "DELETE",
+        "path": "/verified-history/{id}",
+        "status": 200,
+        "normalQuota": 1
+      },
+      {
+        "id": "N-REVOKED",
+        "method": "POST",
+        "path": "/chat",
+        "message": "Đổi sang xe máy, giữ các thông tin còn lại.",
+        "requestId": "aa5e782c-9a6b-4ad0-a042-5806f77a4154",
+        "status": 404,
+        "code": "AGENT_G2_SESSION_UNAVAILABLE",
+        "normalQuota": 1
+      }
+    ]
+  },
+  "modelPreparation": {
+    "conditional": "Only when nonresident; if wrong resident context/eviction STOP; never reload",
+    "bodyFile": "operator-load-body.json",
+    "bodySha256": "4e86b724bb5567dfb08b8f53807c4423e2de86a7fd48e56ddd125431d8e76c01",
+    "endpoint": "http://127.0.0.1:11434/api/generate",
+    "deadlineMs": 60000,
+    "keepAlive": "5m",
+    "expected": {
+      "httpStatus": 200,
+      "done": true,
+      "done_reason": "load",
+      "response": ""
+    }
+  },
+  "budget": {
+    "maxNativePosts": 5,
+    "maxLoadOnly": 1,
+    "maxInference": 4,
+    "concurrency": 1,
+    "normalMainTurns": 15,
+    "normalSecondaryNegativeTurns": 1,
+    "conservativeSlotsRequiredWithLoad": 16
+  },
+  "scoring": {
+    "raw": "Exact required arguments with NFC/case/whitespace city comparison; optional only existing children0/pacing balanced/preferences empty. Timeout/no raw NOT EVALUATED semantic, reliability FAIL; no output edits.",
+    "history": "Exact owned revision/SET/UNPROVEN/missing fields; input state independent from model.",
+    "safety": "Gate ALLOW only matched owned SET proof; old-budget/transport/destination and stale leases not ALLOW. At most one marker-only executor per valid raw.",
+    "stop": [
+      "Preflight/hash/quota failure",
+      "Unauthorized/stale/wrong-argument executor or stale-value ALLOW",
+      "Readiness failure/eviction; no second load",
+      "Provider pending/deadline/abort; no retry",
+      "15-minute session expiry before planned live turn"
+    ],
+    "notEvaluated": [
+      "Planner/Catalog/DB fidelity",
+      "Browser/frontend",
+      "V2 raw score",
+      "Natural live TTL wait; covered separately offline without changing live clock"
+    ]
+  },
+  "bindings": {
+    "conversationId": "Server-generated at A01, exact response ID reused; not caller-created",
+    "revision": "Exact latest response metadata, errors may retain updated revision",
+    "requestIds": "Fresh fixed UUIDs locked here; replay negative deliberately reuses L02 ID",
+    "history": "Absent all main turns; only negative history check submits untrusted history"
+  },
+  "offlinePreparation": {
+    "status": "PASS",
+    "provider": "MOCK_ONLY construction of exact wire bodies; no native fetch",
+    "database": false,
+    "simulatedCaseCount": 7
+  },
+  "prePostRevision": {
+    "at": "2026-11-10T14:53:30.353Z",
+    "priorManifestSha256": "a45828136152dcf15059a1dfcd74e2da415ee7cf95aaf6809779ad51472d524d",
+    "reason": "N-HISTORY must supply a complete user/assistant pair to reach G2-specific client-history rejection; initial single user would be rejected by readConversation first. Expected400/AGENT_G2_CLIENT_HISTORY_REJECTED unchanged. No inference yet.",
+    "mainInputsChanged": 0,
+    "expectedChanged": 0,
+    "productionChanged": false
+  }
+}

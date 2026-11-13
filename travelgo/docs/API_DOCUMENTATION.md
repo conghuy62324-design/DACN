@@ -171,3 +171,7 @@
 - `POST /blogs`: Đăng bài blog mới.
 - `POST /auth/login`: Đăng nhập hệ thống. Tài khoản fixture local dùng mật khẩu do người chạy cung cấp qua `SEED_PASSWORD`; không có mật khẩu mặc định.
 - `POST /auth/register`: Đăng ký tài khoản người dùng.
+- `GET /auth/me`: Bearer access token bắt buộc; đọc public user và roles hiện tại từ DB.
+- `GET /auth/profile`: Alias GET của `/auth/me`; không phải endpoint cập nhật hồ sơ.
+
+Auth cập nhật 30/10/2026: token là `base64url(payload).HMAC-SHA256(encodedPayload)` (hai phần, có hạn), không phải JWT ba phần. Frontend lưu token/user cache trong localStorage, xác minh qua `/auth/me` khi reload. Chưa có refresh-token, server-side revocation hoặc profile update API; logout chỉ ở client. Xem [contract auth hiện hành](HUGO_AUTH_CONTRACT.md) để biết mã 401, xử lý phiên và RBAC.

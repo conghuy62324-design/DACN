@@ -1,0 +1,2751 @@
+{
+  "tier": "PROVIDER_MOCK_ONLY + REAL_BACKEND + REAL_POSTGRESQL",
+  "entries": [
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 401,
+      "request": {
+        "message": "THIẾU điểm đến"
+      },
+      "response": {
+        "success": false,
+        "code": "AUTH_REQUIRED",
+        "message": "Vui lòng đăng nhập để tiếp tục"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "TÌM địa điểm ở TAI03A-699018f3",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "completed",
+          "reply": "Kết quả dưới đây lấy từ catalog công khai.",
+          "result": {
+            "type": "places",
+            "source": "RecommendationService",
+            "places": [
+              {
+                "id": "93a935c8-54e4-4914-b2f9-cb7ba85521d1",
+                "name": "TAI03A Nhà hàng",
+                "category": "restaurant",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 150000,
+                "catalogPriceAvailable": true
+              },
+              {
+                "id": "fae16030-a9e0-4bc5-b9d2-9f50cd958b8b",
+                "name": "TAI03A Điểm chưa có giá",
+                "category": "attraction",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": null,
+                "catalogPriceAvailable": false
+              },
+              {
+                "id": "8f4dbc85-e7dd-499e-8daa-7e2ea991794b",
+                "name": "TAI03A Điểm miễn phí",
+                "category": "attraction",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 0,
+                "catalogPriceAvailable": true
+              },
+              {
+                "id": "0c6511a4-4089-4d0a-b88c-9ec2efbbb94c",
+                "name": "TAI03A Khách sạn",
+                "category": "hotel",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 350000,
+                "catalogPriceAvailable": true
+              }
+            ],
+            "warnings": [
+              "Giá là dữ liệu catalog, không phải báo giá đặt dịch vụ."
+            ]
+          },
+          "history": [
+            {
+              "role": "user",
+              "content": "TÌM địa điểm ở TAI03A-699018f3"
+            },
+            {
+              "role": "assistant",
+              "content": "Kết quả dưới đây lấy từ catalog công khai."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "LỊCH 1 ngày tại TAI03A-699018f3",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "completed",
+          "reply": "Đã tạo bản ước tính bằng Planner. Hãy xem lịch trình, chi phí và cảnh báo; chưa lưu Trip.",
+          "result": {
+            "type": "itinerary",
+            "source": "TourPlannerService",
+            "itinerary": {
+              "id": "itinerary-1794134874265",
+              "title": "Hành trình 1N0Đ khám phá TAI03A-699018f3",
+              "departureCity": "Hà Nội",
+              "destinationCity": "TAI03A-699018f3",
+              "startDate": "2030-06-15",
+              "endDate": "2030-06-15",
+              "daysCount": 1,
+              "nightsCount": 0,
+              "costBasis": "GROUP_VND_V1",
+              "transportation": "car",
+              "costAssumptions": [
+                "Mọi khoản activity, tổng ngày và tổng chuyến là VND cho cả nhóm, làm tròn từng khoản đến 1 VND; ngân sách cũng cho cả nhóm.",
+                "Ước tính hoạt động/ăn uống quy đổi mỗi người lớn = 1, trẻ em = 0,7; đây là giả định lập kế hoạch, không phải chính sách giá của nhà cung cấp.",
+                "priceFrom chưa có đơn vị và sức chứa đáng tin cậy. Tạm ước tính một phòng cho cả nhóm mỗi đêm; không bảo đảm đủ chỗ hoặc đúng giá phòng/đêm.",
+                "Lưu trú dùng priceFrom khách sạn, thiếu giá dùng 400.000đ/nhóm/đêm; chỉ tính N−1 đêm. Phí này tách khỏi activity khách sạn có giá 0đ.",
+                "Tham quan dùng priceFrom, thiếu giá tạm tính 300.000đ/người lớn quy đổi/lượt. Bữa trưa dùng priceFrom nhà hàng, thiếu giá tạm tính 150.000đ; bữa tối tạm tính 200.000đ/người lớn quy đổi. Nguồn giả định: định mức planner T11-B trong source, chưa khảo sát giá thị trường; xem nhãn từng khoản. Giá 0 được giữ nguyên; không cắt giá theo ngân sách.",
+                "Chưa bao gồm vé máy bay/tàu, chi phí chặng khởi hành hoặc giá vận chuyển thực tế; tổng này không phải giá trọn gói hay bảo đảm đủ ngân sách."
+              ],
+              "adults": 2,
+              "children": 0,
+              "pacing": "balanced",
+              "preferences": [],
+              "totalBudgetUserVND": 1,
+              "totalEstimatedCostVND": 1300000,
+              "costDifferenceVND": -1299999,
+              "overBudgetVND": 1299999,
+              "budgetStatus": "over_budget",
+              "constraintViolations": [
+                "BUDGET_EXCEEDED"
+              ],
+              "budgetAdvice": "Chi phí dự kiến vượt ngân sách khoảng 1.299.999đ. Gợi ý: Có thể cân nhắc phòng khách sạn tiêu chuẩn hoặc lựa chọn các quán ăn địa phương bình dân hơn để tiết kiệm.",
+              "days": [
+                {
+                  "dayNumber": 1,
+                  "date": "2030-06-15",
+                  "themeTitle": "Ngày 1: Khám phá văn hóa & danh thắng TAI03A-699018f3",
+                  "activities": [
+                    {
+                      "id": "act-1-morning",
+                      "placeId": "8f4dbc85-e7dd-499e-8daa-7e2ea991794b",
+                      "timeSlot": "morning",
+                      "title": "Khám phá TAI03A Điểm miễn phí",
+                      "description": "T-AI-03-A guarded fixture",
+                      "category": "sightseeing",
+                      "durationMinutes": 180,
+                      "estimatedCostVND": 0,
+                      "costSource": "Catalog priceFrom (TAI03A Điểm miễn phí): 0 VND; giả định người lớn quy đổi/lượt tham quan, chưa xác minh đơn vị/giá dịch vụ.",
+                      "latitude": 16.055,
+                      "longitude": 108.21,
+                      "imageUrl": "",
+                      "recommendationReason": "Điểm tham quan được xếp hạng theo sở thích và tiêu chí hành trình của bạn.",
+                      "aerialDistanceToNextKm": 2.31,
+                      "estimatedTransitMinutes": 7
+                    },
+                    {
+                      "id": "act-1-lunch",
+                      "placeId": "93a935c8-54e4-4914-b2f9-cb7ba85521d1",
+                      "timeSlot": "lunch",
+                      "title": "Thưởng thức ẩm thực tại TAI03A Nhà hàng",
+                      "description": "T-AI-03-A guarded fixture",
+                      "category": "food",
+                      "durationMinutes": 90,
+                      "estimatedCostVND": 300000,
+                      "costSource": "Catalog priceFrom (TAI03A Nhà hàng): 150000 VND; giả định người lớn quy đổi/bữa trưa, chưa xác minh đơn vị/giá dịch vụ.",
+                      "latitude": 16.07,
+                      "longitude": 108.225,
+                      "imageUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
+                      "recommendationReason": "Gợi ý ẩm thực phù hợp với điểm đến và ngân sách ước tính.",
+                      "aerialDistanceToNextKm": 1.54,
+                      "estimatedTransitMinutes": 5
+                    },
+                    {
+                      "id": "act-1-afternoon",
+                      "placeId": "fae16030-a9e0-4bc5-b9d2-9f50cd958b8b",
+                      "timeSlot": "afternoon",
+                      "title": "Check-in TAI03A Điểm chưa có giá",
+                      "description": "T-AI-03-A guarded fixture",
+                      "category": "sightseeing",
+                      "durationMinutes": 150,
+                      "estimatedCostVND": 600000,
+                      "costSource": "Giả định planner T11-B: 300000 VND/người lớn quy đổi/lượt tham quan; TAI03A Điểm chưa có giá thiếu giá catalog hợp lệ, chưa xác minh.",
+                      "latitude": 16.06,
+                      "longitude": 108.215,
+                      "imageUrl": "",
+                      "recommendationReason": "Gợi ý check-in phù hợp với điểm đến và cụm địa lý của ngày.",
+                      "aerialDistanceToNextKm": 0.55,
+                      "estimatedTransitMinutes": 5
+                    },
+                    {
+                      "id": "act-1-dinner",
+                      "timeSlot": "dinner",
+                      "title": "Ăn tối, dạo chợ đêm & Thưởng ngoạn phố lên đèn",
+                      "description": "Tận hưởng không khí đêm náo nhiệt, thưởng thức đồ ăn vặt và mua sắm đặc sản.",
+                      "category": "food",
+                      "durationMinutes": 120,
+                      "estimatedCostVND": 400000,
+                      "costSource": "Giả định planner T11-B: 200000 VND/người lớn quy đổi/bữa tối; chưa chọn dịch vụ, chưa xác minh giá.",
+                      "latitude": 16.055999999999997,
+                      "longitude": 108.218,
+                      "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+                      "recommendationReason": "Hoạt động trải nghiệm không gian về đêm đặc trưng của điểm đến."
+                    }
+                  ],
+                  "dayEstimatedCostVND": 1300000,
+                  "lodgingNights": 0,
+                  "lodgingEstimatedCostVND": 0,
+                  "lodgingCostSource": "0 đêm: không tính phí lưu trú.",
+                  "centroid": {
+                    "latitude": 16.06025,
+                    "longitude": 108.217
+                  }
+                }
+              ],
+              "summary": "Hành trình 1 ngày theo tiêu chí đã chọn. Nhịp cân bằng: tối đa 2 điểm tham quan/ngày, không tính bữa ăn. ETA giữa các điểm bằng ô tô là ước lượng từ khoảng cách Haversine, không phải tuyến đường bộ hoặc thời gian thực; chưa tính chặng và chi phí liên tỉnh.",
+              "hotelSuggestion": {
+                "id": "0c6511a4-4089-4d0a-b88c-9ec2efbbb94c",
+                "name": "TAI03A Khách sạn",
+                "category": "hotel",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 350000,
+                "catalogPriceAvailable": true
+              },
+              "selectedPlaceIds": [
+                "8f4dbc85-e7dd-499e-8daa-7e2ea991794b",
+                "93a935c8-54e4-4914-b2f9-cb7ba85521d1",
+                "fae16030-a9e0-4bc5-b9d2-9f50cd958b8b"
+              ],
+              "createdAt": "2026-11-08T10:47:54.265Z"
+            },
+            "cost": {
+              "currency": "VND",
+              "basis": "GROUP_VND_V1",
+              "estimated": 1300000,
+              "budget": 1,
+              "budgetStatus": "over_budget",
+              "overBudget": 1299999
+            },
+            "warnings": [
+              "Đây là ước tính của Planner, chưa lưu Trip và chưa đặt dịch vụ.",
+              "Mọi khoản activity, tổng ngày và tổng chuyến là VND cho cả nhóm, làm tròn từng khoản đến 1 VND; ngân sách cũng cho cả nhóm.",
+              "Ước tính hoạt động/ăn uống quy đổi mỗi người lớn = 1, trẻ em = 0,7; đây là giả định lập kế hoạch, không phải chính sách giá của nhà cung cấp.",
+              "priceFrom chưa có đơn vị và sức chứa đáng tin cậy. Tạm ước tính một phòng cho cả nhóm mỗi đêm; không bảo đảm đủ chỗ hoặc đúng giá phòng/đêm.",
+              "Lưu trú dùng priceFrom khách sạn, thiếu giá dùng 400.000đ/nhóm/đêm; chỉ tính N−1 đêm. Phí này tách khỏi activity khách sạn có giá 0đ.",
+              "Tham quan dùng priceFrom, thiếu giá tạm tính 300.000đ/người lớn quy đổi/lượt. Bữa trưa dùng priceFrom nhà hàng, thiếu giá tạm tính 150.000đ; bữa tối tạm tính 200.000đ/người lớn quy đổi. Nguồn giả định: định mức planner T11-B trong source, chưa khảo sát giá thị trường; xem nhãn từng khoản. Giá 0 được giữ nguyên; không cắt giá theo ngân sách.",
+              "Chưa bao gồm vé máy bay/tàu, chi phí chặng khởi hành hoặc giá vận chuyển thực tế; tổng này không phải giá trọn gói hay bảo đảm đủ ngân sách.",
+              "BUDGET_EXCEEDED",
+              "Chi phí dự kiến vượt ngân sách khoảng 1.299.999đ. Gợi ý: Có thể cân nhắc phòng khách sạn tiêu chuẩn hoặc lựa chọn các quán ăn địa phương bình dân hơn để tiết kiệm."
+            ]
+          },
+          "history": [
+            {
+              "role": "user",
+              "content": "LỊCH 1 ngày tại TAI03A-699018f3"
+            },
+            {
+              "role": "assistant",
+              "content": "Đã tạo bản ước tính bằng Planner. Hãy xem lịch trình, chi phí và cảnh báo; chưa lưu Trip."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "THIẾU điểm đến",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "needs_input",
+          "reply": "Bạn vui lòng cung cấp: điểm đến.",
+          "missingFields": [
+            "destinationCity"
+          ],
+          "history": [
+            {
+              "role": "user",
+              "content": "THIẾU điểm đến"
+            },
+            {
+              "role": "assistant",
+              "content": "Bạn vui lòng cung cấp: điểm đến."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "TÌM tiếp tại TAI03A-699018f3",
+        "history": [
+          {
+            "role": "user",
+            "content": "THIẾU điểm đến"
+          },
+          {
+            "role": "assistant",
+            "content": "Bạn vui lòng cung cấp: điểm đến."
+          }
+        ]
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "completed",
+          "reply": "Kết quả dưới đây lấy từ catalog công khai.",
+          "result": {
+            "type": "places",
+            "source": "RecommendationService",
+            "places": [
+              {
+                "id": "93a935c8-54e4-4914-b2f9-cb7ba85521d1",
+                "name": "TAI03A Nhà hàng",
+                "category": "restaurant",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 150000,
+                "catalogPriceAvailable": true
+              },
+              {
+                "id": "fae16030-a9e0-4bc5-b9d2-9f50cd958b8b",
+                "name": "TAI03A Điểm chưa có giá",
+                "category": "attraction",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": null,
+                "catalogPriceAvailable": false
+              },
+              {
+                "id": "8f4dbc85-e7dd-499e-8daa-7e2ea991794b",
+                "name": "TAI03A Điểm miễn phí",
+                "category": "attraction",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 0,
+                "catalogPriceAvailable": true
+              },
+              {
+                "id": "0c6511a4-4089-4d0a-b88c-9ec2efbbb94c",
+                "name": "TAI03A Khách sạn",
+                "category": "hotel",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 350000,
+                "catalogPriceAvailable": true
+              }
+            ],
+            "warnings": [
+              "Giá là dữ liệu catalog, không phải báo giá đặt dịch vụ."
+            ]
+          },
+          "history": [
+            {
+              "role": "user",
+              "content": "THIẾU điểm đến"
+            },
+            {
+              "role": "assistant",
+              "content": "Bạn vui lòng cung cấp: điểm đến."
+            },
+            {
+              "role": "user",
+              "content": "TÌM tiếp tại TAI03A-699018f3"
+            },
+            {
+              "role": "assistant",
+              "content": "Kết quả dưới đây lấy từ catalog công khai."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "THIẾU điểm đến",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "needs_input",
+          "reply": "Bạn vui lòng cung cấp: điểm đến.",
+          "missingFields": [
+            "destinationCity"
+          ],
+          "history": [
+            {
+              "role": "user",
+              "content": "THIẾU điểm đến"
+            },
+            {
+              "role": "assistant",
+              "content": "Bạn vui lòng cung cấp: điểm đến."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "KHÔNG HỖ TRỢ đặt phòng",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "unsupported",
+          "reply": "Agent hiện chỉ hỗ trợ tìm địa điểm công khai và ước tính lịch trình; chưa hỗ trợ lưu Trip hoặc đặt dịch vụ.",
+          "history": [
+            {
+              "role": "user",
+              "content": "KHÔNG HỖ TRỢ đặt phòng"
+            },
+            {
+              "role": "assistant",
+              "content": "Agent hiện chỉ hỗ trợ tìm địa điểm công khai và ước tính lịch trình; chưa hỗ trợ lưu Trip hoặc đặt dịch vụ."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "CATALOG RỖNG",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "tool_unavailable",
+          "reply": "Catalog chưa đủ dữ liệu phù hợp để tạo lịch trình. Hãy chọn điểm đến hoặc ngày khác.",
+          "warningCode": "AGENT_CATALOG_INSUFFICIENT",
+          "history": [
+            {
+              "role": "user",
+              "content": "CATALOG RỖNG"
+            },
+            {
+              "role": "assistant",
+              "content": "Catalog chưa đủ dữ liệu phù hợp để tạo lịch trình. Hãy chọn điểm đến hoặc ngày khác."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 428,
+      "request": {
+        "message": "QUYỀN RIÊNG TƯ cần xin phép",
+        "history": []
+      },
+      "response": {
+        "success": false,
+        "code": "AGENT_EXTERNAL_CONSENT_REQUIRED",
+        "message": "Cần đọc thông báo /api/agent/privacy và đồng ý gửi hội thoại tới Google cho request này."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/agent/privacy",
+      "status": 200,
+      "response": {
+        "success": true,
+        "data": {
+          "version": "external-chat-v1",
+          "text": "Nếu chọn Gemini, tin nhắn hiện tại và lịch sử hội thoại bạn gửi sẽ được chuyển đến Google để xử lý yêu cầu. Không nhập mật khẩu, API key hoặc thông tin riêng tư không cần thiết. HuGo không tự gửi profile, Trip hay Booking. Bạn có thể không đồng ý và tiếp tục dùng Tour Planner. Việc đồng ý áp dụng cho request này, không thay thế telemetry consent."
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/agent/privacy",
+      "status": 200,
+      "response": {
+        "success": true,
+        "data": {
+          "version": "external-chat-v1",
+          "text": "Nếu chọn Gemini, tin nhắn hiện tại và lịch sử hội thoại bạn gửi sẽ được chuyển đến Google để xử lý yêu cầu. Không nhập mật khẩu, API key hoặc thông tin riêng tư không cần thiết. HuGo không tự gửi profile, Trip hay Booking. Bạn có thể không đồng ý và tiếp tục dùng Tour Planner. Việc đồng ý áp dụng cho request này, không thay thế telemetry consent."
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "QUYỀN RIÊNG TƯ cần xin phép",
+        "history": [],
+        "externalProcessingConsent": "external-chat-v1"
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "needs_input",
+          "reply": "Bạn vui lòng cung cấp: điểm đến.",
+          "missingFields": [
+            "destinationCity"
+          ],
+          "history": [
+            {
+              "role": "user",
+              "content": "QUYỀN RIÊNG TƯ cần xin phép"
+            },
+            {
+              "role": "assistant",
+              "content": "Bạn vui lòng cung cấp: điểm đến."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 428,
+      "request": {
+        "message": "QUYỀN RIÊNG TƯ lượt tiếp",
+        "history": [
+          {
+            "role": "user",
+            "content": "QUYỀN RIÊNG TƯ cần xin phép"
+          },
+          {
+            "role": "assistant",
+            "content": "Bạn vui lòng cung cấp: điểm đến."
+          }
+        ]
+      },
+      "response": {
+        "success": false,
+        "code": "AGENT_EXTERNAL_CONSENT_REQUIRED",
+        "message": "Cần đọc thông báo /api/agent/privacy và đồng ý gửi hội thoại tới Google cho request này."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/agent/privacy",
+      "status": 200,
+      "response": {
+        "success": true,
+        "data": {
+          "version": "external-chat-v1",
+          "text": "Nếu chọn Gemini, tin nhắn hiện tại và lịch sử hội thoại bạn gửi sẽ được chuyển đến Google để xử lý yêu cầu. Không nhập mật khẩu, API key hoặc thông tin riêng tư không cần thiết. HuGo không tự gửi profile, Trip hay Booking. Bạn có thể không đồng ý và tiếp tục dùng Tour Planner. Việc đồng ý áp dụng cho request này, không thay thế telemetry consent."
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 503,
+      "request": {
+        "message": "CHƯA CẤU HÌNH",
+        "history": []
+      },
+      "response": {
+        "success": false,
+        "code": "AGENT_PROVIDER_NOT_CONFIGURED",
+        "message": "LLM chưa được cấu hình. Hãy dùng Tour Planner hiện có."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 400,
+      "request": {
+        "message": "THIẾU điểm đến",
+        "history": [
+          {
+            "role": "system",
+            "content": "privileged"
+          }
+        ]
+      },
+      "response": {
+        "success": false,
+        "code": "AGENT_INVALID_INPUT",
+        "message": "Lịch sử cần tối đa 10 cặp hội thoại hoàn chỉnh."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 401,
+      "request": {
+        "message": "THIẾU điểm đến"
+      },
+      "response": {
+        "success": false,
+        "code": "INVALID_TOKEN",
+        "message": "Token truy cập không hợp lệ"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 429,
+      "request": {
+        "message": "GIỚI HẠN",
+        "history": []
+      },
+      "response": {
+        "success": false,
+        "code": "AGENT_RATE_LIMITED",
+        "message": "Bạn đã đạt giới hạn yêu cầu Agent trong giờ này."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 502,
+      "request": {
+        "message": "ĐẦU RA SAI",
+        "history": []
+      },
+      "response": {
+        "success": false,
+        "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+        "message": "Đầu ra LLM không đúng contract; chưa chạy công cụ."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 504,
+      "request": {
+        "message": "TIMEOUT",
+        "history": []
+      },
+      "response": {
+        "success": false,
+        "code": "AGENT_TIMEOUT",
+        "message": "LLM chưa phản hồi kịp. Vui lòng thử lại."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "THIẾU thông tin B",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "needs_input",
+          "reply": "Bạn vui lòng cung cấp: điểm đến.",
+          "missingFields": [
+            "destinationCity"
+          ],
+          "history": [
+            {
+              "role": "user",
+              "content": "THIẾU thông tin B"
+            },
+            {
+              "role": "assistant",
+              "content": "Bạn vui lòng cung cấp: điểm đến."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "CHẬM account A",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "unsupported",
+          "reply": "Agent hiện chỉ hỗ trợ tìm địa điểm công khai và ước tính lịch trình; chưa hỗ trợ lưu Trip hoặc đặt dịch vụ.",
+          "history": [
+            {
+              "role": "user",
+              "content": "CHẬM account A"
+            },
+            {
+              "role": "assistant",
+              "content": "Agent hiện chỉ hỗ trợ tìm địa điểm công khai và ước tính lịch trình; chưa hỗ trợ lưu Trip hoặc đặt dịch vụ."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "THIẾU lượt cũ",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "needs_input",
+          "reply": "Bạn vui lòng cung cấp: điểm đến.",
+          "missingFields": [
+            "destinationCity"
+          ],
+          "history": [
+            {
+              "role": "user",
+              "content": "THIẾU lượt cũ"
+            },
+            {
+              "role": "assistant",
+              "content": "Bạn vui lòng cung cấp: điểm đến."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "THIẾU lượt mới",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "needs_input",
+          "reply": "Bạn vui lòng cung cấp: điểm đến.",
+          "missingFields": [
+            "destinationCity"
+          ],
+          "history": [
+            {
+              "role": "user",
+              "content": "THIẾU lượt mới"
+            },
+            {
+              "role": "assistant",
+              "content": "Bạn vui lòng cung cấp: điểm đến."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "TÌM địa điểm",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "completed",
+          "reply": "Kết quả dưới đây lấy từ catalog công khai.",
+          "result": {
+            "type": "places",
+            "source": "RecommendationService",
+            "places": [
+              {
+                "id": "93a935c8-54e4-4914-b2f9-cb7ba85521d1",
+                "name": "TAI03A Nhà hàng",
+                "category": "restaurant",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 150000,
+                "catalogPriceAvailable": true
+              },
+              {
+                "id": "fae16030-a9e0-4bc5-b9d2-9f50cd958b8b",
+                "name": "TAI03A Điểm chưa có giá",
+                "category": "attraction",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": null,
+                "catalogPriceAvailable": false
+              },
+              {
+                "id": "8f4dbc85-e7dd-499e-8daa-7e2ea991794b",
+                "name": "TAI03A Điểm miễn phí",
+                "category": "attraction",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 0,
+                "catalogPriceAvailable": true
+              },
+              {
+                "id": "0c6511a4-4089-4d0a-b88c-9ec2efbbb94c",
+                "name": "TAI03A Khách sạn",
+                "category": "hotel",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 350000,
+                "catalogPriceAvailable": true
+              }
+            ],
+            "warnings": [
+              "Giá là dữ liệu catalog, không phải báo giá đặt dịch vụ."
+            ]
+          },
+          "history": [
+            {
+              "role": "user",
+              "content": "TÌM địa điểm"
+            },
+            {
+              "role": "assistant",
+              "content": "Kết quả dưới đây lấy từ catalog công khai."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "LỊCH một ngày",
+        "history": [
+          {
+            "role": "user",
+            "content": "TÌM địa điểm"
+          },
+          {
+            "role": "assistant",
+            "content": "Kết quả dưới đây lấy từ catalog công khai."
+          }
+        ]
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "completed",
+          "reply": "Đã tạo bản ước tính bằng Planner. Hãy xem lịch trình, chi phí và cảnh báo; chưa lưu Trip.",
+          "result": {
+            "type": "itinerary",
+            "source": "TourPlannerService",
+            "itinerary": {
+              "id": "itinerary-1794134909207",
+              "title": "Hành trình 1N0Đ khám phá TAI03A-699018f3",
+              "departureCity": "Hà Nội",
+              "destinationCity": "TAI03A-699018f3",
+              "startDate": "2030-06-15",
+              "endDate": "2030-06-15",
+              "daysCount": 1,
+              "nightsCount": 0,
+              "costBasis": "GROUP_VND_V1",
+              "transportation": "car",
+              "costAssumptions": [
+                "Mọi khoản activity, tổng ngày và tổng chuyến là VND cho cả nhóm, làm tròn từng khoản đến 1 VND; ngân sách cũng cho cả nhóm.",
+                "Ước tính hoạt động/ăn uống quy đổi mỗi người lớn = 1, trẻ em = 0,7; đây là giả định lập kế hoạch, không phải chính sách giá của nhà cung cấp.",
+                "priceFrom chưa có đơn vị và sức chứa đáng tin cậy. Tạm ước tính một phòng cho cả nhóm mỗi đêm; không bảo đảm đủ chỗ hoặc đúng giá phòng/đêm.",
+                "Lưu trú dùng priceFrom khách sạn, thiếu giá dùng 400.000đ/nhóm/đêm; chỉ tính N−1 đêm. Phí này tách khỏi activity khách sạn có giá 0đ.",
+                "Tham quan dùng priceFrom, thiếu giá tạm tính 300.000đ/người lớn quy đổi/lượt. Bữa trưa dùng priceFrom nhà hàng, thiếu giá tạm tính 150.000đ; bữa tối tạm tính 200.000đ/người lớn quy đổi. Nguồn giả định: định mức planner T11-B trong source, chưa khảo sát giá thị trường; xem nhãn từng khoản. Giá 0 được giữ nguyên; không cắt giá theo ngân sách.",
+                "Chưa bao gồm vé máy bay/tàu, chi phí chặng khởi hành hoặc giá vận chuyển thực tế; tổng này không phải giá trọn gói hay bảo đảm đủ ngân sách."
+              ],
+              "adults": 2,
+              "children": 0,
+              "pacing": "balanced",
+              "preferences": [],
+              "totalBudgetUserVND": 1,
+              "totalEstimatedCostVND": 1300000,
+              "costDifferenceVND": -1299999,
+              "overBudgetVND": 1299999,
+              "budgetStatus": "over_budget",
+              "constraintViolations": [
+                "BUDGET_EXCEEDED"
+              ],
+              "budgetAdvice": "Chi phí dự kiến vượt ngân sách khoảng 1.299.999đ. Gợi ý: Có thể cân nhắc phòng khách sạn tiêu chuẩn hoặc lựa chọn các quán ăn địa phương bình dân hơn để tiết kiệm.",
+              "days": [
+                {
+                  "dayNumber": 1,
+                  "date": "2030-06-15",
+                  "themeTitle": "Ngày 1: Khám phá văn hóa & danh thắng TAI03A-699018f3",
+                  "activities": [
+                    {
+                      "id": "act-1-morning",
+                      "placeId": "8f4dbc85-e7dd-499e-8daa-7e2ea991794b",
+                      "timeSlot": "morning",
+                      "title": "Khám phá TAI03A Điểm miễn phí",
+                      "description": "T-AI-03-A guarded fixture",
+                      "category": "sightseeing",
+                      "durationMinutes": 180,
+                      "estimatedCostVND": 0,
+                      "costSource": "Catalog priceFrom (TAI03A Điểm miễn phí): 0 VND; giả định người lớn quy đổi/lượt tham quan, chưa xác minh đơn vị/giá dịch vụ.",
+                      "latitude": 16.055,
+                      "longitude": 108.21,
+                      "imageUrl": "",
+                      "recommendationReason": "Điểm tham quan được xếp hạng theo sở thích và tiêu chí hành trình của bạn.",
+                      "aerialDistanceToNextKm": 2.31,
+                      "estimatedTransitMinutes": 7
+                    },
+                    {
+                      "id": "act-1-lunch",
+                      "placeId": "93a935c8-54e4-4914-b2f9-cb7ba85521d1",
+                      "timeSlot": "lunch",
+                      "title": "Thưởng thức ẩm thực tại TAI03A Nhà hàng",
+                      "description": "T-AI-03-A guarded fixture",
+                      "category": "food",
+                      "durationMinutes": 90,
+                      "estimatedCostVND": 300000,
+                      "costSource": "Catalog priceFrom (TAI03A Nhà hàng): 150000 VND; giả định người lớn quy đổi/bữa trưa, chưa xác minh đơn vị/giá dịch vụ.",
+                      "latitude": 16.07,
+                      "longitude": 108.225,
+                      "imageUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
+                      "recommendationReason": "Gợi ý ẩm thực phù hợp với điểm đến và ngân sách ước tính.",
+                      "aerialDistanceToNextKm": 1.54,
+                      "estimatedTransitMinutes": 5
+                    },
+                    {
+                      "id": "act-1-afternoon",
+                      "placeId": "fae16030-a9e0-4bc5-b9d2-9f50cd958b8b",
+                      "timeSlot": "afternoon",
+                      "title": "Check-in TAI03A Điểm chưa có giá",
+                      "description": "T-AI-03-A guarded fixture",
+                      "category": "sightseeing",
+                      "durationMinutes": 150,
+                      "estimatedCostVND": 600000,
+                      "costSource": "Giả định planner T11-B: 300000 VND/người lớn quy đổi/lượt tham quan; TAI03A Điểm chưa có giá thiếu giá catalog hợp lệ, chưa xác minh.",
+                      "latitude": 16.06,
+                      "longitude": 108.215,
+                      "imageUrl": "",
+                      "recommendationReason": "Gợi ý check-in phù hợp với điểm đến và cụm địa lý của ngày.",
+                      "aerialDistanceToNextKm": 0.55,
+                      "estimatedTransitMinutes": 5
+                    },
+                    {
+                      "id": "act-1-dinner",
+                      "timeSlot": "dinner",
+                      "title": "Ăn tối, dạo chợ đêm & Thưởng ngoạn phố lên đèn",
+                      "description": "Tận hưởng không khí đêm náo nhiệt, thưởng thức đồ ăn vặt và mua sắm đặc sản.",
+                      "category": "food",
+                      "durationMinutes": 120,
+                      "estimatedCostVND": 400000,
+                      "costSource": "Giả định planner T11-B: 200000 VND/người lớn quy đổi/bữa tối; chưa chọn dịch vụ, chưa xác minh giá.",
+                      "latitude": 16.055999999999997,
+                      "longitude": 108.218,
+                      "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+                      "recommendationReason": "Hoạt động trải nghiệm không gian về đêm đặc trưng của điểm đến."
+                    }
+                  ],
+                  "dayEstimatedCostVND": 1300000,
+                  "lodgingNights": 0,
+                  "lodgingEstimatedCostVND": 0,
+                  "lodgingCostSource": "0 đêm: không tính phí lưu trú.",
+                  "centroid": {
+                    "latitude": 16.06025,
+                    "longitude": 108.217
+                  }
+                }
+              ],
+              "summary": "Hành trình 1 ngày theo tiêu chí đã chọn. Nhịp cân bằng: tối đa 2 điểm tham quan/ngày, không tính bữa ăn. ETA giữa các điểm bằng ô tô là ước lượng từ khoảng cách Haversine, không phải tuyến đường bộ hoặc thời gian thực; chưa tính chặng và chi phí liên tỉnh.",
+              "hotelSuggestion": {
+                "id": "0c6511a4-4089-4d0a-b88c-9ec2efbbb94c",
+                "name": "TAI03A Khách sạn",
+                "category": "hotel",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 350000,
+                "catalogPriceAvailable": true
+              },
+              "selectedPlaceIds": [
+                "8f4dbc85-e7dd-499e-8daa-7e2ea991794b",
+                "93a935c8-54e4-4914-b2f9-cb7ba85521d1",
+                "fae16030-a9e0-4bc5-b9d2-9f50cd958b8b"
+              ],
+              "createdAt": "2026-11-08T10:48:29.207Z"
+            },
+            "cost": {
+              "currency": "VND",
+              "basis": "GROUP_VND_V1",
+              "estimated": 1300000,
+              "budget": 1,
+              "budgetStatus": "over_budget",
+              "overBudget": 1299999
+            },
+            "warnings": [
+              "Đây là ước tính của Planner, chưa lưu Trip và chưa đặt dịch vụ.",
+              "Mọi khoản activity, tổng ngày và tổng chuyến là VND cho cả nhóm, làm tròn từng khoản đến 1 VND; ngân sách cũng cho cả nhóm.",
+              "Ước tính hoạt động/ăn uống quy đổi mỗi người lớn = 1, trẻ em = 0,7; đây là giả định lập kế hoạch, không phải chính sách giá của nhà cung cấp.",
+              "priceFrom chưa có đơn vị và sức chứa đáng tin cậy. Tạm ước tính một phòng cho cả nhóm mỗi đêm; không bảo đảm đủ chỗ hoặc đúng giá phòng/đêm.",
+              "Lưu trú dùng priceFrom khách sạn, thiếu giá dùng 400.000đ/nhóm/đêm; chỉ tính N−1 đêm. Phí này tách khỏi activity khách sạn có giá 0đ.",
+              "Tham quan dùng priceFrom, thiếu giá tạm tính 300.000đ/người lớn quy đổi/lượt. Bữa trưa dùng priceFrom nhà hàng, thiếu giá tạm tính 150.000đ; bữa tối tạm tính 200.000đ/người lớn quy đổi. Nguồn giả định: định mức planner T11-B trong source, chưa khảo sát giá thị trường; xem nhãn từng khoản. Giá 0 được giữ nguyên; không cắt giá theo ngân sách.",
+              "Chưa bao gồm vé máy bay/tàu, chi phí chặng khởi hành hoặc giá vận chuyển thực tế; tổng này không phải giá trọn gói hay bảo đảm đủ ngân sách.",
+              "BUDGET_EXCEEDED",
+              "Chi phí dự kiến vượt ngân sách khoảng 1.299.999đ. Gợi ý: Có thể cân nhắc phòng khách sạn tiêu chuẩn hoặc lựa chọn các quán ăn địa phương bình dân hơn để tiết kiệm."
+            ]
+          },
+          "history": [
+            {
+              "role": "user",
+              "content": "TÌM địa điểm"
+            },
+            {
+              "role": "assistant",
+              "content": "Kết quả dưới đây lấy từ catalog công khai."
+            },
+            {
+              "role": "user",
+              "content": "LỊCH một ngày"
+            },
+            {
+              "role": "assistant",
+              "content": "Đã tạo bản ước tính bằng Planner. Hãy xem lịch trình, chi phí và cảnh báo; chưa lưu Trip."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 401,
+      "request": {
+        "message": "THIẾU điểm đến"
+      },
+      "response": {
+        "success": false,
+        "code": "AUTH_REQUIRED",
+        "message": "Vui lòng đăng nhập để tiếp tục"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "TÌM địa điểm ở TAI03A-699018f3",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "completed",
+          "reply": "Kết quả dưới đây lấy từ catalog công khai.",
+          "result": {
+            "type": "places",
+            "source": "RecommendationService",
+            "places": [
+              {
+                "id": "93a935c8-54e4-4914-b2f9-cb7ba85521d1",
+                "name": "TAI03A Nhà hàng",
+                "category": "restaurant",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 150000,
+                "catalogPriceAvailable": true
+              },
+              {
+                "id": "fae16030-a9e0-4bc5-b9d2-9f50cd958b8b",
+                "name": "TAI03A Điểm chưa có giá",
+                "category": "attraction",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": null,
+                "catalogPriceAvailable": false
+              },
+              {
+                "id": "8f4dbc85-e7dd-499e-8daa-7e2ea991794b",
+                "name": "TAI03A Điểm miễn phí",
+                "category": "attraction",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 0,
+                "catalogPriceAvailable": true
+              },
+              {
+                "id": "0c6511a4-4089-4d0a-b88c-9ec2efbbb94c",
+                "name": "TAI03A Khách sạn",
+                "category": "hotel",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 350000,
+                "catalogPriceAvailable": true
+              }
+            ],
+            "warnings": [
+              "Giá là dữ liệu catalog, không phải báo giá đặt dịch vụ."
+            ]
+          },
+          "history": [
+            {
+              "role": "user",
+              "content": "TÌM địa điểm ở TAI03A-699018f3"
+            },
+            {
+              "role": "assistant",
+              "content": "Kết quả dưới đây lấy từ catalog công khai."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "LỊCH 1 ngày tại TAI03A-699018f3",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "completed",
+          "reply": "Đã tạo bản ước tính bằng Planner. Hãy xem lịch trình, chi phí và cảnh báo; chưa lưu Trip.",
+          "result": {
+            "type": "itinerary",
+            "source": "TourPlannerService",
+            "itinerary": {
+              "id": "itinerary-1794134914488",
+              "title": "Hành trình 1N0Đ khám phá TAI03A-699018f3",
+              "departureCity": "Hà Nội",
+              "destinationCity": "TAI03A-699018f3",
+              "startDate": "2030-06-15",
+              "endDate": "2030-06-15",
+              "daysCount": 1,
+              "nightsCount": 0,
+              "costBasis": "GROUP_VND_V1",
+              "transportation": "car",
+              "costAssumptions": [
+                "Mọi khoản activity, tổng ngày và tổng chuyến là VND cho cả nhóm, làm tròn từng khoản đến 1 VND; ngân sách cũng cho cả nhóm.",
+                "Ước tính hoạt động/ăn uống quy đổi mỗi người lớn = 1, trẻ em = 0,7; đây là giả định lập kế hoạch, không phải chính sách giá của nhà cung cấp.",
+                "priceFrom chưa có đơn vị và sức chứa đáng tin cậy. Tạm ước tính một phòng cho cả nhóm mỗi đêm; không bảo đảm đủ chỗ hoặc đúng giá phòng/đêm.",
+                "Lưu trú dùng priceFrom khách sạn, thiếu giá dùng 400.000đ/nhóm/đêm; chỉ tính N−1 đêm. Phí này tách khỏi activity khách sạn có giá 0đ.",
+                "Tham quan dùng priceFrom, thiếu giá tạm tính 300.000đ/người lớn quy đổi/lượt. Bữa trưa dùng priceFrom nhà hàng, thiếu giá tạm tính 150.000đ; bữa tối tạm tính 200.000đ/người lớn quy đổi. Nguồn giả định: định mức planner T11-B trong source, chưa khảo sát giá thị trường; xem nhãn từng khoản. Giá 0 được giữ nguyên; không cắt giá theo ngân sách.",
+                "Chưa bao gồm vé máy bay/tàu, chi phí chặng khởi hành hoặc giá vận chuyển thực tế; tổng này không phải giá trọn gói hay bảo đảm đủ ngân sách."
+              ],
+              "adults": 2,
+              "children": 0,
+              "pacing": "balanced",
+              "preferences": [],
+              "totalBudgetUserVND": 1,
+              "totalEstimatedCostVND": 1300000,
+              "costDifferenceVND": -1299999,
+              "overBudgetVND": 1299999,
+              "budgetStatus": "over_budget",
+              "constraintViolations": [
+                "BUDGET_EXCEEDED"
+              ],
+              "budgetAdvice": "Chi phí dự kiến vượt ngân sách khoảng 1.299.999đ. Gợi ý: Có thể cân nhắc phòng khách sạn tiêu chuẩn hoặc lựa chọn các quán ăn địa phương bình dân hơn để tiết kiệm.",
+              "days": [
+                {
+                  "dayNumber": 1,
+                  "date": "2030-06-15",
+                  "themeTitle": "Ngày 1: Khám phá văn hóa & danh thắng TAI03A-699018f3",
+                  "activities": [
+                    {
+                      "id": "act-1-morning",
+                      "placeId": "8f4dbc85-e7dd-499e-8daa-7e2ea991794b",
+                      "timeSlot": "morning",
+                      "title": "Khám phá TAI03A Điểm miễn phí",
+                      "description": "T-AI-03-A guarded fixture",
+                      "category": "sightseeing",
+                      "durationMinutes": 180,
+                      "estimatedCostVND": 0,
+                      "costSource": "Catalog priceFrom (TAI03A Điểm miễn phí): 0 VND; giả định người lớn quy đổi/lượt tham quan, chưa xác minh đơn vị/giá dịch vụ.",
+                      "latitude": 16.055,
+                      "longitude": 108.21,
+                      "imageUrl": "",
+                      "recommendationReason": "Điểm tham quan được xếp hạng theo sở thích và tiêu chí hành trình của bạn.",
+                      "aerialDistanceToNextKm": 2.31,
+                      "estimatedTransitMinutes": 7
+                    },
+                    {
+                      "id": "act-1-lunch",
+                      "placeId": "93a935c8-54e4-4914-b2f9-cb7ba85521d1",
+                      "timeSlot": "lunch",
+                      "title": "Thưởng thức ẩm thực tại TAI03A Nhà hàng",
+                      "description": "T-AI-03-A guarded fixture",
+                      "category": "food",
+                      "durationMinutes": 90,
+                      "estimatedCostVND": 300000,
+                      "costSource": "Catalog priceFrom (TAI03A Nhà hàng): 150000 VND; giả định người lớn quy đổi/bữa trưa, chưa xác minh đơn vị/giá dịch vụ.",
+                      "latitude": 16.07,
+                      "longitude": 108.225,
+                      "imageUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
+                      "recommendationReason": "Gợi ý ẩm thực phù hợp với điểm đến và ngân sách ước tính.",
+                      "aerialDistanceToNextKm": 1.54,
+                      "estimatedTransitMinutes": 5
+                    },
+                    {
+                      "id": "act-1-afternoon",
+                      "placeId": "fae16030-a9e0-4bc5-b9d2-9f50cd958b8b",
+                      "timeSlot": "afternoon",
+                      "title": "Check-in TAI03A Điểm chưa có giá",
+                      "description": "T-AI-03-A guarded fixture",
+                      "category": "sightseeing",
+                      "durationMinutes": 150,
+                      "estimatedCostVND": 600000,
+                      "costSource": "Giả định planner T11-B: 300000 VND/người lớn quy đổi/lượt tham quan; TAI03A Điểm chưa có giá thiếu giá catalog hợp lệ, chưa xác minh.",
+                      "latitude": 16.06,
+                      "longitude": 108.215,
+                      "imageUrl": "",
+                      "recommendationReason": "Gợi ý check-in phù hợp với điểm đến và cụm địa lý của ngày.",
+                      "aerialDistanceToNextKm": 0.55,
+                      "estimatedTransitMinutes": 5
+                    },
+                    {
+                      "id": "act-1-dinner",
+                      "timeSlot": "dinner",
+                      "title": "Ăn tối, dạo chợ đêm & Thưởng ngoạn phố lên đèn",
+                      "description": "Tận hưởng không khí đêm náo nhiệt, thưởng thức đồ ăn vặt và mua sắm đặc sản.",
+                      "category": "food",
+                      "durationMinutes": 120,
+                      "estimatedCostVND": 400000,
+                      "costSource": "Giả định planner T11-B: 200000 VND/người lớn quy đổi/bữa tối; chưa chọn dịch vụ, chưa xác minh giá.",
+                      "latitude": 16.055999999999997,
+                      "longitude": 108.218,
+                      "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+                      "recommendationReason": "Hoạt động trải nghiệm không gian về đêm đặc trưng của điểm đến."
+                    }
+                  ],
+                  "dayEstimatedCostVND": 1300000,
+                  "lodgingNights": 0,
+                  "lodgingEstimatedCostVND": 0,
+                  "lodgingCostSource": "0 đêm: không tính phí lưu trú.",
+                  "centroid": {
+                    "latitude": 16.06025,
+                    "longitude": 108.217
+                  }
+                }
+              ],
+              "summary": "Hành trình 1 ngày theo tiêu chí đã chọn. Nhịp cân bằng: tối đa 2 điểm tham quan/ngày, không tính bữa ăn. ETA giữa các điểm bằng ô tô là ước lượng từ khoảng cách Haversine, không phải tuyến đường bộ hoặc thời gian thực; chưa tính chặng và chi phí liên tỉnh.",
+              "hotelSuggestion": {
+                "id": "0c6511a4-4089-4d0a-b88c-9ec2efbbb94c",
+                "name": "TAI03A Khách sạn",
+                "category": "hotel",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 350000,
+                "catalogPriceAvailable": true
+              },
+              "selectedPlaceIds": [
+                "8f4dbc85-e7dd-499e-8daa-7e2ea991794b",
+                "93a935c8-54e4-4914-b2f9-cb7ba85521d1",
+                "fae16030-a9e0-4bc5-b9d2-9f50cd958b8b"
+              ],
+              "createdAt": "2026-11-08T10:48:34.488Z"
+            },
+            "cost": {
+              "currency": "VND",
+              "basis": "GROUP_VND_V1",
+              "estimated": 1300000,
+              "budget": 1,
+              "budgetStatus": "over_budget",
+              "overBudget": 1299999
+            },
+            "warnings": [
+              "Đây là ước tính của Planner, chưa lưu Trip và chưa đặt dịch vụ.",
+              "Mọi khoản activity, tổng ngày và tổng chuyến là VND cho cả nhóm, làm tròn từng khoản đến 1 VND; ngân sách cũng cho cả nhóm.",
+              "Ước tính hoạt động/ăn uống quy đổi mỗi người lớn = 1, trẻ em = 0,7; đây là giả định lập kế hoạch, không phải chính sách giá của nhà cung cấp.",
+              "priceFrom chưa có đơn vị và sức chứa đáng tin cậy. Tạm ước tính một phòng cho cả nhóm mỗi đêm; không bảo đảm đủ chỗ hoặc đúng giá phòng/đêm.",
+              "Lưu trú dùng priceFrom khách sạn, thiếu giá dùng 400.000đ/nhóm/đêm; chỉ tính N−1 đêm. Phí này tách khỏi activity khách sạn có giá 0đ.",
+              "Tham quan dùng priceFrom, thiếu giá tạm tính 300.000đ/người lớn quy đổi/lượt. Bữa trưa dùng priceFrom nhà hàng, thiếu giá tạm tính 150.000đ; bữa tối tạm tính 200.000đ/người lớn quy đổi. Nguồn giả định: định mức planner T11-B trong source, chưa khảo sát giá thị trường; xem nhãn từng khoản. Giá 0 được giữ nguyên; không cắt giá theo ngân sách.",
+              "Chưa bao gồm vé máy bay/tàu, chi phí chặng khởi hành hoặc giá vận chuyển thực tế; tổng này không phải giá trọn gói hay bảo đảm đủ ngân sách.",
+              "BUDGET_EXCEEDED",
+              "Chi phí dự kiến vượt ngân sách khoảng 1.299.999đ. Gợi ý: Có thể cân nhắc phòng khách sạn tiêu chuẩn hoặc lựa chọn các quán ăn địa phương bình dân hơn để tiết kiệm."
+            ]
+          },
+          "history": [
+            {
+              "role": "user",
+              "content": "LỊCH 1 ngày tại TAI03A-699018f3"
+            },
+            {
+              "role": "assistant",
+              "content": "Đã tạo bản ước tính bằng Planner. Hãy xem lịch trình, chi phí và cảnh báo; chưa lưu Trip."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "THIẾU điểm đến",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "needs_input",
+          "reply": "Bạn vui lòng cung cấp: điểm đến.",
+          "missingFields": [
+            "destinationCity"
+          ],
+          "history": [
+            {
+              "role": "user",
+              "content": "THIẾU điểm đến"
+            },
+            {
+              "role": "assistant",
+              "content": "Bạn vui lòng cung cấp: điểm đến."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "TÌM tiếp tại TAI03A-699018f3",
+        "history": [
+          {
+            "role": "user",
+            "content": "THIẾU điểm đến"
+          },
+          {
+            "role": "assistant",
+            "content": "Bạn vui lòng cung cấp: điểm đến."
+          }
+        ]
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "completed",
+          "reply": "Kết quả dưới đây lấy từ catalog công khai.",
+          "result": {
+            "type": "places",
+            "source": "RecommendationService",
+            "places": [
+              {
+                "id": "93a935c8-54e4-4914-b2f9-cb7ba85521d1",
+                "name": "TAI03A Nhà hàng",
+                "category": "restaurant",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 150000,
+                "catalogPriceAvailable": true
+              },
+              {
+                "id": "fae16030-a9e0-4bc5-b9d2-9f50cd958b8b",
+                "name": "TAI03A Điểm chưa có giá",
+                "category": "attraction",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": null,
+                "catalogPriceAvailable": false
+              },
+              {
+                "id": "8f4dbc85-e7dd-499e-8daa-7e2ea991794b",
+                "name": "TAI03A Điểm miễn phí",
+                "category": "attraction",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 0,
+                "catalogPriceAvailable": true
+              },
+              {
+                "id": "0c6511a4-4089-4d0a-b88c-9ec2efbbb94c",
+                "name": "TAI03A Khách sạn",
+                "category": "hotel",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 350000,
+                "catalogPriceAvailable": true
+              }
+            ],
+            "warnings": [
+              "Giá là dữ liệu catalog, không phải báo giá đặt dịch vụ."
+            ]
+          },
+          "history": [
+            {
+              "role": "user",
+              "content": "THIẾU điểm đến"
+            },
+            {
+              "role": "assistant",
+              "content": "Bạn vui lòng cung cấp: điểm đến."
+            },
+            {
+              "role": "user",
+              "content": "TÌM tiếp tại TAI03A-699018f3"
+            },
+            {
+              "role": "assistant",
+              "content": "Kết quả dưới đây lấy từ catalog công khai."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "THIẾU điểm đến",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "needs_input",
+          "reply": "Bạn vui lòng cung cấp: điểm đến.",
+          "missingFields": [
+            "destinationCity"
+          ],
+          "history": [
+            {
+              "role": "user",
+              "content": "THIẾU điểm đến"
+            },
+            {
+              "role": "assistant",
+              "content": "Bạn vui lòng cung cấp: điểm đến."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "KHÔNG HỖ TRỢ đặt phòng",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "unsupported",
+          "reply": "Agent hiện chỉ hỗ trợ tìm địa điểm công khai và ước tính lịch trình; chưa hỗ trợ lưu Trip hoặc đặt dịch vụ.",
+          "history": [
+            {
+              "role": "user",
+              "content": "KHÔNG HỖ TRỢ đặt phòng"
+            },
+            {
+              "role": "assistant",
+              "content": "Agent hiện chỉ hỗ trợ tìm địa điểm công khai và ước tính lịch trình; chưa hỗ trợ lưu Trip hoặc đặt dịch vụ."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "CATALOG RỖNG",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "tool_unavailable",
+          "reply": "Catalog chưa đủ dữ liệu phù hợp để tạo lịch trình. Hãy chọn điểm đến hoặc ngày khác.",
+          "warningCode": "AGENT_CATALOG_INSUFFICIENT",
+          "history": [
+            {
+              "role": "user",
+              "content": "CATALOG RỖNG"
+            },
+            {
+              "role": "assistant",
+              "content": "Catalog chưa đủ dữ liệu phù hợp để tạo lịch trình. Hãy chọn điểm đến hoặc ngày khác."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 428,
+      "request": {
+        "message": "QUYỀN RIÊNG TƯ cần xin phép",
+        "history": []
+      },
+      "response": {
+        "success": false,
+        "code": "AGENT_EXTERNAL_CONSENT_REQUIRED",
+        "message": "Cần đọc thông báo /api/agent/privacy và đồng ý gửi hội thoại tới Google cho request này."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/agent/privacy",
+      "status": 200,
+      "response": {
+        "success": true,
+        "data": {
+          "version": "external-chat-v1",
+          "text": "Nếu chọn Gemini, tin nhắn hiện tại và lịch sử hội thoại bạn gửi sẽ được chuyển đến Google để xử lý yêu cầu. Không nhập mật khẩu, API key hoặc thông tin riêng tư không cần thiết. HuGo không tự gửi profile, Trip hay Booking. Bạn có thể không đồng ý và tiếp tục dùng Tour Planner. Việc đồng ý áp dụng cho request này, không thay thế telemetry consent."
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/agent/privacy",
+      "status": 200,
+      "response": {
+        "success": true,
+        "data": {
+          "version": "external-chat-v1",
+          "text": "Nếu chọn Gemini, tin nhắn hiện tại và lịch sử hội thoại bạn gửi sẽ được chuyển đến Google để xử lý yêu cầu. Không nhập mật khẩu, API key hoặc thông tin riêng tư không cần thiết. HuGo không tự gửi profile, Trip hay Booking. Bạn có thể không đồng ý và tiếp tục dùng Tour Planner. Việc đồng ý áp dụng cho request này, không thay thế telemetry consent."
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "QUYỀN RIÊNG TƯ cần xin phép",
+        "history": [],
+        "externalProcessingConsent": "external-chat-v1"
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "needs_input",
+          "reply": "Bạn vui lòng cung cấp: điểm đến.",
+          "missingFields": [
+            "destinationCity"
+          ],
+          "history": [
+            {
+              "role": "user",
+              "content": "QUYỀN RIÊNG TƯ cần xin phép"
+            },
+            {
+              "role": "assistant",
+              "content": "Bạn vui lòng cung cấp: điểm đến."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 428,
+      "request": {
+        "message": "QUYỀN RIÊNG TƯ lượt tiếp",
+        "history": [
+          {
+            "role": "user",
+            "content": "QUYỀN RIÊNG TƯ cần xin phép"
+          },
+          {
+            "role": "assistant",
+            "content": "Bạn vui lòng cung cấp: điểm đến."
+          }
+        ]
+      },
+      "response": {
+        "success": false,
+        "code": "AGENT_EXTERNAL_CONSENT_REQUIRED",
+        "message": "Cần đọc thông báo /api/agent/privacy và đồng ý gửi hội thoại tới Google cho request này."
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/agent/privacy",
+      "status": 200,
+      "response": {
+        "success": true,
+        "data": {
+          "version": "external-chat-v1",
+          "text": "Nếu chọn Gemini, tin nhắn hiện tại và lịch sử hội thoại bạn gửi sẽ được chuyển đến Google để xử lý yêu cầu. Không nhập mật khẩu, API key hoặc thông tin riêng tư không cần thiết. HuGo không tự gửi profile, Trip hay Booking. Bạn có thể không đồng ý và tiếp tục dùng Tour Planner. Việc đồng ý áp dụng cho request này, không thay thế telemetry consent."
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 503,
+      "request": {
+        "message": "CHƯA CẤU HÌNH",
+        "history": []
+      },
+      "response": {
+        "success": false,
+        "code": "AGENT_PROVIDER_NOT_CONFIGURED",
+        "message": "LLM chưa được cấu hình. Hãy dùng Tour Planner hiện có."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 400,
+      "request": {
+        "message": "THIẾU điểm đến",
+        "history": [
+          {
+            "role": "system",
+            "content": "privileged"
+          }
+        ]
+      },
+      "response": {
+        "success": false,
+        "code": "AGENT_INVALID_INPUT",
+        "message": "Lịch sử cần tối đa 10 cặp hội thoại hoàn chỉnh."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 401,
+      "request": {
+        "message": "THIẾU điểm đến"
+      },
+      "response": {
+        "success": false,
+        "code": "INVALID_TOKEN",
+        "message": "Token truy cập không hợp lệ"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 429,
+      "request": {
+        "message": "GIỚI HẠN",
+        "history": []
+      },
+      "response": {
+        "success": false,
+        "code": "AGENT_RATE_LIMITED",
+        "message": "Bạn đã đạt giới hạn yêu cầu Agent trong giờ này."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 502,
+      "request": {
+        "message": "ĐẦU RA SAI",
+        "history": []
+      },
+      "response": {
+        "success": false,
+        "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+        "message": "Đầu ra LLM không đúng contract; chưa chạy công cụ."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 504,
+      "request": {
+        "message": "TIMEOUT",
+        "history": []
+      },
+      "response": {
+        "success": false,
+        "code": "AGENT_TIMEOUT",
+        "message": "LLM chưa phản hồi kịp. Vui lòng thử lại."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "THIẾU thông tin B",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "needs_input",
+          "reply": "Bạn vui lòng cung cấp: điểm đến.",
+          "missingFields": [
+            "destinationCity"
+          ],
+          "history": [
+            {
+              "role": "user",
+              "content": "THIẾU thông tin B"
+            },
+            {
+              "role": "assistant",
+              "content": "Bạn vui lòng cung cấp: điểm đến."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "CHẬM account A",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "unsupported",
+          "reply": "Agent hiện chỉ hỗ trợ tìm địa điểm công khai và ước tính lịch trình; chưa hỗ trợ lưu Trip hoặc đặt dịch vụ.",
+          "history": [
+            {
+              "role": "user",
+              "content": "CHẬM account A"
+            },
+            {
+              "role": "assistant",
+              "content": "Agent hiện chỉ hỗ trợ tìm địa điểm công khai và ước tính lịch trình; chưa hỗ trợ lưu Trip hoặc đặt dịch vụ."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "THIẾU lượt cũ",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "needs_input",
+          "reply": "Bạn vui lòng cung cấp: điểm đến.",
+          "missingFields": [
+            "destinationCity"
+          ],
+          "history": [
+            {
+              "role": "user",
+              "content": "THIẾU lượt cũ"
+            },
+            {
+              "role": "assistant",
+              "content": "Bạn vui lòng cung cấp: điểm đến."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "THIẾU lượt mới",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "needs_input",
+          "reply": "Bạn vui lòng cung cấp: điểm đến.",
+          "missingFields": [
+            "destinationCity"
+          ],
+          "history": [
+            {
+              "role": "user",
+              "content": "THIẾU lượt mới"
+            },
+            {
+              "role": "assistant",
+              "content": "Bạn vui lòng cung cấp: điểm đến."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "TÌM địa điểm",
+        "history": []
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "completed",
+          "reply": "Kết quả dưới đây lấy từ catalog công khai.",
+          "result": {
+            "type": "places",
+            "source": "RecommendationService",
+            "places": [
+              {
+                "id": "93a935c8-54e4-4914-b2f9-cb7ba85521d1",
+                "name": "TAI03A Nhà hàng",
+                "category": "restaurant",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 150000,
+                "catalogPriceAvailable": true
+              },
+              {
+                "id": "fae16030-a9e0-4bc5-b9d2-9f50cd958b8b",
+                "name": "TAI03A Điểm chưa có giá",
+                "category": "attraction",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": null,
+                "catalogPriceAvailable": false
+              },
+              {
+                "id": "8f4dbc85-e7dd-499e-8daa-7e2ea991794b",
+                "name": "TAI03A Điểm miễn phí",
+                "category": "attraction",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 0,
+                "catalogPriceAvailable": true
+              },
+              {
+                "id": "0c6511a4-4089-4d0a-b88c-9ec2efbbb94c",
+                "name": "TAI03A Khách sạn",
+                "category": "hotel",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 350000,
+                "catalogPriceAvailable": true
+              }
+            ],
+            "warnings": [
+              "Giá là dữ liệu catalog, không phải báo giá đặt dịch vụ."
+            ]
+          },
+          "history": [
+            {
+              "role": "user",
+              "content": "TÌM địa điểm"
+            },
+            {
+              "role": "assistant",
+              "content": "Kết quả dưới đây lấy từ catalog công khai."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "status": 200,
+      "request": {
+        "message": "LỊCH một ngày",
+        "history": [
+          {
+            "role": "user",
+            "content": "TÌM địa điểm"
+          },
+          {
+            "role": "assistant",
+            "content": "Kết quả dưới đây lấy từ catalog công khai."
+          }
+        ]
+      },
+      "response": {
+        "success": true,
+        "data": {
+          "status": "completed",
+          "reply": "Đã tạo bản ước tính bằng Planner. Hãy xem lịch trình, chi phí và cảnh báo; chưa lưu Trip.",
+          "result": {
+            "type": "itinerary",
+            "source": "TourPlannerService",
+            "itinerary": {
+              "id": "itinerary-1794134948478",
+              "title": "Hành trình 1N0Đ khám phá TAI03A-699018f3",
+              "departureCity": "Hà Nội",
+              "destinationCity": "TAI03A-699018f3",
+              "startDate": "2030-06-15",
+              "endDate": "2030-06-15",
+              "daysCount": 1,
+              "nightsCount": 0,
+              "costBasis": "GROUP_VND_V1",
+              "transportation": "car",
+              "costAssumptions": [
+                "Mọi khoản activity, tổng ngày và tổng chuyến là VND cho cả nhóm, làm tròn từng khoản đến 1 VND; ngân sách cũng cho cả nhóm.",
+                "Ước tính hoạt động/ăn uống quy đổi mỗi người lớn = 1, trẻ em = 0,7; đây là giả định lập kế hoạch, không phải chính sách giá của nhà cung cấp.",
+                "priceFrom chưa có đơn vị và sức chứa đáng tin cậy. Tạm ước tính một phòng cho cả nhóm mỗi đêm; không bảo đảm đủ chỗ hoặc đúng giá phòng/đêm.",
+                "Lưu trú dùng priceFrom khách sạn, thiếu giá dùng 400.000đ/nhóm/đêm; chỉ tính N−1 đêm. Phí này tách khỏi activity khách sạn có giá 0đ.",
+                "Tham quan dùng priceFrom, thiếu giá tạm tính 300.000đ/người lớn quy đổi/lượt. Bữa trưa dùng priceFrom nhà hàng, thiếu giá tạm tính 150.000đ; bữa tối tạm tính 200.000đ/người lớn quy đổi. Nguồn giả định: định mức planner T11-B trong source, chưa khảo sát giá thị trường; xem nhãn từng khoản. Giá 0 được giữ nguyên; không cắt giá theo ngân sách.",
+                "Chưa bao gồm vé máy bay/tàu, chi phí chặng khởi hành hoặc giá vận chuyển thực tế; tổng này không phải giá trọn gói hay bảo đảm đủ ngân sách."
+              ],
+              "adults": 2,
+              "children": 0,
+              "pacing": "balanced",
+              "preferences": [],
+              "totalBudgetUserVND": 1,
+              "totalEstimatedCostVND": 1300000,
+              "costDifferenceVND": -1299999,
+              "overBudgetVND": 1299999,
+              "budgetStatus": "over_budget",
+              "constraintViolations": [
+                "BUDGET_EXCEEDED"
+              ],
+              "budgetAdvice": "Chi phí dự kiến vượt ngân sách khoảng 1.299.999đ. Gợi ý: Có thể cân nhắc phòng khách sạn tiêu chuẩn hoặc lựa chọn các quán ăn địa phương bình dân hơn để tiết kiệm.",
+              "days": [
+                {
+                  "dayNumber": 1,
+                  "date": "2030-06-15",
+                  "themeTitle": "Ngày 1: Khám phá văn hóa & danh thắng TAI03A-699018f3",
+                  "activities": [
+                    {
+                      "id": "act-1-morning",
+                      "placeId": "8f4dbc85-e7dd-499e-8daa-7e2ea991794b",
+                      "timeSlot": "morning",
+                      "title": "Khám phá TAI03A Điểm miễn phí",
+                      "description": "T-AI-03-A guarded fixture",
+                      "category": "sightseeing",
+                      "durationMinutes": 180,
+                      "estimatedCostVND": 0,
+                      "costSource": "Catalog priceFrom (TAI03A Điểm miễn phí): 0 VND; giả định người lớn quy đổi/lượt tham quan, chưa xác minh đơn vị/giá dịch vụ.",
+                      "latitude": 16.055,
+                      "longitude": 108.21,
+                      "imageUrl": "",
+                      "recommendationReason": "Điểm tham quan được xếp hạng theo sở thích và tiêu chí hành trình của bạn.",
+                      "aerialDistanceToNextKm": 2.31,
+                      "estimatedTransitMinutes": 7
+                    },
+                    {
+                      "id": "act-1-lunch",
+                      "placeId": "93a935c8-54e4-4914-b2f9-cb7ba85521d1",
+                      "timeSlot": "lunch",
+                      "title": "Thưởng thức ẩm thực tại TAI03A Nhà hàng",
+                      "description": "T-AI-03-A guarded fixture",
+                      "category": "food",
+                      "durationMinutes": 90,
+                      "estimatedCostVND": 300000,
+                      "costSource": "Catalog priceFrom (TAI03A Nhà hàng): 150000 VND; giả định người lớn quy đổi/bữa trưa, chưa xác minh đơn vị/giá dịch vụ.",
+                      "latitude": 16.07,
+                      "longitude": 108.225,
+                      "imageUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
+                      "recommendationReason": "Gợi ý ẩm thực phù hợp với điểm đến và ngân sách ước tính.",
+                      "aerialDistanceToNextKm": 1.54,
+                      "estimatedTransitMinutes": 5
+                    },
+                    {
+                      "id": "act-1-afternoon",
+                      "placeId": "fae16030-a9e0-4bc5-b9d2-9f50cd958b8b",
+                      "timeSlot": "afternoon",
+                      "title": "Check-in TAI03A Điểm chưa có giá",
+                      "description": "T-AI-03-A guarded fixture",
+                      "category": "sightseeing",
+                      "durationMinutes": 150,
+                      "estimatedCostVND": 600000,
+                      "costSource": "Giả định planner T11-B: 300000 VND/người lớn quy đổi/lượt tham quan; TAI03A Điểm chưa có giá thiếu giá catalog hợp lệ, chưa xác minh.",
+                      "latitude": 16.06,
+                      "longitude": 108.215,
+                      "imageUrl": "",
+                      "recommendationReason": "Gợi ý check-in phù hợp với điểm đến và cụm địa lý của ngày.",
+                      "aerialDistanceToNextKm": 0.55,
+                      "estimatedTransitMinutes": 5
+                    },
+                    {
+                      "id": "act-1-dinner",
+                      "timeSlot": "dinner",
+                      "title": "Ăn tối, dạo chợ đêm & Thưởng ngoạn phố lên đèn",
+                      "description": "Tận hưởng không khí đêm náo nhiệt, thưởng thức đồ ăn vặt và mua sắm đặc sản.",
+                      "category": "food",
+                      "durationMinutes": 120,
+                      "estimatedCostVND": 400000,
+                      "costSource": "Giả định planner T11-B: 200000 VND/người lớn quy đổi/bữa tối; chưa chọn dịch vụ, chưa xác minh giá.",
+                      "latitude": 16.055999999999997,
+                      "longitude": 108.218,
+                      "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+                      "recommendationReason": "Hoạt động trải nghiệm không gian về đêm đặc trưng của điểm đến."
+                    }
+                  ],
+                  "dayEstimatedCostVND": 1300000,
+                  "lodgingNights": 0,
+                  "lodgingEstimatedCostVND": 0,
+                  "lodgingCostSource": "0 đêm: không tính phí lưu trú.",
+                  "centroid": {
+                    "latitude": 16.06025,
+                    "longitude": 108.217
+                  }
+                }
+              ],
+              "summary": "Hành trình 1 ngày theo tiêu chí đã chọn. Nhịp cân bằng: tối đa 2 điểm tham quan/ngày, không tính bữa ăn. ETA giữa các điểm bằng ô tô là ước lượng từ khoảng cách Haversine, không phải tuyến đường bộ hoặc thời gian thực; chưa tính chặng và chi phí liên tỉnh.",
+              "hotelSuggestion": {
+                "id": "0c6511a4-4089-4d0a-b88c-9ec2efbbb94c",
+                "name": "TAI03A Khách sạn",
+                "category": "hotel",
+                "city": "TAI03A-699018f3",
+                "province": "TAI03A-699018f3",
+                "priceFrom": 350000,
+                "catalogPriceAvailable": true
+              },
+              "selectedPlaceIds": [
+                "8f4dbc85-e7dd-499e-8daa-7e2ea991794b",
+                "93a935c8-54e4-4914-b2f9-cb7ba85521d1",
+                "fae16030-a9e0-4bc5-b9d2-9f50cd958b8b"
+              ],
+              "createdAt": "2026-11-08T10:49:08.478Z"
+            },
+            "cost": {
+              "currency": "VND",
+              "basis": "GROUP_VND_V1",
+              "estimated": 1300000,
+              "budget": 1,
+              "budgetStatus": "over_budget",
+              "overBudget": 1299999
+            },
+            "warnings": [
+              "Đây là ước tính của Planner, chưa lưu Trip và chưa đặt dịch vụ.",
+              "Mọi khoản activity, tổng ngày và tổng chuyến là VND cho cả nhóm, làm tròn từng khoản đến 1 VND; ngân sách cũng cho cả nhóm.",
+              "Ước tính hoạt động/ăn uống quy đổi mỗi người lớn = 1, trẻ em = 0,7; đây là giả định lập kế hoạch, không phải chính sách giá của nhà cung cấp.",
+              "priceFrom chưa có đơn vị và sức chứa đáng tin cậy. Tạm ước tính một phòng cho cả nhóm mỗi đêm; không bảo đảm đủ chỗ hoặc đúng giá phòng/đêm.",
+              "Lưu trú dùng priceFrom khách sạn, thiếu giá dùng 400.000đ/nhóm/đêm; chỉ tính N−1 đêm. Phí này tách khỏi activity khách sạn có giá 0đ.",
+              "Tham quan dùng priceFrom, thiếu giá tạm tính 300.000đ/người lớn quy đổi/lượt. Bữa trưa dùng priceFrom nhà hàng, thiếu giá tạm tính 150.000đ; bữa tối tạm tính 200.000đ/người lớn quy đổi. Nguồn giả định: định mức planner T11-B trong source, chưa khảo sát giá thị trường; xem nhãn từng khoản. Giá 0 được giữ nguyên; không cắt giá theo ngân sách.",
+              "Chưa bao gồm vé máy bay/tàu, chi phí chặng khởi hành hoặc giá vận chuyển thực tế; tổng này không phải giá trọn gói hay bảo đảm đủ ngân sách.",
+              "BUDGET_EXCEEDED",
+              "Chi phí dự kiến vượt ngân sách khoảng 1.299.999đ. Gợi ý: Có thể cân nhắc phòng khách sạn tiêu chuẩn hoặc lựa chọn các quán ăn địa phương bình dân hơn để tiết kiệm."
+            ]
+          },
+          "history": [
+            {
+              "role": "user",
+              "content": "TÌM địa điểm"
+            },
+            {
+              "role": "assistant",
+              "content": "Kết quả dưới đây lấy từ catalog công khai."
+            },
+            {
+              "role": "user",
+              "content": "LỊCH một ngày"
+            },
+            {
+              "role": "assistant",
+              "content": "Đã tạo bản ước tính bằng Planner. Hãy xem lịch trình, chi phí và cảnh báo; chưa lưu Trip."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    }
+  ]
+}

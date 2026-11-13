@@ -1,0 +1,714 @@
+{
+  "tier": "BROWSER_REAL_CORE_HTTP_REAL_PLANNER_IN_MEMORY_CATALOG_MODEL_TRIP_DOUBLES",
+  "status": "passed",
+  "requests": [
+    {
+      "path": "/api/agent/core/privacy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/agent/core/chat",
+      "method": "POST",
+      "body": {
+        "message": "Lập lịch trình; Nơi xuất phát: Huế; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2036-04-22; Ngày kết thúc: 2036-04-24; Số người lớn: 2; Ngân sách cả nhóm: 6400000 VND; Phương tiện: ô tô",
+        "conversation": {
+          "action": "start",
+          "requestId": "ad92f8de-dc84-474e-b13c-36da7023f579",
+          "consentVersion": "TRAVELGO_CORE_SLOTS_V1"
+        },
+        "consentVersion": "TRAVELGO_CORE_SLOTS_V1",
+        "intentVersion": "CORE_INTENT_V2"
+      }
+    },
+    {
+      "path": "/api/agent/core/chat",
+      "method": "POST",
+      "body": {
+        "message": "Tư vấn một chuyến đi linh hoạt theo thời tiết.",
+        "conversation": {
+          "action": "continue",
+          "id": "ec0900bd-200a-4793-baa8-112255e3b26d",
+          "revision": 1,
+          "requestId": "99db51c7-25ee-4891-8620-41292cabdfb4",
+          "consentVersion": "TRAVELGO_CORE_SLOTS_V1"
+        },
+        "consentVersion": "TRAVELGO_CORE_SLOTS_V1",
+        "intentVersion": "CORE_INTENT_V2"
+      }
+    },
+    {
+      "path": "/api/agent/core/chat",
+      "method": "POST",
+      "body": {
+        "message": "Lập lại lịch trình",
+        "conversation": {
+          "action": "continue",
+          "id": "ec0900bd-200a-4793-baa8-112255e3b26d",
+          "revision": 2,
+          "requestId": "61f4110c-62a8-42a0-83bf-c004f3e7dc2d",
+          "consentVersion": "TRAVELGO_CORE_SLOTS_V1"
+        },
+        "consentVersion": "TRAVELGO_CORE_SLOTS_V1",
+        "intentVersion": "CORE_INTENT_V2"
+      }
+    }
+  ],
+  "responses": [
+    {
+      "success": true,
+      "data": {
+        "version": "TRAVELGO_CORE_SLOTS_V1",
+        "mode": "CORE_VERIFIED",
+        "ttlSeconds": 900,
+        "text": "Giữ slots du lịch, ID lựa chọn và bản Planner trong RAM tối đa 15 phút; không giữ câu chat, GPS, Booking hoặc profile. Dữ liệu lấy từ catalog TravelGo. Nếu bật Qwen local, model nhận yêu cầu hiện tại và slots đã xác minh. Trip đã lưu chỉ nạp các slots du lịch khi bạn đồng ý riêng; không nạp ghi chú/profile. Lưu/sửa Trip cần xem trước và xác nhận riêng; chỉ ghi trên DB test riêng được phê duyệt. Kết thúc phiên để xóa RAM.",
+        "modelConfigured": true
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "status": "completed",
+        "reply": "Planner đã tạo lịch trình và dự toán; chưa ghi dữ liệu.",
+        "tool": "plan_trip",
+        "result": {
+          "type": "itinerary",
+          "source": "TourPlannerService",
+          "itinerary": {
+            "id": "itinerary-1794412507318",
+            "title": "Hành trình 3N2Đ khám phá Đà Nẵng",
+            "departureCity": "Huế",
+            "destinationCity": "Đà Nẵng",
+            "startDate": "2036-04-22",
+            "endDate": "2036-04-24",
+            "daysCount": 3,
+            "nightsCount": 2,
+            "costBasis": "GROUP_VND_V1",
+            "transportation": "car",
+            "costAssumptions": [
+              "Mọi khoản activity, tổng ngày và tổng chuyến là VND cho cả nhóm, làm tròn từng khoản đến 1 VND; ngân sách cũng cho cả nhóm.",
+              "Ước tính hoạt động/ăn uống quy đổi mỗi người lớn = 1, trẻ em = 0,7; đây là giả định lập kế hoạch, không phải chính sách giá của nhà cung cấp.",
+              "priceFrom chưa có đơn vị và sức chứa đáng tin cậy. Tạm ước tính một phòng cho cả nhóm mỗi đêm; không bảo đảm đủ chỗ hoặc đúng giá phòng/đêm.",
+              "Lưu trú dùng priceFrom khách sạn, thiếu giá dùng 400.000đ/nhóm/đêm; chỉ tính N−1 đêm. Phí này tách khỏi activity khách sạn có giá 0đ.",
+              "Tham quan dùng priceFrom, thiếu giá tạm tính 300.000đ/người lớn quy đổi/lượt. Bữa trưa dùng priceFrom nhà hàng, thiếu giá tạm tính 150.000đ; bữa tối tạm tính 200.000đ/người lớn quy đổi. Nguồn giả định: định mức planner T11-B trong source, chưa khảo sát giá thị trường; xem nhãn từng khoản. Giá 0 được giữ nguyên; không cắt giá theo ngân sách.",
+              "Chưa bao gồm vé máy bay/tàu, chi phí chặng khởi hành hoặc giá vận chuyển thực tế; tổng này không phải giá trọn gói hay bảo đảm đủ ngân sách."
+            ],
+            "adults": 2,
+            "children": 0,
+            "pacing": "balanced",
+            "preferences": [],
+            "totalBudgetUserVND": 6400000,
+            "totalEstimatedCostVND": 5260000,
+            "costDifferenceVND": 1140000,
+            "overBudgetVND": 0,
+            "budgetStatus": "within_budget",
+            "constraintViolations": [],
+            "budgetAdvice": "Tổng chi phí ước tính nằm trong ngân sách đã nhập. Bạn còn khoảng 1.140.000đ cho chi tiêu phát sinh hoặc mua sắm quà lưu niệm.",
+            "days": [
+              {
+                "dayNumber": 1,
+                "date": "2036-04-22",
+                "themeTitle": "Ngày 1: Khám phá văn hóa & danh thắng Đà Nẵng",
+                "activities": [
+                  {
+                    "id": "act-1-morning",
+                    "placeId": "33333333-3333-4333-8333-333333333333",
+                    "timeSlot": "morning",
+                    "title": "Khám phá Bảo tàng Cổ",
+                    "description": "Bảo tàng di sản",
+                    "category": "sightseeing",
+                    "durationMinutes": 180,
+                    "estimatedCostVND": 160000,
+                    "costSource": "Catalog priceFrom (Bảo tàng Cổ): 80000 VND; giả định người lớn quy đổi/lượt tham quan, chưa xác minh đơn vị/giá dịch vụ.",
+                    "latitude": 16.04,
+                    "longitude": 108.19,
+                    "recommendationReason": "Điểm tham quan được xếp hạng theo sở thích và tiêu chí hành trình của bạn.",
+                    "aerialDistanceToNextKm": 1.85,
+                    "estimatedTransitMinutes": 5
+                  },
+                  {
+                    "id": "act-1-lunch",
+                    "placeId": "66666666-6666-4666-8666-666666666666",
+                    "timeSlot": "lunch",
+                    "title": "Thưởng thức ẩm thực tại Nhà hàng Bữa Trưa",
+                    "description": "Đặc sản và hải sản",
+                    "category": "food",
+                    "durationMinutes": 90,
+                    "estimatedCostVND": 300000,
+                    "costSource": "Catalog priceFrom (Nhà hàng Bữa Trưa): 150000 VND; giả định người lớn quy đổi/bữa trưa, chưa xác minh đơn vị/giá dịch vụ.",
+                    "latitude": 16.052,
+                    "longitude": 108.202,
+                    "imageUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
+                    "recommendationReason": "Gợi ý ẩm thực phù hợp với điểm đến và ngân sách ước tính.",
+                    "aerialDistanceToNextKm": 0.31,
+                    "estimatedTransitMinutes": 5
+                  },
+                  {
+                    "id": "act-1-afternoon",
+                    "placeId": "11111111-1111-4111-8111-111111111111",
+                    "timeSlot": "afternoon",
+                    "title": "Check-in Biển Sáng",
+                    "description": "Bãi biển và hải sản",
+                    "category": "sightseeing",
+                    "durationMinutes": 150,
+                    "estimatedCostVND": 200000,
+                    "costSource": "Catalog priceFrom (Biển Sáng): 100000 VND; giả định người lớn quy đổi/lượt tham quan, chưa xác minh đơn vị/giá dịch vụ.",
+                    "latitude": 16.05,
+                    "longitude": 108.2,
+                    "recommendationReason": "Gợi ý check-in phù hợp với điểm đến và cụm địa lý của ngày.",
+                    "aerialDistanceToNextKm": 0.55,
+                    "estimatedTransitMinutes": 5
+                  },
+                  {
+                    "id": "act-1-dinner",
+                    "timeSlot": "dinner",
+                    "title": "Ăn tối, dạo chợ đêm & Thưởng ngoạn phố lên đèn",
+                    "description": "Tận hưởng không khí đêm náo nhiệt, thưởng thức đồ ăn vặt và mua sắm đặc sản.",
+                    "category": "food",
+                    "durationMinutes": 120,
+                    "estimatedCostVND": 400000,
+                    "costSource": "Giả định planner T11-B: 200000 VND/người lớn quy đổi/bữa tối; chưa chọn dịch vụ, chưa xác minh giá.",
+                    "latitude": 16.046,
+                    "longitude": 108.203,
+                    "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+                    "recommendationReason": "Hoạt động trải nghiệm không gian về đêm đặc trưng của điểm đến."
+                  }
+                ],
+                "dayEstimatedCostVND": 1660000,
+                "lodgingNights": 1,
+                "lodgingEstimatedCostVND": 600000,
+                "lodgingCostSource": "Catalog priceFrom (Khách sạn Bay): 600000 VND; giả định nhóm/đêm (1 phòng giả định), chưa xác minh đơn vị/giá dịch vụ.",
+                "centroid": {
+                  "latitude": 16.047,
+                  "longitude": 108.19875
+                }
+              },
+              {
+                "dayNumber": 2,
+                "date": "2036-04-23",
+                "themeTitle": "Ngày 2: Khám phá văn hóa & danh thắng Đà Nẵng",
+                "activities": [
+                  {
+                    "id": "act-2-morning",
+                    "placeId": "22222222-2222-4222-8222-222222222222",
+                    "timeSlot": "morning",
+                    "title": "Khám phá Núi Xa",
+                    "description": "Rừng núi và thác",
+                    "category": "sightseeing",
+                    "durationMinutes": 180,
+                    "estimatedCostVND": 1000000,
+                    "costSource": "Catalog priceFrom (Núi Xa): 500000 VND; giả định người lớn quy đổi/lượt tham quan, chưa xác minh đơn vị/giá dịch vụ.",
+                    "latitude": 16.06,
+                    "longitude": 108.43,
+                    "recommendationReason": "Điểm tham quan được xếp hạng theo sở thích và tiêu chí hành trình của bạn.",
+                    "aerialDistanceToNextKm": 0.77,
+                    "estimatedTransitMinutes": 5
+                  },
+                  {
+                    "id": "act-2-lunch",
+                    "timeSlot": "lunch",
+                    "title": "Nghỉ ngơi và dùng bữa trưa đặc sản địa phương",
+                    "description": "Thưởng thức các món ngon truyền thống nổi tiếng chuẩn vị bản địa.",
+                    "category": "food",
+                    "durationMinutes": 90,
+                    "estimatedCostVND": 300000,
+                    "costSource": "Giả định planner T11-B: 150000 VND/người lớn quy đổi/bữa trưa; chưa chọn dịch vụ thiếu giá catalog hợp lệ, chưa xác minh.",
+                    "latitude": 16.064999999999998,
+                    "longitude": 108.435,
+                    "imageUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
+                    "recommendationReason": "Gợi ý ẩm thực phù hợp với điểm đến và ngân sách ước tính.",
+                    "aerialDistanceToNextKm": 24.1,
+                    "estimatedTransitMinutes": 66
+                  },
+                  {
+                    "id": "act-2-afternoon",
+                    "placeId": "44444444-4444-4444-8444-444444444444",
+                    "timeSlot": "afternoon",
+                    "title": "Check-in Cold Beach",
+                    "description": "Bãi biển và view đẹp",
+                    "category": "sightseeing",
+                    "durationMinutes": 150,
+                    "estimatedCostVND": 600000,
+                    "costSource": "Catalog priceFrom (Cold Beach): 300000 VND; giả định người lớn quy đổi/lượt tham quan, chưa xác minh đơn vị/giá dịch vụ.",
+                    "latitude": 16.08,
+                    "longitude": 108.21,
+                    "recommendationReason": "Gợi ý check-in phù hợp với điểm đến và cụm địa lý của ngày.",
+                    "aerialDistanceToNextKm": 0.55,
+                    "estimatedTransitMinutes": 5
+                  },
+                  {
+                    "id": "act-2-dinner",
+                    "timeSlot": "dinner",
+                    "title": "Ăn tối, dạo chợ đêm & Thưởng ngoạn phố lên đèn",
+                    "description": "Tận hưởng không khí đêm náo nhiệt, thưởng thức đồ ăn vặt và mua sắm đặc sản.",
+                    "category": "food",
+                    "durationMinutes": 120,
+                    "estimatedCostVND": 400000,
+                    "costSource": "Giả định planner T11-B: 200000 VND/người lớn quy đổi/bữa tối; chưa chọn dịch vụ, chưa xác minh giá.",
+                    "latitude": 16.075999999999997,
+                    "longitude": 108.213,
+                    "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+                    "recommendationReason": "Hoạt động trải nghiệm không gian về đêm đặc trưng của điểm đến."
+                  }
+                ],
+                "dayEstimatedCostVND": 2900000,
+                "lodgingNights": 1,
+                "lodgingEstimatedCostVND": 600000,
+                "lodgingCostSource": "Catalog priceFrom (Khách sạn Bay): 600000 VND; giả định nhóm/đêm (1 phòng giả định), chưa xác minh đơn vị/giá dịch vụ.",
+                "centroid": {
+                  "latitude": 16.07025,
+                  "longitude": 108.322
+                }
+              },
+              {
+                "dayNumber": 3,
+                "date": "2036-04-24",
+                "themeTitle": "Ngày 3: Khám phá văn hóa & danh thắng Đà Nẵng",
+                "activities": [
+                  {
+                    "id": "act-3-lunch",
+                    "timeSlot": "lunch",
+                    "title": "Nghỉ ngơi và dùng bữa trưa đặc sản địa phương",
+                    "description": "Thưởng thức các món ngon truyền thống nổi tiếng chuẩn vị bản địa.",
+                    "category": "food",
+                    "durationMinutes": 90,
+                    "estimatedCostVND": 300000,
+                    "costSource": "Giả định planner T11-B: 150000 VND/người lớn quy đổi/bữa trưa; chưa chọn dịch vụ thiếu giá catalog hợp lệ, chưa xác minh.",
+                    "latitude": 16.0594,
+                    "longitude": 108.2072,
+                    "imageUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
+                    "recommendationReason": "Gợi ý ẩm thực phù hợp với điểm đến và ngân sách ước tính.",
+                    "aerialDistanceToNextKm": 1.02,
+                    "estimatedTransitMinutes": 5
+                  },
+                  {
+                    "id": "act-3-dinner",
+                    "timeSlot": "dinner",
+                    "title": "Ăn tối, dạo chợ đêm & Thưởng ngoạn phố lên đèn",
+                    "description": "Tận hưởng không khí đêm náo nhiệt, thưởng thức đồ ăn vặt và mua sắm đặc sản.",
+                    "category": "food",
+                    "durationMinutes": 120,
+                    "estimatedCostVND": 400000,
+                    "costSource": "Giả định planner T11-B: 200000 VND/người lớn quy đổi/bữa tối; chưa chọn dịch vụ, chưa xác minh giá.",
+                    "latitude": 16.0504,
+                    "longitude": 108.2052,
+                    "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+                    "recommendationReason": "Hoạt động trải nghiệm không gian về đêm đặc trưng của điểm đến."
+                  }
+                ],
+                "dayEstimatedCostVND": 700000,
+                "lodgingNights": 0,
+                "lodgingEstimatedCostVND": 0,
+                "lodgingCostSource": "0 đêm: không tính phí lưu trú.",
+                "centroid": {
+                  "latitude": 16.0549,
+                  "longitude": 108.2062
+                }
+              }
+            ],
+            "summary": "Hành trình 3 ngày theo tiêu chí đã chọn. Nhịp cân bằng: tối đa 2 điểm tham quan/ngày, không tính bữa ăn. ETA giữa các điểm bằng ô tô là ước lượng từ khoảng cách Haversine, không phải tuyến đường bộ hoặc thời gian thực; chưa tính chặng và chi phí liên tỉnh.",
+            "hotelSuggestion": {
+              "id": "55555555-5555-4555-8555-555555555555",
+              "name": "Khách sạn Bay",
+              "category": "hotel",
+              "city": "Đà Nẵng",
+              "province": "Đà Nẵng",
+              "priceFrom": 600000,
+              "catalogPriceAvailable": true
+            },
+            "selectedPlaceIds": [
+              "33333333-3333-4333-8333-333333333333",
+              "66666666-6666-4666-8666-666666666666",
+              "11111111-1111-4111-8111-111111111111",
+              "22222222-2222-4222-8222-222222222222",
+              "44444444-4444-4444-8444-444444444444"
+            ],
+            "createdAt": "2026-11-11T15:55:07.318Z"
+          },
+          "cost": {
+            "currency": "VND",
+            "basis": "GROUP_VND_V1",
+            "estimated": 5260000,
+            "budget": 6400000,
+            "budgetStatus": "within_budget",
+            "overBudget": 0
+          },
+          "warnings": [
+            "Đây là dự toán, chưa lưu Trip hoặc đặt dịch vụ. Đơn vị giá phòng/đêm và bữa ăn chưa được catalog xác minh. ETA là Haversine, không phải road routing.",
+            "Mọi khoản activity, tổng ngày và tổng chuyến là VND cho cả nhóm, làm tròn từng khoản đến 1 VND; ngân sách cũng cho cả nhóm.",
+            "Ước tính hoạt động/ăn uống quy đổi mỗi người lớn = 1, trẻ em = 0,7; đây là giả định lập kế hoạch, không phải chính sách giá của nhà cung cấp.",
+            "priceFrom chưa có đơn vị và sức chứa đáng tin cậy. Tạm ước tính một phòng cho cả nhóm mỗi đêm; không bảo đảm đủ chỗ hoặc đúng giá phòng/đêm.",
+            "Lưu trú dùng priceFrom khách sạn, thiếu giá dùng 400.000đ/nhóm/đêm; chỉ tính N−1 đêm. Phí này tách khỏi activity khách sạn có giá 0đ.",
+            "Tham quan dùng priceFrom, thiếu giá tạm tính 300.000đ/người lớn quy đổi/lượt. Bữa trưa dùng priceFrom nhà hàng, thiếu giá tạm tính 150.000đ; bữa tối tạm tính 200.000đ/người lớn quy đổi. Nguồn giả định: định mức planner T11-B trong source, chưa khảo sát giá thị trường; xem nhãn từng khoản. Giá 0 được giữ nguyên; không cắt giá theo ngân sách.",
+            "Chưa bao gồm vé máy bay/tàu, chi phí chặng khởi hành hoặc giá vận chuyển thực tế; tổng này không phải giá trọn gói hay bảo đảm đủ ngân sách."
+          ]
+        },
+        "selected": {
+          "hotelId": "55555555-5555-4555-8555-555555555555",
+          "restaurantId": "66666666-6666-4666-8666-666666666666"
+        },
+        "conversation": {
+          "id": "ec0900bd-200a-4793-baa8-112255e3b26d",
+          "revision": 1,
+          "expiresAt": "2026-11-11T16:10:07.315Z",
+          "mode": "CORE_VERIFIED",
+          "persisted": false
+        },
+        "model": {
+          "invoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        },
+        "intent": {
+          "version": "CORE_INTENT_V2",
+          "authority": "SERVER_VERIFIED"
+        }
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "status": "needs_input",
+        "reply": "AI chỉ gợi ý loại thao tác. Chưa thay đổi slots hoặc chạy công cụ; hãy xác nhận tác vụ cụ thể bên dưới.",
+        "clarification": {
+          "suggestedOperation": "plan_trip",
+          "requiresExplicitRequest": true
+        },
+        "conversation": {
+          "id": "ec0900bd-200a-4793-baa8-112255e3b26d",
+          "revision": 2,
+          "expiresAt": "2026-11-11T16:10:07.315Z",
+          "mode": "CORE_VERIFIED",
+          "persisted": false
+        },
+        "model": {
+          "invoked": true,
+          "rawNlu": "REQUIRES_INDEPENDENT_SCORING"
+        },
+        "intent": {
+          "version": "CORE_INTENT_V2",
+          "authority": "MODEL_SUGGESTION_ONLY"
+        }
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "status": "completed",
+        "reply": "Planner đã tạo lịch trình và dự toán; chưa ghi dữ liệu.",
+        "tool": "plan_trip",
+        "result": {
+          "type": "itinerary",
+          "source": "TourPlannerService",
+          "itinerary": {
+            "id": "itinerary-1794412508771",
+            "title": "Hành trình 3N2Đ khám phá Đà Nẵng",
+            "departureCity": "Huế",
+            "destinationCity": "Đà Nẵng",
+            "startDate": "2036-04-22",
+            "endDate": "2036-04-24",
+            "daysCount": 3,
+            "nightsCount": 2,
+            "costBasis": "GROUP_VND_V1",
+            "transportation": "car",
+            "costAssumptions": [
+              "Mọi khoản activity, tổng ngày và tổng chuyến là VND cho cả nhóm, làm tròn từng khoản đến 1 VND; ngân sách cũng cho cả nhóm.",
+              "Ước tính hoạt động/ăn uống quy đổi mỗi người lớn = 1, trẻ em = 0,7; đây là giả định lập kế hoạch, không phải chính sách giá của nhà cung cấp.",
+              "priceFrom chưa có đơn vị và sức chứa đáng tin cậy. Tạm ước tính một phòng cho cả nhóm mỗi đêm; không bảo đảm đủ chỗ hoặc đúng giá phòng/đêm.",
+              "Lưu trú dùng priceFrom khách sạn, thiếu giá dùng 400.000đ/nhóm/đêm; chỉ tính N−1 đêm. Phí này tách khỏi activity khách sạn có giá 0đ.",
+              "Tham quan dùng priceFrom, thiếu giá tạm tính 300.000đ/người lớn quy đổi/lượt. Bữa trưa dùng priceFrom nhà hàng, thiếu giá tạm tính 150.000đ; bữa tối tạm tính 200.000đ/người lớn quy đổi. Nguồn giả định: định mức planner T11-B trong source, chưa khảo sát giá thị trường; xem nhãn từng khoản. Giá 0 được giữ nguyên; không cắt giá theo ngân sách.",
+              "Chưa bao gồm vé máy bay/tàu, chi phí chặng khởi hành hoặc giá vận chuyển thực tế; tổng này không phải giá trọn gói hay bảo đảm đủ ngân sách."
+            ],
+            "adults": 2,
+            "children": 0,
+            "pacing": "balanced",
+            "preferences": [],
+            "totalBudgetUserVND": 6400000,
+            "totalEstimatedCostVND": 5260000,
+            "costDifferenceVND": 1140000,
+            "overBudgetVND": 0,
+            "budgetStatus": "within_budget",
+            "constraintViolations": [],
+            "budgetAdvice": "Tổng chi phí ước tính nằm trong ngân sách đã nhập. Bạn còn khoảng 1.140.000đ cho chi tiêu phát sinh hoặc mua sắm quà lưu niệm.",
+            "days": [
+              {
+                "dayNumber": 1,
+                "date": "2036-04-22",
+                "themeTitle": "Ngày 1: Khám phá văn hóa & danh thắng Đà Nẵng",
+                "activities": [
+                  {
+                    "id": "act-1-morning",
+                    "placeId": "33333333-3333-4333-8333-333333333333",
+                    "timeSlot": "morning",
+                    "title": "Khám phá Bảo tàng Cổ",
+                    "description": "Bảo tàng di sản",
+                    "category": "sightseeing",
+                    "durationMinutes": 180,
+                    "estimatedCostVND": 160000,
+                    "costSource": "Catalog priceFrom (Bảo tàng Cổ): 80000 VND; giả định người lớn quy đổi/lượt tham quan, chưa xác minh đơn vị/giá dịch vụ.",
+                    "latitude": 16.04,
+                    "longitude": 108.19,
+                    "recommendationReason": "Điểm tham quan được xếp hạng theo sở thích và tiêu chí hành trình của bạn.",
+                    "aerialDistanceToNextKm": 1.85,
+                    "estimatedTransitMinutes": 5
+                  },
+                  {
+                    "id": "act-1-lunch",
+                    "placeId": "66666666-6666-4666-8666-666666666666",
+                    "timeSlot": "lunch",
+                    "title": "Thưởng thức ẩm thực tại Nhà hàng Bữa Trưa",
+                    "description": "Đặc sản và hải sản",
+                    "category": "food",
+                    "durationMinutes": 90,
+                    "estimatedCostVND": 300000,
+                    "costSource": "Catalog priceFrom (Nhà hàng Bữa Trưa): 150000 VND; giả định người lớn quy đổi/bữa trưa, chưa xác minh đơn vị/giá dịch vụ.",
+                    "latitude": 16.052,
+                    "longitude": 108.202,
+                    "imageUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
+                    "recommendationReason": "Nhà hàng bắt buộc do bạn chọn từ trang chi tiết.",
+                    "aerialDistanceToNextKm": 0.31,
+                    "estimatedTransitMinutes": 5
+                  },
+                  {
+                    "id": "act-1-afternoon",
+                    "placeId": "11111111-1111-4111-8111-111111111111",
+                    "timeSlot": "afternoon",
+                    "title": "Check-in Biển Sáng",
+                    "description": "Bãi biển và hải sản",
+                    "category": "sightseeing",
+                    "durationMinutes": 150,
+                    "estimatedCostVND": 200000,
+                    "costSource": "Catalog priceFrom (Biển Sáng): 100000 VND; giả định người lớn quy đổi/lượt tham quan, chưa xác minh đơn vị/giá dịch vụ.",
+                    "latitude": 16.05,
+                    "longitude": 108.2,
+                    "recommendationReason": "Gợi ý check-in phù hợp với điểm đến và cụm địa lý của ngày.",
+                    "aerialDistanceToNextKm": 0.55,
+                    "estimatedTransitMinutes": 5
+                  },
+                  {
+                    "id": "act-1-dinner",
+                    "timeSlot": "dinner",
+                    "title": "Ăn tối, dạo chợ đêm & Thưởng ngoạn phố lên đèn",
+                    "description": "Tận hưởng không khí đêm náo nhiệt, thưởng thức đồ ăn vặt và mua sắm đặc sản.",
+                    "category": "food",
+                    "durationMinutes": 120,
+                    "estimatedCostVND": 400000,
+                    "costSource": "Giả định planner T11-B: 200000 VND/người lớn quy đổi/bữa tối; chưa chọn dịch vụ, chưa xác minh giá.",
+                    "latitude": 16.046,
+                    "longitude": 108.203,
+                    "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+                    "recommendationReason": "Hoạt động trải nghiệm không gian về đêm đặc trưng của điểm đến.",
+                    "aerialDistanceToNextKm": 0.6,
+                    "estimatedTransitMinutes": 5
+                  },
+                  {
+                    "id": "act-1-hotel",
+                    "placeId": "55555555-5555-4555-8555-555555555555",
+                    "timeSlot": "evening",
+                    "title": "Khách sạn dự kiến: Khách sạn Bay",
+                    "description": "Nghỉ dưỡng hồ bơi",
+                    "category": "hotel",
+                    "durationMinutes": 60,
+                    "estimatedCostVND": 0,
+                    "costSource": "Mốc khách sạn 0đ; chi phí lưu trú tách riêng, không tính trùng.",
+                    "latitude": 16.051,
+                    "longitude": 108.201,
+                    "recommendationReason": "Khách sạn do bạn chọn. Phí lưu trú ước tính nằm ở mục riêng của ngày; không phải xác nhận đặt phòng."
+                  }
+                ],
+                "dayEstimatedCostVND": 1660000,
+                "lodgingNights": 1,
+                "lodgingEstimatedCostVND": 600000,
+                "lodgingCostSource": "Catalog priceFrom (Khách sạn Bay): 600000 VND; giả định nhóm/đêm (1 phòng giả định), chưa xác minh đơn vị/giá dịch vụ.",
+                "centroid": {
+                  "latitude": 16.0478,
+                  "longitude": 108.1992
+                }
+              },
+              {
+                "dayNumber": 2,
+                "date": "2036-04-23",
+                "themeTitle": "Ngày 2: Khám phá văn hóa & danh thắng Đà Nẵng",
+                "activities": [
+                  {
+                    "id": "act-2-morning",
+                    "placeId": "22222222-2222-4222-8222-222222222222",
+                    "timeSlot": "morning",
+                    "title": "Khám phá Núi Xa",
+                    "description": "Rừng núi và thác",
+                    "category": "sightseeing",
+                    "durationMinutes": 180,
+                    "estimatedCostVND": 1000000,
+                    "costSource": "Catalog priceFrom (Núi Xa): 500000 VND; giả định người lớn quy đổi/lượt tham quan, chưa xác minh đơn vị/giá dịch vụ.",
+                    "latitude": 16.06,
+                    "longitude": 108.43,
+                    "recommendationReason": "Điểm tham quan được xếp hạng theo sở thích và tiêu chí hành trình của bạn.",
+                    "aerialDistanceToNextKm": 0.77,
+                    "estimatedTransitMinutes": 5
+                  },
+                  {
+                    "id": "act-2-lunch",
+                    "timeSlot": "lunch",
+                    "title": "Nghỉ ngơi và dùng bữa trưa đặc sản địa phương",
+                    "description": "Thưởng thức các món ngon truyền thống nổi tiếng chuẩn vị bản địa.",
+                    "category": "food",
+                    "durationMinutes": 90,
+                    "estimatedCostVND": 300000,
+                    "costSource": "Giả định planner T11-B: 150000 VND/người lớn quy đổi/bữa trưa; chưa chọn dịch vụ thiếu giá catalog hợp lệ, chưa xác minh.",
+                    "latitude": 16.064999999999998,
+                    "longitude": 108.435,
+                    "imageUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
+                    "recommendationReason": "Gợi ý ẩm thực phù hợp với điểm đến và ngân sách ước tính.",
+                    "aerialDistanceToNextKm": 24.1,
+                    "estimatedTransitMinutes": 66
+                  },
+                  {
+                    "id": "act-2-afternoon",
+                    "placeId": "44444444-4444-4444-8444-444444444444",
+                    "timeSlot": "afternoon",
+                    "title": "Check-in Cold Beach",
+                    "description": "Bãi biển và view đẹp",
+                    "category": "sightseeing",
+                    "durationMinutes": 150,
+                    "estimatedCostVND": 600000,
+                    "costSource": "Catalog priceFrom (Cold Beach): 300000 VND; giả định người lớn quy đổi/lượt tham quan, chưa xác minh đơn vị/giá dịch vụ.",
+                    "latitude": 16.08,
+                    "longitude": 108.21,
+                    "recommendationReason": "Gợi ý check-in phù hợp với điểm đến và cụm địa lý của ngày.",
+                    "aerialDistanceToNextKm": 0.55,
+                    "estimatedTransitMinutes": 5
+                  },
+                  {
+                    "id": "act-2-dinner",
+                    "timeSlot": "dinner",
+                    "title": "Ăn tối, dạo chợ đêm & Thưởng ngoạn phố lên đèn",
+                    "description": "Tận hưởng không khí đêm náo nhiệt, thưởng thức đồ ăn vặt và mua sắm đặc sản.",
+                    "category": "food",
+                    "durationMinutes": 120,
+                    "estimatedCostVND": 400000,
+                    "costSource": "Giả định planner T11-B: 200000 VND/người lớn quy đổi/bữa tối; chưa chọn dịch vụ, chưa xác minh giá.",
+                    "latitude": 16.075999999999997,
+                    "longitude": 108.213,
+                    "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+                    "recommendationReason": "Hoạt động trải nghiệm không gian về đêm đặc trưng của điểm đến."
+                  }
+                ],
+                "dayEstimatedCostVND": 2900000,
+                "lodgingNights": 1,
+                "lodgingEstimatedCostVND": 600000,
+                "lodgingCostSource": "Catalog priceFrom (Khách sạn Bay): 600000 VND; giả định nhóm/đêm (1 phòng giả định), chưa xác minh đơn vị/giá dịch vụ.",
+                "centroid": {
+                  "latitude": 16.07025,
+                  "longitude": 108.322
+                }
+              },
+              {
+                "dayNumber": 3,
+                "date": "2036-04-24",
+                "themeTitle": "Ngày 3: Khám phá văn hóa & danh thắng Đà Nẵng",
+                "activities": [
+                  {
+                    "id": "act-3-lunch",
+                    "timeSlot": "lunch",
+                    "title": "Nghỉ ngơi và dùng bữa trưa đặc sản địa phương",
+                    "description": "Thưởng thức các món ngon truyền thống nổi tiếng chuẩn vị bản địa.",
+                    "category": "food",
+                    "durationMinutes": 90,
+                    "estimatedCostVND": 300000,
+                    "costSource": "Giả định planner T11-B: 150000 VND/người lớn quy đổi/bữa trưa; chưa chọn dịch vụ thiếu giá catalog hợp lệ, chưa xác minh.",
+                    "latitude": 16.0594,
+                    "longitude": 108.2072,
+                    "imageUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
+                    "recommendationReason": "Gợi ý ẩm thực phù hợp với điểm đến và ngân sách ước tính.",
+                    "aerialDistanceToNextKm": 1.02,
+                    "estimatedTransitMinutes": 5
+                  },
+                  {
+                    "id": "act-3-dinner",
+                    "timeSlot": "dinner",
+                    "title": "Ăn tối, dạo chợ đêm & Thưởng ngoạn phố lên đèn",
+                    "description": "Tận hưởng không khí đêm náo nhiệt, thưởng thức đồ ăn vặt và mua sắm đặc sản.",
+                    "category": "food",
+                    "durationMinutes": 120,
+                    "estimatedCostVND": 400000,
+                    "costSource": "Giả định planner T11-B: 200000 VND/người lớn quy đổi/bữa tối; chưa chọn dịch vụ, chưa xác minh giá.",
+                    "latitude": 16.0504,
+                    "longitude": 108.2052,
+                    "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+                    "recommendationReason": "Hoạt động trải nghiệm không gian về đêm đặc trưng của điểm đến."
+                  }
+                ],
+                "dayEstimatedCostVND": 700000,
+                "lodgingNights": 0,
+                "lodgingEstimatedCostVND": 0,
+                "lodgingCostSource": "0 đêm: không tính phí lưu trú.",
+                "centroid": {
+                  "latitude": 16.0549,
+                  "longitude": 108.2062
+                }
+              }
+            ],
+            "summary": "Hành trình 3 ngày theo tiêu chí đã chọn. Nhịp cân bằng: tối đa 2 điểm tham quan/ngày, không tính bữa ăn. ETA giữa các điểm bằng ô tô là ước lượng từ khoảng cách Haversine, không phải tuyến đường bộ hoặc thời gian thực; chưa tính chặng và chi phí liên tỉnh.",
+            "hotelSuggestion": {
+              "id": "55555555-5555-4555-8555-555555555555",
+              "name": "Khách sạn Bay",
+              "category": "hotel",
+              "city": "Đà Nẵng",
+              "province": "Đà Nẵng",
+              "priceFrom": 600000,
+              "catalogPriceAvailable": true
+            },
+            "selectedPlaceIds": [
+              "33333333-3333-4333-8333-333333333333",
+              "66666666-6666-4666-8666-666666666666",
+              "11111111-1111-4111-8111-111111111111",
+              "55555555-5555-4555-8555-555555555555",
+              "22222222-2222-4222-8222-222222222222",
+              "44444444-4444-4444-8444-444444444444"
+            ],
+            "createdAt": "2026-11-11T15:55:08.771Z"
+          },
+          "cost": {
+            "currency": "VND",
+            "basis": "GROUP_VND_V1",
+            "estimated": 5260000,
+            "budget": 6400000,
+            "budgetStatus": "within_budget",
+            "overBudget": 0
+          },
+          "warnings": [
+            "Đây là dự toán, chưa lưu Trip hoặc đặt dịch vụ. Đơn vị giá phòng/đêm và bữa ăn chưa được catalog xác minh. ETA là Haversine, không phải road routing.",
+            "Mọi khoản activity, tổng ngày và tổng chuyến là VND cho cả nhóm, làm tròn từng khoản đến 1 VND; ngân sách cũng cho cả nhóm.",
+            "Ước tính hoạt động/ăn uống quy đổi mỗi người lớn = 1, trẻ em = 0,7; đây là giả định lập kế hoạch, không phải chính sách giá của nhà cung cấp.",
+            "priceFrom chưa có đơn vị và sức chứa đáng tin cậy. Tạm ước tính một phòng cho cả nhóm mỗi đêm; không bảo đảm đủ chỗ hoặc đúng giá phòng/đêm.",
+            "Lưu trú dùng priceFrom khách sạn, thiếu giá dùng 400.000đ/nhóm/đêm; chỉ tính N−1 đêm. Phí này tách khỏi activity khách sạn có giá 0đ.",
+            "Tham quan dùng priceFrom, thiếu giá tạm tính 300.000đ/người lớn quy đổi/lượt. Bữa trưa dùng priceFrom nhà hàng, thiếu giá tạm tính 150.000đ; bữa tối tạm tính 200.000đ/người lớn quy đổi. Nguồn giả định: định mức planner T11-B trong source, chưa khảo sát giá thị trường; xem nhãn từng khoản. Giá 0 được giữ nguyên; không cắt giá theo ngân sách.",
+            "Chưa bao gồm vé máy bay/tàu, chi phí chặng khởi hành hoặc giá vận chuyển thực tế; tổng này không phải giá trọn gói hay bảo đảm đủ ngân sách."
+          ]
+        },
+        "selected": {
+          "hotelId": "55555555-5555-4555-8555-555555555555",
+          "restaurantId": "66666666-6666-4666-8666-666666666666"
+        },
+        "conversation": {
+          "id": "ec0900bd-200a-4793-baa8-112255e3b26d",
+          "revision": 3,
+          "expiresAt": "2026-11-11T16:10:07.315Z",
+          "mode": "CORE_VERIFIED",
+          "persisted": false
+        },
+        "model": {
+          "invoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        },
+        "intent": {
+          "version": "CORE_INTENT_V2",
+          "authority": "SERVER_VERIFIED"
+        }
+      }
+    }
+  ],
+  "modelCalls": 1,
+  "catalogCalls": 2,
+  "tripWrites": 0,
+  "actualDB": 0,
+  "actualModel": 0
+}

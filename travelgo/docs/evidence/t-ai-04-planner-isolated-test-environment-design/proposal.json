@@ -1,0 +1,81 @@
+{
+  "tier": "DESIGN_ONLY_NOT_PROVISIONED_NOT_APPROVED",
+  "recommendation": "OPTION_A_DEDICATED_INSTANCE_WITH_CERTIFICATE_ADMISSION",
+  "actualEnvironmentVerified": false,
+  "database": {
+    "proposedName": "travelgo_planner_test_v1",
+    "identity": "UNASSIGNED_REQUIRES_OWNER_APPROVAL",
+    "sentinelTemplate": "hugotravel-planner-isolated-v1:<new-approved-uuid>",
+    "baseline": "UNASSIGNED_REQUIRES_OWNER_APPROVAL",
+    "host": "127.0.0.1",
+    "proposedHostPort": 15432,
+    "containerPort": 5432,
+    "serverCertificate": "NEW_CA_AND_PIN_REQUIRED_NO_KEYS_GENERATED"
+  },
+  "docker": {
+    "proposedProject": "travelgo_planner_e2e",
+    "service": "planner_pg",
+    "imageFamily": "postgis/postgis:15-3.4-alpine",
+    "immutableImageDigest": "TO_BE_REVIEWED_AND_PINNED_NOT_INHERITED_FROM_TAG",
+    "volumeTemplate": "planner_pg_data_<approved-baseline-id>",
+    "networkTemplate": "planner_private_<approved-identity>",
+    "internalNetwork": true,
+    "sharedDevNetworks": false,
+    "sharedDevVolumes": false,
+    "publishedDatabaseInterface": "127.0.0.1 only, needed for host E2E processes and unchanged Ollama loopback",
+    "pgadmin": false,
+    "dockerSocketMount": false,
+    "automaticRestart": false
+  },
+  "authentication": {
+    "method": "hostssl cert exact database + exact role + exact verified host-forwarding source; no password fallback",
+    "rolesAdmittedDuringInterval": ["planner_runtime_ro", "planner_observer_ro", "planner_fixture_writer"],
+    "certificateSubjectEqualsDatabaseRole": true,
+    "taskPrivateKeysOnly": true,
+    "adminAndDevRolesRejected": true,
+    "localSocketConnectionsRejectedDuringInterval": true,
+    "explicitFinalIPv4AndIPv6Reject": true,
+    "noTrustRules": true,
+    "runtimeServerVerification": "TLS chain + server name/IP SAN verification + approved leaf/identity pin, never rejectUnauthorized=false"
+  },
+  "roles": {
+    "planner_owner": {"login": false, "ownsApplicationObjects": true, "runtimeMemberships": []},
+    "planner_provisioner": {"loginDuringInterval": false, "secretPresentDuringInterval": false, "phase": "provisioning/recovery only, outside I"},
+    "postgres": {"loginDuringInterval": false, "passwordPresentDuringInterval": false, "certificateIssued": false},
+    "planner_runtime_ro": {"superuser": false, "createRole": false, "createDatabase": false, "replication": false, "bypassRls": false, "roleMemberships": [], "selectTables": ["public.places", "public.businesses", "public.users", "public.user_roles"], "writeTables": [], "ownsObjects": false},
+    "planner_observer_ro": {"superuser": false, "roleMemberships": [], "selectAllApproved25": true, "writeTables": [], "activityMetadata": "pg_read_all_stats only if separately reviewed; no pg_monitor blanket membership", "ownsObjects": false},
+    "planner_fixture_writer": {"superuser": false, "createRole": false, "createDatabase": false, "replication": false, "bypassRls": false, "roleMemberships": [], "selectTables": ["public.places"], "insertDeleteTables": ["public.places"], "updateTruncateTables": [], "ownsObjects": false, "secretMount": "separate task maintenance process only"}
+  },
+  "admissionInvariant": "Every admitted client is within the explicit trusted task capability boundary; no pre-existing or outside authenticated session during I. ACL denial alone does not prove zero outside RX grants.",
+  "data": {
+    "preferredScope": "deterministic synthetic catalog-compatible baseline; no raw database clone",
+    "publicTables": 25,
+    "migrations": 12,
+    "targetBaselinePlaces": 22,
+    "targetNewHistoricalTrips": 0,
+    "originalHistoricalTripsToPreserve": 27,
+    "sameApprovedAgentPrincipal": true,
+    "syntheticAuthRowRequiresNewBaselineApproval": true,
+    "catalogFieldReusePermissionAndExactRankingParity": "UNRESOLVED_OWNER_DATASET_DECISION",
+    "noSensitiveDataCopyAuthorized": true,
+    "fingerprint": "NEW_MEASURED_AND_SEPARATELY_APPROVED_25_TABLE_BASELINE_REQUIRED"
+  },
+  "maintenance": {
+    "fixtureProfile": 2,
+    "onlyApprovedTwoPlaceRows": true,
+    "directTablePrivilegeIsRowUnrestricted": true,
+    "exactRowProtection": "trusted single-use maintenance broker + complete row/ledger/hash/ID/slug/FK/Trip checks; no claim SQL ACL restricts rows",
+    "oldAll25LockCleanupContractCompatible": false,
+    "newIsolationProofContractRequired": true,
+    "newRuntimeAdapterAndAcceptanceRequired": true,
+    "automaticRecoveryWriter": false
+  },
+  "limits": {"physicalConnectionAttemptsProposedMaximum": 10, "freshLiveNativeBudgetRequired": true, "agentTurnsPerHour": 20, "noRetry": true},
+  "trust": {
+    "trusted": ["designated infrastructure/host/Docker administrator", "offline CA custodian", "database provisioner outside I", "task maintenance broker and ownership harness", "hash-locked production runtime and its constrained tool paths", "OS/service identity enforcing secret-file isolation"],
+    "untrusted": ["ordinary TravelGo dev writers", "other tools without task keys or admin authority", "shared dev postgres credentials", "unknown external clients", "browser/model input"],
+    "excludedActiveAttackers": ["host/Docker/OS administrator overriding controls", "trusted administrator enabling a PostgreSQL superuser path", "theft or compromise of task client private keys or trusted task process"],
+    "breachRule": "Unknown authenticated or privileged client is evidence of a broken assumption: STOP, quarantine, no safety PASS or blind cleanup."
+  },
+  "ownerDecisions": ["architecture and administrator trust boundary", "new database identity/endpoint/TLS authority and roles/network", "dataset authorization and sanitized catalog parity", "new baseline including zero cloned Trips and synthetic principal row", "separate provisioning/security/maintenance/LIVE scopes and budgets"]
+}

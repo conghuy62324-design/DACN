@@ -1,0 +1,3037 @@
+diff --git a/travelgo/README.md b/travelgo/README.md
+index 16595da..5794098 100644
+--- a/travelgo/README.md
++++ b/travelgo/README.md
+@@ -2,6 +2,8 @@
+ 
+ > Tài liệu nâng cấp RBAC, Admin/Partner workspace, migration và dữ liệu kiểm thử: [MULTI_ROLE_PHASE_1_2.md](./docs/MULTI_ROLE_PHASE_1_2.md)
+ 
++> Contract auth hiện hành (30/10/2026): [HUGO_AUTH_CONTRACT.md](./docs/HUGO_AUTH_CONTRACT.md) — access token HMAC hai phần, reload `/auth/me`, logout local; chưa có refresh/revocation. Profile CORE chỉ hỗ trợ xem.
++
+ **HuGo Travel** là nền tảng web du lịch thông minh toàn diện được xây dựng theo kiến trúc **MVC (Model – View – Controller) kết hợp Service Layer & RESTful API**. Dự án tích hợp các thuật toán nghiên cứu chuyên sâu về xếp hạng địa điểm (Bayesian Average Rating), gợi ý dựa trên nội dung (Content-Based Recommendation), hệ thống thông tin địa lý (GIS Haversine & Spatial Clustering) và công cụ quản lý hành trình thực địa theo thời gian thực kết nối cộng đồng Blog du lịch.
+ 
+ ---
+diff --git a/travelgo/ai/kaggle/02_vietnamese_sentiment_tfidf_mvp.py b/travelgo/ai/kaggle/02_vietnamese_sentiment_tfidf_mvp.py
+index e09da25..df988f8 100644
+--- a/travelgo/ai/kaggle/02_vietnamese_sentiment_tfidf_mvp.py
++++ b/travelgo/ai/kaggle/02_vietnamese_sentiment_tfidf_mvp.py
+@@ -39,7 +39,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer  # noqa: E402
+ from sklearn.linear_model import LogisticRegression  # noqa: E402
+ from sklearn.metrics import (  # noqa: E402
+     ConfusionMatrixDisplay,
+-    accuracy_score,
++    accuracy_score, 
+     classification_report,
+     confusion_matrix,
+     f1_score,
+diff --git a/travelgo/backend/package.json b/travelgo/backend/package.json
+index cdcd7db..96197a4 100644
+--- a/travelgo/backend/package.json
++++ b/travelgo/backend/package.json
+@@ -20,6 +20,12 @@
+     ,"test:recommendation:unit": "npm run build --silent && node dist/tests/recommendationExposure.test.js && node dist/tests/recommendationCorrectness.test.js && node dist/tests/recommendationRepositoryPagination.test.js"
+     ,"test:recommendation": "npm run test:recommendation:unit --silent && node dist/tests/recommendation.postgres.test.js"
+     ,"test:planner:mandatory": "npm run build --silent && node dist/tests/tourPlannerMandatory.test.js"
++    ,"test:planner:validation": "npm run build --silent && node dist/tests/plannerValidationCosts.test.js"
++    ,"test:planner:modes": "npm run build --silent && node dist/tests/plannerModes.test.js"
++    ,"test:trip:unit": "npm run build --silent && node dist/tests/tripSnapshot.test.js"
++    ,"test:trip:postgres": "npm run build --silent && node dist/tests/tripSnapshot.postgres.test.js"
++    ,"test:trip:lifecycle:unit": "npm run build --silent && node dist/tests/tripLifecycle.test.js"
++    ,"test:trip:lifecycle:postgres": "npm run build --silent && node dist/tests/tripLifecycle.postgres.test.js"
+     ,"telemetry:purge": "npm run build --silent && node dist/scripts/purgeExpiredTelemetry.js"
+     ,"test:favorite": "npm run build --silent && node dist/tests/favorite.postgres.test.js"
+     ,"test:review": "npm run build --silent && node dist/tests/review.postgres.test.js"
+diff --git a/travelgo/backend/src/controllers/bookingController.ts b/travelgo/backend/src/controllers/bookingController.ts
+index b9d1e4c..f356687 100644
+--- a/travelgo/backend/src/controllers/bookingController.ts
++++ b/travelgo/backend/src/controllers/bookingController.ts
+@@ -3,7 +3,7 @@ import { AuthenticatedRequest } from '../middlewares/authMiddleware.js';
+ import { BookingService, BookingStatus } from '../services/bookingService.js';
+ 
+ export class BookingController {
+-  static async createBooking(req:AuthenticatedRequest,res:Response,next:NextFunction){try{const{serviceType,serviceId,bookingDate,returnDate,adultsCount,childrenCount,quantity,customerPhone,notes,recommendationRequestId,recommendationSessionId}=req.body;const data=await BookingService.createBooking(req.user!.id,{serviceType,serviceId,bookingDate,returnDate,adultsCount:Number(adultsCount||1),childrenCount:Number(childrenCount||0),quantity:quantity?Number(quantity):undefined,customerPhone,notes,recommendationRequestId,recommendationSessionId},req.header('Idempotency-Key'));res.status(201).json({success:true,message:'Đã tạo booking, đang chờ xác nhận',data});}catch(error){next(error);}}
++  static async createBooking(req:AuthenticatedRequest,res:Response,next:NextFunction){try{const{serviceType,serviceId,bookingDate,returnDate,adultsCount,childrenCount,quantity,customerPhone,notes,recommendationRequestId,recommendationSessionId}=req.body;const data=await BookingService.createBooking(req.user!.id,{serviceType,serviceId,bookingDate,returnDate,adultsCount,childrenCount,quantity,customerPhone,notes,recommendationRequestId,recommendationSessionId},req.header('Idempotency-Key'));res.status(201).json({success:true,message:'Đã tạo booking, đang chờ xác nhận',data});}catch(error){next(error);}}
+   static async getBookings(_req:AuthenticatedRequest,res:Response,next:NextFunction){try{const data=await BookingService.getAllBookings();res.json({success:true,count:data.length,data});}catch(error){next(error);}}
+   static async getMyBookings(req:AuthenticatedRequest,res:Response,next:NextFunction){try{const data=await BookingService.getBookingsByUser(req.user!.id);res.json({success:true,count:data.length,data});}catch(error){next(error);}}
+   static async getBookingByCode(req:AuthenticatedRequest,res:Response,next:NextFunction){try{const data=req.user!.roles.includes('SUPER_ADMIN')?await BookingService.getBookingByIdOrCode(String(req.params.code)):await BookingService.getOwned(req.user!.id,String(req.params.code));res.json({success:true,data});}catch(error){next(error);}}
+diff --git a/travelgo/backend/src/controllers/tourController.ts b/travelgo/backend/src/controllers/tourController.ts
+index 09c43cc..17ba1d7 100644
+--- a/travelgo/backend/src/controllers/tourController.ts
++++ b/travelgo/backend/src/controllers/tourController.ts
+@@ -1,7 +1,6 @@
+ import { Request, Response, NextFunction } from 'express';
+ import { TourService } from '../services/tourService.js';
+-import { TourPlannerService, PlannerInput } from '../services/tourPlannerService.js';
+-import { validateTravelPreferences } from '../utils/travelPreferences.js';
++import { TourPlannerService } from '../services/tourPlannerService.js';
+ 
+ const tourFields=['businessId','title','destinationCity','departureCity','durationDays','durationNights','category','summary','description','meetingPoint','heroImage','galleryImages','priceVND','capacity','inclusions','exclusions','highlights','itineraryDays','startDate','endDate','isTemplate'] as const;
+ const tourInput=(body:any)=>Object.fromEntries(tourFields.filter(key=>body[key]!==undefined).map(key=>[key,body[key]]));
+@@ -70,29 +69,7 @@ export class TourController {
+    */
+   public static async planItinerary(req: Request, res: Response, next: NextFunction): Promise<void> {
+     try {
+-      const input: PlannerInput = req.body;
+-
+-      if (!input.destinationCity) {
+-        res.status(400).json({
+-          success: false,
+-          message: 'Vui lòng cung cấp điểm đến (destinationCity)',
+-        });
+-        return;
+-      }
+-
+-      const itinerary = await TourPlannerService.generateSmartItinerary({
+-        departureCity: input.departureCity || 'Hà Nội',
+-        destinationCity: input.destinationCity,
+-        startDate: input.startDate || new Date().toISOString().split('T')[0],
+-        endDate: input.endDate || new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
+-        adults: Number(input.adults) || 1,
+-        children: Number(input.children) || 0,
+-        totalBudget: Number(input.totalBudget) || 5000000,
+-        transportation: input.transportation || 'car',
+-        preferences: validateTravelPreferences(input.preferences),
+-        pacing: input.pacing || 'balanced',
+-        mandatoryPlaceIds: input.mandatoryPlaceIds || [],
+-      });
++      const itinerary = await TourPlannerService.generateSmartItinerary(req.body);
+ 
+       res.json({
+         success: true,
+diff --git a/travelgo/backend/src/controllers/tripController.ts b/travelgo/backend/src/controllers/tripController.ts
+index 4ee5b4b..f90e304 100644
+--- a/travelgo/backend/src/controllers/tripController.ts
++++ b/travelgo/backend/src/controllers/tripController.ts
+@@ -1,15 +1,17 @@
+ import { NextFunction, Response } from 'express';
+ import { AuthenticatedRequest } from '../middlewares/authMiddleware.js';
+ import { TripSessionService } from '../services/tripSessionService.js';
++import { tripCreateBody } from '../utils/tripSnapshot.js';
+ 
+ const id=(req:AuthenticatedRequest)=>String(req.params.id);
+ export class TripController {
+   static async getTrips(req:AuthenticatedRequest,res:Response,next:NextFunction){try{const data=await TripSessionService.getAllTrips(req.user!.id);res.json({success:true,count:data.length,data});}catch(error){next(error);}}
+   static async getTripById(req:AuthenticatedRequest,res:Response,next:NextFunction){try{const data=await TripSessionService.getTripById(id(req),req.user!.id);if(!data){res.status(404).json({success:false,message:'Không tìm thấy chuyến đi'});return;}res.json({success:true,data});}catch(error){next(error);}}
+-  static async createTrip(req:AuthenticatedRequest,res:Response,next:NextFunction){try{if(!req.body.itinerary?.days){res.status(400).json({success:false,message:'Dữ liệu lịch trình không hợp lệ'});return;}const data=await TripSessionService.createTripFromPlanner(req.body.itinerary,req.user!.id,req.user!.fullName);res.status(201).json({success:true,message:'Đã lưu hành trình',data});}catch(error){next(error);}}
+-  static async updateTrip(req:AuthenticatedRequest,res:Response,next:NextFunction){try{const {title,name,notes,actualSpentVND,isPublic,days,itinerary,preferences}=req.body;const data=await TripSessionService.updateTrip(id(req),req.user!.id,{name:name||title,notes,actualSpentVND,isPublic,itinerary:itinerary||days,preferences});if(!data){res.status(404).json({success:false,message:'Không tìm thấy chuyến đi'});return;}res.json({success:true,data});}catch(error){next(error);}}
++  static async createTrip(req:AuthenticatedRequest,res:Response,next:NextFunction){try{const data=await TripSessionService.createTripFromPlanner(tripCreateBody(req.body) as any,req.user!.id,req.user!.fullName);res.status(201).json({success:true,message:'Đã lưu hành trình',data});}catch(error){next(error);}}
++  static async updateTrip(req:AuthenticatedRequest,res:Response,next:NextFunction){try{const data=await TripSessionService.updateTrip(id(req),req.user!.id,req.body);if(!data){res.status(404).json({success:false,message:'Không tìm thấy chuyến đi'});return;}res.json({success:true,data});}catch(error){next(error);}}
+   static async deleteTrip(req:AuthenticatedRequest,res:Response,next:NextFunction){try{const success=await TripSessionService.deleteTrip(id(req),req.user!.id);if(!success){res.status(404).json({success:false,message:'Không tìm thấy chuyến đi'});return;}res.json({success:true});}catch(error){next(error);}}
+-  static async checkinPlace(req:AuthenticatedRequest,res:Response,next:NextFunction){try{const {placeId,placeName,geo,notes}=req.body;if(!placeId||!placeName){res.status(400).json({success:false,message:'Cần placeId và placeName'});return;}res.json(await TripSessionService.checkinPlace(id(req),req.user!.id,placeId,placeName,geo,notes));}catch(error){next(error);}}
++  static async checkinPlace(req:AuthenticatedRequest,res:Response,next:NextFunction){try{res.json(await TripSessionService.checkinPlace(id(req),req.user!.id,req.body));}catch(error){next(error);}}
++  static async startTrip(req:AuthenticatedRequest,res:Response,next:NextFunction){try{const data=await TripSessionService.startTrip(id(req),req.user!.id);if(!data){res.status(404).json({success:false,message:'Không tìm thấy chuyến đi'});return;}res.json({success:true,data});}catch(error){next(error);}}
+   static async completeTrip(req:AuthenticatedRequest,res:Response,next:NextFunction){try{const data=await TripSessionService.completeTrip(id(req),req.user!.id);if(!data){res.status(404).json({success:false,message:'Không tìm thấy chuyến đi'});return;}res.json({success:true,data});}catch(error){next(error);}}
+   static async convertToBlog(req:AuthenticatedRequest,res:Response,next:NextFunction){try{res.json(await TripSessionService.convertToBlogDraft(id(req),req.user!.id));}catch(error){next(error);}}
+ }
+diff --git a/travelgo/backend/src/models/Booking.ts b/travelgo/backend/src/models/Booking.ts
+index 5e2179b..ad5076f 100644
+--- a/travelgo/backend/src/models/Booking.ts
++++ b/travelgo/backend/src/models/Booking.ts
+@@ -24,6 +24,7 @@ export interface BookingAttributes {
+   totalAmount: number;
+   discountAmount: number;
+   idempotencyKey?: string;
++  requestFingerprint?: string;
+   recommendationRequestId?: string;
+   recommendationItemId?: string;
+   recommendationItemType?: 'place' | 'hotel' | 'restaurant' | 'tour' | 'ticket';
+@@ -34,7 +35,7 @@ export interface BookingAttributes {
+   updatedAt?: Date;
+ }
+ 
+-export interface BookingCreationAttributes extends Optional<BookingAttributes, 'id' | 'placeId' | 'tourId' | 'ticketId' | 'paymentStatus' | 'bookingStatus' | 'childrenCount' | 'quantity' | 'discountAmount' | 'idempotencyKey' | 'recommendationRequestId' | 'recommendationItemId' | 'recommendationItemType' | 'notes'> {}
++export interface BookingCreationAttributes extends Optional<BookingAttributes, 'id' | 'placeId' | 'tourId' | 'ticketId' | 'paymentStatus' | 'bookingStatus' | 'childrenCount' | 'quantity' | 'discountAmount' | 'idempotencyKey' | 'requestFingerprint' | 'recommendationRequestId' | 'recommendationItemId' | 'recommendationItemType' | 'notes'> {}
+ 
+ export class Booking extends Model<BookingAttributes, BookingCreationAttributes> implements BookingAttributes {
+   public id!: string;
+@@ -59,6 +60,7 @@ export class Booking extends Model<BookingAttributes, BookingCreationAttributes>
+   public totalAmount!: number;
+   public discountAmount!: number;
+   public idempotencyKey?: string;
++  public requestFingerprint?: string;
+   public recommendationRequestId?: string;
+   public recommendationItemId?: string;
+   public recommendationItemType?: 'place' | 'hotel' | 'restaurant' | 'tour' | 'ticket';
+@@ -144,6 +146,7 @@ Booking.init(
+     },
+     discountAmount: { type: DataTypes.DECIMAL(15, 2), allowNull: false, defaultValue: 0 },
+     idempotencyKey: { type: DataTypes.STRING(120), allowNull: true },
++    requestFingerprint: { type: DataTypes.STRING(64), allowNull: true },
+     recommendationRequestId: { type: DataTypes.UUID, allowNull: true },
+     recommendationItemId: { type: DataTypes.STRING(120), allowNull: true },
+     recommendationItemType: { type: DataTypes.STRING(30), allowNull: true },
+diff --git a/travelgo/backend/src/models/TripSession.ts b/travelgo/backend/src/models/TripSession.ts
+index 8b806b7..33fe2e1 100644
+--- a/travelgo/backend/src/models/TripSession.ts
++++ b/travelgo/backend/src/models/TripSession.ts
+@@ -7,6 +7,7 @@ export interface TripSessionAttributes {
+   pacing: 'relaxed' | 'balanced' | 'packed'; status: 'upcoming' | 'active' | 'completed' | 'cancelled';
+   preferences: string[]; itinerary: unknown[]; selectedPlaceIds: string[]; selectedTourIds: string[]; checkins: unknown[];
+   progressPercent: number; notes?: string; isPublic: boolean; createdAt?: Date; updatedAt?: Date;
++  plannerMetadata?: Record<string, any> | null;
+ }
+ type TripSessionCreationAttributes = Optional<TripSessionAttributes, 'id' | 'actualSpentVND' | 'status' | 'preferences' | 'selectedPlaceIds' | 'selectedTourIds' | 'checkins' | 'progressPercent' | 'notes' | 'isPublic'>;
+ export class TripSession extends Model<TripSessionAttributes, TripSessionCreationAttributes> implements TripSessionAttributes {
+@@ -16,6 +17,7 @@ export class TripSession extends Model<TripSessionAttributes, TripSessionCreatio
+   public preferences!: string[]; public itinerary!: unknown[]; public selectedPlaceIds!: string[]; public selectedTourIds!: string[];
+   public checkins!: unknown[]; public progressPercent!: number; public notes?: string; public isPublic!: boolean;
+   public readonly createdAt!: Date; public readonly updatedAt!: Date;
++  public plannerMetadata?: Record<string, any> | null;
+ }
+ TripSession.init({
+   id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true }, userId: { type: DataTypes.UUID, allowNull: false },
+@@ -28,4 +30,5 @@ TripSession.init({
+   selectedPlaceIds: { type: DataTypes.JSONB, allowNull: false, defaultValue: [] }, selectedTourIds: { type: DataTypes.JSONB, allowNull: false, defaultValue: [] },
+   checkins: { type: DataTypes.JSONB, allowNull: false, defaultValue: [] }, progressPercent: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+   notes: { type: DataTypes.TEXT, allowNull: true }, isPublic: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
++  plannerMetadata: { type: DataTypes.JSONB, allowNull: true, field: 'planner_metadata' },
+ }, { sequelize, tableName: 'trip_sessions', timestamps: true, underscored: true });
+diff --git a/travelgo/backend/src/repositories/recommendationRepository.ts b/travelgo/backend/src/repositories/recommendationRepository.ts
+index 51a8b28..a87a1a4 100644
+--- a/travelgo/backend/src/repositories/recommendationRepository.ts
++++ b/travelgo/backend/src/repositories/recommendationRepository.ts
+@@ -10,7 +10,13 @@ const databaseLoader: ApprovedPlaceLoader = async () => {
+   let totalPages = 1;
+   do {
+     const result = await PlaceRepository.list({ page, limit }, { publicOnly: true });
+-    places.push(...result.items.map(serializePlace));
++    places.push(...result.items.map((place) => {
++      const value = place.toJSON ? place.toJSON() : place;
++      const raw: unknown = value.priceFrom;
++      return { ...serializePlace(place), catalogPriceAvailable:
++        (typeof raw === 'number' || (typeof raw === 'string' && raw.trim() !== '')) &&
++        Number.isFinite(Number(raw)) && Number(raw) >= 0 };
++    }));
+     totalPages = result.pages;
+     page += 1;
+   } while (page <= totalPages);
+diff --git a/travelgo/backend/src/repositories/tripRepository.ts b/travelgo/backend/src/repositories/tripRepository.ts
+index c23c01f..b1baf8c 100644
+--- a/travelgo/backend/src/repositories/tripRepository.ts
++++ b/travelgo/backend/src/repositories/tripRepository.ts
+@@ -1,5 +1,8 @@
+ import { TripSession } from '../models/TripSession.js';
++import type { Transaction } from 'sequelize';
+ export class TripRepository {
+   static listByUser(userId: string) { return TripSession.findAll({ where: { userId }, order: [['createdAt','DESC']] }); }
+-  static findOwned(id: string, userId: string) { return TripSession.findOne({ where: { id, userId } }); }
++  static findOwned(id: string, userId: string, transaction?: Transaction) {
++    return TripSession.findOne({ where: { id, userId }, transaction, ...(transaction ? { lock: transaction.LOCK.UPDATE } : {}) });
++  }
+ }
+diff --git a/travelgo/backend/src/routes/tripRoutes.ts b/travelgo/backend/src/routes/tripRoutes.ts
+index 8831d8a..6614451 100644
+--- a/travelgo/backend/src/routes/tripRoutes.ts
++++ b/travelgo/backend/src/routes/tripRoutes.ts
+@@ -11,6 +11,7 @@ router.get('/:id', TripController.getTripById);
+ router.put('/:id', TripController.updateTrip);
+ router.delete('/:id', TripController.deleteTrip);
+ router.post('/:id/checkin', TripController.checkinPlace);
++router.post('/:id/start', TripController.startTrip);
+ router.post('/:id/complete', TripController.completeTrip);
+ router.post('/:id/convert-to-blog', TripController.convertToBlog);
+ 
+diff --git a/travelgo/backend/src/scripts/verifyDatabase.ts b/travelgo/backend/src/scripts/verifyDatabase.ts
+index 10cade0..ee0f14e 100644
+--- a/travelgo/backend/src/scripts/verifyDatabase.ts
++++ b/travelgo/backend/src/scripts/verifyDatabase.ts
+@@ -13,6 +13,7 @@ const expectedMigrations = [
+   '20261012_08_server_side_favorites.sql',
+   '20261012_09_verified_reviews.sql',
+   '20261012_10_review_account_deletion_privacy.sql',
++  '20261028_11_trip_planner_metadata.sql',
+ ];
+ const expectedTables = [
+   'audit_logs', 'blog_posts', 'booking_status_history', 'bookings', 'business_members',
+@@ -37,6 +38,7 @@ const expectedIndexes = [
+   'idx_reviews_ai_export',
+ ];
+ const expectedChecks = [
++  'trip_sessions_planner_metadata_check',
+   'places_status_check', 'tickets_capacity_check', 'bookings_status_phase3_check',
+   'bookings_quantity_check',
+   'user_events_item_type_check', 'user_events_event_type_check',
+@@ -77,6 +79,10 @@ async function run(): Promise<void> {
+ 
+     const tables = await client.query("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'");
+     assertContains(tables.rows.map((row) => row.table_name), expectedTables, 'tables');
++    const metadataColumn = await client.query("SELECT data_type, is_nullable FROM information_schema.columns WHERE table_schema='public' AND table_name='trip_sessions' AND column_name='planner_metadata'");
++    if (metadataColumn.rows[0]?.data_type !== 'jsonb' || metadataColumn.rows[0]?.is_nullable !== 'YES') {
++      throw new Error('trip_sessions.planner_metadata must be nullable JSONB; apply migration 11 on the guarded test target');
++    }
+ 
+     const indexes = await client.query("SELECT indexname FROM pg_indexes WHERE schemaname='public'");
+     assertContains(indexes.rows.map((row) => row.indexname), expectedIndexes, 'indexes');
+diff --git a/travelgo/backend/src/services/bookingService.ts b/travelgo/backend/src/services/bookingService.ts
+index 2e4cde9..d21e032 100644
+--- a/travelgo/backend/src/services/bookingService.ts
++++ b/travelgo/backend/src/services/bookingService.ts
+@@ -1,38 +1,98 @@
+-import { Transaction, UniqueConstraintError } from 'sequelize';
++import { randomUUID } from 'node:crypto';
++import { Transaction } from 'sequelize';
+ import { sequelize } from '../config/database.js';
+-import { AuditLog, Booking, BookingStatusHistory, Place, Ticket, Tour, User } from '../models/index.js';
++import { AuditLog, Booking, BookingStatusHistory, Business, Place, Ticket, Tour, User } from '../models/index.js';
+ import { HttpError } from '../utils/httpError.js';
++import { bookingRequestFingerprint, BookingPayload, normalizeBookingPayload, validateIdempotencyKey } from '../utils/bookingValidation.js';
+ import { BusinessAccessService } from './businessAccessService.js';
+ import { TelemetryService } from './telemetryService.js';
+ import { RecommendationExposureService } from './recommendationExposureService.js';
++export type { BookingPayload } from '../utils/bookingValidation.js';
+ 
+ export type BookingStatus = 'PENDING'|'CONFIRMED'|'CANCELLED'|'COMPLETED'|'REJECTED';
+-export interface BookingPayload { serviceType:'tour'|'hotel'|'restaurant'|'ticket'; serviceId:string; bookingDate:string; returnDate?:string; adultsCount:number; childrenCount:number; quantity?:number; customerPhone:string; notes?:string; recommendationRequestId?:string; recommendationSessionId?:string; }
+ const transitions:Record<BookingStatus,BookingStatus[]>={PENDING:['CONFIRMED','REJECTED','CANCELLED'],CONFIRMED:['COMPLETED','CANCELLED'],CANCELLED:[],COMPLETED:[],REJECTED:[]};
+-export function assertBookingTransition(from:BookingStatus,to:BookingStatus){if(!transitions[from].includes(to))throw new HttpError(409,`Không thể chuyển trạng thái từ ${from} sang ${to}`,'INVALID_BOOKING_TRANSITION');}
+-export function calculateBookingPrice(unitPrice:number,adults:number,children:number,quantity?:number){const units=quantity||adults+children;if(units<=0)throw new HttpError(400,'Số lượng phải lớn hơn 0');const discount=quantity?0:Math.round(unitPrice*children*0.3);return{unitPrice,quantity:units,discountAmount:discount,totalAmount:unitPrice*units-discount};}
+-export function assertCapacity(available:number,requested:number){if(requested<=0||available<requested)throw new HttpError(409,'Dịch vụ không còn đủ số lượng','INSUFFICIENT_CAPACITY');}
+-const serialize=(model:any)=>{const v=model.toJSON?model.toJSON():model;return{...v,unitPrice:Number(v.unitPrice),totalAmount:Number(v.totalAmount),discountAmount:Number(v.discountAmount||0)};};
++export function assertBookingTransition(from:BookingStatus,to:BookingStatus){if(!transitions[from]?.includes(to))throw new HttpError(409,`Không thể chuyển trạng thái từ ${from} sang ${to}`,'INVALID_BOOKING_TRANSITION');}
++export function calculateBookingPrice(unitPrice:number,adults:number,children:number,quantity?:number){
++  const units = quantity ?? adults + children;
++  if (!Number.isSafeInteger(units) || units < 1 || !Number.isFinite(unitPrice) || unitPrice < 0) throw new HttpError(400,'Số lượng hoặc giá không hợp lệ');
++  const discount = quantity === undefined ? Math.round(unitPrice * children * 0.3) : 0;
++  const totalAmount = unitPrice * units - discount;
++  if (!Number.isFinite(totalAmount) || totalAmount > 9_999_999_999_999.99) throw new HttpError(409,'Giá dịch vụ vượt giới hạn','INVALID_SERVICE_PRICE');
++  return {unitPrice,quantity:units,discountAmount:discount,totalAmount};
++}
++export function assertCapacity(available:number,requested:number){if(!Number.isSafeInteger(requested)||requested<=0||available<requested)throw new HttpError(409,'Dịch vụ không còn đủ số lượng','INSUFFICIENT_CAPACITY');}
++const serialize=(model:any)=>{const v=model.toJSON?model.toJSON():model;const { requestFingerprint, ...publicBooking }=v;return{...publicBooking,unitPrice:Number(v.unitPrice),totalAmount:Number(v.totalAmount),discountAmount:Number(v.discountAmount ?? 0)};};
+ const isUuid=(value:string)=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+ 
++async function assertActiveBusiness(businessId:string|undefined, transaction:Transaction){
++  const business = businessId ? await Business.findByPk(businessId,{transaction,lock:transaction.LOCK.SHARE}) : null;
++  if(!business || business.status!=='ACTIVE') throw new HttpError(409,'Doanh nghiệp không còn nhận booking','BUSINESS_NOT_ACTIVE');
++}
+ async function resolveService(payload:BookingPayload,transaction:Transaction){
+-  if(payload.serviceType==='ticket'){const ticket=await Ticket.findByPk(payload.serviceId,{transaction,lock:transaction.LOCK.UPDATE});if(!ticket||ticket.status!=='ACTIVE')throw new HttpError(404,'Vé không tồn tại hoặc đã ngừng bán');const requested=payload.quantity||payload.adultsCount+payload.childrenCount;assertCapacity(ticket.availableSeats,requested);if(!ticket.businessId)throw new HttpError(409,'Vé chưa được liên kết với doanh nghiệp');await ticket.update({availableSeats:ticket.availableSeats-requested},{transaction});return{businessId:ticket.businessId,serviceName:ticket.title,unitPrice:Number(ticket.price),ticketId:ticket.id};}
+-  if(payload.serviceType==='tour'){const tour=await Tour.findByPk(payload.serviceId,{transaction,lock:transaction.LOCK.UPDATE});if(!tour||tour.status!=='APPROVED')throw new HttpError(404,'Tour không tồn tại hoặc chưa được duyệt');const requested=payload.adultsCount+payload.childrenCount;assertCapacity(tour.availableCapacity,requested);await tour.update({availableCapacity:tour.availableCapacity-requested},{transaction});return{businessId:tour.businessId,serviceName:tour.title,unitPrice:Number(tour.priceVND),tourId:tour.id};}
+-  const place=await Place.findOne({where:{id:payload.serviceId,status:'APPROVED'},transaction,lock:transaction.LOCK.SHARE});if(!place||!place.businessId)throw new HttpError(404,'Dịch vụ không tồn tại hoặc chưa được duyệt');if(place.category!==payload.serviceType)throw new HttpError(400,'Loại dịch vụ không khớp');return{businessId:place.businessId,serviceName:place.name,unitPrice:Number(place.priceFrom),placeId:place.id};
++  if(payload.serviceType==='ticket'){
++    const ticket=await Ticket.findByPk(payload.serviceId,{transaction,lock:transaction.LOCK.UPDATE});
++    if(!ticket||ticket.status!=='ACTIVE')throw new HttpError(404,'Vé không tồn tại hoặc đã ngừng bán');
++    await assertActiveBusiness(ticket.businessId,transaction);
++    const requested=payload.quantity ?? payload.adultsCount+payload.childrenCount;
++    assertCapacity(ticket.availableSeats,requested);
++    await ticket.update({availableSeats:ticket.availableSeats-requested},{transaction});
++    return{businessId:ticket.businessId,serviceName:ticket.title,unitPrice:Number(ticket.price),ticketId:ticket.id};
++  }
++  if(payload.serviceType==='tour'){
++    const tour=await Tour.findByPk(payload.serviceId,{transaction,lock:transaction.LOCK.UPDATE});
++    if(!tour||tour.status!=='APPROVED')throw new HttpError(404,'Tour không tồn tại hoặc chưa được duyệt');
++    await assertActiveBusiness(tour.businessId,transaction);
++    const requested=payload.adultsCount+payload.childrenCount;
++    assertCapacity(tour.availableCapacity,requested);
++    await tour.update({availableCapacity:tour.availableCapacity-requested},{transaction});
++    return{businessId:tour.businessId,serviceName:tour.title,unitPrice:Number(tour.priceVND),tourId:tour.id};
++  }
++  const place=await Place.findOne({where:{id:payload.serviceId,status:'APPROVED'},transaction,lock:transaction.LOCK.SHARE});
++  if(!place)throw new HttpError(404,'Dịch vụ không tồn tại hoặc chưa được duyệt');
++  if(place.category!==payload.serviceType)throw new HttpError(400,'Loại dịch vụ không khớp');
++  await assertActiveBusiness(place.businessId,transaction);
++  return{businessId:place.businessId,serviceName:place.name,unitPrice:Number(place.priceFrom),placeId:place.id};
+ }
+ async function restoreInventory(booking:Booking,transaction:Transaction){if(booking.ticketId){const ticket=await Ticket.findByPk(booking.ticketId,{transaction,lock:transaction.LOCK.UPDATE});if(ticket)await ticket.update({availableSeats:Math.min(ticket.capacity,ticket.availableSeats+booking.quantity)},{transaction});}if(booking.tourId){const tour=await Tour.findByPk(booking.tourId,{transaction,lock:transaction.LOCK.UPDATE});if(tour)await tour.update({availableCapacity:Math.min(tour.capacity,tour.availableCapacity+booking.quantity)},{transaction});}}
+ 
+ export class BookingService {
+-  static async createBooking(userId:string,payload:BookingPayload,idempotencyKey?:string){
+-    try {
+-      return await sequelize.transaction(async transaction=>{if(idempotencyKey){const existing=await Booking.findOne({where:{userId,idempotencyKey},transaction});if(existing)return serialize(existing);}const user=await User.findByPk(userId,{transaction});if(!user)throw new HttpError(401,'Tài khoản không tồn tại');if((payload.recommendationRequestId&&!payload.recommendationSessionId)||(!payload.recommendationRequestId&&payload.recommendationSessionId))throw new HttpError(400,'Attribution booking không đầy đủ','INVALID_RECOMMENDATION_ATTRIBUTION');if(payload.recommendationRequestId&&payload.recommendationSessionId)await RecommendationExposureService.assertVisibleAttribution({userId,requestId:payload.recommendationRequestId,sessionId:payload.recommendationSessionId,itemId:payload.serviceId,itemType:payload.serviceType,transaction});const service=await resolveService(payload,transaction);const price=calculateBookingPrice(service.unitPrice,payload.adultsCount,payload.childrenCount,payload.quantity);const booking=await Booking.create({bookingCode:`HG-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000+Math.random()*9000)}`,userId,businessId:service.businessId,placeId:service.placeId,tourId:service.tourId,ticketId:service.ticketId,serviceType:payload.serviceType,serviceId:payload.serviceId,serviceName:service.serviceName,customerName:user.fullName,customerEmail:user.email,customerPhone:payload.customerPhone,bookingDate:payload.bookingDate,returnDate:payload.returnDate,adultsCount:payload.adultsCount,childrenCount:payload.childrenCount,...price,paymentStatus:'unpaid',bookingStatus:'PENDING',notes:payload.notes,idempotencyKey,recommendationRequestId:payload.recommendationRequestId,recommendationItemId:payload.recommendationRequestId?payload.serviceId:undefined,recommendationItemType:payload.recommendationRequestId?payload.serviceType:undefined},{transaction});await BookingStatusHistory.create({bookingId:booking.id,newStatus:'PENDING',actorUserId:userId,reason:'Customer created booking'},{transaction});await TelemetryService.recordBookingEvent({userId,bookingId:booking.id,eventType:'BOOKING_CREATED',transaction});return serialize(booking);});
+-    } catch (error) {
+-      if (idempotencyKey && error instanceof UniqueConstraintError) {
+-        const existing = await Booking.findOne({ where: { userId, idempotencyKey } });
+-        if (existing) return serialize(existing);
++  static async createBooking(userId:string,raw:BookingPayload,idempotencyKey?:string){
++    const payload = normalizeBookingPayload(raw);
++    const key = validateIdempotencyKey(idempotencyKey);
++    const fingerprint = bookingRequestFingerprint(payload);
++    return sequelize.transaction({ isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED }, async transaction=>{
++      if(key){
++        // Serialize the intent BEFORE looking up a booking or consuming the last seat.
++        // READ COMMITTED sees the first transaction's committed booking after this wait.
++        await sequelize.query('SELECT pg_advisory_xact_lock(hashtextextended(:identity, 0))',{
++          replacements:{identity:JSON.stringify(['booking-v1',userId,key])},transaction,
++        });
++        const existing=await Booking.findOne({where:{userId,idempotencyKey:key},transaction});
++        if(existing){
++          if(!existing.requestFingerprint)throw new HttpError(409,'Booking cũ chưa lưu định danh request; hãy xem lịch sử trước khi tạo đơn mới','LEGACY_IDEMPOTENCY_UNVERIFIABLE');
++          if(existing.requestFingerprint!==fingerprint)throw new HttpError(409,'Key đã được sử dụng cho nội dung booking khác','IDEMPOTENCY_PAYLOAD_MISMATCH');
++          return serialize(existing);
++        }
+       }
+-      throw error;
+-    }
++      const user=await User.findByPk(userId,{transaction});
++      if(!user)throw new HttpError(401,'Tài khoản không tồn tại');
++      if(payload.recommendationRequestId)await RecommendationExposureService.assertVisibleAttribution({userId,requestId:payload.recommendationRequestId,sessionId:payload.recommendationSessionId!,itemId:payload.serviceId,itemType:payload.serviceType,transaction});
++      const service=await resolveService(payload,transaction);
++      const price=calculateBookingPrice(service.unitPrice,payload.adultsCount,payload.childrenCount,payload.quantity);
++      const booking=await Booking.create({
++        bookingCode:'HG-'+randomUUID().replaceAll('-','').slice(0,24).toUpperCase(),userId,businessId:service.businessId,
++        placeId:service.placeId,tourId:service.tourId,ticketId:service.ticketId,
++        serviceType:payload.serviceType,serviceId:payload.serviceId,serviceName:service.serviceName,
++        customerName:user.fullName,customerEmail:user.email,customerPhone:payload.customerPhone,
++        bookingDate:payload.bookingDate,returnDate:payload.returnDate,adultsCount:payload.adultsCount,childrenCount:payload.childrenCount,
++        ...price,paymentStatus:'unpaid',bookingStatus:'PENDING',notes:payload.notes,idempotencyKey:key,requestFingerprint:fingerprint,
++        recommendationRequestId:payload.recommendationRequestId,recommendationItemId:payload.recommendationRequestId?payload.serviceId:undefined,
++        recommendationItemType:payload.recommendationRequestId?payload.serviceType:undefined,
++      },{transaction});
++      await BookingStatusHistory.create({bookingId:booking.id,newStatus:'PENDING',actorUserId:userId,reason:'Customer created booking'},{transaction});
++      await TelemetryService.recordBookingEvent({userId,bookingId:booking.id,eventType:'BOOKING_CREATED',transaction});
++      return serialize(booking);
++    });
+   }
+   static async getBookingsByUser(userId:string){return (await Booking.findAll({where:{userId},order:[['createdAt','DESC']]})).map(serialize);}
+   static async getAllBookings(){return (await Booking.findAll({order:[['createdAt','DESC']]})).map(serialize);}
+diff --git a/travelgo/backend/src/services/tourPlannerService.ts b/travelgo/backend/src/services/tourPlannerService.ts
+index 0b9ce6e..3c2f6f0 100644
+--- a/travelgo/backend/src/services/tourPlannerService.ts
++++ b/travelgo/backend/src/services/tourPlannerService.ts
+@@ -4,6 +4,8 @@ import { RecommendationService } from './recommendationService.js';
+ import { GeoService } from './geoService.js';
+ import type { TravelPreference } from '../utils/travelPreferences.js';
+ import { HttpError } from '../utils/httpError.js';
++import { calculatePlannerDays, validatePlannerInput } from '../utils/plannerValidation.js';
++import { assessPlannerBudget } from '../utils/plannerFeasibility.js';
+ 
+ export interface PlannerInput {
+   departureCity: string;
+@@ -13,9 +15,9 @@ export interface PlannerInput {
+   adults: number;
+   children: number;
+   totalBudget: number; // VNĐ
+-  transportation: 'flight' | 'car' | 'train' | 'motorbike';
++  transportation: 'car' | 'motorbike';
+   preferences: TravelPreference[];
+-  pacing: 'relaxed' | 'balanced' | 'packed';
++  pacing: 'balanced';
+   mandatoryPlaceIds?: string[];
+ }
+ 
+@@ -28,6 +30,7 @@ export interface ItineraryActivity {
+   category: 'sightseeing' | 'food' | 'hotel' | 'leisure';
+   durationMinutes: number;
+   estimatedCostVND: number;
++  costSource?: string;
+   latitude: number;
+   longitude: number;
+   imageUrl?: string;
+@@ -42,6 +45,9 @@ export interface ItineraryDay {
+   themeTitle: string;
+   activities: ItineraryActivity[];
+   dayEstimatedCostVND: number;
++  lodgingNights: number;
++  lodgingEstimatedCostVND: number; // Whole-group estimate, separate from activities.
++  lodgingCostSource?: string;
+   centroid: { latitude: number; longitude: number };
+ }
+ 
+@@ -53,6 +59,10 @@ export interface GeneratedItinerary {
+   startDate: string;
+   endDate: string;
+   daysCount: number;
++  nightsCount: number;
++  costBasis: 'GROUP_VND_V1';
++  costAssumptions: string[];
++  transportation: PlannerInput['transportation'];
+   adults: number;
+   children: number;
+   pacing: 'relaxed' | 'balanced' | 'packed';
+@@ -61,6 +71,8 @@ export interface GeneratedItinerary {
+   totalEstimatedCostVND: number;
+   costDifferenceVND: number;
+   budgetStatus: 'within_budget' | 'over_budget';
++  overBudgetVND: number;
++  constraintViolations: string[];
+   budgetAdvice: string;
+   days: ItineraryDay[];
+   summary: string;
+@@ -88,7 +100,7 @@ function matchesDestination(place: PlaceData, destinationCity: string): boolean
+   const destination = normalizedText(destinationCity);
+   return [place.city, place.province].some((value) => {
+     const location = normalizedText(value);
+-    return location === destination || location.includes(destination) || destination.includes(location);
++    return Boolean(location && destination) && location === destination;
+   });
+ }
+ 
+@@ -97,11 +109,7 @@ export class TourPlannerService {
+    * Tính số ngày từ ngày bắt đầu đến ngày kết thúc
+    */
+   public static calculateDaysBetween(startDateStr: string, endDateStr: string): number {
+-    const start = new Date(startDateStr);
+-    const end = new Date(endDateStr);
+-    const diffTime = Math.abs(end.getTime() - start.getTime());
+-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+-    return Math.max(1, Math.min(10, diffDays || 3));
++    return calculatePlannerDays(startDateStr, endDateStr);
+   }
+ 
+   public static async generateSmartItinerary(
+@@ -114,14 +122,33 @@ export class TourPlannerService {
+    * Tạo lịch trình cá nhân hóa thông minh
+    */
+   public static async generatePersonalizedItinerary(
+-    input: PlannerInput
++    rawInput: PlannerInput
+   ): Promise<GeneratedItinerary> {
+-
++    const input = validatePlannerInput(rawInput);
+     const daysCount = this.calculateDaysBetween(input.startDate, input.endDate);
+-    const totalPassengers = Math.max(1, input.adults + input.children * 0.7);
+-    const dailyBudgetPerPerson = input.totalBudget > 0
+-      ? input.totalBudget / totalPassengers / daysCount
+-      : 1500000;
++    const nightsCount = Math.max(daysCount - 1, 0);
++    const totalPassengers = input.adults + input.children * 0.7;
++    const dailyBudgetPerPerson = input.totalBudget / totalPassengers / daysCount;
++    const groupCost = (perAdultEquivalent: number): number => {
++      const amount = Math.round(perAdultEquivalent * totalPassengers);
++      if (!Number.isSafeInteger(amount) || amount < 0) {
++        throw new HttpError(400, 'Chi phí ước tính vượt giới hạn tính toán an toàn.', 'PLANNER_COST_LIMIT_EXCEEDED');
++      }
++      return amount;
++    };
++    // Preserve genuine zero. Missing values stay missing even if a public serializer
++    // normalizes them to zero; the repository carries availability separately.
++    const priceEstimate = (place: PlaceData | null | undefined, fallback: number, unit: string) => {
++      const price = place?.priceFrom;
++      const available = place?.catalogPriceAvailable !== false &&
++        typeof price === 'number' && Number.isFinite(price) && price >= 0;
++      return {
++        amount: available ? price : fallback,
++        source: available
++          ? `Catalog priceFrom (${place!.name}): ${price} VND; giả định ${unit}, chưa xác minh đơn vị/giá dịch vụ.`
++          : `Giả định planner T11-B: ${fallback} VND/${unit}; ${place?.name ?? 'chưa chọn dịch vụ'} thiếu giá catalog hợp lệ, chưa xác minh.`,
++      };
++    };
+ 
+     // 1. Lấy tất cả dữ liệu địa điểm, nhà hàng và khách sạn
+     const catalog = await RecommendationRepository.getApprovedPlaces();
+@@ -164,11 +191,17 @@ export class TourPlannerService {
+     }
+ 
+     // Tách riêng danh mục
+-    const attractionCandidates = allPlaces.filter(
++    const destinationPlaces = allPlaces.filter((place) => matchesDestination(place, input.destinationCity));
++    const attractionCandidates = destinationPlaces.filter(
+       (p) => p.category === 'tour' || p.category === 'attraction'
+     );
+-    const restaurantCandidates = allPlaces.filter((p) => p.category === 'restaurant');
+-    const hotelCandidates = allPlaces.filter((p) => p.category === 'hotel');
++    if (!attractionCandidates.length) {
++      throw new HttpError(422,
++        `Chưa đủ dữ liệu để tạo lịch trình tham quan tại ${input.destinationCity}: không có điểm tham quan hợp lệ. Hãy sửa yêu cầu hoặc chọn điểm đến khác rồi tạo lại.`,
++        'NO_SIGHTSEEING_FOR_DESTINATION');
++    }
++    const restaurantCandidates = destinationPlaces.filter((p) => p.category === 'restaurant');
++    const hotelCandidates = destinationPlaces.filter((p) => p.category === 'hotel');
+ 
+     // 2. Chạy thuật toán Recommendation cho điểm tham quan
+     const recommendedAttractions = RecommendationService.recommendPlaces(
+@@ -190,7 +223,7 @@ export class TourPlannerService {
+ 
+     // 4. Khách sạn lưu trú phù hợp
+     const recommendedHotels = RecommendationService.recommendPlaces(
+-      hotelCandidates.length > 0 ? hotelCandidates : allPlaces,
++      hotelCandidates,
+       {
+         destinationCity: input.destinationCity,
+         preferences: ['Nghỉ dưỡng', ...input.preferences],
+@@ -219,7 +252,7 @@ export class TourPlannerService {
+ 
+     for (let dayIdx = 0; dayIdx < daysCount; dayIdx++) {
+       const currentDate = new Date(startDateObj);
+-      currentDate.setDate(startDateObj.getDate() + dayIdx);
++      currentDate.setUTCDate(startDateObj.getUTCDate() + dayIdx);
+       const dateStr = currentDate.toISOString().split('T')[0];
+ 
+       const dayNumber = dayIdx + 1;
+@@ -230,7 +263,8 @@ export class TourPlannerService {
+       // Buổi sáng: Điểm tham quan 1
+       const morningSpot = daySpots[0];
+       if (morningSpot) {
+-        const morningCost = Math.min(morningSpot.priceFrom || 300000, dailyBudgetPerPerson * 0.4);
++        const estimate = priceEstimate(morningSpot, 300000, 'người lớn quy đổi/lượt tham quan');
++        const morningCost = groupCost(estimate.amount);
+         activities.push({
+           id: `act-${dayNumber}-morning`,
+           placeId: morningSpot.id,
+@@ -240,6 +274,7 @@ export class TourPlannerService {
+           category: 'sightseeing',
+           durationMinutes: 180,
+           estimatedCostVND: morningCost,
++          costSource: estimate.source,
+           latitude: morningSpot.latitude,
+           longitude: morningSpot.longitude,
+           imageUrl: morningSpot.heroImage,
+@@ -252,7 +287,8 @@ export class TourPlannerService {
+ 
+       // Buổi trưa: Ăn trưa tại nhà hàng đặc sản
+       const lunchRestaurant = restaurantsToSchedule[dayIdx] || null;
+-      const lunchCost = 150000;
++      const lunchEstimate = priceEstimate(lunchRestaurant, 150000, 'người lớn quy đổi/bữa trưa');
++      const lunchCost = groupCost(lunchEstimate.amount);
+       activities.push({
+         id: `act-${dayNumber}-lunch`,
+         placeId: lunchRestaurant?.id,
+@@ -262,6 +298,7 @@ export class TourPlannerService {
+         category: 'food',
+         durationMinutes: 90,
+         estimatedCostVND: lunchCost,
++        costSource: lunchEstimate.source,
+         latitude: lunchRestaurant ? lunchRestaurant.latitude : (morningSpot?.latitude || 16.0544) + 0.005,
+         longitude: lunchRestaurant ? lunchRestaurant.longitude : (morningSpot?.longitude || 108.2022) + 0.005,
+         imageUrl: lunchRestaurant?.heroImage || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80',
+@@ -274,7 +311,8 @@ export class TourPlannerService {
+       // Buổi chiều: Điểm tham quan 2 / Check-in
+       const afternoonSpot = daySpots[1];
+       if (afternoonSpot) {
+-        const afternoonCost = Math.min(afternoonSpot.priceFrom || 200000, dailyBudgetPerPerson * 0.3);
++        const estimate = priceEstimate(afternoonSpot, 300000, 'người lớn quy đổi/lượt tham quan');
++        const afternoonCost = groupCost(estimate.amount);
+         activities.push({
+           id: `act-${dayNumber}-afternoon`,
+           placeId: afternoonSpot.id,
+@@ -284,6 +322,7 @@ export class TourPlannerService {
+           category: 'sightseeing',
+           durationMinutes: 150,
+           estimatedCostVND: afternoonCost,
++          costSource: estimate.source,
+           latitude: afternoonSpot.latitude,
+           longitude: afternoonSpot.longitude,
+           imageUrl: afternoonSpot.heroImage,
+@@ -295,7 +334,7 @@ export class TourPlannerService {
+       }
+ 
+       // Buổi tối: Dạo phố / Ăn tối & Khách sạn
+-      const dinnerCost = 200000;
++      const dinnerCost = groupCost(200000);
+       activities.push({
+         id: `act-${dayNumber}-dinner`,
+         timeSlot: 'dinner',
+@@ -304,6 +343,7 @@ export class TourPlannerService {
+         category: 'food',
+         durationMinutes: 120,
+         estimatedCostVND: dinnerCost,
++        costSource: 'Giả định planner T11-B: 200000 VND/người lớn quy đổi/bữa tối; chưa chọn dịch vụ, chưa xác minh giá.',
+         latitude: (afternoonSpot?.latitude || 16.0544) - 0.004,
+         longitude: (afternoonSpot?.longitude || 108.2022) + 0.003,
+         imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80',
+@@ -316,21 +356,30 @@ export class TourPlannerService {
+           id: `act-${dayNumber}-hotel`,
+           placeId: mandatoryHotels[0].id,
+           timeSlot: 'evening',
+-          title: `Nhận phòng tại ${mandatoryHotels[0].name}`,
++          title: nightsCount > 0 ? `Khách sạn dự kiến: ${mandatoryHotels[0].name}` : `Khách sạn tham khảo: ${mandatoryHotels[0].name}`,
+           description: mandatoryHotels[0].summary || 'Khách sạn do bạn chủ động chọn cho hành trình.',
+           category: 'hotel',
+           durationMinutes: 60,
+           estimatedCostVND: 0,
++          costSource: 'Mốc khách sạn 0đ; chi phí lưu trú tách riêng, không tính trùng.',
+           latitude: mandatoryHotels[0].latitude,
+           longitude: mandatoryHotels[0].longitude,
+           imageUrl: mandatoryHotels[0].heroImage,
+-          recommendationReason: 'Khách sạn bắt buộc do bạn chọn từ trang chi tiết địa điểm.',
++          recommendationReason: 'Khách sạn do bạn chọn. Phí lưu trú ước tính nằm ở mục riêng của ngày; không phải xác nhận đặt phòng.',
+         });
+       }
+ 
+-      // Tiền phòng khách sạn mỗi đêm (nếu chuyến đi nhiều ngày)
+-      const hotelNightCost = selectedHotel ? Math.round(selectedHotel.priceFrom / totalPassengers) : 400000;
+-      dayCost += hotelNightCost;
++      // One estimated room for the group; only the first N-1 days have a night.
++      // priceFrom has no reliable room/night unit yet; disclose the assumption.
++      const lodgingNights = dayIdx < nightsCount ? 1 : 0;
++      const lodgingEstimate = priceEstimate(selectedHotel, 400000, 'nhóm/đêm (1 phòng giả định)');
++      const lodgingEstimatedCostVND = lodgingNights
++        ? Math.round(lodgingEstimate.amount)
++        : 0;
++      if (!Number.isSafeInteger(lodgingEstimatedCostVND)) {
++        throw new HttpError(400, 'Chi phí lưu trú vượt giới hạn tính toán an toàn.', 'PLANNER_COST_LIMIT_EXCEEDED');
++      }
++      dayCost += lodgingEstimatedCostVND;
+ 
+       // Tính khoảng cách cự ly giữa các hoạt động trong ngày
+       for (let i = 0; i < activities.length - 1; i++) {
+@@ -339,7 +388,7 @@ export class TourPlannerService {
+           { latitude: activities[i + 1].latitude, longitude: activities[i + 1].longitude }
+         );
+         activities[i].aerialDistanceToNextKm = dist;
+-        activities[i].estimatedTransitMinutes = GeoService.estimateTravelTimeMinutes(dist, 'car');
++        activities[i].estimatedTransitMinutes = GeoService.estimateTravelTimeMinutes(dist, input.transportation);
+       }
+ 
+       const centroid = GeoService.calculateCentroid(
+@@ -352,14 +401,20 @@ export class TourPlannerService {
+         themeTitle: `Ngày ${dayNumber}: Khám phá văn hóa & danh thắng ${input.destinationCity}`,
+         activities,
+         dayEstimatedCostVND: dayCost,
++        lodgingNights,
++        lodgingEstimatedCostVND,
++        lodgingCostSource: lodgingNights ? lodgingEstimate.source : '0 đêm: không tính phí lưu trú.',
+         centroid,
+       });
+ 
+       grandTotalCost += dayCost;
+     }
+ 
+-    // Nhân tổng chi phí cho toàn bộ số người
+-    const totalTripEstimatedCost = Math.round(grandTotalCost * totalPassengers);
++    // Activity/day amounts already refer to the whole group; do not multiply twice.
++    const totalTripEstimatedCost = grandTotalCost;
++    if (!Number.isSafeInteger(totalTripEstimatedCost)) {
++      throw new HttpError(400, 'Tổng chi phí vượt giới hạn tính toán an toàn.', 'PLANNER_COST_LIMIT_EXCEEDED');
++    }
+     const costDiff = input.totalBudget - totalTripEstimatedCost;
+     const isWithinBudget = costDiff >= 0;
+ 
+@@ -380,23 +435,33 @@ export class TourPlannerService {
+ 
+     return {
+       id: `itinerary-${Date.now()}`,
+-      title: `Hành trình ${daysCount}N${daysCount > 1 ? daysCount - 1 : 1}Đ khám phá ${input.destinationCity}`,
++      title: `Hành trình ${daysCount}N${nightsCount}Đ khám phá ${input.destinationCity}`,
+       departureCity: input.departureCity || 'Toàn quốc',
+       destinationCity: input.destinationCity,
+       startDate: input.startDate,
+       endDate: input.endDate,
+       daysCount,
++      nightsCount,
++      costBasis: 'GROUP_VND_V1',
++      transportation: input.transportation,
++      costAssumptions: [
++        'Mọi khoản activity, tổng ngày và tổng chuyến là VND cho cả nhóm, làm tròn từng khoản đến 1 VND; ngân sách cũng cho cả nhóm.',
++        'Ước tính hoạt động/ăn uống quy đổi mỗi người lớn = 1, trẻ em = 0,7; đây là giả định lập kế hoạch, không phải chính sách giá của nhà cung cấp.',
++        'priceFrom chưa có đơn vị và sức chứa đáng tin cậy. Tạm ước tính một phòng cho cả nhóm mỗi đêm; không bảo đảm đủ chỗ hoặc đúng giá phòng/đêm.',
++        'Lưu trú dùng priceFrom khách sạn, thiếu giá dùng 400.000đ/nhóm/đêm; chỉ tính N−1 đêm. Phí này tách khỏi activity khách sạn có giá 0đ.',
++        'Tham quan dùng priceFrom, thiếu giá tạm tính 300.000đ/người lớn quy đổi/lượt. Bữa trưa dùng priceFrom nhà hàng, thiếu giá tạm tính 150.000đ; bữa tối tạm tính 200.000đ/người lớn quy đổi. Nguồn giả định: định mức planner T11-B trong source, chưa khảo sát giá thị trường; xem nhãn từng khoản. Giá 0 được giữ nguyên; không cắt giá theo ngân sách.',
++        'Chưa bao gồm vé máy bay/tàu, chi phí chặng khởi hành hoặc giá vận chuyển thực tế; tổng này không phải giá trọn gói hay bảo đảm đủ ngân sách.',
++      ],
+       adults: input.adults,
+       children: input.children,
+       pacing: input.pacing,
+       preferences: [...input.preferences],
+       totalBudgetUserVND: input.totalBudget,
+       totalEstimatedCostVND: totalTripEstimatedCost,
+-      costDifferenceVND: costDiff,
+-      budgetStatus: isWithinBudget ? 'within_budget' : 'over_budget',
++      ...assessPlannerBudget(input.totalBudget, totalTripEstimatedCost),
+       budgetAdvice,
+       days,
+-      summary: `Hành trình du lịch ${daysCount} ngày được thiết kế thông minh dựa trên thuật toán Content-Based và khoảng cách địa lý, đáp ứng các sở thích [${input.preferences.join(', ')}] với nhịp độ ${input.pacing === 'relaxed' ? 'Thư giãn' : input.pacing === 'packed' ? 'Khám phá nhiều' : 'Cân bằng'}.`,
++      summary: `Hành trình ${daysCount} ngày theo tiêu chí đã chọn. Nhịp cân bằng: tối đa 2 điểm tham quan/ngày, không tính bữa ăn. ETA giữa các điểm bằng ${input.transportation === 'motorbike' ? 'xe máy' : 'ô tô'} là ước lượng từ khoảng cách Haversine, không phải tuyến đường bộ hoặc thời gian thực; chưa tính chặng và chi phí liên tỉnh.`,
+       hotelSuggestion: selectedHotel,
+       selectedPlaceIds,
+       createdAt: new Date().toISOString(),
+diff --git a/travelgo/backend/src/services/tripSessionService.ts b/travelgo/backend/src/services/tripSessionService.ts
+index 69bdc7b..b2771fd 100644
+--- a/travelgo/backend/src/services/tripSessionService.ts
++++ b/travelgo/backend/src/services/tripSessionService.ts
+@@ -1,16 +1,24 @@
+ import { TripSession as TripModel } from '../models/TripSession.js';
+ import { TripRepository } from '../repositories/tripRepository.js';
+ import { HttpError } from '../utils/httpError.js';
+-import { validateTravelPreferences } from '../utils/travelPreferences.js';
++import { sequelize } from '../config/database.js';
++import { assertTripId, prepareTripSnapshot, prepareTripUpdate } from '../utils/tripSnapshot.js';
+ import { GeneratedItinerary, ItineraryDay } from './tourPlannerService.js';
++import { reconcileCheckins, resolveCheckinActivity, tripProgress, validateCheckinBody } from '../utils/tripProgress.js';
++import { assessPlannerBudget } from '../utils/plannerFeasibility.js';
+ 
+ export interface TripCheckin {
+-  placeId: string;
++  activityId?: string;
++  resolvedActivityId?: string;
++  placeId?: string;
+   placeName: string;
+   checkedInAt: string;
+   latitude?: number;
+   longitude?: number;
+-  verifiedViaGeo: boolean;
++  verifiedViaGeo?: boolean;
++  hasAttachedLocation?: boolean;
++  accuracyMeters?: number;
++  excludedFromProgress?: string;
+   notes?: string;
+   photoUrl?: string;
+ }
+@@ -35,23 +43,26 @@ export interface TripSession {
+   selectedPlaceIds: string[];
+   checkins: TripCheckin[];
+   progressPercent: number;
++  progress: { eligibleActivityIds: string[]; checkedActivityIds: string[]; unmatchedCheckinCount: number; ineligibleActivityCount: number };
+   notes?: string;
+   isPublic: boolean;
+   createdAt: string;
+   updatedAt: string;
+-}
+-
+-interface TripUpdateInput {
+-  name?: string;
+-  notes?: string;
+-  actualSpentVND?: number;
+-  isPublic?: boolean;
+-  itinerary?: ItineraryDay[];
+-  preferences?: unknown;
++  costBasis?: string;
++  nightsCount?: number;
++  costAssumptions?: string[];
++  transportation?: 'car' | 'motorbike' | 'flight' | 'train';
++  adults?: number;
++  children?: number;
++  costDifferenceVND?: number;
++  budgetStatus?: 'within_budget' | 'over_budget';
++  overBudgetVND?: number;
++  constraintViolations?: string[];
+ }
+ 
+ const serialize = (model: any): TripSession => {
+   const value = model.toJSON ? model.toJSON() : model;
++  const progress = tripProgress(value.itinerary, value.checkins);
+   return {
+     id: value.id,
+     userId: value.userId,
+@@ -70,12 +81,24 @@ const serialize = (model: any): TripSession => {
+     preferences: Array.isArray(value.preferences) ? value.preferences : [],
+     days: Array.isArray(value.itinerary) ? value.itinerary : [],
+     selectedPlaceIds: Array.isArray(value.selectedPlaceIds) ? value.selectedPlaceIds : [],
+-    checkins: Array.isArray(value.checkins) ? value.checkins : [],
+-    progressPercent: value.progressPercent,
++    ...progress,
++    checkins: progress.checkins as TripCheckin[],
+     notes: value.notes,
+     isPublic: value.isPublic,
+     createdAt: new Date(value.createdAt).toISOString(),
+     updatedAt: new Date(value.updatedAt).toISOString(),
++    // Read without upgrading legacy units, changing modes or repricing old JSON.
++    ...(value.plannerMetadata && typeof value.plannerMetadata === 'object' ? {
++      costBasis: value.plannerMetadata.costBasis,
++      nightsCount: value.plannerMetadata.nightsCount,
++      costAssumptions: value.plannerMetadata.costAssumptions,
++      transportation: value.plannerMetadata.transportation,
++      adults: value.plannerMetadata.adults,
++      children: value.plannerMetadata.children,
++      ...(value.plannerMetadata.costBasis === 'GROUP_VND_V1' ? {
++        ...assessPlannerBudget(Number(value.totalBudgetVND), Number(value.estimatedCostVND)),
++      } : {}),
++    } : {}),
+   };
+ };
+ 
+@@ -85,32 +108,18 @@ export class TripSessionService {
+   }
+ 
+   static async getTripById(id: string, userId: string) {
++    assertTripId(id);
+     const trip = await TripRepository.findOwned(id, userId);
+     return trip ? serialize(trip) : null;
+   }
+ 
+   static async createTripFromPlanner(itinerary: GeneratedItinerary, userId: string, _userName: string) {
+-    const preferences = validateTravelPreferences(
+-      (itinerary as GeneratedItinerary & { preferences?: unknown }).preferences
+-    );
++    const snapshot = prepareTripSnapshot(itinerary);
+     return serialize(await TripModel.create({
+       userId,
+-      name: itinerary.title,
+-      destinationCity: itinerary.destinationCity,
+-      departureCity: itinerary.departureCity,
+-      startDate: itinerary.startDate,
+-      endDate: itinerary.endDate,
+-      daysCount: itinerary.daysCount,
+-      totalBudgetVND: itinerary.totalBudgetUserVND,
+-      estimatedCostVND: itinerary.totalEstimatedCostVND,
++      ...snapshot,
+       actualSpentVND: 0,
+-      pacing: itinerary.pacing,
+       status: 'upcoming',
+-      preferences,
+-      itinerary: itinerary.days,
+-      selectedPlaceIds: [...new Set(itinerary.days.flatMap((day) =>
+-        day.activities.map((activity) => activity.placeId).filter(Boolean)
+-      ) as string[])],
+       selectedTourIds: [],
+       checkins: [],
+       progressPercent: 0,
+@@ -118,17 +127,19 @@ export class TripSessionService {
+     }));
+   }
+ 
+-  static async updateTrip(id: string, userId: string, updates: TripUpdateInput) {
+-    const trip = await TripRepository.findOwned(id, userId);
+-    if (!trip) return null;
+-
+-    const { preferences, ...otherUpdates } = updates;
+-    const safeUpdates: Omit<TripUpdateInput, 'preferences'> & { preferences?: string[] } = otherUpdates;
+-    if (preferences !== undefined) {
+-      safeUpdates.preferences = validateTravelPreferences(preferences);
+-    }
+-    await trip.update(safeUpdates);
+-    return serialize(trip);
++  static async updateTrip(id: string, userId: string, updates: unknown) {
++    assertTripId(id);
++    return sequelize.transaction(async (transaction) => {
++      const trip = await TripRepository.findOwned(id, userId, transaction);
++      if (!trip) return null;
++      const patch = prepareTripUpdate(updates, trip.toJSON());
++      if (patch.itinerary !== undefined) {
++        patch.checkins = reconcileCheckins(trip.itinerary, patch.itinerary, trip.checkins);
++        patch.progressPercent = tripProgress(patch.itinerary, patch.checkins).progressPercent;
++      }
++      if (Object.keys(patch).length) await trip.update(patch, { transaction });
++      return serialize(trip);
++    });
+   }
+ 
+   static async deleteTrip(id: string, userId: string) {
+@@ -138,45 +149,45 @@ export class TripSessionService {
+     return true;
+   }
+ 
+-  static async checkinPlace(
+-    tripId: string,
+-    userId: string,
+-    placeId: string,
+-    placeName: string,
+-    geo?: { latitude: number; longitude: number; accuracyMeters?: number },
+-    notes?: string
+-  ) {
+-    const trip = await TripRepository.findOwned(tripId, userId);
+-    if (!trip) throw new HttpError(404, 'Không tìm thấy chuyến đi');
+-    const checkins = [...(trip.checkins as TripCheckin[])];
+-    const value: TripCheckin = {
+-      placeId,
+-      placeName,
+-      checkedInAt: new Date().toISOString(),
+-      latitude: geo?.latitude,
+-      longitude: geo?.longitude,
+-      verifiedViaGeo: !!geo,
+-      notes,
+-    };
+-    const index = checkins.findIndex((item) => item.placeId === placeId);
+-    if (index >= 0) checkins[index] = value;
+-    else checkins.push(value);
+-    const activities = (trip.itinerary as any[]).flatMap((day) => day.activities || []).length;
+-    await trip.update({
+-      checkins,
+-      status: trip.status === 'upcoming' ? 'active' : trip.status,
+-      progressPercent: activities ? Math.min(100, Math.round(checkins.length / activities * 100)) : 0,
++  static async checkinPlace(tripId: string, userId: string, body: unknown) {
++    assertTripId(tripId);
++    const input = validateCheckinBody(body);
++    return sequelize.transaction(async (transaction) => {
++      const trip = await TripRepository.findOwned(tripId, userId, transaction);
++      if (!trip) throw new HttpError(404, 'Không tìm thấy chuyến đi');
++      const activity = resolveCheckinActivity(trip.itinerary, input);
++      const existing = tripProgress(trip.itinerary, trip.checkins).checkins.find((c) => c.resolvedActivityId === activity.id);
++      if (existing && ['active', 'completed'].includes(trip.status)) {
++        return { success: true, trip: serialize(trip), checkin: existing, message: 'Activity đã được check-in; giữ nguyên bản ghi đầu tiên.' };
++      }
++      if (trip.status !== 'active') throw new HttpError(409, 'Chỉ check-in mới khi chuyến đi đang diễn ra. Hãy bắt đầu chuyến đi trước.', 'INVALID_TRIP_TRANSITION');
++      const value: TripCheckin = { activityId: activity.id, ...(activity.placeId ? { placeId: activity.placeId } : {}),
++        placeName: activity.title, checkedInAt: new Date().toISOString(), notes: input.notes,
++        ...(input.geo ? { latitude: input.geo.latitude, longitude: input.geo.longitude, accuracyMeters: input.geo.accuracyMeters } : {}), verifiedViaGeo: false };
++      const checkins = [...reconcileCheckins(trip.itinerary, trip.itinerary, trip.checkins), value];
++      await trip.update({ checkins, progressPercent: tripProgress(trip.itinerary, checkins).progressPercent }, { transaction });
++      return { success: true, trip: serialize(trip), checkin: { ...value, hasAttachedLocation: !!input.geo }, message: 'Đã check-in hoạt động.' };
+     });
+-    return { success: true, trip: serialize(trip), checkin: value, message: `Check-in thành công tại ${placeName}!` };
+   }
+ 
+-  static async completeTrip(id: string, userId: string) {
+-    const trip = await TripRepository.findOwned(id, userId);
+-    if (!trip) return null;
+-    await trip.update({ status: 'completed', progressPercent: 100 });
+-    return serialize(trip);
++  private static async transition(id: string, userId: string, action: 'start' | 'complete') {
++    assertTripId(id);
++    return sequelize.transaction(async (transaction) => {
++      const trip = await TripRepository.findOwned(id, userId, transaction);
++      if (!trip) return null;
++      const target = action === 'start' ? 'active' : 'completed';
++      if (trip.status === target) return serialize(trip);
++      const from = action === 'start' ? 'upcoming' : 'active';
++      if (trip.status !== from) throw new HttpError(409, 'Trạng thái chuyến đi không cho phép thao tác này.', 'INVALID_TRIP_TRANSITION');
++      const checkins = reconcileCheckins(trip.itinerary, trip.itinerary, trip.checkins);
++      await trip.update({ status: target, checkins, progressPercent: tripProgress(trip.itinerary, checkins).progressPercent }, { transaction });
++      return serialize(trip);
++    });
+   }
+ 
++  static startTrip(id: string, userId: string) { return this.transition(id, userId, 'start'); }
++  static completeTrip(id: string, userId: string) { return this.transition(id, userId, 'complete'); }
++
+   static async convertToBlogDraft(id: string, userId: string) {
+     const trip = await this.getTripById(id, userId);
+     if (!trip) throw new HttpError(404, 'Chuyến đi không tồn tại');
+diff --git a/travelgo/backend/src/tests/algorithm.test.ts b/travelgo/backend/src/tests/algorithm.test.ts
+index 76eb82f..bc9a157 100644
+--- a/travelgo/backend/src/tests/algorithm.test.ts
++++ b/travelgo/backend/src/tests/algorithm.test.ts
+@@ -177,7 +177,7 @@ const tests: TestCase[] = [
+         totalBudget: 1000000, // Quá ít cho 3 ngày
+         transportation: 'car',
+         preferences: ['am-thuc'],
+-        pacing: 'relaxed',
++        pacing: 'balanced', // This scenario tests budget status; generate now supports balanced only.
+       });
+ 
+       return tightPlan.budgetStatus === 'over_budget' && tightPlan.costDifferenceVND < 0;
+diff --git a/travelgo/backend/src/validators/validators.ts b/travelgo/backend/src/validators/validators.ts
+index f713cc2..a8a7fdf 100644
+--- a/travelgo/backend/src/validators/validators.ts
++++ b/travelgo/backend/src/validators/validators.ts
+@@ -1,4 +1,5 @@
+ import { Request, Response, NextFunction } from 'express';
++import { normalizeBookingPayload, validateIdempotencyKey } from '../utils/bookingValidation.js';
+ 
+ function validationError(res: Response, errors: string[]): void {
+   res.status(400).json({ success: false, message: 'Dữ liệu gửi lên không hợp lệ', errors });
+@@ -27,27 +28,7 @@ export function validateRegistration(req: Request, res: Response, next: NextFunc
+ }
+ 
+ export function validateBookingRequest(req: Request, res: Response, next: NextFunction): void {
+-  const { serviceType, serviceId, customerName, customerEmail, customerPhone, bookingDate } = req.body;
+-
+-  const errors: string[] = [];
+-
+-  if (!serviceType) errors.push('Thiếu loại dịch vụ đặt (serviceType)');
+-  if (!serviceId) errors.push('Thiếu mã dịch vụ (serviceId)');
+-  if (!customerName || customerName.trim().length < 2) errors.push('Họ tên khách hàng không hợp lệ');
+-  if (!customerEmail || !customerEmail.includes('@')) errors.push('Email liên hệ không hợp lệ');
+-  if (!customerPhone || customerPhone.length < 9) errors.push('Số điện thoại không hợp lệ');
+-  if (!bookingDate) errors.push('Ngày sử dụng dịch vụ không được để trống');
+-
+-  if (errors.length > 0) {
+-    res.status(400).json({
+-      success: false,
+-      message: 'Dữ liệu đặt dịch vụ không hợp lệ',
+-      errors,
+-    });
+-    return;
+-  }
+-
+-  next();
++  validateSecureBookingRequest(req, res, next);
+ }
+ 
+ export function validateBlogRequest(req: Request, res: Response, next: NextFunction): void {
+@@ -87,16 +68,12 @@ export function validatePartnerApplication(req: Request, res: Response, next: Ne
+ }
+ 
+ export function validateSecureBookingRequest(req: Request, res: Response, next: NextFunction): void {
+-  const { serviceType, serviceId, customerPhone, bookingDate, adultsCount, childrenCount, quantity } = req.body;
+-  const errors: string[] = [];
+-  if (!['tour', 'hotel', 'restaurant', 'ticket'].includes(serviceType)) errors.push('Loại dịch vụ không hợp lệ');
+-  if (typeof serviceId !== 'string' || !serviceId.trim()) errors.push('Thiếu mã dịch vụ');
+-  if (typeof customerPhone !== 'string' || !/^[0-9+ ()-]{9,20}$/.test(customerPhone)) errors.push('Số điện thoại không hợp lệ');
+-  if (typeof bookingDate !== 'string' || Number.isNaN(Date.parse(bookingDate))) errors.push('Ngày sử dụng không hợp lệ');
+-  if (!Number.isInteger(Number(adultsCount)) || Number(adultsCount) < 0) errors.push('Số người lớn không hợp lệ');
+-  if (!Number.isInteger(Number(childrenCount)) || Number(childrenCount) < 0) errors.push('Số trẻ em không hợp lệ');
+-  if (quantity !== undefined && (!Number.isInteger(Number(quantity)) || Number(quantity) < 1)) errors.push('Số lượng không hợp lệ');
+-  if (quantity === undefined && Number(adultsCount) + Number(childrenCount) < 1) errors.push('Tổng số khách phải lớn hơn 0');
+-  if (errors.length) return validationError(res, errors);
+-  next();
++  try {
++    req.body = normalizeBookingPayload(req.body);
++    validateIdempotencyKey(req.header('Idempotency-Key'));
++    next();
++  } catch (error) {
++    const e = error as { statusCode?: number; message: string; code?: string };
++    res.status(e.statusCode ?? 400).json({ success: false, message: e.message, code: e.code });
++  }
+ }
+diff --git a/travelgo/docker-compose.yml b/travelgo/docker-compose.yml
+index 3e1a731..05717d5 100644
+--- a/travelgo/docker-compose.yml
++++ b/travelgo/docker-compose.yml
+@@ -1,4 +1,4 @@
+-version: '3.9'
++name: travelgo
+ 
+ services:
+   # ─────────────────────────────────────────────
+@@ -20,7 +20,7 @@ services:
+       # Migration được quản lý bởi Node.js script (npm run db:migrate:apply)
+       # KHÔNG mount vào docker-entrypoint-initdb.d để tránh conflict với schema_migrations tracker
+     healthcheck:
+-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-travelgo_db}"]
++      test: ["CMD-SHELL", "psql -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\" -tAc 'SELECT 1' >/dev/null"]
+       interval: 10s
+       timeout: 5s
+       retries: 5
+@@ -44,7 +44,12 @@ services:
+       - "5050:80"
+     volumes:
+       - pgadmin_data:/var/lib/pgadmin
+-      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
++      - type: bind
++        source: ./docker/pgadmin/servers.json
++        target: /pgadmin4/servers.json
++        read_only: true
++        bind:
++          create_host_path: false
+     depends_on:
+       postgres:
+         condition: service_healthy
+@@ -53,9 +58,11 @@ services:
+ 
+ volumes:
+   postgres_data:
+-    driver: local
++    external: true
++    name: travelgo_postgres_data
+   pgadmin_data:
+-    driver: local
++    external: true
++    name: travelgo_pgadmin_data
+ 
+ networks:
+   travelgo_net:
+diff --git a/travelgo/docker/pgadmin/servers.json b/travelgo/docker/pgadmin/servers.json
+index 0805b6f..5011343 100644
+--- a/travelgo/docker/pgadmin/servers.json
++++ b/travelgo/docker/pgadmin/servers.json
+@@ -5,7 +5,7 @@
+       "Group": "Servers",
+       "Host": "postgres",
+       "Port": 5432,
+-      "MaintenanceDB": "travelgo_db",
++      "MaintenanceDB": "travelgo_dev",
+       "Username": "postgres",
+       "PassFile": "/pgpass",
+       "SSLMode": "prefer"
+diff --git a/travelgo/docs/API_DOCUMENTATION.md b/travelgo/docs/API_DOCUMENTATION.md
+index 0ebfbcf..3730736 100644
+--- a/travelgo/docs/API_DOCUMENTATION.md
++++ b/travelgo/docs/API_DOCUMENTATION.md
+@@ -171,3 +171,7 @@
+ - `POST /blogs`: Đăng bài blog mới.
+ - `POST /auth/login`: Đăng nhập hệ thống. Tài khoản fixture local dùng mật khẩu do người chạy cung cấp qua `SEED_PASSWORD`; không có mật khẩu mặc định.
+ - `POST /auth/register`: Đăng ký tài khoản người dùng.
++- `GET /auth/me`: Bearer access token bắt buộc; đọc public user và roles hiện tại từ DB.
++- `GET /auth/profile`: Alias GET của `/auth/me`; không phải endpoint cập nhật hồ sơ.
++
++Auth cập nhật 30/10/2026: token là `base64url(payload).HMAC-SHA256(encodedPayload)` (hai phần, có hạn), không phải JWT ba phần. Frontend lưu token/user cache trong localStorage, xác minh qua `/auth/me` khi reload. Chưa có refresh-token, server-side revocation hoặc profile update API; logout chỉ ở client. Xem [contract auth hiện hành](HUGO_AUTH_CONTRACT.md) để biết mã 401, xử lý phiên và RBAC.
+diff --git a/travelgo/docs/HUGO_AI_M1_TASK4_REPORT.md b/travelgo/docs/HUGO_AI_M1_TASK4_REPORT.md
+index d8ac129..9ae247d 100644
+--- a/travelgo/docs/HUGO_AI_M1_TASK4_REPORT.md
++++ b/travelgo/docs/HUGO_AI_M1_TASK4_REPORT.md
+@@ -1,5 +1,7 @@
+ # HuGo Intelligence 2.0 — M1 Task 4 Execution Report
+ 
++> **Đính chính thuật ngữ auth 30/10/2026 (T07):** “JWT” trong báo cáo lịch sử này cần hiểu là access token HMAC hai phần của dự án, không phải JWT chuẩn ba phần. Chưa có refresh-token endpoint/server-side revocation; logout local không thu hồi token. Xem [contract hiện hành](HUGO_AUTH_CONTRACT.md). Kết quả kiểm thử lịch sử bên dưới giữ nguyên, không được coi là test T07 chạy lại.
++
+ Ngày thực hiện: 2026-10-12  
+ Phạm vi: Server-side Favorites/SAVE Source of Truth  
+ Kết luận: **COMPLETE**
+diff --git a/travelgo/docs/HUGO_AI_M1_TASK5_REPORT.md b/travelgo/docs/HUGO_AI_M1_TASK5_REPORT.md
+index 863d2b9..cf8eb5f 100644
+--- a/travelgo/docs/HUGO_AI_M1_TASK5_REPORT.md
++++ b/travelgo/docs/HUGO_AI_M1_TASK5_REPORT.md
+@@ -1,5 +1,7 @@
+ # HuGo Intelligence 2.0 — M1 Task 5: Verified Reviews & Review Data Quality
+ 
++> **Đính chính thuật ngữ auth 30/10/2026 (T07):** “JWT” trong báo cáo lịch sử này cần hiểu là access token HMAC hai phần của dự án, không phải JWT chuẩn ba phần. Chưa có refresh-token endpoint/server-side revocation; logout local không thu hồi token. Xem [contract hiện hành](HUGO_AUTH_CONTRACT.md). Kết quả kiểm thử lịch sử bên dưới giữ nguyên, không được coi là test T07 chạy lại.
++
+ Ngày thực hiện: 2026-10-12  
+ Trạng thái: **COMPLETE**
+ 
+diff --git a/travelgo/docs/HUGO_AI_M2_B2_REPORT.md b/travelgo/docs/HUGO_AI_M2_B2_REPORT.md
+index 474d246..070951d 100644
+--- a/travelgo/docs/HUGO_AI_M2_B2_REPORT.md
++++ b/travelgo/docs/HUGO_AI_M2_B2_REPORT.md
+@@ -1,4 +1,17 @@
+-# HuGo Intelligence 2.0 — M2-B2 Kaggle CPU Reproducibility Demo
++Hãy kiểm tra khả năng Browser Agent/Browser Automation hiện có của Antigravity.
++
++Mục tiêu: hỗ trợ tôi đưa HuGo M2-B2 lên Kaggle và chạy Notebook DEMO_ONLY.
++
++Trước tiên:
++1. Kiểm tra có thể mở và điều khiển Kaggle bằng trình duyệt không.
++2. Kiểm tra trạng thái đăng nhập Kaggle, không yêu cầu hoặc thu thập mật khẩu, token, cookie.
++3. Nếu có thể điều khiển trình duyệt, chỉ mở Kaggle và xác nhận khả năng thao tác.
++4. KHÔNG tự upload file, tạo dataset, tạo notebook, chạy code hoặc công khai tài nguyên khi chưa được tôi xác nhận.
++5. Nếu không có Browser Agent, báo rõ giới hạn và chuẩn bị hướng dẫn để tôi tự thao tác.
++
++Báo cáo khả năng thực tế, không suy đoán.
++
++Dừng và chờ tôi xác nhận bước tiếp theo.# HuGo Intelligence 2.0 — M2-B2 Kaggle CPU Reproducibility Demo
+ 
+ Ngày thực hiện: 2026-10-13
+ 
+diff --git a/travelgo/docs/HUGO_AI_M3_AUDIT_AND_MVP_PLAN.md b/travelgo/docs/HUGO_AI_M3_AUDIT_AND_MVP_PLAN.md
+index 79b043c..fca1704 100644
+--- a/travelgo/docs/HUGO_AI_M3_AUDIT_AND_MVP_PLAN.md
++++ b/travelgo/docs/HUGO_AI_M3_AUDIT_AND_MVP_PLAN.md
+@@ -1,5 +1,7 @@
+ # HuGo Intelligence 2.0 — M3-A Recommendation Audit & MVP Plan
+ 
++> **Đính chính thuật ngữ auth 30/10/2026 (T07):** “JWT” trong báo cáo lịch sử này cần hiểu là access token HMAC hai phần của dự án, không phải JWT chuẩn ba phần. Chưa có refresh-token endpoint/server-side revocation; logout local không thu hồi token. Xem [contract hiện hành](HUGO_AUTH_CONTRACT.md). Kết quả kiểm thử lịch sử bên dưới giữ nguyên, không được coi là test T07 chạy lại.
++
+ Ngày audit: 2026-10-15 (Asia/Ho_Chi_Minh)  
+ Trạng thái: **AUDIT COMPLETE — M3 IMPLEMENTATION NOT STARTED**  
+ Phạm vi: recommendation heuristic/Bayesian, frontend demo flow và liên kết itinerary  
+diff --git a/travelgo/docs/HUGO_AI_M3_C_EXPLORE_UI_REPORT.md b/travelgo/docs/HUGO_AI_M3_C_EXPLORE_UI_REPORT.md
+index 5709b28..c897f30 100644
+--- a/travelgo/docs/HUGO_AI_M3_C_EXPLORE_UI_REPORT.md
++++ b/travelgo/docs/HUGO_AI_M3_C_EXPLORE_UI_REPORT.md
+@@ -1,5 +1,7 @@
+ # HuGo Intelligence 2.0 — M3-C Explore Preferences, Budget & Explainable Recommendation UI
+ 
++> **Đính chính thuật ngữ auth 30/10/2026 (T07):** “JWT” trong báo cáo lịch sử này cần hiểu là access token HMAC hai phần của dự án, không phải JWT chuẩn ba phần. Chưa có refresh-token endpoint/server-side revocation; logout local không thu hồi token. Xem [contract hiện hành](HUGO_AUTH_CONTRACT.md). Kết quả kiểm thử lịch sử bên dưới giữ nguyên, không được coi là test T07 chạy lại.
++
+ **Ngày thực hiện:** 2026-10-15  
+ **Phạm vi:** Explore frontend + test; tái sử dụng nguyên backend M3-B  
+ **Trạng thái:** **M3-C COMPLETE — M3-D chưa được bắt đầu**
+diff --git a/travelgo/docs/HUGO_AI_M3_D_PLACE_TO_ITINERARY_REPORT.md b/travelgo/docs/HUGO_AI_M3_D_PLACE_TO_ITINERARY_REPORT.md
+index 6153e60..e26f487 100644
+--- a/travelgo/docs/HUGO_AI_M3_D_PLACE_TO_ITINERARY_REPORT.md
++++ b/travelgo/docs/HUGO_AI_M3_D_PLACE_TO_ITINERARY_REPORT.md
+@@ -1,5 +1,7 @@
+ # HuGo Intelligence 2.0 — M3-D Place to Itinerary Report
+ 
++> **Đính chính thuật ngữ auth 30/10/2026 (T07):** “JWT” trong báo cáo lịch sử này cần hiểu là access token HMAC hai phần của dự án, không phải JWT chuẩn ba phần. Chưa có refresh-token endpoint/server-side revocation; logout local không thu hồi token. Xem [contract hiện hành](HUGO_AUTH_CONTRACT.md). Kết quả kiểm thử lịch sử bên dưới giữ nguyên, không được coi là test T07 chạy lại.
++
+ Ngày hoàn thành: 2026-10-15 (Asia/Ho_Chi_Minh)  
+ Trạng thái: **COMPLETE — END-TO-END PASS**  
+ Phạm vi: Recommendation Place → Place Detail → Tour Planner → Save/Reopen Trip  
+diff --git a/travelgo/docs/HUGO_INTELLIGENCE_MASTER_PLAN.md b/travelgo/docs/HUGO_INTELLIGENCE_MASTER_PLAN.md
+index 4bbe56b..9ba2c8c 100644
+--- a/travelgo/docs/HUGO_INTELLIGENCE_MASTER_PLAN.md
++++ b/travelgo/docs/HUGO_INTELLIGENCE_MASTER_PLAN.md
+@@ -1,5 +1,7 @@
+ # HuGo Intelligence 2.0 — Master Plan
+ 
++> **Đính chính auth 30/10/2026 (T07):** hàng “Auth, refresh token, RBAC” và cách gọi JWT trong snapshot/sơ đồ dưới đây không mô tả đúng implementation. Source dùng access token HMAC hai phần có hạn; chưa có refresh-token endpoint hay server-side revocation; logout chỉ xóa phiên client. Khi dùng kế hoạch này, áp dụng [contract auth hiện hành](HUGO_AUTH_CONTRACT.md). Nội dung audit, PASS/BLOCKED và bằng chứng ngày 12/10 bên dưới được giữ nguyên như lịch sử, không phải kết quả T07 chạy lại.
++
+ > Trạng thái tài liệu: **AUDIT & DESIGN COMPLETE**
+ >
+ > Ngày kiểm kê: 2026-10-12 (Asia/Ho_Chi_Minh)
+diff --git a/travelgo/docs/SYSTEM_ARCHITECTURE.md b/travelgo/docs/SYSTEM_ARCHITECTURE.md
+index f9ab347..29e6bec 100644
+--- a/travelgo/docs/SYSTEM_ARCHITECTURE.md
++++ b/travelgo/docs/SYSTEM_ARCHITECTURE.md
+@@ -60,11 +60,14 @@ graph TD
+ - **Trách nhiệm:**
+   - Tiếp nhận HTTP Request.
+   - Kiểm tra và xác thực dữ liệu đầu vào (Input Validation & Sanitization).
+-  - Trích xuất token xác thực và kiểm tra quyền người dùng (`User` vs `Admin`).
++  - Xác minh Bearer access token HMAC hai phần, có `iat`/`exp`; kiểm RBAC `CUSTOMER`/`PARTNER`/`SUPER_ADMIN` và quyền business tương ứng. Không dùng JWT chuẩn ba phần.
+   - Gọi các hàm tương ứng trong Service Layer.
+   - Định dạng chuẩn mã phản hồi (`HTTP 200, 201, 400, 401, 404, 500`) và cấu trúc JSON đồng nhất: `{ success: boolean, data?: any, message?: string }`.
+ 
++Auth đối chiếu 30/10/2026: frontend lưu token/user cache trong localStorage, reload xác minh `/auth/me`; logout/401 xóa phiên client. Chưa có refresh-token endpoint hoặc server-side revocation. Xem [contract auth hiện hành](HUGO_AUTH_CONTRACT.md); logout local không làm token cũ mất hiệu lực ở server.
++
+ ### 2.3. Service Layer (Business Logic & Core Algorithms)
++
+ - **Trách nhiệm:** Trái tim xử lý nghiệp vụ của toàn bộ hệ thống HuGo Travel.
+   1. `RatingService`: Xử lý thuật toán **Bayesian Average Rating** giúp triệt tiêu đánh giá ảo và thiên vị mẫu nhỏ.
+   2. `GeoService`: Hệ thống thông tin địa lý (GIS) tính toán khoảng cách đường chim bay **Haversine**, ước tính thời gian di chuyển và thuật toán **Nearest Neighbor Spatial Clustering** để nhóm các địa điểm gần nhau vào cùng một ngày du lịch.
+diff --git a/travelgo/docs/TEST_REPORT.md b/travelgo/docs/TEST_REPORT.md
+index 3b74cca..3832384 100644
+--- a/travelgo/docs/TEST_REPORT.md
++++ b/travelgo/docs/TEST_REPORT.md
+@@ -1,5 +1,7 @@
+ # BÁO CÁO KIỂM THỬ HỆ THỐNG HUGO TRAVEL (TEST REPORT)
+ 
++> **Đính chính thuật ngữ auth 30/10/2026 (T07):** “JWT” trong báo cáo lịch sử này cần hiểu là access token HMAC hai phần của dự án, không phải JWT chuẩn ba phần. Chưa có refresh-token endpoint/server-side revocation; logout local không thu hồi token. Xem [contract hiện hành](HUGO_AUTH_CONTRACT.md). Kết quả kiểm thử lịch sử bên dưới giữ nguyên, không được coi là test T07 chạy lại.
++
+ **Ngày thực hiện kiểm thử:** Tháng 10/2026
+ **Môi trường kiểm thử:** Node.js v20.18.0, TypeScript 5.7.3, Express 4.x / tsx, Vite 6.4.4, React 18, Windows PowerShell.
+ 
+diff --git a/travelgo/frontend/package.json b/travelgo/frontend/package.json
+index 5f5cd2b..90e2678 100644
+--- a/travelgo/frontend/package.json
++++ b/travelgo/frontend/package.json
+@@ -8,7 +8,10 @@
+     "build": "tsc && vite build",
+     "preview": "vite preview",
+     "test:e2e": "playwright test",
+-    "test:explore-ui": "node --experimental-strip-types tests/exploreRecommendation.test.ts"
++    "test:explore-ui": "node --experimental-strip-types tests/exploreRecommendation.test.ts",
++    "test:planner-costs": "node --experimental-strip-types tests/plannerCosts.test.ts",
++    "test:planner-modes": "node --experimental-strip-types tests/plannerModes.test.ts",
++    "test:trip-costs": "node --experimental-strip-types tests/tripCosts.test.ts"
+   },
+   "dependencies": {
+     "axios": "^1.7.9",
+diff --git a/travelgo/frontend/src/components/common/BookingModal.tsx b/travelgo/frontend/src/components/common/BookingModal.tsx
+index f7973cd..8a91b12 100644
+--- a/travelgo/frontend/src/components/common/BookingModal.tsx
++++ b/travelgo/frontend/src/components/common/BookingModal.tsx
+@@ -1,64 +1,99 @@
+-import React, { useState } from 'react';
+-import { Link } from 'react-router-dom';
++import React, { useEffect, useRef, useState } from 'react';
++import { Link, useNavigate } from 'react-router-dom';
+ import { X, Calendar, Users, CheckCircle, ShieldCheck, Phone, Mail, User as UserIcon } from 'lucide-react';
+ import { useBooking } from '../../context/BookingContext';
+ import { useAuth } from '../../context/AuthContext';
+ import { BookingService } from '../../services/bookingService';
+ import { formatCurrencyVND } from '../../utils/formatters';
+ import { getTelemetrySessionId } from '../../services/telemetryService';
++import { readBookingIntent, rememberBookingIntent } from '../../utils/bookingIntentStorage';
++import { bookingSnapshotMoney } from '../../utils/bookingSnapshotMoney';
+ 
+ export const BookingModal: React.FC = () => {
+-  const { isOpen, modalData, closeBooking, confirmedBooking, setConfirmedBooking } = useBooking();
++  const { isOpen, modalData, closeBooking, confirmedBooking, setConfirmedBooking, intentVersion, setPendingAttempt, startNewBooking } = useBooking();
+   const { user } = useAuth();
+-
+-  const [customerName, setCustomerName] = useState(user?.fullName || '');
+-  const [customerEmail, setCustomerEmail] = useState(user?.email || '');
++  const navigate = useNavigate();
+   const [customerPhone, setCustomerPhone] = useState(user?.phone || '');
+   const [bookingDate, setBookingDate] = useState(() => {
+     const today = new Date();
+     today.setDate(today.getDate() + 3);
+     return today.toISOString().split('T')[0];
+   });
+-  const [returnDate, setReturnDate] = useState(() => {
+-    const next = new Date();
+-    next.setDate(next.getDate() + 6);
+-    return next.toISOString().split('T')[0];
+-  });
++  const [returnDate, setReturnDate] = useState('');
+   const [adultsCount, setAdultsCount] = useState(2);
+   const [childrenCount, setChildrenCount] = useState(0);
+   const [notes, setNotes] = useState('');
+   const [isSubmitting, setIsSubmitting] = useState(false);
+   const [submitError, setSubmitError] = useState('');
++  const sending = useRef(false);
++  const attempts = useRef(new Map<string, string>());
++  const attributionSession = useRef<string | undefined>();
++  const currentUserId = useRef(user?.id);
++  currentUserId.current = user?.id;
++
++  useEffect(() => {
++    attempts.current.clear();
++    attributionSession.current = modalData?.recommendationRequestId ? getTelemetrySessionId() : undefined;
++    setCustomerPhone(user?.phone ?? '');
++    const start = modalData?.initialDate ?? new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10);
++    setBookingDate(start); setReturnDate('');
++    setAdultsCount(2); setChildrenCount(0); setNotes(''); setSubmitError('');
++    const stored = readBookingIntent(user?.id);
++    if (stored && stored.modalData.serviceId === modalData?.serviceId) {
++      attempts.current = new Map(stored.keys);
++      attributionSession.current = stored.payload.recommendationSessionId;
++      setCustomerPhone(stored.payload.customerPhone); setBookingDate(stored.payload.bookingDate); setReturnDate(stored.payload.returnDate ?? '');
++      setAdultsCount(stored.payload.adultsCount); setChildrenCount(stored.payload.childrenCount); setNotes(stored.payload.notes ?? '');
++      setSubmitError('Lần đặt trước chưa có kết quả xác nhận trên thiết bị này. Bạn có thể thử lại cùng nội dung hoặc xem lịch sử.');
++    }
++    // The provider changes the version only for a new, explicit intent.
++  }, [intentVersion, user?.id]);
+ 
+   if (!isOpen || !modalData) return null;
+ 
+   const unitPrice = modalData.unitPrice;
+   const totalAmount = unitPrice * adultsCount + unitPrice * 0.7 * childrenCount;
++  const confirmedUnitPrice = bookingSnapshotMoney(confirmedBooking?.unitPrice);
++  const confirmedTotal = bookingSnapshotMoney(confirmedBooking?.totalAmount);
++  const confirmedDiscount = bookingSnapshotMoney(confirmedBooking?.discountAmount);
+ 
+   const handleSubmit = async (e: React.FormEvent) => {
+     e.preventDefault();
++    if (sending.current) return;
++    sending.current = true;
+     setIsSubmitting(true);
+     setSubmitError('');
+ 
+     try {
+-      const created = await BookingService.createBooking({
++      const payload = {
+         serviceType: modalData.serviceType,
+         serviceId: modalData.serviceId,
+-        customerPhone,
++        customerPhone: customerPhone.trim(),
+         bookingDate,
+-        returnDate,
++        returnDate: returnDate === '' ? undefined : returnDate,
+         adultsCount,
+         childrenCount,
+-        notes,
++        notes: notes.trim() === '' ? undefined : notes.trim(),
+         recommendationRequestId: modalData.recommendationRequestId,
+-        recommendationSessionId: modalData.recommendationRequestId ? getTelemetrySessionId() : undefined,
+-      });
+-
++        recommendationSessionId: attributionSession.current,
++      };
++      // Retain every attempted payload's key until this intent is completed or
++      // explicitly replaced. Editing back after an uncertain response is safe.
++      const identity = JSON.stringify({ userId: user?.id, ...payload });
++      let key = attempts.current.get(identity);
++      if (!key) { key = crypto.randomUUID(); attempts.current.set(identity, key); }
++      if (user) rememberBookingIntent({ userId: user.id, modalData, payload, keys: [...attempts.current] });
++      setPendingAttempt(true);
++      const created = await BookingService.createBooking(payload, key);
++      if (currentUserId.current !== user?.id) return;
+       setConfirmedBooking(created);
++      setPendingAttempt(false);
+     } catch (error) {
++      if (currentUserId.current !== user?.id) return;
+       console.error('Booking failed:', error);
+       setSubmitError((error as any)?.message || 'Không thể tạo booking. Vui lòng thử lại.');
+     } finally {
++      sending.current = false;
+       setIsSubmitting(false);
+     }
+   };
+@@ -66,14 +101,16 @@ export const BookingModal: React.FC = () => {
+   const handleFinish = () => {
+     setConfirmedBooking(null);
+     closeBooking();
++    navigate('/bookings');
+   };
+ 
+   return (
+-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+-      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-200">
++    <div role="dialog" aria-modal="true" aria-label="Đặt dịch vụ" className="fixed inset-0 z-[60] overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
++      <div className="relative w-full max-w-lg max-h-[calc(100dvh-2rem)] bg-white rounded-3xl shadow-2xl overflow-y-auto border border-slate-100 animate-in zoom-in-95 duration-200">
+         {/* Header */}
+         <div className="bg-gradient-to-r from-slate-900 to-sky-950 text-white p-6 relative">
+           <button
++            aria-label="Đóng đặt dịch vụ"
+             onClick={closeBooking}
+             className="absolute top-5 right-5 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-1.5 transition-colors"
+           >
+@@ -83,8 +120,10 @@ export const BookingModal: React.FC = () => {
+             <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-500 text-white mb-2 uppercase">
+               {modalData.serviceType === 'tour' ? 'Đặt Tour' : modalData.serviceType === 'hotel' ? 'Đặt Phòng' : modalData.serviceType === 'restaurant' ? 'Đặt Bàn' : 'Đặt Vé'}
+             </span>
+-            <h2 className="text-xl font-bold leading-snug line-clamp-1">{modalData.serviceName}</h2>
+-            <p className="text-sky-200 text-sm mt-1">Đơn giá: {formatCurrencyVND(unitPrice)} / khách</p>
++            <h2 className="text-xl font-bold leading-snug line-clamp-1">{confirmedBooking?.serviceName ?? modalData.serviceName}</h2>
++            <p className="text-sky-200 text-sm mt-1">{confirmedBooking
++              ? `Đơn giá: ${confirmedUnitPrice === undefined ? 'Chưa có trong dữ liệu xác nhận' : formatCurrencyVND(confirmedUnitPrice) + ' / đơn vị tính giá'}`
++              : `Đơn giá ước tính: ${formatCurrencyVND(unitPrice)} / khách`}</p>
+           </div>
+         </div>
+ 
+@@ -127,12 +166,14 @@ export const BookingModal: React.FC = () => {
+               </div>
+               <div className="border-t border-slate-200 pt-2 flex justify-between font-bold text-base text-orange-600">
+                 <span>Tổng thanh toán:</span>
+-                <span>{formatCurrencyVND(confirmedBooking.totalAmount)}</span>
++                <span>{confirmedTotal === undefined ? 'Chưa có trong dữ liệu xác nhận' : formatCurrencyVND(confirmedTotal)}</span>
+               </div>
++              {confirmedDiscount !== undefined && <div className="flex justify-between text-slate-600"><span>Giảm giá theo đơn:</span><span>{formatCurrencyVND(confirmedDiscount)}</span></div>}
++              {Number.isSafeInteger(confirmedBooking.quantity) && <p className="text-slate-600">Số đơn vị tính giá: {confirmedBooking.quantity}</p>}
+             </div>
+ 
+             <p className="text-xs text-slate-400">
+-              * Email xác nhận và hướng dẫn chi tiết đã được gửi đến {confirmedBooking.customerEmail}.
++              Đơn đang chờ đối tác xác nhận. Bạn có thể theo dõi trong lịch sử đặt dịch vụ.
+             </p>
+ 
+             <button
+@@ -145,7 +186,13 @@ export const BookingModal: React.FC = () => {
+         ) : (
+           /* Booking Form */
+           <form onSubmit={handleSubmit} className="p-6 space-y-4">
++            <fieldset disabled={isSubmitting} className="space-y-4">
+             {submitError && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-medium text-rose-700">{submitError}</div>}
++            {submitError && <div className="text-xs text-slate-600 space-y-2">
++              <p>Nếu kết nối bị gián đoạn, thử lại cùng nội dung để nhận lại đơn. Đóng rồi mở lại vẫn giữ lần đặt này. Sửa nội dung tạo ý định khác; hãy kiểm tra lịch sử nếu chưa rõ đơn trước đã được tạo hay chưa.</p>
++              <Link to="/bookings" onClick={closeBooking} className="underline">Xem lịch sử</Link>
++              <button type="button" onClick={startNewBooking} className="block underline">Bắt đầu đơn mới (đơn trước có thể đã được tạo)</button>
++            </div>}
+             {/* Customer Inputs */}
+             <div className="space-y-3">
+               <div>
+@@ -156,8 +203,9 @@ export const BookingModal: React.FC = () => {
+                     name="customerName"
+                     type="text"
+                     required
+-                    value={customerName}
+-                    onChange={(e) => setCustomerName(e.target.value)}
++                    value={user.fullName}
++                    readOnly
++                    aria-label="Họ và tên từ tài khoản"
+                     placeholder="Nguyễn Văn A"
+                     className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                   />
+@@ -188,8 +236,9 @@ export const BookingModal: React.FC = () => {
+                       name="customerEmail"
+                       type="email"
+                       required
+-                      value={customerEmail}
+-                      onChange={(e) => setCustomerEmail(e.target.value)}
++                      value={user.email}
++                      readOnly
++                      aria-label="Email từ tài khoản"
+                       placeholder="email@example.com"
+                       className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                     />
+@@ -215,6 +264,7 @@ export const BookingModal: React.FC = () => {
+                     name="returnDate"
+                     type="date"
+                     value={returnDate}
++                    min={bookingDate}
+                     onChange={(e) => setReturnDate(e.target.value)}
+                     className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                   />
+@@ -239,7 +289,7 @@ export const BookingModal: React.FC = () => {
+                     <span className="font-bold text-slate-800 text-sm flex-1 text-center">{adultsCount}</span>
+                     <button
+                       type="button"
+-                      onClick={() => setAdultsCount(adultsCount + 1)}
++                      onClick={() => setAdultsCount(Math.min(100 - childrenCount, adultsCount + 1))}
+                       className="w-7 h-7 bg-white rounded-lg border border-slate-200 font-bold hover:bg-slate-100 flex items-center justify-center text-slate-700"
+                     >
+                       +
+@@ -263,7 +313,7 @@ export const BookingModal: React.FC = () => {
+                     <span className="font-bold text-slate-800 text-sm flex-1 text-center">{childrenCount}</span>
+                     <button
+                       type="button"
+-                      onClick={() => setChildrenCount(childrenCount + 1)}
++                      onClick={() => setChildrenCount(Math.min(100 - adultsCount, childrenCount + 1))}
+                       className="w-7 h-7 bg-white rounded-lg border border-slate-200 font-bold hover:bg-slate-100 flex items-center justify-center text-slate-700"
+                     >
+                       +
+@@ -277,6 +327,7 @@ export const BookingModal: React.FC = () => {
+                 <textarea
+                   name="notes"
+                   rows={2}
++                  maxLength={5000}
+                   value={notes}
+                   onChange={(e) => setNotes(e.target.value)}
+                   placeholder="Ví dụ: Ăn chay, phòng tầng cao, giường đôi..."
+@@ -288,13 +339,13 @@ export const BookingModal: React.FC = () => {
+             {/* Total Calculation & CTA */}
+             <div className="pt-2 border-t border-slate-100">
+               <div className="flex items-center justify-between mb-3">
+-                <span className="text-sm text-slate-600">Tổng cộng thanh toán:</span>
++                <span className="text-sm text-slate-600">Tổng tiền dự kiến:</span>
+                 <span className="text-2xl font-black text-orange-600">{formatCurrencyVND(totalAmount)}</span>
+               </div>
+ 
+               <div className="flex items-center space-x-2 text-xs text-emerald-700 bg-emerald-50 p-2.5 rounded-xl mb-4">
+                 <ShieldCheck className="w-4 h-4 flex-shrink-0" />
+-                <span>Bảo hiểm du lịch trọn gói & Miễn phí hoàn hủy trước 24 giờ.</span>
++                <span>Giá xác nhận lấy từ hệ thống. Ngày kết thúc là thông tin yêu cầu; giá MVP tính theo khách, chưa tính phòng theo đêm. Họ tên và email dùng từ tài khoản.</span>
+               </div>
+ 
+               <button
+@@ -310,6 +361,7 @@ export const BookingModal: React.FC = () => {
+                 )}
+               </button>
+             </div>
++            </fieldset>
+           </form>
+         )}
+       </div>
+diff --git a/travelgo/frontend/src/components/common/Navbar.tsx b/travelgo/frontend/src/components/common/Navbar.tsx
+index 5e2553f..745953c 100644
+--- a/travelgo/frontend/src/components/common/Navbar.tsx
++++ b/travelgo/frontend/src/components/common/Navbar.tsx
+@@ -95,7 +95,7 @@ const MobileLink: React.FC<MobileLinkProps> = ({ to, label, isActive, onClick, e
+   <Link
+     to={to}
+     onClick={onClick}
+-    className={`block px-3 py-2 rounded-lg text-base font-medium ${
++    className={`block min-w-0 [overflow-wrap:anywhere] px-3 py-2 rounded-lg text-base font-medium ${
+       extraClass ?? (isActive ? 'bg-orange-50 text-orange-600 font-semibold' : 'text-slate-700 hover:bg-slate-50')
+     }`}
+   >
+@@ -234,9 +234,10 @@ export const Navbar: React.FC = () => {
+                 <button
+                   onClick={() => setUserDropdownOpen((v) => !v)}
+                   aria-expanded={userDropdownOpen}
++                  aria-label="Menu tài khoản"
+                   className="flex items-center space-x-2 p-1.5 rounded-full hover:bg-slate-100 transition-colors border border-slate-200"
+                 >
+-                  <img src={user.avatarUrl} alt={user.fullName} className="w-8 h-8 rounded-full object-cover" />
++                  {user.avatarUrl ? <img src={user.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" /> : <User aria-hidden="true" className="w-8 h-8 p-1 rounded-full bg-orange-50 text-orange-600" />}
+                   <span className="text-sm font-medium text-slate-800 pr-1 max-w-[100px] truncate">{user.fullName}</span>
+                   <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`} />
+                 </button>
+@@ -304,7 +305,7 @@ export const Navbar: React.FC = () => {
+ 
+           {/* Mobile Controls */}
+           <div className="flex items-center space-x-2 lg:hidden">
+-            <Link to="/favorites" className="relative p-2 text-slate-700">
++            <Link to="/favorites" aria-label="Danh sách yêu thích" className="relative p-2 text-slate-700">
+               <Heart className="w-6 h-6" />
+               {favorites.length > 0 && (
+                 <span className="absolute top-1 right-1 w-4 h-4 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+diff --git a/travelgo/frontend/src/components/explore/MapView.tsx b/travelgo/frontend/src/components/explore/MapView.tsx
+index 5bbeac0..2095d8f 100644
+--- a/travelgo/frontend/src/components/explore/MapView.tsx
++++ b/travelgo/frontend/src/components/explore/MapView.tsx
+@@ -1,7 +1,7 @@
+ import React, { useEffect, useRef } from 'react';
+ import L from 'leaflet';
+ import { Place } from '../../types';
+-import { formatCurrencyVND } from '../../utils/formatters';
++import { placeMarker, placePopup } from '../../utils/mapPopup';
+ 
+ interface MapViewProps {
+   places: Place[];
+@@ -63,13 +63,7 @@ export const MapView: React.FC<MapViewProps> = ({ places, selectedPlace, onSelec
+ 
+       const customIcon = L.divIcon({
+         className: 'custom-leaflet-marker',
+-        html: `
+-          <div class="custom-marker-pin ${categoryColor} ${
+-          isSelected ? 'ring-4 ring-orange-400 scale-125 z-50' : ''
+-        }">
+-            <span style="font-size: 11px; font-weight: 800;">★ ${place.rating.toFixed(1)}</span>
+-          </div>
+-        `,
++        html: placeMarker(place.rating, categoryColor, isSelected),
+         iconSize: [36, 36],
+         iconAnchor: [18, 18],
+         popupAnchor: [0, -20],
+@@ -77,20 +71,7 @@ export const MapView: React.FC<MapViewProps> = ({ places, selectedPlace, onSelec
+ 
+       const marker = L.marker([place.latitude, place.longitude], { icon: customIcon }).addTo(map);
+ 
+-      // Popup Content
+-      const popupHtml = `
+-        <div style="width: 220px; font-family: Inter, sans-serif; padding: 2px;">
+-          <img src="${place.heroImage}" alt="${place.name}" style="width: 100%; height: 110px; object-fit: cover; border-radius: 8px; margin-bottom: 8px;" />
+-          <h4 style="font-weight: 700; font-size: 13px; color: #0f172a; margin: 0 0 4px 0; line-height: 1.3;">${place.name}</h4>
+-          <p style="font-size: 11px; color: #64748b; margin: 0 0 6px 0;">${place.city} • ${place.category.toUpperCase()}</p>
+-          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 6px;">
+-            <span style="font-weight: 800; color: #ea580c; font-size: 13px;">${formatCurrencyVND(place.priceFrom)}</span>
+-            <span style="font-size: 10px; background: #ecfdf5; color: #047857; padding: 2px 6px; border-radius: 4px; font-weight: 700;">Bayesian: ${place.bayesianRating.toFixed(2)}</span>
+-          </div>
+-        </div>
+-      `;
+-
+-      marker.bindPopup(popupHtml);
++      marker.bindPopup(placePopup(place));
+ 
+       marker.on('click', () => {
+         onSelectPlace(place);
+diff --git a/travelgo/frontend/src/context/AuthContext.tsx b/travelgo/frontend/src/context/AuthContext.tsx
+index 44ff945..5e5510d 100644
+--- a/travelgo/frontend/src/context/AuthContext.tsx
++++ b/travelgo/frontend/src/context/AuthContext.tsx
+@@ -1,4 +1,4 @@
+-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
++import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+ import { User, UserRole } from '../types';
+ import { AuthService } from '../services/authService';
+ 
+@@ -24,9 +24,21 @@ function normalizeUser(user: User): User {
+ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+   const [user, setUser] = useState<User | null>(null);
+   const [loading, setLoading] = useState(true);
++  const sessionVersion = useRef(0);
++
++  const clearSession = () => {
++    sessionVersion.current++;
++    setUser(null);
++    localStorage.removeItem('travelgo_user');
++    localStorage.removeItem('travelgo_token');
++    setLoading(false);
++  };
+ 
+   useEffect(() => {
+     const token = localStorage.getItem('travelgo_token');
++    const version = sessionVersion.current;
++    let active = true;
++    const isCurrent = () => active && version === sessionVersion.current && localStorage.getItem('travelgo_token') === token;
+     if (!token) {
+       localStorage.removeItem('travelgo_user');
+       setLoading(false);
+@@ -34,40 +46,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
+     }
+     AuthService.me()
+       .then((currentUser) => {
++        if (!isCurrent()) return;
+         const normalized = normalizeUser(currentUser);
+         setUser(normalized);
+         localStorage.setItem('travelgo_user', JSON.stringify(normalized));
+       })
+       .catch(() => {
+-        localStorage.removeItem('travelgo_token');
+-        localStorage.removeItem('travelgo_user');
++        if (isCurrent()) clearSession();
+       })
+-      .finally(() => setLoading(false));
++      .finally(() => { if (isCurrent()) setLoading(false); });
++    return () => { active = false; };
+   }, []);
+ 
+   useEffect(() => {
+-    const clearSession = () => setUser(null);
+     window.addEventListener('travelgo:unauthorized', clearSession);
+     return () => window.removeEventListener('travelgo:unauthorized', clearSession);
+   }, []);
+ 
+-  const persistSession = (result: { user: User; token: string }) => {
++  const persistSession = (result: { user: User; token: string }, version: number) => {
++    // A completed logout/401/new login supersedes any outstanding auth response.
++    if (version !== sessionVersion.current) throw new Error('Phiên đăng nhập đã thay đổi. Vui lòng thử lại.');
++    sessionVersion.current++;
+     const normalized = normalizeUser(result.user);
+     localStorage.setItem('travelgo_token', result.token);
+     localStorage.setItem('travelgo_user', JSON.stringify(normalized));
+     setUser(normalized);
++    setLoading(false);
+     return normalized;
+   };
+ 
+-  const login = async (email: string, password: string) => persistSession(await AuthService.login(email, password));
+-  const register = async (input: { fullName: string; email: string; password: string; phone?: string }) =>
+-    persistSession(await AuthService.register(input));
+-
+-  const logout = () => {
+-    setUser(null);
+-    localStorage.removeItem('travelgo_user');
+-    localStorage.removeItem('travelgo_token');
++  const login = async (email: string, password: string) => {
++    const version = sessionVersion.current;
++    return persistSession(await AuthService.login(email, password), version);
+   };
++  const register = async (input: { fullName: string; email: string; password: string; phone?: string }) => {
++    const version = sessionVersion.current;
++    return persistSession(await AuthService.register(input), version);
++  };
++
++  const logout = clearSession;
+ 
+   const value = useMemo<AuthContextType>(() => {
+     const hasRole = (...roles: UserRole[]) => !!user && roles.some((role) => user.roles.includes(role));
+diff --git a/travelgo/frontend/src/context/BookingContext.tsx b/travelgo/frontend/src/context/BookingContext.tsx
+index 48a8edd..e38466e 100644
+--- a/travelgo/frontend/src/context/BookingContext.tsx
++++ b/travelgo/frontend/src/context/BookingContext.tsx
+@@ -1,6 +1,7 @@
+ import React, { createContext, useContext, useState } from 'react';
+-import { BookingService } from '../services/bookingService';
+ import { Booking } from '../types';
++import { useAuth } from './AuthContext';
++import { clearBookingIntent, readBookingIntent } from '../utils/bookingIntentStorage';
+ 
+ export interface BookingModalData {
+   serviceType: 'tour' | 'hotel' | 'restaurant' | 'ticket';
+@@ -19,6 +20,9 @@ interface BookingContextType {
+   closeBooking: () => void;
+   confirmedBooking: Booking | null;
+   setConfirmedBooking: (b: Booking | null) => void;
++  intentVersion: number;
++  setPendingAttempt: (pending: boolean) => void;
++  startNewBooking: () => void;
+ }
+ 
+ const BookingContext = createContext<BookingContextType>({
+@@ -28,21 +32,49 @@ const BookingContext = createContext<BookingContextType>({
+   closeBooking: () => {},
+   confirmedBooking: null,
+   setConfirmedBooking: () => {},
++  intentVersion: 0,
++  setPendingAttempt: () => {},
++  startNewBooking: () => {},
+ });
+ 
+ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
++  const { user } = useAuth();
+   const [isOpen, setIsOpen] = useState(false);
+   const [modalData, setModalData] = useState<BookingModalData | null>(null);
+   const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(null);
++  const [intentVersion, setIntentVersion] = useState(0);
++  const pendingAttempt = React.useRef(false);
++  const setPendingAttempt = (pending: boolean) => {
++    pendingAttempt.current = pending;
++    if (!pending) clearBookingIntent(user?.id);
++  };
++  React.useEffect(() => {
++    const stored = readBookingIntent(user?.id);
++    pendingAttempt.current = !!stored;
++    setIsOpen(false); setConfirmedBooking(null); setModalData(stored?.modalData ?? null);
++    setIntentVersion(v => v + 1);
++  }, [user?.id]);
+ 
+   const openBooking = (data: BookingModalData) => {
++    // An unresolved request belongs to the existing intent, even if another
++    // catalog card is clicked while the modal is hidden.
++    if (pendingAttempt.current && !confirmedBooking) { setIsOpen(true); return; }
++    setConfirmedBooking(null);
++    pendingAttempt.current = false;
++    setIntentVersion(v => v + 1);
+     setModalData(data);
+     setIsOpen(true);
+   };
+ 
+   const closeBooking = () => {
+     setIsOpen(false);
+-    setModalData(null);
++  };
++
++  const startNewBooking = () => {
++    pendingAttempt.current = false;
++    clearBookingIntent(user?.id);
++    setConfirmedBooking(null);
++    setIntentVersion(v => v + 1);
+   };
+ 
+   return (
+@@ -54,6 +86,9 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
+         closeBooking,
+         confirmedBooking,
+         setConfirmedBooking,
++        intentVersion,
++        setPendingAttempt,
++        startNewBooking,
+       }}
+     >
+       {children}
+diff --git a/travelgo/frontend/src/pages/LoginPage.tsx b/travelgo/frontend/src/pages/LoginPage.tsx
+index 9c33bac..20d0d1e 100644
+--- a/travelgo/frontend/src/pages/LoginPage.tsx
++++ b/travelgo/frontend/src/pages/LoginPage.tsx
+@@ -44,7 +44,7 @@ export const LoginPage: React.FC = () => {
+           </div>
+           <h1 className="text-2xl font-extrabold text-slate-900">Đăng nhập HuGo Travel</h1>
+           <p className="text-xs text-slate-500">
+-            Truy cập để quản lý đơn đặt vé, danh sách yêu thích và điểm thưởng
++            Truy cập để quản lý đơn đặt vé và danh sách yêu thích
+           </p>
+         </div>
+ 
+diff --git a/travelgo/frontend/src/pages/MyTripsPage.tsx b/travelgo/frontend/src/pages/MyTripsPage.tsx
+index cadf342..d54bd24 100644
+--- a/travelgo/frontend/src/pages/MyTripsPage.tsx
++++ b/travelgo/frontend/src/pages/MyTripsPage.tsx
+@@ -189,7 +189,7 @@ export const MyTripsPage: React.FC = () => {
+                         />
+                       </div>
+                       <div className="text-[11px] text-slate-400 mt-1">
+-                        Đã check-in: {trip.checkins.length} điểm tham quan
++                        Đã check-in: {trip.progress?.checkedActivityIds.length ?? 0}/{trip.progress?.eligibleActivityIds.length ?? 0} hoạt động
+                       </div>
+                     </div>
+                   </div>
+diff --git a/travelgo/frontend/src/pages/PlaceDetailPage.tsx b/travelgo/frontend/src/pages/PlaceDetailPage.tsx
+index de8ab94..b2f5fd3 100644
+--- a/travelgo/frontend/src/pages/PlaceDetailPage.tsx
++++ b/travelgo/frontend/src/pages/PlaceDetailPage.tsx
+@@ -115,6 +115,7 @@ export const PlaceDetailPage: React.FC = () => {
+   const favorited = isFavorite(place.id);
+ 
+   const handleBookingClick = () => {
++    if (place.category !== 'hotel' && place.category !== 'restaurant') { navigate('/tours'); return; }
+     void track({ itemId: place.id, itemType: telemetryItemType, eventType: 'CLICK', uiSurface: 'booking_modal', requestId: recommendationRequestId });
+     openBooking({
+       serviceType: place.category as any,
+@@ -414,16 +415,12 @@ export const PlaceDetailPage: React.FC = () => {
+               <div className="space-y-6 text-sm text-slate-600 leading-relaxed">
+                 <h3 className="text-xl font-bold text-slate-900 mb-2">Chính sách đặt & hủy tour</h3>
+                 <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
+-                  <h4 className="font-bold text-slate-800">Quy định hoàn hủy:</h4>
+-                  <p>• Hủy trước 24 giờ so với ngày khởi hành: Miễn phí hoàn 100% tiền cọc.</p>
+-                  <p>• Hủy từ 12 đến 24 giờ trước khởi hành: Phí hoàn hủy 30% giá trị dịch vụ.</p>
+-                  <p>• Hủy dưới 12 giờ hoặc vắng mặt (No-show): Không hoàn tiền.</p>
++                  <h4 className="font-bold text-slate-800">Theo dõi và hủy đơn:</h4>
++                  <p>Bạn có thể hủy đơn đang chờ hoặc đã xác nhận trong lịch sử. Hệ thống MVP chưa xử lý thanh toán hay hoàn tiền.</p>
+                 </div>
+                 <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
+                   <h4 className="font-bold text-slate-800">Chính sách trẻ em:</h4>
+-                  <p>• Trẻ em dưới 2 tuổi: Miễn phí hoàn toàn.</p>
+-                  <p>• Trẻ em từ 2 - 11 tuổi: Tính 70% giá người lớn (ngủ chung phòng bố mẹ).</p>
+-                  <p>• Trẻ em từ 12 tuổi trở lên: Tính giá như người lớn.</p>
++                  <p>Giá MVP theo số khách: người lớn tính đơn giá, trẻ em giảm 30%. Số tiền xác nhận lấy từ server khi tạo đơn.</p>
+                 </div>
+               </div>
+             )}
+@@ -646,18 +643,18 @@ export const PlaceDetailPage: React.FC = () => {
+                   onClick={handleBookingClick}
+                   className="w-full py-4 bg-orange-500 hover:bg-orange-600 active:scale-98 text-white font-extrabold rounded-2xl shadow-xl shadow-orange-500/25 transition-all duration-150 text-base flex items-center justify-center"
+                 >
+-                  Đặt tour ngay
++                  {place.category === 'hotel' || place.category === 'restaurant' ? 'Đặt dịch vụ ngay' : 'Xem tour có thể đặt'}
+                 </button>
+ 
+                 {/* Guarantees Matching Image 2 */}
+                 <div className="space-y-2 text-xs text-slate-600 pt-2">
+                   <div className="flex items-center space-x-2">
+                     <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+-                    <span>Bảo hiểm du lịch trọn gói 100.000.000đ</span>
++                    <span>Đơn đặt được lưu trong lịch sử tài khoản</span>
+                   </div>
+                   <div className="flex items-center space-x-2">
+                     <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+-                    <span>Hủy miễn phí trước 24 giờ khởi hành</span>
++                    <span>Theo dõi xác nhận từ đối tác trong lịch sử</span>
+                   </div>
+                 </div>
+               </div>
+diff --git a/travelgo/frontend/src/pages/ProfilePage.tsx b/travelgo/frontend/src/pages/ProfilePage.tsx
+index 2add2f1..2ce7802 100644
+--- a/travelgo/frontend/src/pages/ProfilePage.tsx
++++ b/travelgo/frontend/src/pages/ProfilePage.tsx
+@@ -1,113 +1,48 @@
+-import React, { useState } from 'react';
+-import { useAuth } from '../context/AuthContext';
+-import { User, Mail, Phone, ShieldCheck, Bookmark, Heart, Award, Check } from 'lucide-react';
++import React from 'react';
++import { User } from 'lucide-react';
+ import { Link } from 'react-router-dom';
++import { useAuth } from '../context/AuthContext';
++import type { UserRole } from '../types';
+ 
+-export const ProfilePage: React.FC = () => {
+-  const { user, isAdmin } = useAuth();
+-  const [fullName, setFullName] = useState(user?.fullName || '');
+-  const [phone, setPhone] = useState(user?.phone || '0905123456');
+-  const [savedSuccess, setSavedSuccess] = useState(false);
++const roleLabels: Record<UserRole, string> = {
++  CUSTOMER: 'Khách hàng',
++  PARTNER: 'Đối tác',
++  SUPER_ADMIN: 'Quản trị viên',
++};
+ 
+-  const handleSave = (e: React.FormEvent) => {
+-    e.preventDefault();
+-    setSavedSuccess(true);
+-    setTimeout(() => setSavedSuccess(false), 3000);
+-  };
++export const ProfilePage: React.FC = () => {
++  const { user, loading } = useAuth();
++  if (loading) return <p role="status" className="pt-24 px-4">Đang xác thực phiên đăng nhập…</p>;
++  if (!user) return null;
+ 
+   return (
+     <div className="min-h-screen pt-24 pb-20 bg-slate-50">
+       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+-        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-8">
+-          {/* Profile Header */}
+-          <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6 pb-6 border-b border-slate-100">
+-            <img
+-              src={user?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80'}
+-              alt={user?.fullName}
+-              className="w-24 h-24 rounded-full object-cover ring-4 ring-orange-500/20 shadow-md"
+-            />
+-            <div className="text-center sm:text-left space-y-1">
+-              <div className="flex items-center justify-center sm:justify-start space-x-2">
+-                <h1 className="text-2xl font-extrabold text-slate-900">{user?.fullName}</h1>
+-                {isAdmin ? (
+-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
+-                    Admin
+-                  </span>
+-                ) : (
+-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+-                    Thành viên thân thiết
+-                  </span>
+-                )}
+-              </div>
+-              <p className="text-sm text-slate-500">{user?.email}</p>
+-              <div className="pt-2 flex flex-wrap gap-2 justify-center sm:justify-start text-xs text-slate-600">
+-                <Link to="/bookings" className="px-3 py-1 bg-slate-100 rounded-lg font-medium hover:bg-slate-200">
+-                  Lịch sử đặt dịch vụ
+-                </Link>
+-                <Link to="/favorites" className="px-3 py-1 bg-slate-100 rounded-lg font-medium hover:bg-slate-200">
+-                  Danh sách yêu thích
+-                </Link>
+-              </div>
+-            </div>
+-          </div>
+-
+-          {/* Quick Stats */}
+-          <div className="grid grid-cols-3 gap-4 text-center">
+-            <div className="p-4 rounded-2xl bg-orange-50/70 border border-orange-100">
+-              <span className="text-2xl font-black text-orange-600 block">3</span>
+-              <span className="text-xs text-slate-600 font-medium">Chuyến đi đã đặt</span>
+-            </div>
+-            <div className="p-4 rounded-2xl bg-teal-50/70 border border-teal-100">
+-              <span className="text-2xl font-black text-teal-600 block">450</span>
+-              <span className="text-xs text-slate-600 font-medium">Điểm tích lũy</span>
+-            </div>
+-            <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100">
+-              <span className="text-2xl font-black text-indigo-600 block">Hạng Vàng</span>
+-              <span className="text-xs text-slate-600 font-medium">Cấp bậc thành viên</span>
+-            </div>
+-          </div>
+-
+-          {/* Edit form */}
+-          <form onSubmit={handleSave} className="space-y-4 pt-4 border-t border-slate-100">
+-            <h3 className="text-lg font-bold text-slate-900">Thông tin cá nhân</h3>
+-
+-            {savedSuccess && (
+-              <div className="bg-emerald-50 text-emerald-800 p-3 rounded-xl text-xs flex items-center space-x-2 border border-emerald-200">
+-                <Check className="w-4 h-4 text-emerald-600" />
+-                <span>Cập nhật thông tin cá nhân thành công!</span>
++        <section aria-label="Hồ sơ cá nhân" className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-8">
++          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 pb-6 border-b border-slate-100">
++            {user.avatarUrl ? (
++              <img src={user.avatarUrl} alt={`Ảnh đại diện của ${user.fullName}`} className="w-24 h-24 shrink-0 rounded-full object-cover" />
++            ) : (
++              <div aria-label="Chưa có ảnh đại diện" role="img" className="w-24 h-24 shrink-0 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center">
++                <User aria-hidden="true" className="w-12 h-12" />
+               </div>
+             )}
+-
+-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+-              <div>
+-                <label className="block text-xs font-semibold text-slate-600 mb-1">Họ và tên</label>
+-                <input
+-                  type="text"
+-                  value={fullName}
+-                  onChange={(e) => setFullName(e.target.value)}
+-                  className="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+-                />
+-              </div>
+-
+-              <div>
+-                <label className="block text-xs font-semibold text-slate-600 mb-1">Số điện thoại</label>
+-                <input
+-                  type="tel"
+-                  value={phone}
+-                  onChange={(e) => setPhone(e.target.value)}
+-                  className="w-full px-3.5 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+-                />
++            <div className="min-w-0 w-full text-center sm:text-left space-y-3 [overflow-wrap:anywhere]">
++              <h1 className="text-2xl font-extrabold text-slate-900">{user.fullName || 'Chưa cung cấp'}</h1>
++              <p className="text-sm text-slate-500">Hồ sơ hiện chỉ hỗ trợ xem.</p>
++              <div className="flex flex-wrap gap-2 justify-center sm:justify-start text-sm">
++                <Link to="/bookings" className="px-3 py-2 bg-slate-100 rounded-lg font-medium hover:bg-slate-200">Lịch sử đặt dịch vụ</Link>
++                <Link to="/favorites" className="px-3 py-2 bg-slate-100 rounded-lg font-medium hover:bg-slate-200">Danh sách yêu thích</Link>
+               </div>
+             </div>
+-
+-            <button
+-              type="submit"
+-              className="px-6 py-2.5 bg-slate-900 hover:bg-orange-500 text-white font-bold text-sm rounded-xl transition-colors"
+-            >
+-              Lưu thay đổi
+-            </button>
+-          </form>
+-        </div>
++          </div>
++          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm [overflow-wrap:anywhere]">
++            <div className="min-w-0"><dt className="text-slate-500 mb-1">Họ và tên</dt><dd className="font-medium text-slate-900">{user.fullName || 'Chưa cung cấp'}</dd></div>
++            <div className="min-w-0"><dt className="text-slate-500 mb-1">Email</dt><dd className="font-medium text-slate-900">{user.email || 'Chưa cung cấp'}</dd></div>
++            <div className="min-w-0"><dt className="text-slate-500 mb-1">Số điện thoại</dt><dd data-testid="profile-phone" className="font-medium text-slate-900">{user.phone?.trim() || 'Chưa cung cấp'}</dd></div>
++            <div className="min-w-0"><dt className="text-slate-500 mb-1">Vai trò</dt><dd data-testid="profile-roles" className="font-medium text-slate-900">{user.roles.map(role => roleLabels[role]).join(', ') || 'Chưa cung cấp'}</dd></div>
++          </dl>
++        </section>
+       </div>
+     </div>
+   );
+diff --git a/travelgo/frontend/src/pages/TourDetailPage.tsx b/travelgo/frontend/src/pages/TourDetailPage.tsx
+index 0f1686b..d720d48 100644
+--- a/travelgo/frontend/src/pages/TourDetailPage.tsx
++++ b/travelgo/frontend/src/pages/TourDetailPage.tsx
+@@ -338,12 +338,12 @@ export const TourDetailPage: React.FC = () => {
+                   <span className="font-semibold text-slate-800">{tour.destinationCity}</span>
+                 </div>
+                 <div className="flex items-center justify-between">
+-                  <span>Hỗ trợ hủy:</span>
+-                  <span className="font-semibold text-emerald-600">Miễn phí trước 48h</span>
++                  <span>Theo dõi đơn:</span>
++                  <span className="font-semibold text-emerald-600">Trong lịch sử tài khoản</span>
+                 </div>
+                 <div className="flex items-center justify-between">
+-                  <span>Bảo hiểm du lịch:</span>
+-                  <span className="font-semibold text-slate-800">Đã bao gồm 100tr</span>
++                  <span>Thanh toán:</span>
++                  <span className="font-semibold text-slate-800">MVP chưa xử lý thanh toán</span>
+                 </div>
+               </div>
+             </div>
+diff --git a/travelgo/frontend/src/pages/TourPlannerPage.tsx b/travelgo/frontend/src/pages/TourPlannerPage.tsx
+index 4dff953..95859ff 100644
+--- a/travelgo/frontend/src/pages/TourPlannerPage.tsx
++++ b/travelgo/frontend/src/pages/TourPlannerPage.tsx
+@@ -1,3 +1,4 @@
++import { PlannerBudgetNotice } from '../components/common/PlannerBudgetNotice';
+ import React, { useState, useEffect, useRef } from 'react';
+ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+ import L from 'leaflet';
+@@ -21,8 +22,6 @@ import {
+   Utensils,
+   Camera,
+   Car,
+-  Plane,
+-  Train,
+   Bike,
+   Heart,
+   Share2,
+@@ -33,15 +32,16 @@ import { TourService } from '../services/tourService';
+ import { TripService } from '../services/tripService';
+ import { PlaceService } from '../services/placeService';
+ import { PlannerInput, GeneratedItinerary, ItineraryDay, ItineraryActivity, Place, TourPackage } from '../types';
+-import { useBooking } from '../context/BookingContext';
+ import { useAuth } from '../context/AuthContext';
+ import { PREFERENCE_OPTIONS, preferenceLabel } from '../constants/travelPreferences';
++import { isMandatoryPlannerActivity, movePlannerActivity, removePlannerActivity } from '../utils/plannerCosts';
++import { BALANCED_PACING_DESCRIPTION, PLANNER_TRANSPORT_OPTIONS, initialPlannerModes, validatePlannerModes } from '../utils/plannerModes';
++import { plannerPopup, roundMapMarker } from '../utils/mapPopup';
+ 
+ export const TourPlannerPage: React.FC = () => {
+   const location = useLocation();
+   const navigate = useNavigate();
+   const [searchParams, setSearchParams] = useSearchParams();
+-  const { openBooking } = useBooking();
+   const { user, loading: authLoading } = useAuth();
+   const templateTour = (location.state as any)?.templateTour as TourPackage | undefined;
+   const mandatoryPlaceId = searchParams.get('mandatoryPlaceId');
+@@ -55,9 +55,10 @@ export const TourPlannerPage: React.FC = () => {
+   const [adults, setAdults] = useState(2);
+   const [children, setChildren] = useState(0);
+   const [totalBudget, setTotalBudget] = useState(templateTour ? templateTour.priceVND * 2 : 6000000);
+-  const [transportation, setTransportation] = useState<'flight' | 'car' | 'train' | 'motorbike'>('car');
++  const [transportation, setTransportation] = useState<unknown>(() => initialPlannerModes(templateTour).transportation);
+   const [preferences, setPreferences] = useState<string[]>([]);
+-  const [pacing, setPacing] = useState<'relaxed' | 'balanced' | 'packed'>('balanced');
++  const [pacing, setPacing] = useState<unknown>(() => initialPlannerModes(templateTour).pacing);
++  const modeSelection = validatePlannerModes(pacing, transportation);
+ 
+   // Generation & Result State
+   const [isGenerating, setIsGenerating] = useState(false);
+@@ -135,10 +136,15 @@ export const TourPlannerPage: React.FC = () => {
+ 
+   const handleGenerate = async (e: React.FormEvent) => {
+     e.preventDefault();
++    if (modeSelection.valid === false) {
++      setGenerationError(modeSelection.message);
++      return;
++    }
+     if (mandatoryPlaceId && !mandatoryPlace) {
+       setGenerationError('Địa điểm đã chọn chưa sẵn sàng. Hãy bỏ chọn hoặc chờ tải xong trước khi tạo lịch trình.');
+       return;
+     }
++    setItinerary(null);
+     setIsGenerating(true);
+     setSaveSuccessMessage(null);
+     setGenerationError(null);
+@@ -153,9 +159,9 @@ export const TourPlannerPage: React.FC = () => {
+         adults,
+         children,
+         totalBudget,
+-        transportation,
++        transportation: modeSelection.transportation,
+         preferences,
+-        pacing,
++        pacing: modeSelection.pacing,
+         mandatoryPlaceIds: mandatoryPlace ? [mandatoryPlace.id] : [],
+       };
+ 
+@@ -164,7 +170,9 @@ export const TourPlannerPage: React.FC = () => {
+       setSelectedDayTab('all');
+     } catch (err: any) {
+       console.error('Failed to generate smart itinerary:', err);
+-      setGenerationError(err?.response?.data?.message || 'Không thể tạo lịch trình. Vui lòng kiểm tra lại thông tin đầu vào.');
++      setGenerationError((err?.code ?? err?.response?.data?.code) === 'NO_SIGHTSEEING_FOR_DESTINATION'
++        ? '\u0043h\u01b0a \u0111\u1ee7 d\u1eef li\u1ec7u \u0111\u1ec3 t\u1ea1o l\u1ecbch tr\u00ecnh tham quan t\u1ea1i \u0111i\u1ec3m \u0111\u1ebfn. H\u00e3y s\u1eeda y\u00eau c\u1ea7u ho\u1eb7c ch\u1ecdn \u0111i\u1ec3m \u0111\u1ebfn kh\u00e1c r\u1ed3i t\u1ea1o l\u1ea1i.'
++        : err?.response?.data?.message || err?.message || 'Không thể tạo lịch trình. Vui lòng kiểm tra lại thông tin đầu vào.');
+     } finally {
+       setIsGenerating(false);
+     }
+@@ -173,49 +181,13 @@ export const TourPlannerPage: React.FC = () => {
+   // Reorder activity up / down
+   const moveActivity = (dayNumber: number, actIndex: number, direction: 'up' | 'down') => {
+     if (!itinerary) return;
+-    const day = itinerary.days.find((d) => d.dayNumber === dayNumber);
+-    if (!day) return;
+-
+-    const newIndex = direction === 'up' ? actIndex - 1 : actIndex + 1;
+-    if (newIndex < 0 || newIndex >= day.activities.length) return;
+-
+-    const updatedActivities = [...day.activities];
+-    const temp = updatedActivities[actIndex];
+-    updatedActivities[actIndex] = updatedActivities[newIndex];
+-    updatedActivities[newIndex] = temp;
+-
+-    const updatedDays = itinerary.days.map((d) =>
+-      d.dayNumber === dayNumber ? { ...d, activities: updatedActivities } : d
+-    );
+-
+-    setItinerary({
+-      ...itinerary,
+-      days: updatedDays,
+-    });
++    setItinerary(movePlannerActivity(itinerary, dayNumber, actIndex, direction));
+   };
+ 
+   // Delete activity
+   const deleteActivity = (dayNumber: number, actId: string) => {
+     if (!itinerary) return;
+-    const updatedDays = itinerary.days.map((d) => {
+-      if (d.dayNumber === dayNumber) {
+-        const remaining = d.activities.filter((a) => a.id !== actId);
+-        const dayCost = remaining.reduce((sum, a) => sum + (a.estimatedCostVND || 0), 0);
+-        return { ...d, activities: remaining, dayEstimatedCostVND: dayCost };
+-      }
+-      return d;
+-    });
+-
+-    const totalEst = updatedDays.reduce((sum, d) => sum + d.dayEstimatedCostVND, 0);
+-    const diff = itinerary.totalBudgetUserVND - totalEst;
+-
+-    setItinerary({
+-      ...itinerary,
+-      days: updatedDays,
+-      totalEstimatedCostVND: totalEst,
+-      costDifferenceVND: diff,
+-      budgetStatus: diff >= 0 ? 'within_budget' : 'over_budget',
+-    });
++    setItinerary(removePlannerActivity(itinerary, dayNumber, actId));
+   };
+ 
+   // Save to My Trips
+@@ -293,24 +265,13 @@ export const TourPlannerPage: React.FC = () => {
+ 
+         const customIcon = L.divIcon({
+           className: 'custom-itinerary-marker',
+-          html: `
+-            <div style="background-color: ${dayColor}; color: white; width: 28px; height: 28px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);">
+-              ${day.dayNumber}.${actIdx + 1}
+-            </div>
+-          `,
++          html: roundMapMarker(`${day.dayNumber}.${actIdx + 1}`, dayColor, 28),
+           iconSize: [28, 28],
+           iconAnchor: [14, 14],
+         });
+ 
+         const marker = L.marker(pos, { icon: customIcon });
+-        marker.bindPopup(`
+-          <div style="font-family: inherit; font-size: 12px; min-width: 180px;">
+-            <div style="font-size: 10px; font-weight: bold; color: ${dayColor}; margin-bottom: 2px;">NGÀY ${day.dayNumber} - ${act.timeSlot.toUpperCase()}</div>
+-            <strong style="font-size: 13px; color: #0f172a;">${act.title}</strong>
+-            <p style="margin: 4px 0; color: #475569; font-size: 11px;">${act.description}</p>
+-            <div style="font-size: 11px; font-weight: bold; color: #ea580c; margin-top: 4px;">Chi phí ước tính: ${new Intl.NumberFormat('vi-VN').format(act.estimatedCostVND)}đ</div>
+-          </div>
+-        `);
++        marker.bindPopup(plannerPopup(day.dayNumber, act, dayColor));
+ 
+         marker.on('click', () => {
+           setSelectedActivityId(act.id);
+@@ -369,7 +330,7 @@ export const TourPlannerPage: React.FC = () => {
+                 className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md"
+               >
+                 <Bookmark className="w-3.5 h-3.5" />
+-                <span>{isSavingTrip ? 'Đang lưu...' : 'Lưu hành trình này'}</span>
++                <span>{isSavingTrip ? 'Đang lưu...' : (itinerary.totalEstimatedCostVND > itinerary.totalBudgetUserVND ? 'Lưu phương án tham khảo' : 'Lưu hành trình này')}</span>
+               </button>
+             </div>
+           )}
+@@ -423,7 +384,7 @@ export const TourPlannerPage: React.FC = () => {
+                       <p className="text-[11px] font-extrabold uppercase tracking-wider text-orange-700">Địa điểm bắt buộc</p>
+                       <h3 className="truncate text-base font-extrabold text-slate-900">{mandatoryPlace.name}</h3>
+                       <p className="mt-1 text-xs text-slate-600">
+-                        {mandatoryPlace.city || mandatoryPlace.province} · {mandatoryPlace.category} · Giá từ {new Intl.NumberFormat('vi-VN').format(mandatoryPlace.priceFrom)}đ
++                        {mandatoryPlace.city || mandatoryPlace.province} · {mandatoryPlace.category} · Nguồn giá và giả định sẽ ghi trong dự toán.
+                       </p>
+                     </div>
+                     <button
+@@ -558,8 +519,8 @@ export const TourPlannerPage: React.FC = () => {
+                   <input
+                     name="totalBudget"
+                     type="number"
+-                    step="500000"
+-                    min="1000000"
++                    step="any"
++                    min="0.01"
+                     value={totalBudget}
+                     onChange={(e) => setTotalBudget(Number(e.target.value))}
+                     className="w-full py-2.5 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 font-bold text-orange-600"
+@@ -571,22 +532,19 @@ export const TourPlannerPage: React.FC = () => {
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 <div>
+                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+-                    Phương tiện di chuyển chính
++                    Phương tiện ước lượng giữa các điểm
+                   </label>
+-                  <div className="grid grid-cols-4 gap-2">
+-                    {[
+-                      { id: 'car', label: 'Ô tô/Xe', icon: Car },
+-                      { id: 'flight', label: 'Máy bay', icon: Plane },
+-                      { id: 'train', label: 'Tàu hỏa', icon: Train },
+-                      { id: 'motorbike', label: 'Xe máy', icon: Bike },
+-                    ].map((item) => {
+-                      const Icon = item.icon;
+-                      const active = transportation === item.id;
++                  <div className="grid grid-cols-2 gap-2">
++                    {PLANNER_TRANSPORT_OPTIONS.map((item) => {
++                      const Icon = item.value === 'car' ? Car : Bike;
++                      const active = transportation === item.value;
+                       return (
+                         <button
+-                          key={item.id}
++                          key={item.value}
+                           type="button"
+-                          onClick={() => setTransportation(item.id as any)}
++                          onClick={() => setTransportation(item.value)}
++                          aria-pressed={active}
++                          data-testid={`planner-transport-${item.value}`}
+                           className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1 ${
+                             active
+                               ? 'border-sky-600 bg-sky-50 text-sky-800 font-bold shadow-sm'
+@@ -599,24 +557,25 @@ export const TourPlannerPage: React.FC = () => {
+                       );
+                     })}
+                   </div>
++                  <p className="mt-2 text-xs text-slate-500">ETA là ước lượng từ khoảng cách Haversine. Chưa hỗ trợ máy bay/tàu hoặc tính chặng và chi phí liên tỉnh.</p>
+                 </div>
+ 
+                 <div>
+                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+-                    Nhịp độ di chuyển
++                    Nhịp độ lịch trình mới
+                   </label>
+-                  <div className="grid grid-cols-3 gap-2">
++                  <div>
+                     {[
+-                      { id: 'relaxed', label: 'Thư giãn', desc: '1-2 điểm/ngày' },
+-                      { id: 'balanced', label: 'Cân bằng', desc: '2-3 điểm/ngày' },
+-                      { id: 'packed', label: 'Khám phá nhiều', desc: '4+ điểm/ngày' },
++                      { id: 'balanced', label: 'Cân bằng', desc: BALANCED_PACING_DESCRIPTION },
+                     ].map((item) => {
+                       const active = pacing === item.id;
+                       return (
+                         <button
+                           key={item.id}
+                           type="button"
+-                          onClick={() => setPacing(item.id as any)}
++                          onClick={() => setPacing(item.id)}
++                          aria-pressed={active}
++                          data-testid="planner-pacing-balanced"
+                           className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center ${
+                             active
+                               ? 'border-orange-500 bg-orange-50 text-orange-800 font-bold shadow-sm'
+@@ -631,6 +590,11 @@ export const TourPlannerPage: React.FC = () => {
+                   </div>
+                 </div>
+               </div>
++              {modeSelection.valid === false && (
++                <p role="alert" data-testid="planner-legacy-mode-warning" className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3">
++                  {modeSelection.message} Dữ liệu gốc vẫn được giữ nguyên; cần chọn lại trước khi tạo lịch mới.
++                </p>
++              )}
+ 
+               {/* Preferences Multi-Select */}
+               <div>
+@@ -665,7 +629,7 @@ export const TourPlannerPage: React.FC = () => {
+               <div className="pt-4">
+                 <button
+                   type="submit"
+-                  disabled={isGenerating || mandatoryPlaceLoading}
++                  disabled={isGenerating || mandatoryPlaceLoading || modeSelection.valid === false}
+                   className="w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 group"
+                 >
+                   {isGenerating ? (
+@@ -692,7 +656,7 @@ export const TourPlannerPage: React.FC = () => {
+               <div>
+                 <div className="flex items-center gap-2 mb-1">
+                   <span className="bg-sky-100 text-sky-800 text-xs font-bold px-2.5 py-0.5 rounded-lg">
+-                    {itinerary.daysCount} Ngày {Math.max(1, itinerary.daysCount - 1)} Đêm
++                    {itinerary.daysCount} Ngày {itinerary.nightsCount ?? Math.max(0, itinerary.daysCount - 1)} Đêm
+                   </span>
+                   <span className="text-slate-500 text-xs">
+                     Khởi hành: {itinerary.departureCity} &rarr; {itinerary.destinationCity}
+@@ -700,6 +664,15 @@ export const TourPlannerPage: React.FC = () => {
+                 </div>
+                 <h2 className="text-xl font-extrabold text-slate-900">{itinerary.title}</h2>
+                 <p className="text-xs text-slate-500 mt-1">{itinerary.summary}</p>
++                <p className="text-xs text-slate-600 mt-2">Chi phí VND cho cả nhóm; lưu trú tính riêng theo số đêm, không phải báo giá.</p>
++                {itinerary.costAssumptions?.length ? (
++                  <details className="mt-2 text-xs text-slate-600">
++                    <summary className="cursor-pointer font-semibold">Giả định chi phí và khoản chưa bao gồm</summary>
++                    <ul className="mt-2 list-disc pl-4 space-y-1">
++                      {itinerary.costAssumptions.map((assumption) => <li key={assumption}>{assumption}</li>)}
++                    </ul>
++                  </details>
++                ) : null}
+                 <div data-testid="generated-preferences" className="flex flex-wrap gap-1.5 mt-3">
+                   {itinerary.preferences.length > 0 ? itinerary.preferences.map((preference) => (
+                     <span key={preference} className="text-[11px] bg-orange-50 text-orange-800 border border-orange-200 px-2.5 py-1 rounded-full font-semibold">
+@@ -711,36 +684,8 @@ export const TourPlannerPage: React.FC = () => {
+                 </div>
+               </div>
+ 
+-              {/* Budget Assessment Badge */}
+-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 min-w-[280px]">
+-                <div className="flex items-center justify-between text-xs mb-1">
+-                  <span className="text-slate-500">Ngân sách dự kiến:</span>
+-                  <span className="font-bold text-slate-800">
+-                    {new Intl.NumberFormat('vi-VN').format(itinerary.totalBudgetUserVND)}đ
+-                  </span>
+-                </div>
+-                <div className="flex items-center justify-between text-xs mb-2">
+-                  <span className="text-slate-500">Tổng chi phí ước tính:</span>
+-                  <span className="font-extrabold text-orange-600">
+-                    {new Intl.NumberFormat('vi-VN').format(itinerary.totalEstimatedCostVND)}đ
+-                  </span>
+-                </div>
+-
+-                <div
+-                  className={`text-[11px] p-2 rounded-lg font-medium flex items-start gap-1.5 ${
+-                    itinerary.budgetStatus === 'within_budget'
+-                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+-                      : 'bg-amber-50 text-amber-900 border border-amber-200'
+-                  }`}
+-                >
+-                  {itinerary.budgetStatus === 'within_budget' ? (
+-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
+-                  ) : (
+-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
+-                  )}
+-                  <span>{itinerary.budgetAdvice}</span>
+-                </div>
+-              </div>
++              <PlannerBudgetNotice budget={itinerary.totalBudgetUserVND} estimate={itinerary.totalEstimatedCostVND}
++                onRevise={() => setItinerary(null)} />
+             </div>
+ 
+             {/* Split Grid: Left Details & Right Interactive Map */}
+@@ -798,12 +743,18 @@ export const TourPlannerPage: React.FC = () => {
+                           <h3 className="font-bold text-slate-800 text-sm">{day.themeTitle}</h3>
+                         </div>
+                         <span className="text-xs font-semibold text-orange-600">
+-                          {new Intl.NumberFormat('vi-VN').format(day.dayEstimatedCostVND)}đ
++                          {new Intl.NumberFormat('vi-VN').format(day.dayEstimatedCostVND)}đ / nhóm
+                         </span>
+                       </div>
+ 
+                       {/* Activities in this day */}
+                       <div className="p-4 space-y-3.5">
++                        {(day.lodgingNights ?? 0) > 0 && (
++                          <p className="text-xs text-slate-600" data-testid="day-lodging-cost">
++                            Đã gồm lưu trú {day.lodgingNights} đêm: {new Intl.NumberFormat('vi-VN').format(day.lodgingEstimatedCostVND ?? 0)}đ / nhóm (ước tính 1 phòng).
++                            {day.lodgingCostSource && <span className="block">{day.lodgingCostSource}</span>}
++                          </p>
++                        )}
+                         {day.activities.map((act, actIdx) => (
+                           <div
+                             key={act.id}
+@@ -836,13 +787,14 @@ export const TourPlannerPage: React.FC = () => {
+                                   </div>
+                                   <h4 className="font-bold text-slate-900 text-sm">{act.title}</h4>
+                                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">{act.description}</p>
++                                  {act.costSource && <p className="text-xs text-slate-500 mt-1" data-testid="activity-cost-source">{act.costSource}</p>}
+ 
+                                   {/* Transit time & aerial distance note */}
+                                   {act.aerialDistanceToNextKm !== undefined && (
+                                     <div className="mt-2 text-[11px] text-sky-700 bg-sky-50 px-2 py-1 rounded inline-flex items-center gap-1">
+                                       <Navigation className="w-3 h-3 text-sky-500" />
+                                       <span>
+-                                        Đến điểm kế tiếp: ~{act.aerialDistanceToNextKm.toFixed(1)} km đường chim bay (Haversine) • Thời gian ~{act.estimatedTransitMinutes} phút chỉ là ước lượng, không phải routing thực tế
++                                        Đến điểm kế tiếp: ~{act.aerialDistanceToNextKm.toFixed(1)} km đường chim bay (Haversine) • ETA giữa các điểm ~{act.estimatedTransitMinutes} phút là ước lượng từ khoảng cách Haversine, không phải tuyến đường bộ hoặc thời gian thực.
+                                       </span>
+                                     </div>
+                                   )}
+@@ -873,7 +825,7 @@ export const TourPlannerPage: React.FC = () => {
+                                   </button>
+                                   <button
+                                     onClick={() => deleteActivity(day.dayNumber, act.id)}
+-                                    disabled={Boolean(mandatoryPlace && act.placeId === mandatoryPlace.id)}
++                                    disabled={isMandatoryPlannerActivity(act) || Boolean(mandatoryPlace && act.placeId === mandatoryPlace.id)}
+                                     className="p-1 rounded text-rose-400 hover:text-rose-600"
+                                     title={mandatoryPlace && act.placeId === mandatoryPlace.id
+                                       ? 'Địa điểm bắt buộc; quay lại cấu hình và bỏ chọn để xóa.'
+@@ -914,9 +866,11 @@ export const TourPlannerPage: React.FC = () => {
+                         <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
+                           {itinerary.hotelSuggestion.address}
+                         </p>
+-                        <div className="mt-2 flex items-center justify-between">
+-                          <span className="text-xs font-bold text-orange-600">
+-                            {new Intl.NumberFormat('vi-VN').format(itinerary.hotelSuggestion.priceFrom)}đ / đêm
++                        <div className="mt-2 flex items-center justify-between gap-3">
++                          <span data-testid="hotel-estimate-source" className="text-xs text-slate-600">
++                            {(itinerary.nightsCount ?? Math.max(0, itinerary.daysCount - 1)) > 0
++                              ? itinerary.days.find((day) => (day.lodgingNights ?? 0) > 0)?.lodgingCostSource || 'Ước tính một phòng/nhóm/đêm; xem lưu trú từng ngày, chưa xác minh giá.'
++                              : 'Chuyến đi 0 đêm: khách sạn chỉ để tham khảo, không tính phí lưu trú.'}
+                           </span>
+                           <span className="text-xs text-emerald-600 font-medium">
+                             Bayesian Score: {itinerary.hotelSuggestion.bayesianRating.toFixed(2)}★
+@@ -942,7 +896,7 @@ export const TourPlannerPage: React.FC = () => {
+                   </div>
+ 
+                   {/* Leaflet Map Div */}
+-                  <div ref={mapContainerRef} className="w-full h-[480px] z-10" />
++                  <div ref={mapContainerRef} className="w-full z-10" style={{ height: 480 }} />
+ 
+                   {/* Map Legend */}
+                   <div className="p-3 bg-white border-t border-slate-100 flex flex-wrap items-center gap-3 text-xs text-slate-600">
+@@ -971,20 +925,13 @@ export const TourPlannerPage: React.FC = () => {
+                       disabled={isSavingTrip}
+                       className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition-all text-center"
+                     >
+-                      {isSavingTrip ? 'Đang lưu...' : 'Lưu vào Chuyến đi'}
++                      {isSavingTrip ? 'Đang lưu...' : (itinerary.totalEstimatedCostVND > itinerary.totalBudgetUserVND ? 'Lưu phương án tham khảo' : 'Lưu vào Chuyến đi')}
+                     </button>
+                     <button
+-                      onClick={() =>
+-                        openBooking({
+-                          serviceType: 'tour',
+-                          serviceId: itinerary.id,
+-                          serviceName: itinerary.title,
+-                          unitPrice: itinerary.totalEstimatedCostVND,
+-                        })
+-                      }
++                      onClick={() => navigate('/tours')}
+                       className="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold py-2.5 px-3 rounded-xl text-xs transition-all text-center"
+                     >
+-                      Đặt các dịch vụ
++                      Chọn tour có thể đặt
+                     </button>
+                   </div>
+                 </div>
+diff --git a/travelgo/frontend/src/pages/TripDetailPage.tsx b/travelgo/frontend/src/pages/TripDetailPage.tsx
+index f62a5d5..d0d36e8 100644
+--- a/travelgo/frontend/src/pages/TripDetailPage.tsx
++++ b/travelgo/frontend/src/pages/TripDetailPage.tsx
+@@ -1,3 +1,5 @@
++import { PlannerBudgetNotice } from '../components/common/PlannerBudgetNotice';
++import { TripItineraryEditor } from '../components/common/TripItineraryEditor';
+ import React, { useState, useEffect, useRef } from 'react';
+ import { useParams, Link, useNavigate } from 'react-router-dom';
+ import L from 'leaflet';
+@@ -23,6 +25,8 @@ import {
+ import { TripService } from '../services/tripService';
+ import { TripSession, TripCheckin, ItineraryDay, ItineraryActivity } from '../types';
+ import { PREFERENCE_OPTIONS } from '../constants/travelPreferences';
++import { tripCostView } from '../utils/tripCosts';
++import { roundMapMarker, tripPopup } from '../utils/mapPopup';
+ 
+ export const TripDetailPage: React.FC = () => {
+   const { id } = useParams<{ id: string }>();
+@@ -30,7 +34,9 @@ export const TripDetailPage: React.FC = () => {
+   const [trip, setTrip] = useState<TripSession | null>(null);
+   const [loading, setLoading] = useState(true);
+   const [activeDay, setActiveDay] = useState(1);
+-  const [currentGps, setCurrentGps] = useState<{ latitude: number; longitude: number } | null>(null);
++  const [currentGps, setCurrentGps] = useState<{ latitude: number; longitude: number; accuracyMeters?: number } | null>(null);
++  const [actionError, setActionError] = useState<string | null>(null);
++  const [actionBusy, setActionBusy] = useState(false);
+   const [gpsLoading, setGpsLoading] = useState(false);
+   const [gpsError, setGpsError] = useState<string | null>(null);
+   const [checkinNotes, setCheckinNotes] = useState<{ [actId: string]: string }>({});
+@@ -38,6 +44,9 @@ export const TripDetailPage: React.FC = () => {
+   const [preferenceDraft, setPreferenceDraft] = useState<string[]>([]);
+   const [isSavingPreferences, setIsSavingPreferences] = useState(false);
+   const [preferenceMessage, setPreferenceMessage] = useState<string | null>(null);
++  const [editingItinerary, setEditingItinerary] = useState(false);
++  const [isSavingItinerary, setIsSavingItinerary] = useState(false);
++  const [itineraryMessage, setItineraryMessage] = useState<string | null>(null);
+ 
+   // Map References
+   const mapContainerRef = useRef<HTMLDivElement>(null);
+@@ -46,6 +55,7 @@ export const TripDetailPage: React.FC = () => {
+ 
+   useEffect(() => {
+     if (id) {
++      setEditingItinerary(false); setItineraryMessage(null);
+       fetchTrip(id);
+     }
+   }, [id]);
+@@ -101,12 +111,14 @@ export const TripDetailPage: React.FC = () => {
+ 
+     setGpsLoading(true);
+     setGpsError(null);
++    setCurrentGps(null);
+ 
+     navigator.geolocation.getCurrentPosition(
+       (pos) => {
+         setCurrentGps({
+           latitude: pos.coords.latitude,
+           longitude: pos.coords.longitude,
++          accuracyMeters: pos.coords.accuracy,
+         });
+         setGpsLoading(false);
+       },
+@@ -121,14 +133,14 @@ export const TripDetailPage: React.FC = () => {
+ 
+   // Perform Check-in
+   const handleCheckin = async (act: ItineraryActivity) => {
+-    if (!trip) return;
++    if (!trip || actionBusy) return;
+     const note = checkinNotes[act.id] || '';
+-
++    setActionBusy(true);
++    setActionError(null);
+     try {
+-      const res = await TripService.checkinPlace(
++      const res = await TripService.checkinActivity(
+         trip.id,
+-        act.placeId || act.id,
+-        act.title,
++        act.id,
+         currentGps || undefined,
+         note || undefined
+       );
+@@ -138,29 +150,35 @@ export const TripDetailPage: React.FC = () => {
+       }
+     } catch (err) {
+       console.error('Checkin failed:', err);
+-      alert('Không thể hoàn thành check-in. Vui lòng thử lại.');
+-    }
++      setActionError('Không thể check-in hoạt động này. Hãy tải lại lịch và kiểm tra trạng thái chuyến đi.');
++    } finally { setActionBusy(false); }
+   };
+ 
+   // Status transitions
+   const handleStartTrip = async () => {
+-    if (!trip) return;
++    if (!trip || actionBusy) return;
++    setActionBusy(true);
++    setActionError(null);
+     try {
+-      const updated = await TripService.updateTrip(trip.id, { status: 'active' });
++      const updated = await TripService.startTrip(trip.id);
+       if (updated) setTrip(updated);
+     } catch (err) {
+       console.error('Failed to start trip:', err);
+-    }
++      setActionError('Không thể bắt đầu chuyến đi ở trạng thái hiện tại. Hãy tải lại lịch.');
++    } finally { setActionBusy(false); }
+   };
+ 
+   const handleCompleteTrip = async () => {
+-    if (!trip) return;
++    if (!trip || actionBusy) return;
++    setActionBusy(true);
++    setActionError(null);
+     try {
+       const updated = await TripService.completeTrip(trip.id);
+       if (updated) setTrip(updated);
+     } catch (err) {
+       console.error('Failed to complete trip:', err);
+-    }
++      setActionError('Không thể kết thúc chuyến đi ở trạng thái hiện tại. Hãy tải lại lịch.');
++    } finally { setActionBusy(false); }
+   };
+ 
+   // Convert Trip to Blog Draft
+@@ -217,31 +235,17 @@ export const TripDetailPage: React.FC = () => {
+         const pos: [number, number] = [act.latitude, act.longitude];
+         allCoords.push(pos);
+ 
+-        const isChecked = trip.checkins.some(
+-          (c) => c.placeId === (act.placeId || act.id) || c.placeName === act.title
+-        );
++        const isChecked = trip.progress?.checkedActivityIds.includes(act.id) ?? false;
+ 
+         const customIcon = L.divIcon({
+           className: 'custom-checkin-marker',
+-          html: `
+-            <div style="background-color: ${isChecked ? '#10b981' : '#0284c7'}; color: white; width: 30px; height: 30px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);">
+-              ${isChecked ? '✓' : `N${day.dayNumber}`}
+-            </div>
+-          `,
++          html: roundMapMarker(isChecked ? '✓' : `N${day.dayNumber}`, isChecked ? '#10b981' : '#0284c7', 30),
+           iconSize: [30, 30],
+           iconAnchor: [15, 15],
+         });
+ 
+         const marker = L.marker(pos, { icon: customIcon });
+-        marker.bindPopup(`
+-          <div style="font-size: 12px; font-family: inherit;">
+-            <div style="font-weight: bold; color: ${isChecked ? '#10b981' : '#0284c7'};">
+-              ${isChecked ? '✓ ĐÃ GHÉ THĂM' : 'ĐIỂM DỰ KIẾN'}
+-            </div>
+-            <strong>${act.title}</strong>
+-            <p style="margin: 4px 0; color: #64748b; font-size: 11px;">${act.description}</p>
+-          </div>
+-        `);
++        marker.bindPopup(tripPopup(act, isChecked));
+ 
+         markersGroup.addLayer(marker);
+       });
+@@ -277,6 +281,9 @@ export const TripDetailPage: React.FC = () => {
+     );
+   }
+ 
++  const costView = tripCostView(trip);
++  const eligibleIds = trip.progress?.eligibleActivityIds || [];
++  const checkedIds = trip.progress?.checkedActivityIds || [];
+   return (
+     <div className="min-h-screen bg-slate-50 pt-20 pb-20">
+       {/* Breadcrumb */}
+@@ -304,7 +311,7 @@ export const TripDetailPage: React.FC = () => {
+                   {trip.destinationCity}
+                 </span>
+                 <span className="text-xs bg-sky-100 text-sky-800 font-semibold px-3 py-1 rounded-full">
+-                  {trip.daysCount} Ngày {Math.max(1, trip.daysCount - 1)} Đêm
++                  {trip.daysCount} Ngày • {trip.nightsCount === undefined ? 'Chưa lưu số đêm' : `${trip.nightsCount} Đêm`}
+                 </span>
+                 <span className="text-xs text-slate-500">
+                   {trip.startDate} &rarr; {trip.endDate}
+@@ -313,13 +320,29 @@ export const TripDetailPage: React.FC = () => {
+               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
+                 {trip.title}
+               </h1>
++              <section className="mt-3 space-y-1 text-xs text-slate-600" data-testid="trip-cost-summary">
++                <p>{costView.label}</p>
++                {costView.isGroup && <PlannerBudgetNotice budget={trip.totalBudgetUserVND} estimate={trip.totalEstimatedCostVND} />}
++                <p>Ngân sách đã lưu: {new Intl.NumberFormat('vi-VN').format(trip.totalBudgetUserVND)}đ • Chi phí ước tính đã lưu: {new Intl.NumberFormat('vi-VN').format(trip.totalEstimatedCostVND)}đ</p>
++                <p>Nhịp độ: {costView.pacing} • Phương tiện: {costView.transportation}</p>
++                {trip.adults !== undefined && <p>Số khách đã lưu: {trip.adults} người lớn, {trip.children ?? 0} trẻ em.</p>}
++                {costView.assumptions.length > 0 && (
++                  <details>
++                    <summary className="cursor-pointer font-semibold">Giả định chi phí đã lưu</summary>
++                    <ul className="mt-1 list-disc pl-4 space-y-1">{costView.assumptions.map((item, index) => <li key={index}>{item}</li>)}</ul>
++                  </details>
++                )}
++              </section>
+             </div>
+ 
+             {/* Status & Control Actions */}
+             <div className="flex flex-wrap items-center gap-3">
++              {trip.costBasis === 'GROUP_VND_V1' && <button type="button" data-testid="edit-trip-itinerary" disabled={editingItinerary || actionBusy || isSavingPreferences} onClick={() => { setItineraryMessage(null); setEditingItinerary(true); }} className="bg-white border border-sky-300 text-sky-800 font-bold px-4 py-2.5 rounded-xl disabled:opacity-50">Chỉnh sửa lịch trình</button>}
+               {trip.status === 'upcoming' && (
+                 <button
+                   onClick={handleStartTrip}
++                  data-testid="start-trip"
++                  disabled={actionBusy || editingItinerary}
+                   className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm shadow-md transition-all flex items-center gap-2"
+                 >
+                   <Flag className="w-4 h-4" />
+@@ -330,10 +353,12 @@ export const TripDetailPage: React.FC = () => {
+               {trip.status === 'active' && (
+                 <button
+                   onClick={handleCompleteTrip}
++                  data-testid="complete-trip"
++                  disabled={actionBusy || editingItinerary}
+                   className="bg-sky-600 hover:bg-sky-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm shadow-md transition-all flex items-center gap-2"
+                 >
+                   <CheckCircle2 className="w-4 h-4" />
+-                  <span>Hoàn thành chuyến đi</span>
++                  <span>Kết thúc chuyến đi</span>
+                 </button>
+               )}
+ 
+@@ -348,6 +373,12 @@ export const TripDetailPage: React.FC = () => {
+             </div>
+           </div>
+ 
++          <p data-testid="trip-status" className="mt-3 text-sm font-semibold">
++            Trạng thái: {({ upcoming: 'Chưa bắt đầu', active: 'Đang diễn ra', completed: 'Đã kết thúc', cancelled: 'Đã hủy' })[trip.status]}
++          </p>
++          <p className="text-xs text-slate-500 mt-1">Kết thúc chuyến đi giữ nguyên tỷ lệ check-in các hoạt động.</p>
++          {actionError && <p role="alert" className="text-sm text-red-700 mt-2">{actionError}</p>}
++
+           <div data-testid="trip-preferences" className="mt-6 pt-6 border-t border-slate-100">
+             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+               <div>
+@@ -361,7 +392,7 @@ export const TripDetailPage: React.FC = () => {
+                   type="button"
+                   data-testid="save-trip-preferences"
+                   onClick={() => savePreferences()}
+-                  disabled={isSavingPreferences}
++                  disabled={isSavingPreferences || editingItinerary}
+                   className="bg-sky-600 hover:bg-sky-700 disabled:opacity-60 text-white text-xs font-bold px-3 py-2 rounded-xl"
+                 >
+                   {isSavingPreferences ? 'Đang lưu...' : 'Lưu sở thích'}
+@@ -370,7 +401,7 @@ export const TripDetailPage: React.FC = () => {
+                   type="button"
+                   data-testid="clear-trip-preferences"
+                   onClick={clearPreferences}
+-                  disabled={isSavingPreferences || preferenceDraft.length === 0}
++                  disabled={isSavingPreferences || editingItinerary || preferenceDraft.length === 0}
+                   className="bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-700 border border-slate-200 text-xs font-bold px-3 py-2 rounded-xl"
+                 >
+                   Xóa tất cả
+@@ -408,13 +439,22 @@ export const TripDetailPage: React.FC = () => {
+ 
+           {/* Progress Bar & Geolocation Status */}
+           <div className="mt-6 pt-6 border-t border-slate-100 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+-            <div className="md:col-span-8">
++            <div className="md:col-span-8" data-testid="trip-progress">
+               <div className="flex items-center justify-between text-xs mb-2">
+                 <span className="font-semibold text-slate-700">
+-                  Tiến độ hoàn thành: {trip.checkins.length} điểm đã check-in
++                  Đã check-in: {checkedIds.length}/{eligibleIds.length} hoạt động
+                 </span>
+                 <span className="font-extrabold text-emerald-600 text-sm">{trip.progressPercent}%</span>
+               </div>
++              <p className="text-xs text-slate-500 mt-2">Tính mọi hoạt động trong lịch, gồm ăn/nghỉ và hoạt động tự tạo. Lịch trống có tiến độ 0%.</p>
++              {!!trip.progress && (trip.progress.unmatchedCheckinCount > 0 || trip.progress.ineligibleActivityCount > 0) && (
++                <p data-testid="trip-history-limit" className="text-xs text-amber-700 mt-2">
++                  Có {trip.progress.unmatchedCheckinCount} bản ghi lịch sử không tính vào tiến độ và {trip.progress.ineligibleActivityCount} hoạt động chưa xác định riêng biệt. Giữ lịch sử; không tự gán check-in khi không xác định được hoạt động.
++                </p>
++              )}
++              {trip.checkins.length > 0 && <details className="text-xs mt-2"><summary>Lịch sử check-in</summary><ul>
++                {trip.checkins.map((entry, index) => <li key={index}>{entry.placeName} — {entry.checkedInAt}{entry.resolvedActivityId ? '' : ' (không tính vào tiến độ hiện tại)'}{entry.hasAttachedLocation ? ' — Có đính kèm vị trí' : ''}{entry.notes ? ` — ${entry.notes}` : ''}</li>)}
++              </ul></details>}
+               <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                 <div
+                   className="bg-gradient-to-r from-sky-500 to-emerald-500 h-full rounded-full transition-all duration-500"
+@@ -432,6 +472,7 @@ export const TripDetailPage: React.FC = () => {
+                 </div>
+                 <button
+                   onClick={requestCurrentLocation}
++                  data-testid="request-trip-location"
+                   disabled={gpsLoading}
+                   className="bg-white hover:bg-slate-100 text-sky-700 border border-slate-200 font-semibold text-xs px-2.5 py-1 rounded-lg transition-colors"
+                 >
+@@ -444,10 +485,13 @@ export const TripDetailPage: React.FC = () => {
+                 </div>
+               )}
+               {gpsError && <div className="text-[10px] text-amber-700 mt-1">{gpsError}</div>}
++              <p className="text-[10px] text-slate-500 mt-1">Vị trí chỉ được đính kèm; không xác minh có mặt thực địa. Không cần GPS để check-in.</p>
+             </div>
+           </div>
+         </div>
+ 
++        {itineraryMessage && <p role="status" data-testid="trip-itinerary-message" className="mb-4 text-emerald-800 font-semibold">{itineraryMessage}</p>}
++        {editingItinerary && <TripItineraryEditor key={trip.id} trip={trip} onBusyChange={setIsSavingItinerary} onCancel={() => { if (!isSavingItinerary) setEditingItinerary(false); }} onSaved={updated => { setTrip(updated); setEditingItinerary(false); setItineraryMessage('Đã lưu lịch trình.'); }} />}
+         {/* 2-Column Tracking: Left Activities Timeline, Right Map */}
+         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+           {/* LEFT: 7 cols Timeline */}
+@@ -478,18 +522,22 @@ export const TripDetailPage: React.FC = () => {
+                     <h3 className="font-bold text-slate-900 text-base">{day.themeTitle}</h3>
+                     <span className="text-xs text-slate-500">{day.date}</span>
+                   </div>
++                  <p className="text-xs text-slate-600">
++                    Ước tính đã lưu của ngày: {new Intl.NumberFormat('vi-VN').format(day.dayEstimatedCostVND)}đ{trip.costBasis === 'GROUP_VND_V1' ? ' / nhóm' : ' (đơn vị bản cũ chưa xác nhận)'}
++                    {day.lodgingCostSource && <span className="block">{day.lodgingCostSource}</span>}
++                    {trip.costBasis === 'GROUP_VND_V1' && ` • Lưu trú ${day.lodgingNights ?? 0} đêm: ${new Intl.NumberFormat('vi-VN').format(day.lodgingEstimatedCostVND ?? 0)}đ / nhóm, đã gồm trong tổng ngày.`}
++                  </p>
+ 
+                   <div className="space-y-4">
+                     {day.activities.map((act) => {
+-                      const checkin = trip.checkins.find(
+-                        (c) => c.placeId === (act.placeId || act.id) || c.placeName === act.title
+-                      );
++                      const checkin = trip.checkins.find((c) => c.resolvedActivityId === act.id);
+                       const isChecked = !!checkin;
+ 
+                       return (
+                         <div
+                           key={act.id}
+                           data-testid="saved-trip-activity"
++                          data-activity-id={act.id}
+                           data-place-id={act.placeId || ''}
+                           className={`p-4 rounded-2xl border transition-all ${
+                             isChecked
+@@ -507,18 +555,22 @@ export const TripDetailPage: React.FC = () => {
+                                   <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
+                                     <Check className="w-3 h-3" />
+                                     <span>Đã check-in</span>
+-                                    {checkin.verifiedViaGeo && <span>(GPS)</span>}
++                                    {checkin.hasAttachedLocation && <span>(Có đính kèm vị trí)</span>}
+                                   </span>
+                                 )}
+                               </div>
+                               <h4 className="font-bold text-slate-900 text-sm">{act.title}</h4>
+                               <p className="text-xs text-slate-500 mt-1 leading-relaxed">{act.description}</p>
++                              {act.costSource && <p className="text-xs text-slate-500">{act.costSource}</p>}
++                              <p className="text-xs text-slate-500 mt-1">Ước tính đã lưu: {new Intl.NumberFormat('vi-VN').format(act.estimatedCostVND)}đ{trip.costBasis === 'GROUP_VND_V1' ? ' / nhóm' : ' (chưa xác nhận đơn vị)'}</p>
+                             </div>
+ 
+                             {/* Checkin Action Button */}
+                             <div className="flex-shrink-0">
+                               <button
+                                 onClick={() => handleCheckin(act)}
++                                data-testid="checkin-activity"
++                                disabled={actionBusy || editingItinerary || isChecked || trip.status !== 'active' || !eligibleIds.includes(act.id)}
+                                 className={`text-xs font-bold px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 shadow-sm ${
+                                   isChecked
+                                     ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+@@ -529,7 +581,7 @@ export const TripDetailPage: React.FC = () => {
+                                 {isChecked ? (
+                                   <>
+                                     <CheckCircle2 className="w-3.5 h-3.5" />
+-                                    <span>Check-in lại</span>
++                                    <span>Đã ghi nhận</span>
+                                   </>
+                                 ) : (
+                                   <>
+@@ -547,10 +599,11 @@ export const TripDetailPage: React.FC = () => {
+                               <div className="text-xs text-emerald-800 bg-emerald-100/60 p-2.5 rounded-xl">
+                                 <strong>Ghi chú của bạn:</strong> {checkin.notes}
+                               </div>
+-                            ) : (
++                            ) : !isChecked && trip.status === 'active' && eligibleIds.includes(act.id) ? (
+                               <div className="flex items-center gap-2">
+                                 <input
+                                   type="text"
++                                  maxLength={5000}
+                                   placeholder="Ghi chú nhanh (ví dụ: món ngon, view đẹp)..."
+                                   value={checkinNotes[act.id] || ''}
+                                   onChange={(e) =>
+@@ -560,12 +613,13 @@ export const TripDetailPage: React.FC = () => {
+                                 />
+                                 <button
+                                   onClick={() => handleCheckin(act)}
++                                  disabled={actionBusy || editingItinerary}
+                                   className="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1.5 rounded-lg font-medium transition-colors"
+                                 >
+                                   Lưu
+                                 </button>
+                               </div>
+-                            )}
++                            ) : null}
+                           </div>
+                         </div>
+                       );
+@@ -587,7 +641,7 @@ export const TripDetailPage: React.FC = () => {
+                   ✓ Xanh lá: Đã check-in
+                 </span>
+               </div>
+-              <div ref={mapContainerRef} className="w-full h-[450px] z-10" />
++              <div ref={mapContainerRef} className="w-full z-10" style={{ height: 450 }} />
+             </div>
+ 
+             {/* Convert to Blog Card */}
+diff --git a/travelgo/frontend/src/services/api.ts b/travelgo/frontend/src/services/api.ts
+index 8ae0b22..92b301a 100644
+--- a/travelgo/frontend/src/services/api.ts
++++ b/travelgo/frontend/src/services/api.ts
+@@ -22,7 +22,9 @@ api.interceptors.response.use(
+   (response) => response.data,
+   (error) => {
+     console.error('API Error:', error.response?.data || error.message);
+-    if (error.response?.status === 401) {
++    const currentToken = localStorage.getItem('travelgo_token');
++    // A delayed response for the previous account must not log out the new one.
++    if (error.response?.status === 401 && currentToken && error.config?.headers?.Authorization === `Bearer ${currentToken}`) {
+       localStorage.removeItem('travelgo_token');
+       localStorage.removeItem('travelgo_user');
+       window.dispatchEvent(new Event('travelgo:unauthorized'));
+diff --git a/travelgo/frontend/src/services/bookingService.ts b/travelgo/frontend/src/services/bookingService.ts
+index 81376f0..7566555 100644
+--- a/travelgo/frontend/src/services/bookingService.ts
++++ b/travelgo/frontend/src/services/bookingService.ts
+@@ -14,8 +14,8 @@ export const BookingService = {
+     notes?: string;
+     recommendationRequestId?: string;
+     recommendationSessionId?: string;
+-  }): Promise<Booking> {
+-    const res: any = await api.post('/bookings', payload, { headers: { 'Idempotency-Key': crypto.randomUUID() } });
++  }, idempotencyKey: string): Promise<Booking> {
++    const res: any = await api.post('/bookings', payload, { headers: { 'Idempotency-Key': idempotencyKey } });
+     return res.data;
+   },
+ 
+diff --git a/travelgo/frontend/src/services/tripService.ts b/travelgo/frontend/src/services/tripService.ts
+index a4ba66d..72b56ec 100644
+--- a/travelgo/frontend/src/services/tripService.ts
++++ b/travelgo/frontend/src/services/tripService.ts
+@@ -27,22 +27,25 @@ export const TripService = {
+     return res.success;
+   },
+ 
+-  async checkinPlace(
++  async checkinActivity(
+     tripId: string,
+-    placeId: string,
+-    placeName: string,
++    activityId: string,
+     geo?: { latitude: number; longitude: number; accuracyMeters?: number },
+     notes?: string
+   ): Promise<{ success: boolean; trip: TripSession; checkin: TripCheckin; message: string }> {
+     const res: any = await api.post(`/trips/${tripId}/checkin`, {
+-      placeId,
+-      placeName,
++      activityId,
+       geo,
+       notes,
+     });
+     return res;
+   },
+ 
++  async startTrip(tripId: string): Promise<TripSession> {
++    const res: any = await api.post(`/trips/${tripId}/start`);
++    return res.data;
++  },
++
+   async completeTrip(tripId: string): Promise<TripSession> {
+     const res: any = await api.post(`/trips/${tripId}/complete`);
+     return res.data;
+diff --git a/travelgo/frontend/src/types/index.ts b/travelgo/frontend/src/types/index.ts
+index 5413d24..46832ab 100644
+--- a/travelgo/frontend/src/types/index.ts
++++ b/travelgo/frontend/src/types/index.ts
+@@ -208,9 +208,9 @@ export interface PlannerInput {
+   adults: number;
+   children: number;
+   totalBudget: number;
+-  transportation: 'flight' | 'car' | 'train' | 'motorbike';
++  transportation: 'car' | 'motorbike';
+   preferences: string[];
+-  pacing: 'relaxed' | 'balanced' | 'packed';
++  pacing: 'balanced';
+   mandatoryPlaceIds?: string[];
+ }
+ 
+@@ -223,6 +223,7 @@ export interface ItineraryActivity {
+   category: 'sightseeing' | 'food' | 'hotel' | 'leisure';
+   durationMinutes: number;
+   estimatedCostVND: number;
++  costSource?: string;
+   latitude: number;
+   longitude: number;
+   imageUrl?: string;
+@@ -237,6 +238,9 @@ export interface ItineraryDay {
+   themeTitle: string;
+   activities: ItineraryActivity[];
+   dayEstimatedCostVND: number;
++  lodgingNights?: number;
++  lodgingEstimatedCostVND?: number;
++  lodgingCostSource?: string;
+   centroid: { latitude: number; longitude: number };
+ }
+ 
+@@ -248,6 +252,10 @@ export interface GeneratedItinerary {
+   startDate: string;
+   endDate: string;
+   daysCount: number;
++  nightsCount?: number;
++  costBasis?: 'GROUP_VND_V1';
++  costAssumptions?: string[];
++  transportation?: 'flight' | 'car' | 'train' | 'motorbike'; // Legacy read data remains viewable.
+   adults: number;
+   children: number;
+   pacing: 'relaxed' | 'balanced' | 'packed';
+@@ -256,6 +264,8 @@ export interface GeneratedItinerary {
+   totalEstimatedCostVND: number;
+   costDifferenceVND: number;
+   budgetStatus: 'within_budget' | 'over_budget';
++  overBudgetVND?: number;
++  constraintViolations?: string[];
+   budgetAdvice: string;
+   days: ItineraryDay[];
+   summary: string;
+@@ -265,12 +275,17 @@ export interface GeneratedItinerary {
+ }
+ 
+ export interface TripCheckin {
+-  placeId: string;
++  activityId?: string;
++  resolvedActivityId?: string;
++  placeId?: string;
+   placeName: string;
+   checkedInAt: string;
+   latitude?: number;
+   longitude?: number;
+-  verifiedViaGeo: boolean;
++  verifiedViaGeo?: boolean;
++  hasAttachedLocation?: boolean;
++  accuracyMeters?: number;
++  excludedFromProgress?: string;
+   notes?: string;
+   photoUrl?: string;
+ }
+@@ -295,9 +310,20 @@ export interface TripSession {
+   selectedPlaceIds: string[];
+   checkins: TripCheckin[];
+   progressPercent: number;
++  progress?: { eligibleActivityIds: string[]; checkedActivityIds: string[]; unmatchedCheckinCount: number; ineligibleActivityCount: number };
+   notes?: string;
+   isPublic: boolean;
+   createdAt: string;
+   updatedAt: string;
++  costBasis?: string;
++  nightsCount?: number;
++  costAssumptions?: string[];
++  transportation?: 'flight' | 'car' | 'train' | 'motorbike';
++  adults?: number;
++  children?: number;
++  costDifferenceVND?: number;
++  budgetStatus?: 'within_budget' | 'over_budget';
++  overBudgetVND?: number;
++  constraintViolations?: string[];
+ }
+ 

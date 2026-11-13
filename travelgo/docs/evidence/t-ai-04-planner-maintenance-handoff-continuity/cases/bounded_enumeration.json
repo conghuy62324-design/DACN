@@ -1,0 +1,1115 @@
+{
+  "name": "bounded_enumeration",
+  "tier": "OFFLINE_MODEL_OR_SENSOR_NOT_POSTGRES",
+  "result": {
+    "tier": "BOUNDED_OFFLINE_ENUMERATION_NOT_POSTGRES_TRACE",
+    "projection": [
+      "public.ai_model_registry",
+      "public.places",
+      "public.users"
+    ],
+    "results": [
+      {
+        "target": "public.ai_model_registry",
+        "prefixesExplored": 14,
+        "violatingPrefixes": 0,
+        "terminalFinitePrefixes": 4,
+        "maxScheduledActions": 6,
+        "firstWitness": null
+      },
+      {
+        "target": "public.places",
+        "prefixesExplored": 10,
+        "violatingPrefixes": 2,
+        "terminalFinitePrefixes": 2,
+        "maxScheduledActions": 6,
+        "firstWitness": {
+          "actions": [
+            "COMMIT_A",
+            "WRITE_REQUEST"
+          ],
+          "target": "public.places",
+          "projection": [
+            "public.ai_model_registry",
+            "public.places",
+            "public.users"
+          ],
+          "events": [
+            {
+              "sequence": 1,
+              "type": "TRANSACTION_BEGUN",
+              "protectionActive": false,
+              "fixtureVisible": false,
+              "tx": "A",
+              "role": "TASK",
+              "registration": "REGISTERED"
+            },
+            {
+              "sequence": 2,
+              "type": "TRANSACTION_BEGUN",
+              "protectionActive": false,
+              "fixtureVisible": false,
+              "tx": "B",
+              "role": "TASK",
+              "registration": "REGISTERED"
+            },
+            {
+              "sequence": 3,
+              "type": "LOCK_REQUEST",
+              "protectionActive": false,
+              "fixtureVisible": false,
+              "tx": "A",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.ai_model_registry",
+              "mode": "SHARE_ROW_EXCLUSIVE"
+            },
+            {
+              "sequence": 4,
+              "type": "GRANTED",
+              "protectionActive": false,
+              "fixtureVisible": false,
+              "tx": "A",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.ai_model_registry",
+              "mode": "SHARE_ROW_EXCLUSIVE",
+              "transactionStatus": "ACTIVE",
+              "origin": "IMMEDIATE"
+            },
+            {
+              "sequence": 5,
+              "type": "LOCK_REQUEST",
+              "protectionActive": false,
+              "fixtureVisible": false,
+              "tx": "A",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.places",
+              "mode": "SHARE_ROW_EXCLUSIVE"
+            },
+            {
+              "sequence": 6,
+              "type": "GRANTED",
+              "protectionActive": false,
+              "fixtureVisible": false,
+              "tx": "A",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.places",
+              "mode": "SHARE_ROW_EXCLUSIVE",
+              "transactionStatus": "ACTIVE",
+              "origin": "IMMEDIATE"
+            },
+            {
+              "sequence": 7,
+              "type": "LOCK_REQUEST",
+              "protectionActive": false,
+              "fixtureVisible": false,
+              "tx": "A",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.users",
+              "mode": "SHARE_ROW_EXCLUSIVE"
+            },
+            {
+              "sequence": 8,
+              "type": "GRANTED",
+              "protectionActive": false,
+              "fixtureVisible": false,
+              "tx": "A",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.users",
+              "mode": "SHARE_ROW_EXCLUSIVE",
+              "transactionStatus": "ACTIVE",
+              "origin": "IMMEDIATE"
+            },
+            {
+              "sequence": 9,
+              "type": "PROTECTION_BEGIN",
+              "protectionActive": true,
+              "fixtureVisible": false,
+              "approvedTables": [
+                "public.ai_model_registry",
+                "public.places",
+                "public.users"
+              ],
+              "state": {
+                "transactions": [
+                  {
+                    "id": "A",
+                    "role": "TASK",
+                    "registration": "REGISTERED",
+                    "connection": "OPEN",
+                    "status": "ACTIVE",
+                    "waiting": null
+                  },
+                  {
+                    "id": "B",
+                    "role": "TASK",
+                    "registration": "REGISTERED",
+                    "connection": "OPEN",
+                    "status": "ACTIVE",
+                    "waiting": null
+                  }
+                ],
+                "relations": [
+                  {
+                    "tableId": "public.ai_model_registry",
+                    "held": [
+                      {
+                        "tx": "A",
+                        "mode": "SHARE_ROW_EXCLUSIVE"
+                      }
+                    ],
+                    "queue": []
+                  },
+                  {
+                    "tableId": "public.places",
+                    "held": [
+                      {
+                        "tx": "A",
+                        "mode": "SHARE_ROW_EXCLUSIVE"
+                      }
+                    ],
+                    "queue": []
+                  },
+                  {
+                    "tableId": "public.users",
+                    "held": [
+                      {
+                        "tx": "A",
+                        "mode": "SHARE_ROW_EXCLUSIVE"
+                      }
+                    ],
+                    "queue": []
+                  }
+                ],
+                "pendingFixture": {},
+                "fixtureVisible": false,
+                "protectionActive": true
+              }
+            },
+            {
+              "sequence": 10,
+              "type": "LOCK_REQUEST",
+              "protectionActive": true,
+              "fixtureVisible": false,
+              "tx": "A",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.places",
+              "mode": "ROW_EXCLUSIVE"
+            },
+            {
+              "sequence": 11,
+              "type": "GRANTED",
+              "protectionActive": true,
+              "fixtureVisible": false,
+              "tx": "A",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.places",
+              "mode": "ROW_EXCLUSIVE",
+              "transactionStatus": "ACTIVE",
+              "origin": "IMMEDIATE"
+            },
+            {
+              "sequence": 12,
+              "type": "MODEL_FIXTURE_DML",
+              "protectionActive": true,
+              "fixtureVisible": false,
+              "tx": "A",
+              "tableId": "public.places",
+              "operation": "INSERT",
+              "lockMode": "ROW_EXCLUSIVE",
+              "actualSqlIssued": false
+            },
+            {
+              "sequence": 13,
+              "type": "LOCK_REQUEST",
+              "protectionActive": true,
+              "fixtureVisible": false,
+              "tx": "B",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.ai_model_registry",
+              "mode": "SHARE"
+            },
+            {
+              "sequence": 14,
+              "type": "WAITING",
+              "protectionActive": true,
+              "fixtureVisible": false,
+              "tx": "B",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.ai_model_registry",
+              "mode": "SHARE",
+              "hardBlockers": [
+                "A"
+              ],
+              "earlierConflictingWaiters": [],
+              "queue": [
+                {
+                  "tx": "B",
+                  "mode": "SHARE"
+                }
+              ]
+            },
+            {
+              "sequence": 15,
+              "type": "OWNERSHIP_GUARD_PASS",
+              "protectionActive": true,
+              "fixtureVisible": false,
+              "unknown": []
+            },
+            {
+              "sequence": 16,
+              "type": "COMMITTED",
+              "protectionActive": true,
+              "fixtureVisible": true,
+              "tx": "A",
+              "state": {
+                "transactions": [
+                  {
+                    "id": "A",
+                    "role": "TASK",
+                    "registration": "REGISTERED",
+                    "connection": "OPEN",
+                    "status": "COMMITTED",
+                    "waiting": null
+                  },
+                  {
+                    "id": "B",
+                    "role": "TASK",
+                    "registration": "REGISTERED",
+                    "connection": "OPEN",
+                    "status": "WAITING",
+                    "waiting": {
+                      "tableId": "public.ai_model_registry",
+                      "mode": "SHARE"
+                    }
+                  }
+                ],
+                "relations": [
+                  {
+                    "tableId": "public.ai_model_registry",
+                    "held": [
+                      {
+                        "tx": "A",
+                        "mode": "SHARE_ROW_EXCLUSIVE"
+                      }
+                    ],
+                    "queue": [
+                      {
+                        "tx": "B",
+                        "mode": "SHARE"
+                      }
+                    ]
+                  },
+                  {
+                    "tableId": "public.places",
+                    "held": [
+                      {
+                        "tx": "A",
+                        "mode": "SHARE_ROW_EXCLUSIVE"
+                      },
+                      {
+                        "tx": "A",
+                        "mode": "ROW_EXCLUSIVE"
+                      }
+                    ],
+                    "queue": []
+                  },
+                  {
+                    "tableId": "public.users",
+                    "held": [
+                      {
+                        "tx": "A",
+                        "mode": "SHARE_ROW_EXCLUSIVE"
+                      }
+                    ],
+                    "queue": []
+                  }
+                ],
+                "pendingFixture": {},
+                "fixtureVisible": true,
+                "protectionActive": true
+              }
+            },
+            {
+              "sequence": 17,
+              "type": "RELEASED",
+              "protectionActive": true,
+              "fixtureVisible": true,
+              "tx": "A",
+              "tableId": "public.ai_model_registry",
+              "mode": "SHARE_ROW_EXCLUSIVE"
+            },
+            {
+              "sequence": 18,
+              "type": "RELEASED",
+              "protectionActive": true,
+              "fixtureVisible": true,
+              "tx": "A",
+              "tableId": "public.places",
+              "mode": "SHARE_ROW_EXCLUSIVE"
+            },
+            {
+              "sequence": 19,
+              "type": "RELEASED",
+              "protectionActive": true,
+              "fixtureVisible": true,
+              "tx": "A",
+              "tableId": "public.places",
+              "mode": "ROW_EXCLUSIVE"
+            },
+            {
+              "sequence": 20,
+              "type": "RELEASED",
+              "protectionActive": true,
+              "fixtureVisible": true,
+              "tx": "A",
+              "tableId": "public.users",
+              "mode": "SHARE_ROW_EXCLUSIVE"
+            },
+            {
+              "sequence": 21,
+              "type": "GRANTED",
+              "protectionActive": true,
+              "fixtureVisible": true,
+              "tx": "B",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.ai_model_registry",
+              "mode": "SHARE",
+              "transactionStatus": "ACTIVE",
+              "origin": "QUEUE_WAKEUP"
+            },
+            {
+              "sequence": 22,
+              "type": "TRANSACTION_BEGUN",
+              "protectionActive": true,
+              "fixtureVisible": true,
+              "tx": "W",
+              "role": "EXTERNAL_WRITER",
+              "registration": "UNKNOWN"
+            },
+            {
+              "sequence": 23,
+              "type": "LOCK_REQUEST",
+              "protectionActive": true,
+              "fixtureVisible": true,
+              "tx": "W",
+              "role": "EXTERNAL_WRITER",
+              "registration": "UNKNOWN",
+              "tableId": "public.places",
+              "mode": "ROW_EXCLUSIVE"
+            },
+            {
+              "sequence": 24,
+              "type": "GRANTED",
+              "protectionActive": true,
+              "fixtureVisible": true,
+              "tx": "W",
+              "role": "EXTERNAL_WRITER",
+              "registration": "UNKNOWN",
+              "tableId": "public.places",
+              "mode": "ROW_EXCLUSIVE",
+              "transactionStatus": "ACTIVE",
+              "origin": "IMMEDIATE",
+              "stateAtGrant": {
+                "transactions": [
+                  {
+                    "id": "A",
+                    "role": "TASK",
+                    "registration": "REGISTERED",
+                    "connection": "OPEN",
+                    "status": "COMMITTED",
+                    "waiting": null
+                  },
+                  {
+                    "id": "B",
+                    "role": "TASK",
+                    "registration": "REGISTERED",
+                    "connection": "OPEN",
+                    "status": "ACTIVE",
+                    "waiting": null
+                  },
+                  {
+                    "id": "W",
+                    "role": "EXTERNAL_WRITER",
+                    "registration": "UNKNOWN",
+                    "connection": "OPEN",
+                    "status": "ACTIVE",
+                    "waiting": null
+                  }
+                ],
+                "relations": [
+                  {
+                    "tableId": "public.ai_model_registry",
+                    "held": [
+                      {
+                        "tx": "B",
+                        "mode": "SHARE"
+                      }
+                    ],
+                    "queue": []
+                  },
+                  {
+                    "tableId": "public.places",
+                    "held": [
+                      {
+                        "tx": "W",
+                        "mode": "ROW_EXCLUSIVE"
+                      }
+                    ],
+                    "queue": []
+                  },
+                  {
+                    "tableId": "public.users",
+                    "held": [],
+                    "queue": []
+                  }
+                ],
+                "pendingFixture": {},
+                "fixtureVisible": true,
+                "protectionActive": true
+              }
+            }
+          ],
+          "proof": {
+            "status": "NO_GAP_COUNTEREXAMPLE",
+            "counterexamples": [
+              {
+                "eventSequence": 24,
+                "tableId": "public.places",
+                "writer": "W",
+                "mode": "ROW_EXCLUSIVE",
+                "registration": "UNKNOWN",
+                "transactionStatus": "ACTIVE",
+                "grantOrigin": "IMMEDIATE",
+                "fixtureVisible": true,
+                "stateAtGrant": {
+                  "transactions": [
+                    {
+                      "id": "A",
+                      "role": "TASK",
+                      "registration": "REGISTERED",
+                      "connection": "OPEN",
+                      "status": "COMMITTED",
+                      "waiting": null
+                    },
+                    {
+                      "id": "B",
+                      "role": "TASK",
+                      "registration": "REGISTERED",
+                      "connection": "OPEN",
+                      "status": "ACTIVE",
+                      "waiting": null
+                    },
+                    {
+                      "id": "W",
+                      "role": "EXTERNAL_WRITER",
+                      "registration": "UNKNOWN",
+                      "connection": "OPEN",
+                      "status": "ACTIVE",
+                      "waiting": null
+                    }
+                  ],
+                  "relations": [
+                    {
+                      "tableId": "public.ai_model_registry",
+                      "held": [
+                        {
+                          "tx": "B",
+                          "mode": "SHARE"
+                        }
+                      ],
+                      "queue": []
+                    },
+                    {
+                      "tableId": "public.places",
+                      "held": [
+                        {
+                          "tx": "W",
+                          "mode": "ROW_EXCLUSIVE"
+                        }
+                      ],
+                      "queue": []
+                    },
+                    {
+                      "tableId": "public.users",
+                      "held": [],
+                      "queue": []
+                    }
+                  ],
+                  "pendingFixture": {},
+                  "fixtureVisible": true,
+                  "protectionActive": true
+                },
+                "rootCause": "EXTERNAL_WRITE_LOCK_GRANTED_INSIDE_REQUIRED_PROTECTION_INTERVAL"
+              }
+            ],
+            "intervalsStarted": 1,
+            "intervalsEnded": 0,
+            "intervalStillOpen": true,
+            "universalProof": false
+          }
+        }
+      },
+      {
+        "target": "public.users",
+        "prefixesExplored": 9,
+        "violatingPrefixes": 3,
+        "terminalFinitePrefixes": 1,
+        "maxScheduledActions": 6,
+        "firstWitness": {
+          "actions": [
+            "COMMIT_A",
+            "WRITE_REQUEST"
+          ],
+          "target": "public.users",
+          "projection": [
+            "public.ai_model_registry",
+            "public.places",
+            "public.users"
+          ],
+          "events": [
+            {
+              "sequence": 1,
+              "type": "TRANSACTION_BEGUN",
+              "protectionActive": false,
+              "fixtureVisible": false,
+              "tx": "A",
+              "role": "TASK",
+              "registration": "REGISTERED"
+            },
+            {
+              "sequence": 2,
+              "type": "TRANSACTION_BEGUN",
+              "protectionActive": false,
+              "fixtureVisible": false,
+              "tx": "B",
+              "role": "TASK",
+              "registration": "REGISTERED"
+            },
+            {
+              "sequence": 3,
+              "type": "LOCK_REQUEST",
+              "protectionActive": false,
+              "fixtureVisible": false,
+              "tx": "A",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.ai_model_registry",
+              "mode": "SHARE_ROW_EXCLUSIVE"
+            },
+            {
+              "sequence": 4,
+              "type": "GRANTED",
+              "protectionActive": false,
+              "fixtureVisible": false,
+              "tx": "A",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.ai_model_registry",
+              "mode": "SHARE_ROW_EXCLUSIVE",
+              "transactionStatus": "ACTIVE",
+              "origin": "IMMEDIATE"
+            },
+            {
+              "sequence": 5,
+              "type": "LOCK_REQUEST",
+              "protectionActive": false,
+              "fixtureVisible": false,
+              "tx": "A",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.places",
+              "mode": "SHARE_ROW_EXCLUSIVE"
+            },
+            {
+              "sequence": 6,
+              "type": "GRANTED",
+              "protectionActive": false,
+              "fixtureVisible": false,
+              "tx": "A",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.places",
+              "mode": "SHARE_ROW_EXCLUSIVE",
+              "transactionStatus": "ACTIVE",
+              "origin": "IMMEDIATE"
+            },
+            {
+              "sequence": 7,
+              "type": "LOCK_REQUEST",
+              "protectionActive": false,
+              "fixtureVisible": false,
+              "tx": "A",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.users",
+              "mode": "SHARE_ROW_EXCLUSIVE"
+            },
+            {
+              "sequence": 8,
+              "type": "GRANTED",
+              "protectionActive": false,
+              "fixtureVisible": false,
+              "tx": "A",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.users",
+              "mode": "SHARE_ROW_EXCLUSIVE",
+              "transactionStatus": "ACTIVE",
+              "origin": "IMMEDIATE"
+            },
+            {
+              "sequence": 9,
+              "type": "PROTECTION_BEGIN",
+              "protectionActive": true,
+              "fixtureVisible": false,
+              "approvedTables": [
+                "public.ai_model_registry",
+                "public.places",
+                "public.users"
+              ],
+              "state": {
+                "transactions": [
+                  {
+                    "id": "A",
+                    "role": "TASK",
+                    "registration": "REGISTERED",
+                    "connection": "OPEN",
+                    "status": "ACTIVE",
+                    "waiting": null
+                  },
+                  {
+                    "id": "B",
+                    "role": "TASK",
+                    "registration": "REGISTERED",
+                    "connection": "OPEN",
+                    "status": "ACTIVE",
+                    "waiting": null
+                  }
+                ],
+                "relations": [
+                  {
+                    "tableId": "public.ai_model_registry",
+                    "held": [
+                      {
+                        "tx": "A",
+                        "mode": "SHARE_ROW_EXCLUSIVE"
+                      }
+                    ],
+                    "queue": []
+                  },
+                  {
+                    "tableId": "public.places",
+                    "held": [
+                      {
+                        "tx": "A",
+                        "mode": "SHARE_ROW_EXCLUSIVE"
+                      }
+                    ],
+                    "queue": []
+                  },
+                  {
+                    "tableId": "public.users",
+                    "held": [
+                      {
+                        "tx": "A",
+                        "mode": "SHARE_ROW_EXCLUSIVE"
+                      }
+                    ],
+                    "queue": []
+                  }
+                ],
+                "pendingFixture": {},
+                "fixtureVisible": false,
+                "protectionActive": true
+              }
+            },
+            {
+              "sequence": 10,
+              "type": "LOCK_REQUEST",
+              "protectionActive": true,
+              "fixtureVisible": false,
+              "tx": "A",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.places",
+              "mode": "ROW_EXCLUSIVE"
+            },
+            {
+              "sequence": 11,
+              "type": "GRANTED",
+              "protectionActive": true,
+              "fixtureVisible": false,
+              "tx": "A",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.places",
+              "mode": "ROW_EXCLUSIVE",
+              "transactionStatus": "ACTIVE",
+              "origin": "IMMEDIATE"
+            },
+            {
+              "sequence": 12,
+              "type": "MODEL_FIXTURE_DML",
+              "protectionActive": true,
+              "fixtureVisible": false,
+              "tx": "A",
+              "tableId": "public.places",
+              "operation": "INSERT",
+              "lockMode": "ROW_EXCLUSIVE",
+              "actualSqlIssued": false
+            },
+            {
+              "sequence": 13,
+              "type": "LOCK_REQUEST",
+              "protectionActive": true,
+              "fixtureVisible": false,
+              "tx": "B",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.ai_model_registry",
+              "mode": "SHARE"
+            },
+            {
+              "sequence": 14,
+              "type": "WAITING",
+              "protectionActive": true,
+              "fixtureVisible": false,
+              "tx": "B",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.ai_model_registry",
+              "mode": "SHARE",
+              "hardBlockers": [
+                "A"
+              ],
+              "earlierConflictingWaiters": [],
+              "queue": [
+                {
+                  "tx": "B",
+                  "mode": "SHARE"
+                }
+              ]
+            },
+            {
+              "sequence": 15,
+              "type": "OWNERSHIP_GUARD_PASS",
+              "protectionActive": true,
+              "fixtureVisible": false,
+              "unknown": []
+            },
+            {
+              "sequence": 16,
+              "type": "COMMITTED",
+              "protectionActive": true,
+              "fixtureVisible": true,
+              "tx": "A",
+              "state": {
+                "transactions": [
+                  {
+                    "id": "A",
+                    "role": "TASK",
+                    "registration": "REGISTERED",
+                    "connection": "OPEN",
+                    "status": "COMMITTED",
+                    "waiting": null
+                  },
+                  {
+                    "id": "B",
+                    "role": "TASK",
+                    "registration": "REGISTERED",
+                    "connection": "OPEN",
+                    "status": "WAITING",
+                    "waiting": {
+                      "tableId": "public.ai_model_registry",
+                      "mode": "SHARE"
+                    }
+                  }
+                ],
+                "relations": [
+                  {
+                    "tableId": "public.ai_model_registry",
+                    "held": [
+                      {
+                        "tx": "A",
+                        "mode": "SHARE_ROW_EXCLUSIVE"
+                      }
+                    ],
+                    "queue": [
+                      {
+                        "tx": "B",
+                        "mode": "SHARE"
+                      }
+                    ]
+                  },
+                  {
+                    "tableId": "public.places",
+                    "held": [
+                      {
+                        "tx": "A",
+                        "mode": "SHARE_ROW_EXCLUSIVE"
+                      },
+                      {
+                        "tx": "A",
+                        "mode": "ROW_EXCLUSIVE"
+                      }
+                    ],
+                    "queue": []
+                  },
+                  {
+                    "tableId": "public.users",
+                    "held": [
+                      {
+                        "tx": "A",
+                        "mode": "SHARE_ROW_EXCLUSIVE"
+                      }
+                    ],
+                    "queue": []
+                  }
+                ],
+                "pendingFixture": {},
+                "fixtureVisible": true,
+                "protectionActive": true
+              }
+            },
+            {
+              "sequence": 17,
+              "type": "RELEASED",
+              "protectionActive": true,
+              "fixtureVisible": true,
+              "tx": "A",
+              "tableId": "public.ai_model_registry",
+              "mode": "SHARE_ROW_EXCLUSIVE"
+            },
+            {
+              "sequence": 18,
+              "type": "RELEASED",
+              "protectionActive": true,
+              "fixtureVisible": true,
+              "tx": "A",
+              "tableId": "public.places",
+              "mode": "SHARE_ROW_EXCLUSIVE"
+            },
+            {
+              "sequence": 19,
+              "type": "RELEASED",
+              "protectionActive": true,
+              "fixtureVisible": true,
+              "tx": "A",
+              "tableId": "public.places",
+              "mode": "ROW_EXCLUSIVE"
+            },
+            {
+              "sequence": 20,
+              "type": "RELEASED",
+              "protectionActive": true,
+              "fixtureVisible": true,
+              "tx": "A",
+              "tableId": "public.users",
+              "mode": "SHARE_ROW_EXCLUSIVE"
+            },
+            {
+              "sequence": 21,
+              "type": "GRANTED",
+              "protectionActive": true,
+              "fixtureVisible": true,
+              "tx": "B",
+              "role": "TASK",
+              "registration": "REGISTERED",
+              "tableId": "public.ai_model_registry",
+              "mode": "SHARE",
+              "transactionStatus": "ACTIVE",
+              "origin": "QUEUE_WAKEUP"
+            },
+            {
+              "sequence": 22,
+              "type": "TRANSACTION_BEGUN",
+              "protectionActive": true,
+              "fixtureVisible": true,
+              "tx": "W",
+              "role": "EXTERNAL_WRITER",
+              "registration": "UNKNOWN"
+            },
+            {
+              "sequence": 23,
+              "type": "LOCK_REQUEST",
+              "protectionActive": true,
+              "fixtureVisible": true,
+              "tx": "W",
+              "role": "EXTERNAL_WRITER",
+              "registration": "UNKNOWN",
+              "tableId": "public.users",
+              "mode": "ROW_EXCLUSIVE"
+            },
+            {
+              "sequence": 24,
+              "type": "GRANTED",
+              "protectionActive": true,
+              "fixtureVisible": true,
+              "tx": "W",
+              "role": "EXTERNAL_WRITER",
+              "registration": "UNKNOWN",
+              "tableId": "public.users",
+              "mode": "ROW_EXCLUSIVE",
+              "transactionStatus": "ACTIVE",
+              "origin": "IMMEDIATE",
+              "stateAtGrant": {
+                "transactions": [
+                  {
+                    "id": "A",
+                    "role": "TASK",
+                    "registration": "REGISTERED",
+                    "connection": "OPEN",
+                    "status": "COMMITTED",
+                    "waiting": null
+                  },
+                  {
+                    "id": "B",
+                    "role": "TASK",
+                    "registration": "REGISTERED",
+                    "connection": "OPEN",
+                    "status": "ACTIVE",
+                    "waiting": null
+                  },
+                  {
+                    "id": "W",
+                    "role": "EXTERNAL_WRITER",
+                    "registration": "UNKNOWN",
+                    "connection": "OPEN",
+                    "status": "ACTIVE",
+                    "waiting": null
+                  }
+                ],
+                "relations": [
+                  {
+                    "tableId": "public.ai_model_registry",
+                    "held": [
+                      {
+                        "tx": "B",
+                        "mode": "SHARE"
+                      }
+                    ],
+                    "queue": []
+                  },
+                  {
+                    "tableId": "public.places",
+                    "held": [],
+                    "queue": []
+                  },
+                  {
+                    "tableId": "public.users",
+                    "held": [
+                      {
+                        "tx": "W",
+                        "mode": "ROW_EXCLUSIVE"
+                      }
+                    ],
+                    "queue": []
+                  }
+                ],
+                "pendingFixture": {},
+                "fixtureVisible": true,
+                "protectionActive": true
+              }
+            }
+          ],
+          "proof": {
+            "status": "NO_GAP_COUNTEREXAMPLE",
+            "counterexamples": [
+              {
+                "eventSequence": 24,
+                "tableId": "public.users",
+                "writer": "W",
+                "mode": "ROW_EXCLUSIVE",
+                "registration": "UNKNOWN",
+                "transactionStatus": "ACTIVE",
+                "grantOrigin": "IMMEDIATE",
+                "fixtureVisible": true,
+                "stateAtGrant": {
+                  "transactions": [
+                    {
+                      "id": "A",
+                      "role": "TASK",
+                      "registration": "REGISTERED",
+                      "connection": "OPEN",
+                      "status": "COMMITTED",
+                      "waiting": null
+                    },
+                    {
+                      "id": "B",
+                      "role": "TASK",
+                      "registration": "REGISTERED",
+                      "connection": "OPEN",
+                      "status": "ACTIVE",
+                      "waiting": null
+                    },
+                    {
+                      "id": "W",
+                      "role": "EXTERNAL_WRITER",
+                      "registration": "UNKNOWN",
+                      "connection": "OPEN",
+                      "status": "ACTIVE",
+                      "waiting": null
+                    }
+                  ],
+                  "relations": [
+                    {
+                      "tableId": "public.ai_model_registry",
+                      "held": [
+                        {
+                          "tx": "B",
+                          "mode": "SHARE"
+                        }
+                      ],
+                      "queue": []
+                    },
+                    {
+                      "tableId": "public.places",
+                      "held": [],
+                      "queue": []
+                    },
+                    {
+                      "tableId": "public.users",
+                      "held": [
+                        {
+                          "tx": "W",
+                          "mode": "ROW_EXCLUSIVE"
+                        }
+                      ],
+                      "queue": []
+                    }
+                  ],
+                  "pendingFixture": {},
+                  "fixtureVisible": true,
+                  "protectionActive": true
+                },
+                "rootCause": "EXTERNAL_WRITE_LOCK_GRANTED_INSIDE_REQUIRED_PROTECTION_INTERVAL"
+              }
+            ],
+            "intervalsStarted": 1,
+            "intervalsEnded": 0,
+            "intervalStillOpen": true,
+            "universalProof": false
+          }
+        }
+      }
+    ],
+    "universalProof": false,
+    "scope": "Single external writer with no prior target locks; no lock groups/upgrades; failure branches tested separately. Valid counterexamples refute current protocol, absence here is not a proof."
+  },
+  "network": {
+    "pid": 23616,
+    "postgresConnectAttempts": 0,
+    "networkAttempts": 0
+  }
+}

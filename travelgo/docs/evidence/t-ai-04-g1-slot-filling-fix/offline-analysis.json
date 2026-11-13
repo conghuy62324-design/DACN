@@ -1,0 +1,114 @@
+{
+  "tier": "MOCK_ONLY_OFFLINE",
+  "historicalEvidence": {
+    "G03": {
+      "request": {
+        "history": [],
+        "message": "Lập lịch trình; Nơi xuất phát: Hải Phòng; Điểm đến: Ninh Bình; Ngày bắt đầu: 2033-04-05; Ngày kết thúc: 2033-04-06; Số người lớn: 2; Ngân sách cả nhóm: 3600000 VND"
+      },
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "transportation"
+        ]
+      },
+      "rawDecision": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hải Phòng",
+          "destinationCity": "Ninh Bình",
+          "startDate": "2033-04-05",
+          "endDate": "2033-04-06",
+          "adults": 2,
+          "totalBudget": 3600000,
+          "transportation": "car"
+        }
+      },
+      "schemaValid": true,
+      "nlu": "FAIL",
+      "gate": {
+        "status": "NEEDS_INPUT",
+        "missing": [
+          "transportation"
+        ]
+      },
+      "toolCalls": 0
+    },
+    "E03B": {
+      "request": {
+        "message": "Lập lịch trình từ Hà Nội đến Đà Lạt cho 2 người lớn từ 10 đến 12 tháng 9 năm 2033, ngân sách 7 triệu đồng. Tôi chưa chọn phương tiện.",
+        "history": []
+      },
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "transportation"
+        ]
+      },
+      "rawDecision": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Đà Lạt",
+          "startDate": "2033-09-10",
+          "endDate": "2033-09-12",
+          "adults": 2,
+          "totalBudget": 7000000,
+          "transportation": "car"
+        }
+      },
+      "schemaValid": true,
+      "nlu": "FAIL",
+      "historicalToolCalls": 0
+    },
+    "comparison": "Both same digest/JSON mode, empty history, six supplied planning fields, required transportation missing, raw tool car. E explicitly says not chosen; G omits it. Different inputs/runtime/orchestration, not a causal A/B."
+  },
+  "prompt": {
+    "beforeSha256": "aa02490b2fb473c2b99970cdfb822c745a6321c697d6f9590df5dc7c2a7edb97",
+    "afterSha256": "a70fa78949b83635dfd65bafd64504542f2733f9275d93fe5f83dc464f56c0ba",
+    "beforeBudgetBytes": 8959,
+    "afterBudgetBytes": 10000,
+    "unchangedByteBudget": 12288,
+    "systemOnlyChanged": true,
+    "requestOptions": {
+      "temperature": 0,
+      "num_predict": 2048,
+      "num_ctx": 16384
+    },
+    "format": "json"
+  },
+  "scriptedSafetyCounterexample": {
+    "rawDecision": {
+      "kind": "tool",
+      "name": "plan_trip",
+      "arguments": {
+        "departureCity": "Hải Phòng",
+        "destinationCity": "Quảng Ngãi",
+        "startDate": "2034-03-10",
+        "endDate": "2034-03-12",
+        "adults": 2,
+        "totalBudget": 6000000,
+        "transportation": "car"
+      }
+    },
+    "expectedRawDecision": {
+      "kind": "clarify",
+      "fields": [
+        "transportation"
+      ]
+    },
+    "rawSemanticMatch": false,
+    "serviceStatus": "needs_input",
+    "missingFields": [
+      "transportation"
+    ],
+    "fakeProviderCalls": 1,
+    "toolCalls": 0,
+    "safety": "PASS",
+    "realNluQuality": "NOT MEASURED"
+  },
+  "inferencePosts": 0,
+  "databaseAccess": "NONE"
+}

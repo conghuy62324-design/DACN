@@ -1,0 +1,2719 @@
+{
+  "at": "2026-11-11T03:41:47.516Z",
+  "status": "PASS",
+  "configured": {
+    "host": "127.0.0.1",
+    "port": 5432,
+    "database": "travelgo_ai_m0_test",
+    "role": "postgres"
+  },
+  "identity": {
+    "database": "travelgo_ai_m0_test",
+    "role": "postgres",
+    "server_address": "172.18.0.3/32",
+    "server_port": 5432,
+    "read_only": "on",
+    "sentinel": "hugotravel-isolated-test-database-v1"
+  },
+  "migrations": [
+    {
+      "filename": "20261010_01_init_travelgo_schema.sql",
+      "checksum": "fe7defe5c3c47c9230fe7c43fc301255a6bc0e998da71aba0fe2f747f9e52d50"
+    },
+    {
+      "filename": "20261011_02_rbac_partner_foundation.sql",
+      "checksum": "df7fd60cccf17d3f8a73f711825bb1e82a4606a17c42fce4c7fa214548c2cecd"
+    },
+    {
+      "filename": "20261011_03_persistent_travel_resources.sql",
+      "checksum": "1c4464625e57e27cadc560077fad83837b56c5385d8021e0592fdcb9039fabf7"
+    },
+    {
+      "filename": "20261011_04_hugo_intelligence_foundation.sql",
+      "checksum": "4f2519e0541bed02a5fd7811c1ef5f84be49e37dd0dc81d16c033c22a805b69d"
+    },
+    {
+      "filename": "20261012_05_user_behavior_telemetry.sql",
+      "checksum": "477200cecf2f7e8135c4473b901ae11237222083cb7fd4b9af900d2cb2bbbece"
+    },
+    {
+      "filename": "20261012_06_recommendation_exposure.sql",
+      "checksum": "9f90d12a55a57799977115b4b8922b70cba3d02649f48e4e08d54b2913a536cb"
+    },
+    {
+      "filename": "20261012_07_recommendation_booking_retention.sql",
+      "checksum": "bf885a9161b6420e096c10a3cc37de6a45715ffc2b375e38a8ec8104998cc3de"
+    },
+    {
+      "filename": "20261012_08_server_side_favorites.sql",
+      "checksum": "87980fcdf39c7fbf7e6641bb0219f64c727605ea8f8127f2ad6f62d4107d75f8"
+    },
+    {
+      "filename": "20261012_09_verified_reviews.sql",
+      "checksum": "8842947ab9cd52890cc371bf75877e191f801fd12bedb19c5c06d46080c1670e"
+    },
+    {
+      "filename": "20261012_10_review_account_deletion_privacy.sql",
+      "checksum": "4219afac618257e7970f878b83b30c72eb2fe0fe106af04e81c5083e8bc48c52"
+    },
+    {
+      "filename": "20261028_11_trip_planner_metadata.sql",
+      "checksum": "90c42676606d4d5e7458edde139b9c5b945dd3ca0d574490a581ad6bcd98a034"
+    },
+    {
+      "filename": "20261030_12_booking_request_fingerprint.sql",
+      "checksum": "09465ec9a3d3c3de1215ad6eaa1d1cf4e8d18aed43423ce6c7b4feea817e9bc5"
+    }
+  ],
+  "schemaSha256": "7805ddb1eb77028bfef96923c8adb8f0224bd54296dac39910546035154c544f",
+  "schema": [
+    {
+      "table_name": "ai_model_registry",
+      "column_name": "model_version",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "ai_model_registry",
+      "column_name": "model_type",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "ai_model_registry",
+      "column_name": "status",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'DRAFT'::character varying"
+    },
+    {
+      "table_name": "ai_model_registry",
+      "column_name": "artifact_checksum",
+      "data_type": "character",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "ai_model_registry",
+      "column_name": "dataset_version",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "ai_model_registry",
+      "column_name": "metrics",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'{}'::jsonb"
+    },
+    {
+      "table_name": "ai_model_registry",
+      "column_name": "feature_config",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'{}'::jsonb"
+    },
+    {
+      "table_name": "ai_model_registry",
+      "column_name": "activated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "ai_model_registry",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "audit_logs",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "audit_logs",
+      "column_name": "actor_user_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "audit_logs",
+      "column_name": "action",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "audit_logs",
+      "column_name": "entity_type",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "audit_logs",
+      "column_name": "entity_id",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "audit_logs",
+      "column_name": "previous_data",
+      "data_type": "jsonb",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "audit_logs",
+      "column_name": "new_data",
+      "data_type": "jsonb",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "audit_logs",
+      "column_name": "reason",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "audit_logs",
+      "column_name": "ip_address",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "audit_logs",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "title",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "slug",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "excerpt",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "content",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "destination_name",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "place_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "author_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "author_name",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "author_avatar",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "cover_image",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "cost_estimate",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "trip_duration",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "tags",
+      "data_type": "jsonb",
+      "is_nullable": "YES",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "likes_count",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": "0"
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "is_featured",
+      "data_type": "boolean",
+      "is_nullable": "YES",
+      "column_default": "false"
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "business_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "blog_posts",
+      "column_name": "status",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'APPROVED'::character varying"
+    },
+    {
+      "table_name": "booking_status_history",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "booking_status_history",
+      "column_name": "booking_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "booking_status_history",
+      "column_name": "old_status",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "booking_status_history",
+      "column_name": "new_status",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "booking_status_history",
+      "column_name": "actor_user_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "booking_status_history",
+      "column_name": "reason",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "booking_status_history",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "booking_code",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "service_type",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "service_id",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "service_name",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "customer_name",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "customer_email",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "customer_phone",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "booking_date",
+      "data_type": "date",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "return_date",
+      "data_type": "date",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "adults_count",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": "1"
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "children_count",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": "0"
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "unit_price",
+      "data_type": "numeric",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "total_amount",
+      "data_type": "numeric",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "payment_status",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": "'unpaid'::character varying"
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "booking_status",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": "'PENDING'::character varying"
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "notes",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "business_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "place_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "tour_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "ticket_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "quantity",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "1"
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "discount_amount",
+      "data_type": "numeric",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "idempotency_key",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "recommendation_request_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "recommendation_item_id",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "recommendation_item_type",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "bookings",
+      "column_name": "request_fingerprint",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "business_members",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "business_members",
+      "column_name": "business_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "business_members",
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "business_members",
+      "column_name": "permissions",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'[\"MANAGE_BUSINESS\", \"MANAGE_BOOKINGS\"]'::jsonb"
+    },
+    {
+      "table_name": "business_members",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "business_members",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "businesses",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "businesses",
+      "column_name": "name",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "businesses",
+      "column_name": "type",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "businesses",
+      "column_name": "email",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "businesses",
+      "column_name": "phone",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "businesses",
+      "column_name": "address",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "businesses",
+      "column_name": "city",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "businesses",
+      "column_name": "latitude",
+      "data_type": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "businesses",
+      "column_name": "longitude",
+      "data_type": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "businesses",
+      "column_name": "status",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'ACTIVE'::character varying"
+    },
+    {
+      "table_name": "businesses",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "businesses",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "geography_columns",
+      "column_name": "f_table_catalog",
+      "data_type": "name",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "geography_columns",
+      "column_name": "f_table_schema",
+      "data_type": "name",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "geography_columns",
+      "column_name": "f_table_name",
+      "data_type": "name",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "geography_columns",
+      "column_name": "f_geography_column",
+      "data_type": "name",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "geography_columns",
+      "column_name": "coord_dimension",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "geography_columns",
+      "column_name": "srid",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "geography_columns",
+      "column_name": "type",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "geometry_columns",
+      "column_name": "f_table_catalog",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "geometry_columns",
+      "column_name": "f_table_schema",
+      "data_type": "name",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "geometry_columns",
+      "column_name": "f_table_name",
+      "data_type": "name",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "geometry_columns",
+      "column_name": "f_geometry_column",
+      "data_type": "name",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "geometry_columns",
+      "column_name": "coord_dimension",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "geometry_columns",
+      "column_name": "srid",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "geometry_columns",
+      "column_name": "type",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "representative_name",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "business_name",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "business_type",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "email",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "phone",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "address",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "city",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "latitude",
+      "data_type": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "longitude",
+      "data_type": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "image_urls",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "verification_details",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'{}'::jsonb"
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "status",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'PENDING'::character varying"
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "decision_reason",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "reviewed_by",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "reviewed_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "partner_applications",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "places",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "places",
+      "column_name": "name",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "slug",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "category",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "summary",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "description",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "city",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "province",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "address",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "latitude",
+      "data_type": "double precision",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "longitude",
+      "data_type": "double precision",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "location",
+      "data_type": "USER-DEFINED",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "price_from",
+      "data_type": "numeric",
+      "is_nullable": "YES",
+      "column_default": "0"
+    },
+    {
+      "table_name": "places",
+      "column_name": "rating",
+      "data_type": "numeric",
+      "is_nullable": "YES",
+      "column_default": "5.00"
+    },
+    {
+      "table_name": "places",
+      "column_name": "review_count",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": "0"
+    },
+    {
+      "table_name": "places",
+      "column_name": "bayesian_rating",
+      "data_type": "numeric",
+      "is_nullable": "YES",
+      "column_default": "5.00"
+    },
+    {
+      "table_name": "places",
+      "column_name": "duration",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "hero_image",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "gallery_images",
+      "data_type": "jsonb",
+      "is_nullable": "YES",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "places",
+      "column_name": "highlights",
+      "data_type": "jsonb",
+      "is_nullable": "YES",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "places",
+      "column_name": "amenities",
+      "data_type": "jsonb",
+      "is_nullable": "YES",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "places",
+      "column_name": "itinerary",
+      "data_type": "jsonb",
+      "is_nullable": "YES",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "places",
+      "column_name": "is_featured",
+      "data_type": "boolean",
+      "is_nullable": "YES",
+      "column_default": "false"
+    },
+    {
+      "table_name": "places",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "places",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "places",
+      "column_name": "business_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "district",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "opening_hours",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'{}'::jsonb"
+    },
+    {
+      "table_name": "places",
+      "column_name": "contact_info",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'{}'::jsonb"
+    },
+    {
+      "table_name": "places",
+      "column_name": "status",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'APPROVED'::character varying"
+    },
+    {
+      "table_name": "recommendation_candidates",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "recommendation_candidates",
+      "column_name": "request_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_candidates",
+      "column_name": "item_id",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_candidates",
+      "column_name": "item_type",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_candidates",
+      "column_name": "eligible",
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_candidates",
+      "column_name": "eligibility_code",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_candidates",
+      "column_name": "returned",
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "column_default": "true"
+    },
+    {
+      "table_name": "recommendation_candidates",
+      "column_name": "rank_position",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_candidates",
+      "column_name": "score",
+      "data_type": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_candidates",
+      "column_name": "score_breakdown",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'{}'::jsonb"
+    },
+    {
+      "table_name": "recommendation_candidates",
+      "column_name": "reason_codes",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "recommendation_candidates",
+      "column_name": "policy_version",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_candidates",
+      "column_name": "model_version",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_candidates",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "recommendation_impressions",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "recommendation_impressions",
+      "column_name": "request_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_impressions",
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_impressions",
+      "column_name": "session_id",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_impressions",
+      "column_name": "item_id",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_impressions",
+      "column_name": "item_type",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_impressions",
+      "column_name": "rank_position",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_impressions",
+      "column_name": "score",
+      "data_type": "numeric",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_impressions",
+      "column_name": "score_breakdown",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'{}'::jsonb"
+    },
+    {
+      "table_name": "recommendation_impressions",
+      "column_name": "reason",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_impressions",
+      "column_name": "model_version",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_impressions",
+      "column_name": "context",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'{}'::jsonb"
+    },
+    {
+      "table_name": "recommendation_impressions",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "recommendation_requests",
+      "column_name": "request_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_requests",
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_requests",
+      "column_name": "session_id",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_requests",
+      "column_name": "ui_surface",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_requests",
+      "column_name": "filters",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'{}'::jsonb"
+    },
+    {
+      "table_name": "recommendation_requests",
+      "column_name": "explicit_preferences",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "recommendation_requests",
+      "column_name": "algorithm_version",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_requests",
+      "column_name": "policy_version",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_requests",
+      "column_name": "model_version",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_requests",
+      "column_name": "config_version",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_requests",
+      "column_name": "environment",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_requests",
+      "column_name": "analytics_consent",
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_requests",
+      "column_name": "personalization_consent",
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_requests",
+      "column_name": "experiment_key",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_requests",
+      "column_name": "experiment_variant",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'CONTROL'::character varying"
+    },
+    {
+      "table_name": "recommendation_requests",
+      "column_name": "assignment_probability",
+      "data_type": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_requests",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "recommendation_requests",
+      "column_name": "expires_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_visible_impressions",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "recommendation_visible_impressions",
+      "column_name": "client_ack_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_visible_impressions",
+      "column_name": "request_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_visible_impressions",
+      "column_name": "candidate_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_visible_impressions",
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_visible_impressions",
+      "column_name": "session_id",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_visible_impressions",
+      "column_name": "item_id",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_visible_impressions",
+      "column_name": "item_type",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_visible_impressions",
+      "column_name": "ui_surface",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_visible_impressions",
+      "column_name": "visibility_rule_version",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_visible_impressions",
+      "column_name": "visible_ratio",
+      "data_type": "numeric",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_visible_impressions",
+      "column_name": "dwell_ms",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_visible_impressions",
+      "column_name": "visible_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_visible_impressions",
+      "column_name": "acknowledged_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "recommendation_visible_impressions",
+      "column_name": "environment",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_visible_impressions",
+      "column_name": "personalization_allowed",
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "recommendation_visible_impressions",
+      "column_name": "expires_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "target_type",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "target_id",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "user_name",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "user_avatar",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "rating",
+      "data_type": "numeric",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "rating_service",
+      "data_type": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "rating_price",
+      "data_type": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "rating_location",
+      "data_type": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "rating_experience",
+      "data_type": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "comment",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "images",
+      "data_type": "jsonb",
+      "is_nullable": "YES",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "booking_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "verification_status",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'UNVERIFIED'::character varying"
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "verified_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "moderation_status",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'PUBLISHED'::character varying"
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "moderation_reason",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "moderated_by",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "moderated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "source",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'LEGACY'::character varying"
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "environment",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'development'::character varying"
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "criteria_provided",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'{\"price\": false, \"service\": false, \"location\": false, \"experience\": false}'::jsonb"
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "ai_usage_allowed",
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "column_default": "false"
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "consent_policy_version",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "reviews",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "schema_migrations",
+      "column_name": "filename",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "schema_migrations",
+      "column_name": "checksum",
+      "data_type": "character",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "schema_migrations",
+      "column_name": "applied_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "spatial_ref_sys",
+      "column_name": "srid",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "spatial_ref_sys",
+      "column_name": "auth_name",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "spatial_ref_sys",
+      "column_name": "auth_srid",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "spatial_ref_sys",
+      "column_name": "srtext",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "spatial_ref_sys",
+      "column_name": "proj4text",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "title",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "type",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "operator",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "departure_city",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "arrival_city",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "departure_time",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "arrival_time",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "duration",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "price",
+      "data_type": "numeric",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "original_price",
+      "data_type": "numeric",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "available_seats",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": "50"
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "features",
+      "data_type": "jsonb",
+      "is_nullable": "YES",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "image_url",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "business_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "place_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "tour_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "capacity",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "50"
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "valid_from",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "valid_until",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "tickets",
+      "column_name": "status",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'ACTIVE'::character varying"
+    },
+    {
+      "table_name": "tour_places",
+      "column_name": "tour_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tour_places",
+      "column_name": "place_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tour_places",
+      "column_name": "day_number",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "tour_places",
+      "column_name": "sort_order",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "tours",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "tours",
+      "column_name": "business_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tours",
+      "column_name": "title",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tours",
+      "column_name": "slug",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tours",
+      "column_name": "destination_city",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tours",
+      "column_name": "departure_city",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tours",
+      "column_name": "duration_days",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tours",
+      "column_name": "duration_nights",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "tours",
+      "column_name": "category",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tours",
+      "column_name": "summary",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tours",
+      "column_name": "description",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tours",
+      "column_name": "meeting_point",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "tours",
+      "column_name": "hero_image",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tours",
+      "column_name": "gallery_images",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "tours",
+      "column_name": "price_vnd",
+      "data_type": "numeric",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "tours",
+      "column_name": "capacity",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "1"
+    },
+    {
+      "table_name": "tours",
+      "column_name": "available_capacity",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "1"
+    },
+    {
+      "table_name": "tours",
+      "column_name": "rating",
+      "data_type": "numeric",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "tours",
+      "column_name": "review_count",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "tours",
+      "column_name": "inclusions",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "tours",
+      "column_name": "exclusions",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "tours",
+      "column_name": "highlights",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "tours",
+      "column_name": "itinerary_days",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "tours",
+      "column_name": "start_date",
+      "data_type": "date",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "tours",
+      "column_name": "end_date",
+      "data_type": "date",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "tours",
+      "column_name": "is_template",
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "column_default": "false"
+    },
+    {
+      "table_name": "tours",
+      "column_name": "status",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'DRAFT'::character varying"
+    },
+    {
+      "table_name": "tours",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "tours",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "name",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "destination_city",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "departure_city",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "start_date",
+      "data_type": "date",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "end_date",
+      "data_type": "date",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "days_count",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "total_budget_vnd",
+      "data_type": "numeric",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "estimated_cost_vnd",
+      "data_type": "numeric",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "actual_spent_vnd",
+      "data_type": "numeric",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "pacing",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'balanced'::character varying"
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "status",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'upcoming'::character varying"
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "preferences",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "itinerary",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "selected_place_ids",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "selected_tour_ids",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "checkins",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "progress_percent",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "notes",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "is_public",
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "column_default": "false"
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "trip_sessions",
+      "column_name": "planner_metadata",
+      "data_type": "jsonb",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "user_events",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "user_events",
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "user_events",
+      "column_name": "session_id",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "user_events",
+      "column_name": "request_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "user_events",
+      "column_name": "item_id",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "user_events",
+      "column_name": "item_type",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "user_events",
+      "column_name": "event_type",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "user_events",
+      "column_name": "source",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'organic'::character varying"
+    },
+    {
+      "table_name": "user_events",
+      "column_name": "context",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'{}'::jsonb"
+    },
+    {
+      "table_name": "user_events",
+      "column_name": "occurred_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "user_events",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "user_events",
+      "column_name": "contract_version",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'1.0'::character varying"
+    },
+    {
+      "table_name": "user_events",
+      "column_name": "client_event_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "user_events",
+      "column_name": "environment",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'development'::character varying"
+    },
+    {
+      "table_name": "user_events",
+      "column_name": "ui_surface",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'legacy'::character varying"
+    },
+    {
+      "table_name": "user_events",
+      "column_name": "origin",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'LEGACY'::character varying"
+    },
+    {
+      "table_name": "user_events",
+      "column_name": "personalization_allowed",
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "column_default": "false"
+    },
+    {
+      "table_name": "user_events",
+      "column_name": "expires_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "user_favorites",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "user_favorites",
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "user_favorites",
+      "column_name": "place_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "user_favorites",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "user_favorites",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "user_roles",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "user_roles",
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "user_roles",
+      "column_name": "role",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "user_roles",
+      "column_name": "granted_by",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "user_roles",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "user_telemetry_consents",
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "user_telemetry_consents",
+      "column_name": "analytics_enabled",
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "column_default": "false"
+    },
+    {
+      "table_name": "user_telemetry_consents",
+      "column_name": "personalization_enabled",
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "column_default": "false"
+    },
+    {
+      "table_name": "user_telemetry_consents",
+      "column_name": "policy_version",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'1.0'::character varying"
+    },
+    {
+      "table_name": "user_telemetry_consents",
+      "column_name": "consented_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "user_telemetry_consents",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "users",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "users",
+      "column_name": "full_name",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "users",
+      "column_name": "email",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "users",
+      "column_name": "password_hash",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "users",
+      "column_name": "phone",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "users",
+      "column_name": "role",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": "'user'::character varying"
+    },
+    {
+      "table_name": "users",
+      "column_name": "avatar_url",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "users",
+      "column_name": "bio",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "users",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "users",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": "CURRENT_TIMESTAMP"
+    }
+  ],
+  "readOnlyEnforcement": "startup default_transaction_read_only=on + per-connection verification + SELECT/SHOW-only ORM hook",
+  "writeOptIn": false
+}

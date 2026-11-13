@@ -1,0 +1,285 @@
+{
+  "at": "2026-11-11T12:45:55.202Z",
+  "files": {
+    "proposal.json": "42d3fde5afc3d0d9afc5f730b62601f6f174c067e63b70925bb38b8768d0b500",
+    "admission-model.cjs": "7bc68f94e2192423008cd96cbe8e235ccd8d624a6972439423e70c649e950ae4",
+    "acceptance-vectors.cjs": "c22ad0c076be7847b540b16b937a224431043399e9e29f2699609fd72ee992f3",
+    "acceptance-child.cjs": "98a2393fd710b1a94157352c13b16f14be0c3bc4688ea81092704ecaade01558",
+    "acceptance-parent.cjs": "e63edfdefa108c85bfd5ac5869262d6561e4566533aa6f868b96da88dfdd2c4c",
+    "offline-boundary.cjs": "e732e963cc032a955d19c4cb20b3de4726821e10987f2eae1053c7ec8b1b23f3",
+    "common.cjs": "05b76467154886ec17660cd06a400159be72147483ca1aae487d33ad4c6be9d4"
+  },
+  "expectedCases": [
+    {
+      "name": "positive_lifecycle",
+      "decision": "VERIFIED_MODEL_ONLY",
+      "recovery": "CLOSE_OWNED_AFTER_FINGERPRINT",
+      "requirement": "valid task writer/readers"
+    },
+    {
+      "name": "unauthorized_application_writer",
+      "decision": "REJECT_AUTH",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "unauthorized application writer"
+    },
+    {
+      "name": "unauthorized_database_credential",
+      "decision": "REJECT_AUTH",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "unauthorized database credential"
+    },
+    {
+      "name": "shared_superuser_path",
+      "decision": "REJECT_AUTH",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "shared dev postgres superuser"
+    },
+    {
+      "name": "existing_session_before_test",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "existing authenticated session"
+    },
+    {
+      "name": "writer_attempt_during_test",
+      "decision": "REJECT_AUTH",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "writer during I"
+    },
+    {
+      "name": "writer_after_fixture_commit",
+      "decision": "REJECT_AUTH",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "COMMIT does not alter auth"
+    },
+    {
+      "name": "runtime_using_writer_identity",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "runtime accidentally using writer credentials"
+    },
+    {
+      "name": "maintenance_identity_mismatch",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "maintenance writer identity mismatch"
+    },
+    {
+      "name": "database_endpoint_mismatch",
+      "decision": "REJECT_ENDPOINT",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "database endpoint mismatch"
+    },
+    {
+      "name": "container_identity_mismatch",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "container identity mismatch"
+    },
+    {
+      "name": "network_identity_mismatch",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "network identity mismatch"
+    },
+    {
+      "name": "unknown_privileged_client",
+      "decision": "BOUNDARY_BREACH",
+      "recovery": "RETAIN_QUARANTINE_SECURITY_REVIEW",
+      "requirement": "unknown authenticated privileged path"
+    },
+    {
+      "name": "crash_before_insert",
+      "decision": "STOP_SAFE_ABORT",
+      "recovery": "VERIFY_ROLLBACK_NEW_SCOPE",
+      "requirement": "crash before INSERT"
+    },
+    {
+      "name": "crash_after_insert_before_commit",
+      "decision": "STOP_SAFE_ABORT",
+      "recovery": "VERIFY_ROLLBACK_NEW_SCOPE",
+      "requirement": "known rollback before COMMIT"
+    },
+    {
+      "name": "crash_after_commit",
+      "decision": "STOP_QUARANTINE",
+      "recovery": "RETAIN_QUARANTINE_LEDGER_REVIEW",
+      "requirement": "crash after COMMIT"
+    },
+    {
+      "name": "crash_during_planner",
+      "decision": "STOP_QUARANTINE",
+      "recovery": "RETAIN_QUARANTINE_LEDGER_REVIEW",
+      "requirement": "crash during Planner"
+    },
+    {
+      "name": "cleanup_failure",
+      "decision": "STOP_QUARANTINE",
+      "recovery": "RETAIN_QUARANTINE_LEDGER_REVIEW",
+      "requirement": "cleanup failure"
+    },
+    {
+      "name": "database_restart",
+      "decision": "STOP_QUARANTINE",
+      "recovery": "RETAIN_QUARANTINE_LEDGER_REVIEW",
+      "requirement": "restart with persistent deny policy"
+    },
+    {
+      "name": "failed_final_fingerprint",
+      "decision": "STOP_QUARANTINE",
+      "recovery": "RETAIN_QUARANTINE_LEDGER_REVIEW",
+      "requirement": "failed final fingerprint"
+    },
+    {
+      "name": "ambiguous_commit",
+      "decision": "STOP_QUARANTINE",
+      "recovery": "RETAIN_QUARANTINE_LEDGER_REVIEW",
+      "requirement": "lost COMMIT acknowledgement"
+    },
+    {
+      "name": "runtime_cert_requests_writer_role",
+      "decision": "REJECT_AUTH",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "certificate subject/role binding"
+    },
+    {
+      "name": "outside_network",
+      "decision": "REJECT_NETWORK",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "unapproved network source"
+    },
+    {
+      "name": "server_certificate_mismatch",
+      "decision": "REJECT_ENDPOINT",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "server pin mismatch"
+    },
+    {
+      "name": "plaintext_connection",
+      "decision": "REJECT_AUTH",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "TLS required"
+    },
+    {
+      "name": "public_write_grant",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "PUBLIC write privilege"
+    },
+    {
+      "name": "security_definer_write_path",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "callable privileged side effect"
+    },
+    {
+      "name": "owner_membership",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "owner membership including SET ROLE"
+    },
+    {
+      "name": "role_escalation",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "CREATEROLE/predefined write roles"
+    },
+    {
+      "name": "admin_admission_enabled",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "provisioner/superuser path present"
+    },
+    {
+      "name": "prepared_transaction",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "unresolved prepared transaction"
+    },
+    {
+      "name": "background_writer_job",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "replication/scheduler/background writer"
+    },
+    {
+      "name": "shared_dev_volume",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "shared PGDATA"
+    },
+    {
+      "name": "dev_network_attached",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "shared development network"
+    },
+    {
+      "name": "owner_identity_not_approved",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "new database owner approval missing"
+    },
+    {
+      "name": "baseline_not_approved",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "new baseline approval missing"
+    },
+    {
+      "name": "old_cleanup_lock_proof",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "old all25 lock proof cannot be faked"
+    },
+    {
+      "name": "unaccepted_tls_adapter",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "old ssl:false adapter not accepted"
+    },
+    {
+      "name": "leaked_readonly_private_key",
+      "decision": "BOUNDARY_BREACH",
+      "recovery": "RETAIN_QUARANTINE_SECURITY_REVIEW",
+      "requirement": "ACL denial may follow parse-stage RX"
+    },
+    {
+      "name": "leaked_writer_private_key",
+      "decision": "BOUNDARY_BREACH",
+      "recovery": "RETAIN_QUARANTINE_SECURITY_REVIEW",
+      "requirement": "full writer capability stolen"
+    },
+    {
+      "name": "writer_privilege_expansion",
+      "decision": "STOP_BEFORE_READY",
+      "recovery": "REPROVISION_BEFORE_I",
+      "requirement": "unapproved writer table privilege"
+    },
+    {
+      "name": "cleanup_row_hash_drift",
+      "decision": "STOP_QUARANTINE",
+      "recovery": "RETAIN_QUARANTINE_LEDGER_REVIEW",
+      "requirement": "row mismatch blocks exact cleanup"
+    },
+    {
+      "name": "restart_with_policy_drift",
+      "decision": "BOUNDARY_BREACH",
+      "recovery": "RETAIN_QUARANTINE_SECURITY_REVIEW",
+      "requirement": "restart does not authorize policy drift"
+    },
+    {
+      "name": "all25_all_phases_denial",
+      "decision": "REJECT_AUTH",
+      "recovery": "DENIED_CONTINUE_ONLY_IF_GUARDS_PASS",
+      "requirement": "25 tables x six phases x three outside credential classes"
+    },
+    {
+      "name": "same_instance_shared_admin_counterexample",
+      "decision": "BOUNDARY_BREACH",
+      "recovery": "RETAIN_QUARANTINE_SECURITY_REVIEW",
+      "requirement": "Option B lacks boundary against existing shared superuser"
+    }
+  ],
+  "expectedLockedBeforeExecution": true
+}

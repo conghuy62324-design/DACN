@@ -115,6 +115,8 @@ export const PlaceDetailPage: React.FC = () => {
   const favorited = isFavorite(place.id);
 
   const handleBookingClick = () => {
+    if(place.isDemo||place.priceFrom==null)return;
+    if (place.category !== 'hotel' && place.category !== 'restaurant') { navigate('/tours'); return; }
     void track({ itemId: place.id, itemType: telemetryItemType, eventType: 'CLICK', uiSurface: 'booking_modal', requestId: recommendationRequestId });
     openBooking({
       serviceType: place.category as any,
@@ -193,6 +195,8 @@ export const PlaceDetailPage: React.FC = () => {
   return (
     <div className="min-h-screen pt-20 pb-20 bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {place.isDemo&&<p role="status" className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">DEMO staging — giá giả định, ảnh minh họa và tọa độ mô phỏng. Không phải cơ sở hoặc Booking thật; chưa xác minh giá vé, giờ mở cửa, rating hay availability.</p>}
+        <Link to={'/assistant?listing='+encodeURIComponent(place.id)} className="mt-4 inline-block font-bold text-teal-700 underline">Tư vấn dịch vụ này bằng AI</Link>
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center space-x-2 text-xs text-slate-500 py-4">
           <Link to="/" className="hover:text-orange-500 transition-colors">Trang chủ</Link>
@@ -414,16 +418,12 @@ export const PlaceDetailPage: React.FC = () => {
               <div className="space-y-6 text-sm text-slate-600 leading-relaxed">
                 <h3 className="text-xl font-bold text-slate-900 mb-2">Chính sách đặt & hủy tour</h3>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
-                  <h4 className="font-bold text-slate-800">Quy định hoàn hủy:</h4>
-                  <p>• Hủy trước 24 giờ so với ngày khởi hành: Miễn phí hoàn 100% tiền cọc.</p>
-                  <p>• Hủy từ 12 đến 24 giờ trước khởi hành: Phí hoàn hủy 30% giá trị dịch vụ.</p>
-                  <p>• Hủy dưới 12 giờ hoặc vắng mặt (No-show): Không hoàn tiền.</p>
+                  <h4 className="font-bold text-slate-800">Theo dõi và hủy đơn:</h4>
+                  <p>Bạn có thể hủy đơn đang chờ hoặc đã xác nhận trong lịch sử. Hệ thống MVP chưa xử lý thanh toán hay hoàn tiền.</p>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
                   <h4 className="font-bold text-slate-800">Chính sách trẻ em:</h4>
-                  <p>• Trẻ em dưới 2 tuổi: Miễn phí hoàn toàn.</p>
-                  <p>• Trẻ em từ 2 - 11 tuổi: Tính 70% giá người lớn (ngủ chung phòng bố mẹ).</p>
-                  <p>• Trẻ em từ 12 tuổi trở lên: Tính giá như người lớn.</p>
+                  <p>Giá MVP theo số khách: người lớn tính đơn giá, trẻ em giảm 30%. Số tiền xác nhận lấy từ server khi tạo đơn.</p>
                 </div>
               </div>
             )}
@@ -566,7 +566,7 @@ export const PlaceDetailPage: React.FC = () => {
                 <span className="text-xs text-slate-400 block font-medium">Giá áp dụng</span>
                 <div className="flex items-baseline space-x-1">
                   <span className="text-3xl font-black text-orange-600">
-                    {formatCurrencyVND(unitPrice)}
+                    {unitPrice==null?'Chưa có giá':formatCurrencyVND(unitPrice)}
                   </span>
                   <span className="text-xs text-slate-500 font-semibold">/ khách</span>
                 </div>
@@ -637,27 +637,28 @@ export const PlaceDetailPage: React.FC = () => {
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                   <span className="text-sm font-semibold text-slate-700">Tổng cộng:</span>
                   <span className="text-2xl font-black text-slate-900">
-                    {formatCurrencyVND(totalPrice)}
+                    {unitPrice==null?'Chưa có giá':formatCurrencyVND(totalPrice)}
                   </span>
                 </div>
 
                 {/* Primary CTA Button (Vibrant Orange Matching Image 2) */}
                 <button
                   onClick={handleBookingClick}
+                  disabled={place.isDemo||place.priceFrom==null}
                   className="w-full py-4 bg-orange-500 hover:bg-orange-600 active:scale-98 text-white font-extrabold rounded-2xl shadow-xl shadow-orange-500/25 transition-all duration-150 text-base flex items-center justify-center"
                 >
-                  Đặt tour ngay
+                  {place.isDemo?'DEMO · Không nhận đặt dịch vụ':place.priceFrom==null?'Chưa có giá được xác minh':place.category === 'hotel' || place.category === 'restaurant' ? 'Đặt dịch vụ ngay' : 'Xem tour có thể đặt'}
                 </button>
 
                 {/* Guarantees Matching Image 2 */}
                 <div className="space-y-2 text-xs text-slate-600 pt-2">
                   <div className="flex items-center space-x-2">
                     <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>Bảo hiểm du lịch trọn gói 100.000.000đ</span>
+                    <span>Đơn đặt được lưu trong lịch sử tài khoản</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>Hủy miễn phí trước 24 giờ khởi hành</span>
+                    <span>Theo dõi xác nhận từ đối tác trong lịch sử</span>
                   </div>
                 </div>
               </div>
@@ -698,7 +699,7 @@ export const PlaceDetailPage: React.FC = () => {
                   <div>
                     <div className="flex items-center text-xs text-amber-500 font-bold mb-1">
                       <Star className="w-3.5 h-3.5 fill-amber-400 mr-1" />
-                      <span>{sim.rating.toFixed(1)}</span>
+                      <span>{Number.isFinite(sim.rating)&&sim.reviewCount>0?Number(sim.rating).toFixed(1):'Chưa có đánh giá'}</span>
                       <span className="text-slate-400 font-normal ml-1">({sim.reviewCount})</span>
                     </div>
                     <h3 className="font-bold text-slate-900 text-sm line-clamp-1 group-hover:text-orange-600 transition-colors">

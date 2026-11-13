@@ -1,0 +1,343 @@
+# TASK — TRAVELGO AI AGENT: VIETNAMESE NATURAL CONVERSATION V4
+
+Bạn là Senior AI Agent Engineer, Vietnamese NLP Engineer và Full-stack Engineer của TravelGo.
+
+Tiếp tục source hiện tại, đọc báo cáo:
+
+`docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md`
+
+Đặc biệt các mục 16–19.
+
+## MỤC TIÊU
+
+Hoàn thiện AI Agent du lịch có khả năng giao tiếp tự nhiên bằng tiếng Việt như một nhân viên tư vấn thật.
+
+Khách hàng được nhập tự do, không cần dùng đúng mẫu câu.
+
+AI phải hiểu:
+
+- Tiếng Việt có dấu và không dấu.
+- Viết tắt, tiếng lóng thông dụng.
+- Sai chính tả, gõ thiếu hoặc thừa ký tự.
+- Câu nói ngắn, không đầy đủ chủ ngữ.
+- Câu nhiều ý định.
+- Tham chiếu đến thông tin đã nói trước.
+- Thay đổi kế hoạch trong nhiều lượt.
+- Yêu cầu so sánh, gợi ý, giải thích.
+- Câu mơ hồ cần hỏi lại.
+
+Không đơn thuần mở rộng danh sách regex hoặc hard-code câu test. Kết hợp normalizer, contextual parser, LLM local và validation phía server.
+
+Giữ nguyên cơ chế quyền hạn và dữ liệu hiện có.
+
+## 1. HIỂU TIẾNG VIỆT ĐỜI THƯỜNG
+
+Nâng cấp pipeline:
+
+Raw user message → normalization → context resolution → intent/slot understanding → validation → tool selection → grounded natural response.
+
+Hỗ trợ những nhóm câu:
+
+**Địa điểm:**
+
+- `sg`, `sai gon`, `hcm`, `tphcm`
+- `dn`, `da nang`
+- `dl`, `da lat` khi ngữ cảnh rõ
+- `hn`, `ha noi` khi ngữ cảnh rõ
+- `pq`, `phu quoc`
+- `nt`, `nha trang`
+
+Không suy diễn viết tắt có nhiều nghĩa khi thiếu ngữ cảnh.
+
+Sử dụng cùng hệ thống geographic ID và danh mục 34 tỉnh/thành hiện có, không tạo mapping địa lý thứ hai.
+
+**Thời gian:**
+
+- `3n2d`, `3n2đ`, `3 ngày 2 đêm`
+- `cuoi tuan nay`
+- `tuan sau`
+- `mai`, `ngay kia`
+- `13/11 - 15/11`
+- `thêm 1 ngày`
+- `rút còn 2 ngày`
+
+Ngày thiếu năm, ngày trong quá khứ hoặc biểu đạt như `t7` phải được xác minh khi mơ hồ.
+
+**Ngân sách:**
+
+- `5tr`, `5 triệu`, `5000k`
+- `2tr5`
+- `500k`
+- `them 2 cu`
+- `tang them 1tr`
+- `giam 500k`
+- `ks duoi 800k`
+
+Phải phân biệt ngân sách toàn nhóm, giá tối đa listing, ngân sách/người và chi phí/ngày. Không tự đồng nhất các loại giá.
+
+**Số người:**
+
+- `2ng`
+- `2 lon`
+- `2ng lon 1 be`
+- `gia dinh 4 nguoi`
+
+Không tự suy đoán số người khi người dùng chưa nói rõ.
+
+**Ngôn ngữ hội thoại:**
+
+- `ks nao re re xiu`
+- `tim cho o gan trung tam`
+- `quan an ngon gia mem`
+- `cho minh vai lua chon`
+- `doi qua oto nha`
+- `giu ks doi quan an`
+- `lich trinh nay hoi dat`
+- `co cho nao vui hon ko`
+- `thoi ko di cho do nua`
+
+Nếu có lỗi chính tả hoặc không dấu, dùng ngữ cảnh để hiểu; không tự ý thay đổi thông tin khi độ chắc chắn thấp.
+
+## 2. NÂNG CẤP HIỂU NGỮ CẢNH NHIỀU LƯỢT
+
+Ví dụ hội thoại cần xử lý:
+
+Khách: `t muon di da lat 3n2d`
+
+AI: Xác nhận Đà Lạt, 3 ngày 2 đêm và hỏi các thông tin thiết yếu còn thiếu.
+
+Khách: `2 ng 5tr`
+
+AI: Ghi nhận 2 người, ngân sách nhóm 5 triệu; giữ Đà Lạt và thời lượng.
+
+Khách: `tu sg`
+
+AI: Ghi nhận TP.HCM là điểm xuất phát.
+
+Khách: `xe may nha`
+
+AI: Đặt phương tiện xe máy, giữ toàn bộ thông tin trước.
+
+Khách: `thoi doi oto`
+
+AI: Chỉ đổi phương tiện sang ô tô.
+
+Khách: `tang them 2tr`
+
+AI: Đổi ngân sách đã xác minh từ 5 triệu lên 7 triệu.
+
+Khách: `ks nao re hon`
+
+AI: Tìm khách sạn khác rẻ hơn khách sạn đang chọn, bằng dữ liệu catalog thật.
+
+Yêu cầu:
+
+- Giữ các slots đã được xác minh.
+- Không hỏi lại những trường đã biết.
+- Không tự xóa thông tin khi đổi một trường.
+- Hiểu câu trả lời theo câu hỏi đang chờ.
+- Phân biệt phủ định, đổi ý và xác nhận.
+- Không áp dụng câu trả lời của conversation cũ vào conversation mới.
+- Khi có nhiều cách hiểu hợp lý, đặt một câu hỏi ngắn để xác nhận.
+
+Không lưu lịch sử riêng tư vượt quá chính sách hiện có.
+
+## 3. CÂU TRẢ LỜI PHẢI TỰ NHIÊN
+
+Không trả lời máy móc như:
+
+“Thiếu departure, destination, budget, transport.”
+
+Hãy chuyển thành:
+
+“Được ạ! Mình đã ghi nhận chuyến đi Đà Lạt 3 ngày 2 đêm cho 2 người, ngân sách 5 triệu. Bạn muốn khởi hành từ đâu?”
+
+Yêu cầu:
+
+- Câu trả lời tự nhiên bằng tiếng Việt.
+- Không lặp lời chào trong mỗi tin nhắn.
+- Không liên tục yêu cầu nhập lại toàn bộ lịch trình.
+- Không đưa thuật ngữ developer như G1, G2, slots, provenance, enum, deterministic ra giao diện khách hàng.
+- Hỏi tối đa những thông tin thực sự cần thiết ở lượt hiện tại.
+- Gợi ý hành động tiếp theo khi có ích.
+- Khi đã có đủ dữ liệu, chủ động đề xuất các chức năng phù hợp như tìm khách sạn, nhà hàng hoặc lập lịch trình.
+- Không tự tạo Booking, thanh toán hoặc lưu Trip chỉ vì đoán ý định.
+
+Cá nhân hóa lời chào từ authenticated profile hiện có; không hard-code tên.
+
+## 4. LLM + DETERMINISTIC + TOOL EXECUTION
+
+Giữ nguyên Agent Core, verified history và NATURAL_CHAT_V3; chỉ version hợp đồng khi cần tương thích.
+
+Phân công:
+
+**Deterministic backend:**
+
+- Những biểu đạt rõ ràng.
+- Xác minh ngày/giá/người.
+- Giữ dữ liệu hội thoại.
+- Authorization.
+- Tool gating.
+- Trip confirmation.
+- Catalog provenance.
+
+**LLM Qwen:**
+
+- Hiểu các cách diễn đạt mới.
+- Xử lý câu khó hoặc ngoài grammar.
+- Đề xuất ý định/các cập nhật có cấu trúc.
+- Hiểu tham chiếu theo ngữ cảnh.
+- Diễn giải các lựa chọn bằng tiếng Việt tự nhiên.
+
+Không để LLM tự bịa:
+
+- Listing.
+- UUID.
+- Giá.
+- Đánh giá.
+- Phòng trống.
+- Địa điểm.
+- Lịch trình không qua Planner.
+
+Không dùng output LLM làm authority trực tiếp cho mutation.
+
+Cần có validation và confirmation cho ý định còn mơ hồ.
+
+## 5. KẾT NỐI CATALOG VÀ PLANNER STAGING HIỆN TẠI
+
+Sử dụng staging đã triển khai:
+
+- Frontend: `http://127.0.0.1:5177`
+- Backend: `http://127.0.0.1:5057`
+- PostgreSQL staging: `127.0.0.1:15452`
+
+Có 50 hotel, 50 restaurant, 30 attractions DEMO.
+
+Khi khách nói:
+
+`di da lat 3n2d 2ng 7tr, ks re re, an dac san`
+
+Agent phải hiểu yêu cầu, hỏi những trường còn bắt buộc, sau đó dùng:
+
+- RegisteredCatalogService.
+- RecommendationService.
+- TourPlannerService.
+- Trip/Booking capabilities hiện có.
+
+Kết quả chỉ dùng listing eligible trong staging.
+
+AI phải nhận được các listing mới được APPROVED mà không cập nhật prompt hoặc restart server.
+
+Không seed lại130 Place; không làm lại bộ lọc 34 tỉnh/thành đã PASS.
+
+## 6. KIỂM THỬ CHẤT LƯỢNG NGÔN NGỮ
+
+Tạo bộ test từ nhiều cách diễn đạt khác nhau, không chỉ đúng các câu ví dụ phía trên.
+
+Cần bao gồm:
+
+- Cùng một ý định được viết bằng nhiều câu khác nhau.
+- Không dấu.
+- Viết tắt.
+- Sai chính tả.
+- Tiếng lóng.
+- Câu ngắn phụ thuộc ngữ cảnh.
+- Câu mơ hồ.
+- Phủ định.
+- Đổi ý.
+- Nhiều yêu cầu trong cùng một câu.
+- Ngân sách tương đối.
+- Thay đổi phương tiện.
+- Thay khách sạn/nhà hàng.
+- Nơi đến mới ngoài 10 điểm đến DEMO.
+- Không có dịch vụ phù hợp.
+- Thử dùng ngôn ngữ để vượt quyền truy cập hoặc ép Agent bịa dữ liệu.
+
+Không đánh giá chỉ bằng keyword match.
+
+So sánh structured meaning, context preservation, tool choice và tính đúng của kết quả.
+
+Chạy targeted unit, HTTP integration và browser desktop/mobile trên staging trước.
+
+## 7. KIỂM THỬ QWEN LOCAL THẬT
+
+Yêu cầu đặc biệt: phần kiểm thử bằng model giả chưa đủ để nghiệm thu AI hội thoại.
+
+Tôi cấp quyền cho đợt này:
+
+- Tối đa 1 lần operator warm-load model Qwen local đã khóa, nếu hiện chưa resident.
+- Tối đa 3 lượt inference mới.
+- Chỉ trên localhost.
+- Không dùng API trả phí.
+
+Trước khi chạy phải xác minh:
+
+- Đúng tag/digest Qwen hiện có.
+- Quota, process ownership và tài nguyên.
+- Context 16384.
+- Readiness qua Ollama.
+- Không có client cạnh tranh.
+
+Nếu warm-load không thành công hoặc thiếu tài nguyên thì dừng. Không tự đổi model/context hoặc lặp nhiều lần.
+
+Ba lượt inference phải tập trung vào:
+
+1. Một yêu cầu tiếng Việt viết tắt, không dấu, ngoài các câu mẫu.
+2. Một yêu cầu ngữ cảnh nhiều lượt/có thể hiểu theo nhiều nghĩa.
+3. Một yêu cầu giải thích kết quả khách sạn/nhà hàng bằng facts thực từ staging.
+
+Ghi raw output và đánh giá đúng/sai; không sửa expected hay retry chỉ để tìm PASS.
+
+Không bật model mặc định cho mọi khách khi chưa đạt acceptance.
+
+Nếu không thể chạy model LIVE, hãy hoàn thiện phần code và unit/browser có thể kiểm trước, báo đúng blocker.
+
+## 8. TIÊU CHUẨN NGHIỆM THU
+
+Không tuyên bố hoàn thiện chỉ vì100 test parser PASS.
+
+Cần phân biệt:
+
+- Vietnamese NLU offline PASS/FAIL.
+- Multi-turn context PASS/FAIL.
+- Tool selection PASS/FAIL.
+- Real catalog/Planner PASS/FAIL.
+- Qwen LIVE semantic PASS/FAIL/NOT RUN.
+- Browser full Agent E2E PASS/FAIL/NOT RUN.
+
+Nếu model hiểu sai, sửa nguyên nhân tại prompt, schema, normalization hoặc context handling dựa trên bằng chứng; không hard-code riêng câu bị sai.
+
+Nếu cần inference bổ sung ngoài 3 lượt đã cấp, dừng để xin approval mới.
+
+## 9. GIỮ NGUYÊN NHỮNG GÌ ĐÃ HOÀN THÀNH
+
+Không sửa lại:
+
+- Planner/cost oracle nếu không có lỗi thực.
+- Trip/Booking logic đã kiểm chứng.
+- Catalog130 Place.
+- Bộ lọc34 tỉnh/thành.
+- Quy trình đối tác.
+- Dữ liệu database gốc.
+
+Không Google Maps, GPS, Gemini, VPS hoặc deploy.
+
+Không reset, clean, commit, push.
+
+Không tạo thêm nhiều task hoặc báo cáo riêng.
+
+Cập nhật báo cáo:
+
+`docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md`
+
+Bổ sung **mục 20 — VIETNAMESE NATURAL AGENT V4**.
+
+Cuối cùng báo cáo ngắn gọn:
+
+1. Những lỗi hiểu tiếng Việt đã sửa.
+2. Các ví dụ hội thoại thực tế.
+3. Kết quả model LIVE nếu chạy được.
+4. Kết quả Agent dùng catalog/Planner.
+5. Những chức năng còn thiếu để nghiệm thu Agent.
+
+**Mục tiêu cuối cùng: khách hàng nói chuyện tự nhiên với AI TravelGo, không phải học một cú pháp cố định để chatbot hiểu.**

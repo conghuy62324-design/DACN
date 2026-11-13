@@ -1,0 +1,96 @@
+{
+  "tier": "MOCK_ONLY",
+  "status": "passed",
+  "title": "D13-success logout best effort old A response never enters B",
+  "requests": [
+    {
+      "message": "PRIVATE_A_MESSAGE",
+      "conversation": {
+        "action": "start",
+        "requestId": "5bafa15f-82f7-4c69-a129-bba5c70743bb",
+        "consentVersion": "LOCAL_DEMO_SLOTS_V1"
+      }
+    },
+    {
+      "message": "Account B",
+      "history": []
+    }
+  ],
+  "calls": [
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "owner": "A"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "owner": "A"
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "owner": "A"
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "owner": "A"
+    },
+    {
+      "method": "GET",
+      "path": "/api/agent/verified-history/privacy",
+      "owner": "A"
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "body": {
+        "message": "PRIVATE_A_MESSAGE",
+        "conversation": {
+          "action": "start",
+          "requestId": "5bafa15f-82f7-4c69-a129-bba5c70743bb",
+          "consentVersion": "LOCAL_DEMO_SLOTS_V1"
+        }
+      },
+      "owner": "A"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/agent/verified-history",
+      "owner": "A"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "body": {
+        "email": "b@example.test",
+        "password": "MOCK_ONLY_Password"
+      },
+      "owner": "A"
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "owner": "B"
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "owner": "B"
+    },
+    {
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "body": {
+        "message": "Account B",
+        "history": []
+      },
+      "owner": "B"
+    }
+  ],
+  "errors": [],
+  "liveInference": 0,
+  "database": false,
+  "toolFidelity": "NOT EVALUATED"
+}

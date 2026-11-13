@@ -1,0 +1,316 @@
+# TASK T-AI-04-G2-RAW-CLARIFY-INVESTIGATION
+
+Vai trò: Senior LLM Engineer, Backend Architect, Prompt Engineer và QA Lead của HuGo Travel.
+
+Mục tiêu: Điều tra vì sao Qwen3 trả `clarify transportation` tại L03 mặc dù G2 Verified History đã xác minh transportation=motorbike và tất cả required slots đều đầy đủ.
+
+Đây là task **OFFLINE, READ-ONLY INVESTIGATION**.
+
+KHÔNG sửa production, KHÔNG chạy LIVE inference, KHÔNG truy cập PostgreSQL.
+
+## 1. Đọc baseline
+
+Đọc đầy đủ:
+
+- `docs/HUGO_T_AI_04_G2_LIVE_MULTI_TURN_VALIDATION_REPORT.md`
+- `docs/HUGO_T_AI_04_G2_VERIFIED_HISTORY_REPORT.md`
+- `docs/HUGO_T_AI_04_G1_NATURAL_LANGUAGE_PROOF_FIX_REPORT.md`
+- `docs/HUGO_T_AI_04_G1_COMPATIBILITY_V2_READINESS_REPORT.md`
+
+Kiểm source hiện hành:
+
+- `backend/src/services/agentService.ts`
+- `backend/src/agent/verifiedHistory.ts`
+- `backend/src/agent/currentTurnProof.ts`
+- `backend/src/agent/toolProvenance.ts`
+- `backend/src/agent/currentCompleteness.ts`
+- `backend/src/agent/liveProvider.ts`
+- `backend/src/agent/provider.ts`
+- Original DECISION_SCHEMA và AGENT_TOOLS.
+
+Trạng thái khóa:
+
+- G2 LIVE raw 3 PASS / 1 FAIL.
+- L03 FAIL semantic decision.
+- Verified History PASS.
+- Safety 4/4 PASS.
+- Auth/consent/lifecycle 13/13 PASS.
+- 5 POST đã tiêu thụ toàn bộ ngân sách task trước.
+- P1/P2 OPEN.
+
+Không thay baseline hoặc expected L03.
+
+## 2. Tái dựng chính xác L03
+
+Đọc các evidence gốc trong:
+
+`docs/evidence/t-ai-04-g2-live-multi-turn-validation/`
+
+Đặc biệt:
+
+- `case-L03.json`
+- `ollama-response-L03.json` hoặc đúng file raw tương ứng theo manifest.
+- `manifest-execution.json`
+- `manifest-execution-lock.json`
+- `measurement-details.json`
+- Các bản lưu request body/trace/provider-boundary của L01–L04.
+
+Không đoán tên artifact nếu file thực tế khác; tra đúng manifest.
+
+Tái dựng:
+
+1. Authenticated current message L03.
+2. G2 session revision trước request.
+3. Verified required slots trước inference.
+4. Kết quả merged-proof/completeness.
+5. G2 SYSTEM và supplement.
+6. Structured server-verified slots message.
+7. Thứ tự các message trong Ollama request.
+8. Original schema/tools metadata.
+9. Exact raw response.
+10. Service outcome và execution gate.
+
+Đối chiếu request body/hash với manifest đã khóa.
+
+Không gửi lại request cho model.
+
+## 3. So sánh L01, L02, L03, L04
+
+Phân tích bốn lượt trên cùng session:
+
+L01:
+- Chọn ô tô.
+- Model trả đúng plan_trip.
+
+L02:
+- Đổi ngân sách.
+- Model giữ các slot khác và trả đúng plan_trip.
+
+L03:
+- Đã hủy ô tô ở D05.
+- Chọn xe máy.
+- Server xác minh transportation=motorbike.
+- Model lại hỏi transportation.
+
+L04:
+- Đổi điểm đến.
+- Model giữ đúng transportation=motorbike và trả plan_trip.
+
+So sánh cụ thể:
+
+- Current message wording.
+- Server verified values.
+- Role và message order.
+- Instruction precedence.
+- Required-field presence.
+- Token budget.
+- JSON schema.
+- Model output length và completion.
+- Các điều kiện khiến model chọn clarify.
+
+Không mặc định nguyên nhân nằm ở prompt chỉ vì model trả clarify.
+
+## 4. Phân tích các giả thuyết
+
+Kiểm tra bằng source và evidence:
+
+A. G2 SYSTEM supplement có instruction chưa rõ về việc sử dụng SERVER_VERIFIED_SLOTS hay không?
+
+B. Có mâu thuẫn giữa instruction của G1 về current user message và instruction mới của G2 về verified history không?
+
+C. Structured verified slots được đặt ở vai trò/thứ tự có khiến model coi transportation là dữ liệu chưa xác nhận không?
+
+D. Sau D05 unset rồi L03 SET motorbike, có metadata hoặc biểu diễn trạng thái nào khiến model hiểu sai thành transportation vẫn thiếu không?
+
+E. L03 có khác biệt wording hoặc request construction so với L01/L02/L04 không?
+
+F. Original tool schema/decision prompt có thể khuyến khích clarify quá mức trong tình huống correction không?
+
+G. Provider JSON mode, truncation, deadline hoặc parse path có bất thường nào trong L03 không?
+
+H. Có bằng chứng về vấn đề runtime GPU ảnh hưởng riêng semantic L03 không?
+
+Phân biệt rõ mức độ:
+
+- CONFIRMED: chứng minh bằng source/evidence.
+- LIKELY: có bằng chứng ủng hộ nhưng chưa xác nhận nguyên nhân.
+- HYPOTHESIS: mới là khả năng.
+- RULED_OUT: có bằng chứng loại trừ.
+
+Không gán nguyên nhân sâu khi chưa đủ bằng chứng.
+
+## 5. Offline verification
+
+Chỉ được chạy:
+
+- Pure-function inspection.
+- Source analysis.
+- Reproduce existing deterministic serialization.
+- Fake-provider tests.
+- Schema/provenance checks.
+- Read-only evidence comparison.
+
+Không gọi Ollama `/api/chat` hoặc `/api/generate`.
+
+Không chạy hidden warm-up.
+
+Không tự tạo model output rồi gọi đó là raw LIVE.
+
+Có thể dựng cùng input L03 với fake provider để kiểm:
+
+- G2 state thực sự complete.
+- Correct tool arguments được original validators chấp nhận.
+- Execution gate ALLOW đúng motorbike.
+- Stale car vẫn bị chặn.
+- Nếu fake provider trả clarify, orchestrator không được tự chuyển nó thành completed.
+- Không có dữ liệu người dùng bị thay đổi bởi raw clarify.
+
+Tách offline hypothetical outputs khỏi model response đã quan sát.
+
+## 6. Review budget grammar limitations
+
+Báo cáo LIVE cũng ghi nhận hai false negatives:
+
+- Natural decimal budget correction.
+- Labeled numeric budget với trailing punctuation.
+
+Đọc source và evidence gốc, xác nhận chúng có liên quan trực tiếp đến L03 hay không.
+
+Nếu không liên quan, ghi là observation độc lập.
+
+Không sửa parser hoặc mở rộng grammar trong investigation.
+
+Không sử dụng lỗi khác làm lời giải thích cho L03 nếu thiếu bằng chứng.
+
+## 7. Đề xuất phương án FIX
+
+Sau phân tích, đề xuất tối đa ba phương án, sắp xếp theo:
+
+1. Mức độ giải quyết nguyên nhân được chứng minh.
+2. Tác động đến G1/G2 hiện có.
+3. Rủi ro authorization/provenance.
+4. Khả năng viết independent offline tests.
+5. Ảnh hưởng SYSTEM prompt/schema/token budget.
+6. Mức độ tương thích với V2 locked benchmark.
+
+Ưu tiên phương án thay đổi tối thiểu.
+
+Không triển khai trong task này.
+
+Nếu đề xuất prompt adjustment:
+
+- Chỉ rõ đoạn instruction gây vấn đề.
+- Đề xuất diff cụ thể.
+- Không xóa security instructions.
+- Không cho model tự bổ sung required slots.
+- Không để model-generated arguments trở thành proof.
+- Không mở rộng tool allowlist.
+- Không sửa expected L03.
+
+Nếu evidence không đủ để chọn FIX, báo NEEDS_MORE_EVIDENCE, không suy đoán.
+
+## 8. Independent acceptance plan
+
+Chuẩn bị test plan cho task FIX sau này.
+
+Phải có:
+
+- Complete verified session, new correction.
+- Previously unset field rồi được SET hợp lệ.
+- Model chọn plan_trip khi đủ proof.
+- Model không được thực thi khi proof thiếu.
+- Wrong old transportation bị chặn.
+- Wrong old budget/destination bị chặn.
+- Conflicting/unproven value phải hỏi lại.
+- L01/L02/L04 không regression.
+- G1 stateless không bị thay đổi.
+- Schema, tool validation, rate, consent, privacy giữ nguyên.
+- Decision origin và raw scoring không bị trộn.
+
+Tạo independent scenarios, không chỉ tái dùng chính L03 để chứng minh FIX.
+
+## 9. Regression và integrity
+
+Nếu cần chạy offline regression, dùng source hiện tại và giữ nguyên expected:
+
+- 68 G2 tests.
+- 79 Natural Proof tests.
+- 61 Compatibility tests.
+- 42 Correction tests.
+- 52 Completeness tests.
+- Original 181 legacy cases.
+- Readiness/abort diagnostics.
+- Backend build.
+
+Ghi PASS/FAIL thực tế.
+
+Không sửa production hoặc original test.
+
+Giữ SHA-256 cho:
+
+- G1 SYSTEM.
+- G2 SYSTEM cohort.
+- Model/schema/tools.
+- V2 APPROVED và lock.
+- Existing historical evidence.
+
+Không dùng test stub để tuyên bố LIVE/model PASS.
+
+## 10. Giới hạn
+
+KHÔNG:
+
+- Chạy thêm inference.
+- Preload/unload model.
+- Sửa prompt production.
+- Sửa G2 state hoặc execution gate.
+- Sửa Planner/Catalog.
+- Truy cập PostgreSQL.
+- Migration/seed/reset/truncate.
+- Tự triển khai frontend.
+- Chạy V2 LIVE.
+- Đổi model/quant/context/timeout.
+- Commit/push/deploy.
+
+Chỉ được thêm investigation report/evidence/harness offline cần thiết.
+
+Không làm thay đổi kết luận L03 raw FAIL.
+
+## 11. Báo cáo
+
+Tạo:
+
+`docs/HUGO_T_AI_04_G2_RAW_CLARIFY_INVESTIGATION_REPORT.md`
+
+Evidence:
+
+`docs/evidence/t-ai-04-g2-raw-clarify-investigation/`
+
+Báo cáo bắt buộc:
+
+1. Evidence manifest.
+2. Exact L03 reconstruction.
+3. L01–L04 comparison.
+4. G2 prompt/roles/verified slots analysis.
+5. Schema/provider/runtime analysis.
+6. Confirmed findings.
+7. Likely causes và hypotheses.
+8. Independent offline checks.
+9. Budget grammar observations.
+10. Minimal FIX proposals.
+11. Independent acceptance test plan.
+12. Source/benchmark/evidence integrity.
+13. P1/P2 status.
+14. NEXT TASK PLAN.
+
+NEXT TASK đề xuất:
+
+`T-AI-04-G2-RAW-CLARIFY-FIX`
+
+Chỉ đề xuất FIX khi đủ cơ sở kỹ thuật.
+
+Nếu chưa có cơ sở, đề xuất diagnostic được kiểm soát và ngân sách POST riêng cho chủ dự án phê duyệt.
+
+Không tự sửa code hoặc chạy LIVE.
+
+**Dừng sau báo cáo.**

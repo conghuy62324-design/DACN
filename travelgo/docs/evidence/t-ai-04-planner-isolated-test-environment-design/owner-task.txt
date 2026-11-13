@@ -1,0 +1,419 @@
+# TASK T-AI-04-PLANNER-ISOLATED-TEST-ENVIRONMENT-DESIGN-REVIEW
+
+Vai trò: Senior PostgreSQL Architect, Security Architect, DevOps Engineer, AI E2E Test Lead và Independent QA Reviewer của TravelGo.
+
+## MỤC TIÊU
+
+Thiết kế giải pháp thay thế cơ chế A/B maintenance lock handoff đã bị bác bỏ.
+
+Current exit gate:
+
+`HANDOFF_COUNTEREXAMPLE_CONFIRMED`
+
+Mục tiêu cuối cùng là cho phép kiểm thử Planner LIVE R01–R03 với hai synthetic Place fixtures, đồng thời bảo đảm không có writer ngoài phạm vi được phê duyệt có thể thay đổi dữ liệu test trong maintenance window.
+
+**Đây là DESIGN REVIEW ONLY.**
+
+Không triển khai hạ tầng, không tạo database/container, không sửa production và không chạy Planner LIVE.
+
+## 1. ĐỌC BASELINE
+
+Đọc đầy đủ:
+
+- `docs/HUGO_T_AI_04_PLANNER_MAINTENANCE_HANDOFF_CONTINUITY_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_MULTI_CONNECTION_MAINTENANCE_ACCEPTANCE_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_CONNECTION_OWNERSHIP_ADDRESS_NORMALIZATION_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_LIVE_TARGETED_REVALIDATION_RESUME_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_ADAPTER_BINDING_ACCEPTANCE_FIX_REPORT.md`
+
+Đọc:
+
+- `PROOF_OBLIGATION.md`
+- `canonical-counterexample.json`
+- `all25_writer_targets.json`
+- `OPTIONS_REVIEW.md`
+- `independent-design-review.json`
+- Approved fixture proposal.
+- Original DB identity/sentinel/schema/fingerprint evidence.
+- Current Docker Compose configuration.
+- Backend PostgreSQL configuration.
+- Current test DB connection management.
+- Runtime Agent/Planner READ ONLY configuration.
+
+Bảo toàn historical results:
+
+- 31 offline checks PASS.
+- Current handoff REFUTED.
+- Counterexamples 24/25 targets trong lịch mô phỏng.
+- Historical multi-connection149/149.
+- Historical DB_UNCHANGED25/25, Trip27/27.
+- PID9686 UNKNOWN.
+- Planner LIVE R01–R03 NOT RUN.
+- P1 NLU/P2 runtime OPEN.
+
+Không chỉnh sửa historical verdict hoặc expected.
+
+## 2. ROOT CAUSE VÀ THREAT MODEL
+
+Giữ formal safety requirement từ báo cáo continuity:
+
+Trong suốt maintenance interval I, writer ngoài task scope không được acquire quyền ghi trên bất kỳ bảng nào trong approved25-table set.
+
+Phân biệt:
+
+- Task-owned maintenance writer.
+- Task-owned Planner/Agent READ ONLY clients.
+- Existing application writers.
+- Other development tools.
+- Shared database credentials.
+- PostgreSQL administrator/superuser.
+- Unknown external clients.
+- Infrastructure/host administrator.
+
+Phải chỉ rõ các đối tượng trusted và untrusted.
+
+Không tuyên bố có thể ngăn tuyệt đối host administrator hoặc PostgreSQL superuser có quyền can thiệp chủ động nếu kiến trúc không kiểm soát họ.
+
+Unknown writer phải được xử lý theo mô hình fail-closed.
+
+## 3. ĐÁNH GIÁ BA PHƯƠNG ÁN
+
+### OPTION A — DEDICATED ISOLATED TEST POSTGRESQL
+
+Thiết kế một PostgreSQL instance/container chỉ phục vụ Planner LIVE E2E.
+
+Yêu cầu đánh giá:
+
+- Container/service riêng.
+- Volume dữ liệu riêng.
+- Database test riêng.
+- Credentials riêng.
+- Docker network/access policy riêng.
+- Chỉ expose port khi cần thiết.
+- Không dùng chung writer credentials của TravelGo dev.
+- Không cho backend dev thông thường vô tình kết nối.
+- Planner runtime READ ONLY.
+- Fixture maintenance identity có quyền ghi tối thiểu cần thiết.
+- Administrator provisioning identity tách khỏi runtime.
+- Hạn chế hoặc loại bỏ superuser trong runtime.
+- Explicit trusted administrator boundary.
+- Backup/recovery và cleanup an toàn.
+
+Phải chứng minh vì sao một writer ngoài task scope không thể thực hiện DML trên approved25 tables trong interval I.
+
+Chỉ dùng database name khác hoặc network khác không đủ proof.
+
+### OPTION B — SAME INSTANCE, ISOLATED DATABASE/ROLES
+
+Đánh giá khả năng giữ PostgreSQL instance hiện tại nhưng tách:
+
+- Database identity.
+- Roles/credentials.
+- Table privileges.
+- Connection permissions.
+- Existing sessions.
+- Application configuration.
+- Privileged access paths.
+
+Kiểm tra liệu current shared postgres superuser hoặc các privileged clients khác làm mất hiệu lực writer exclusion hay không.
+
+Không giả định REVOKE privileges làm mất quyền trên các session đã được xác thực hoặc có quyền cao hơn.
+
+Nếu không chứng minh được security boundary, đánh dấu NOT ACCEPTABLE.
+
+### OPTION C — REVISED LOCK-BASED PROTOCOL
+
+Chỉ xem xét nếu có protocol mới có thể chứng minh formal no-gap property.
+
+Phải xử lý:
+
+- PostgreSQL per-relation lock acquisition.
+- Writer queue ordering.
+- Existing waiters.
+- A COMMIT visibility.
+- B acquisition.
+- Timeout/deadlock/disconnect.
+- Ambiguous commit.
+- Fixture cleanup.
+- Unknown clients.
+- Connection cap.
+
+Không tái sử dụng current A/B handoff đã REFUTED.
+
+Không coi advisory locks là DB-enforced DML protection khi writers không hợp tác.
+
+Nếu không có proof, đánh dấu NOT PROVEN.
+
+## 4. RECOMMENDED ARCHITECTURE
+
+Đề xuất một phương án ưu tiên trên cơ sở:
+
+1. Isolation correctness.
+2. Safety of existing data.
+3. Implementation complexity.
+4. Time to prepare local demo.
+5. Reproducibility.
+6. Security of credentials.
+7. Cleanup/recovery.
+8. Ability to run real browser→Agent→Planner.
+9. Impact on existing TravelGo development.
+10. Ease of verification by independent reviewer.
+
+Ưu tiên phương án A nếu đáp ứng đủ các điều kiện, nhưng không được mặc định PASS.
+
+Phải đưa ra kiến trúc cụ thể, không chỉ mô tả chung chung.
+
+Bao gồm:
+
+- Proposed Docker topology.
+- Proposed database roles.
+- Proposed network boundary.
+- Writer admission policy.
+- Connection lifecycle.
+- Read-only runtime boundary.
+- Fixture ownership mechanism.
+- Stop/cleanup recovery.
+- Expected audit/evidence.
+
+Không tạo hoặc thay đổi bất kỳ cấu hình thật nào trong task này.
+
+## 5. DATASET VÀ DATABASE BASELINE
+
+Thiết kế cách tạo test database an toàn, có thể lặp lại.
+
+Baseline cần xét:
+
+- 25 public tables.
+- 12 migrations.
+- 22 Place records.
+- 27 historical Trip records.
+- Original schema checksum.
+- Approved synthetic fixture proposal.
+
+Xác định:
+
+- Dữ liệu nào bắt buộc để Planner hoạt động.
+- Dữ liệu nào là synthetic/test-only.
+- Có cần sao chép 27 Trip hay chỉ bảo toàn trong original DB.
+- Có chứa dữ liệu người dùng hoặc thông tin nhạy cảm hay không.
+- Cách sanitize nếu cần.
+- Cách verify schema/catalog compatibility.
+- Cách tạo baseline fingerprint riêng.
+- Cách rollback/recreate isolated dataset.
+
+Không giả định clone sẽ có cùng database identity, sentinel và fingerprint nếu dữ liệu được thay đổi.
+
+Không sửa sentinel/fingerprint để giả lập approval cũ.
+
+Nếu tạo database mới, phải có **new database identity approval và baseline approval riêng** trước LIVE.
+
+Không copy dữ liệu nhạy cảm khi chưa có quyền.
+
+## 6. EXCLUSIVE WRITER-ADMISSION DESIGN
+
+Đây là yêu cầu quan trọng nhất.
+
+Phải chứng minh rằng trong interval:
+
+`ISOLATION_READY → fixture INSERT → COMMIT → Planner LIVE → fixture cleanup → final fingerprint`
+
+không có writer ngoài phạm vi có thể thay đổi 25 bảng.
+
+Phải làm rõ:
+
+- Ai có thể mở connection?
+- Ai có thể INSERT/UPDATE/DELETE?
+- Credentials nào được sử dụng?
+- Có writer service nào đang chạy?
+- Các session đã tồn tại trước test được xử lý thế nào?
+- Có privileged writer nào nằm ngoài quyền kiểm soát của task?
+- Quyền của operator/admin được đặt ở trust boundary nào?
+- Khi test crash hoặc process mất kết nối, guarantee còn hiệu lực thế nào?
+
+Không dùng periodic `pg_stat_activity` snapshot để thay thế writer-admission enforcement.
+
+Không dựa vào cơ chế handoff A/B bị bác bỏ.
+
+## 7. PLANNER LIVE COMPATIBILITY
+
+Thiết kế cách kết nối:
+
+Browser desktop/mobile
+→ Vite
+→ Express
+→ G2 Agent
+→ Ollama
+→ plan_trip
+→ Planner/Catalog
+→ isolated PostgreSQL
+
+Giữ nguyên:
+
+- Production Planner algorithm.
+- Tool schema/gates.
+- G2 verified history.
+- Agent limits.
+- Consent/auth safety.
+- Model tag/digest/options.
+- Independent cost oracle.
+- Synthetic fixture fields.
+- H02/H03/H04 corrected harness.
+
+Không đổi kết quả expected để phù hợp dữ liệu sai.
+
+Đánh giá tác động của database identity mới lên existing test scripts và source closures.
+
+Không sửa source production trong design review.
+
+## 8. INDEPENDENT ADVERSARIAL ACCEPTANCE
+
+Xây dựng offline tests cho kiến trúc được đề xuất.
+
+Các trường hợp bắt buộc:
+
+- Unauthorized application writer.
+- Unauthorized database credential.
+- Shared superuser path.
+- Existing session before test.
+- Writer connection attempts during test.
+- Connection after fixture COMMIT.
+- Runtime accidentally using writer credentials.
+- Maintenance writer identity mismatch.
+- Database endpoint mismatch.
+- Container/network identity mismatch.
+- Unknown privileged client.
+- Crash before INSERT.
+- Crash after INSERT before COMMIT.
+- Crash after COMMIT.
+- Crash during Planner.
+- Cleanup failure.
+- Database restart.
+- Failed final fingerprint.
+
+Mỗi trường hợp phải có expected security decision và recovery rule.
+
+Nếu architecture không enforce được exclusion trong một case, báo FAIL hoặc UNRESOLVED.
+
+Không bỏ case để đạt PASS.
+
+## 9. DEPLOYMENT PLAN — CHỈ THIẾT KẾ
+
+Chuẩn bị một kế hoạch triển khai có thể kiểm toán:
+
+### STEP 1 — OWNER APPROVAL
+
+Owner chọn architecture, DB identity, roles, network và dataset scope.
+
+### STEP 2 — ENVIRONMENT PROVISIONING
+
+Chỉ triển khai sau approval riêng.
+
+### STEP 3 — SECURITY ACCEPTANCE
+
+Kiểm chứng exclusive writer authority và READ ONLY runtime.
+
+### STEP 4 — BASELINE ACCEPTANCE
+
+Schema, fixtures, catalog, fingerprint và migration readiness.
+
+### STEP 5 — CONTROLLED MAINTENANCE TEST
+
+Test-only INSERT/DELETE theo ledger, nếu được phê duyệt mới.
+
+### STEP 6 — PLANNER LIVE R01–R03
+
+Fresh Agent quota, locked manifest, capped native POST.
+
+### STEP 7 — FINAL CLEANUP/DEMO REVIEW
+
+Restore baseline, independent regression và demo acceptance.
+
+Mỗi bước phải có STOP conditions và owner approval boundary.
+
+Không được tự triển khai STEP 2–7 trong task hiện tại.
+
+## 10. DESIGN EXIT GATE
+
+Chỉ nhận:
+
+### A — ISOLATED_ENVIRONMENT_DESIGN_ACCEPTED_FOR_OWNER_REVIEW
+
+Khi:
+
+- Có kiến trúc cụ thể.
+- Formal writer exclusion argument được trình bày rõ.
+- Trust boundaries explicit.
+- Adversarial acceptance phù hợp.
+- Dataset/baseline strategy đầy đủ.
+- Security/cleanup plan khả thi.
+- Không có unresolved critical design contradiction.
+
+Đây là **DESIGN ONLY**, không có nghĩa môi trường đã được triển khai hoặc chứng minh thực tế.
+
+### B — DESIGN_REQUIRES_OWNER_DECISIONS
+
+Có nhiều lựa chọn cần owner phê duyệt hoặc còn thiếu thông tin về quyền/hạ tầng.
+
+Không tự chọn phương án bằng cách sửa môi trường.
+
+### C — DESIGN_NOT_SAFE
+
+Chưa tìm được kiến trúc bảo đảm writer isolation theo threat model.
+
+Không chuyển LIVE.
+
+## 11. GIỚI HẠN TUYỆT ĐỐI
+
+Không:
+
+- Kết nối PostgreSQL.
+- Tạo/xóa database.
+- Tạo Docker container/volume.
+- Thay docker-compose đang chạy.
+- Sửa database roles/grants.
+- Sao chép dữ liệu thực.
+- Tạo fixture.
+- Chạy Planner/Ollama/browser LIVE.
+- Chỉnh production source.
+- Sửa benchmark/expected.
+- Reset quota.
+- Commit/push/deploy.
+
+Chỉ đọc local source/config và tạo report/evidence/design artifacts.
+
+Không thay đổi historical reports.
+
+## 12. BÁO CÁO
+
+Tạo:
+
+`docs/HUGO_T_AI_04_PLANNER_ISOLATED_TEST_ENVIRONMENT_DESIGN_REPORT.md`
+
+Evidence:
+
+`docs/evidence/t-ai-04-planner-isolated-test-environment-design/`
+
+Báo cáo gồm:
+
+1. Baseline.
+2. Confirmed handoff counterexample.
+3. Threat model.
+4. Option A/B/C comparison.
+5. Recommended architecture.
+6. PostgreSQL privilege design.
+7. Docker/network design.
+8. Writer admission proof obligation.
+9. Dataset/baseline strategy.
+10. Planner LIVE compatibility.
+11. Independent negative tests.
+12. Crash/recovery model.
+13. Implementation milestones.
+14. Owner decisions required.
+15. Estimated scope/complexity.
+16. Source/benchmark integrity.
+17. PID9686/P1/P2 statuses.
+18. NEXT TASK PLAN.
+
+Không được thực hiện bước triển khai sau thiết kế.
+
+**DỪNG SAU BÁO CÁO.**

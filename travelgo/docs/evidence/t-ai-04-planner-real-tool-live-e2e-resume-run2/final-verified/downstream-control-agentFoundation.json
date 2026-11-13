@@ -1,0 +1,1765 @@
+{
+  "tier": "MOCK_ONLY_OFFLINE",
+  "suite": "agentFoundation",
+  "passed": 17,
+  "failed": 5,
+  "notRun": 0,
+  "results": [
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 0,
+          "toolCalls": 0,
+          "providerReturns": [],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_PROVIDER_NOT_CONFIGURED",
+            "statusCode": 503,
+            "name": "HttpError"
+          }
+        }
+      ],
+      "name": "provider is disabled by default; does not query consent or fabricate response",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "JSON adapter passes signal and parses response without credentials in request",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "JSON adapter rejects malformed, fenced and oversized envelopes",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [],
+          "providerErrors": [
+            {
+              "code": null,
+              "name": "Error"
+            }
+          ],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_PROVIDER_FAILED",
+            "statusCode": 502,
+            "name": "HttpError"
+          }
+        }
+      ],
+      "name": "provider failure does not expose credential, response body, user identity or stack",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_TIMEOUT",
+            "statusCode": 504,
+            "name": "HttpError"
+          }
+        }
+      ],
+      "name": "provider deadline aborts and returns safe timeout",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "conversation validates strict envelope, roles, turn order and limits",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "conversation history rotates complete pairs and reserves next message space",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Đi Đà Nẵng"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "clarify",
+              "fields": [
+                "startDate"
+              ]
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "result": {
+            "status": "needs_input",
+            "reply": "Bạn vui lòng cung cấp: ngày bắt đầu (YYYY-MM-DD).",
+            "missingFields": [
+              "startDate"
+            ],
+            "history": [
+              {
+                "role": "user",
+                "content": "Đi Đà Nẵng"
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: ngày bắt đầu (YYYY-MM-DD)."
+              }
+            ],
+            "historyTruncated": false,
+            "context": {
+              "mode": "STATELESS",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        },
+        {
+          "input": {
+            "message": "2030-06-15",
+            "history": [
+              {
+                "role": "user",
+                "content": "Đi Đà Nẵng"
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: ngày bắt đầu (YYYY-MM-DD)."
+              }
+            ]
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "clarify",
+              "fields": [
+                "startDate"
+              ]
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "result": {
+            "status": "needs_input",
+            "reply": "Bạn vui lòng cung cấp: ngày bắt đầu (YYYY-MM-DD).",
+            "missingFields": [
+              "startDate"
+            ],
+            "history": [
+              {
+                "role": "user",
+                "content": "Đi Đà Nẵng"
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: ngày bắt đầu (YYYY-MM-DD)."
+              },
+              {
+                "role": "user",
+                "content": "2030-06-15"
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: ngày bắt đầu (YYYY-MM-DD)."
+              }
+            ],
+            "historyTruncated": false,
+            "context": {
+              "mode": "STATELESS",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        },
+        {
+          "input": {
+            "message": "Đi Hội An"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "clarify",
+              "fields": [
+                "startDate"
+              ]
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "result": {
+            "status": "needs_input",
+            "reply": "Bạn vui lòng cung cấp: ngày bắt đầu (YYYY-MM-DD).",
+            "missingFields": [
+              "startDate"
+            ],
+            "history": [
+              {
+                "role": "user",
+                "content": "Đi Hội An"
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: ngày bắt đầu (YYYY-MM-DD)."
+              }
+            ],
+            "historyTruncated": false,
+            "context": {
+              "mode": "STATELESS",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        }
+      ],
+      "name": "multi-turn uses supplied history, not shared state or private account data",
+      "status": "PASS",
+      "origins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "78892631-1902-4f92-9d60-9f5164e5f0ed",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        },
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "39749c2f-0625-4147-b8bd-10c9c223afd7",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        },
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "77ef6c19-67a2-4876-b85c-10bfa1fe649e",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        }
+      ]
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 0,
+          "toolCalls": 0,
+          "providerReturns": [],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AUTH_REQUIRED",
+            "statusCode": 401,
+            "name": "HttpError"
+          }
+        }
+      ],
+      "name": "authentication is required before provider/consent/tool work",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 0,
+          "toolCalls": 0,
+          "providerReturns": [],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_CONSENT_UNAVAILABLE",
+            "statusCode": 503,
+            "name": "HttpError"
+          }
+        }
+      ],
+      "name": "consent read failure fails closed before provider invocation",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "search_places",
+              "arguments": {
+                "destinationCity": "Đà Nẵng",
+                "dailyBudgetPerPerson": 0
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "result": {
+            "status": "needs_input",
+            "reply": "Bạn vui lòng cung cấp: điểm đến, ngân sách mỗi người/ngày (VND).",
+            "missingFields": [
+              "destinationCity",
+              "dailyBudgetPerPerson"
+            ],
+            "history": [
+              {
+                "role": "user",
+                "content": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: điểm đến, ngân sách mỗi người/ngày (VND)."
+              }
+            ],
+            "historyTruncated": false,
+            "context": {
+              "mode": "STATELESS",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "search_places",
+              "arguments": {
+                "destinationCity": "Đà Nẵng",
+                "dailyBudgetPerPerson": 0
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "result": {
+            "status": "needs_input",
+            "reply": "Bạn vui lòng cung cấp: điểm đến, ngân sách mỗi người/ngày (VND).",
+            "missingFields": [
+              "destinationCity",
+              "dailyBudgetPerPerson"
+            ],
+            "history": [
+              {
+                "role": "user",
+                "content": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: điểm đến, ngân sách mỗi người/ngày (VND)."
+              }
+            ],
+            "historyTruncated": false,
+            "context": {
+              "mode": "STATELESS",
+              "personalizationEnabled": true,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        }
+      ],
+      "name": "explicit preferences allowed with opt-out; no behavioral lookup or persisted context",
+      "status": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== 2\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:127:22\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:276:101)",
+      "origins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "2b905994-9f15-4bfa-aa60-a0969562c4ec",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        },
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "2aeae2c9-2088-4cf3-a796-002efa79713f",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        }
+      ]
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            null
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+            "statusCode": 502,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "reply",
+              "reply": "fake price"
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+            "statusCode": 502,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "search_places",
+              "arguments": {
+                "destinationCity": "Đà Nẵng",
+                "dailyBudgetPerPerson": 0
+              },
+              "reply": "fake place"
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+            "statusCode": 502,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "save_trip",
+              "arguments": {
+                "destinationCity": "Đà Nẵng",
+                "dailyBudgetPerPerson": 0
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+            "statusCode": 502,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "update_trip",
+              "arguments": {
+                "destinationCity": "Đà Nẵng",
+                "dailyBudgetPerPerson": 0
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+            "statusCode": 502,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "get_trip",
+              "arguments": {
+                "destinationCity": "Đà Nẵng",
+                "dailyBudgetPerPerson": 0
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+            "statusCode": 502,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "create_booking",
+              "arguments": {
+                "destinationCity": "Đà Nẵng",
+                "dailyBudgetPerPerson": 0
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+            "statusCode": 502,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "admin",
+              "arguments": {
+                "destinationCity": "Đà Nẵng",
+                "dailyBudgetPerPerson": 0
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+            "statusCode": 502,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "__proto__",
+              "arguments": {
+                "destinationCity": "Đà Nẵng",
+                "dailyBudgetPerPerson": 0
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+            "statusCode": 502,
+            "name": "HttpError"
+          }
+        }
+      ],
+      "name": "rejects fabricated replies, tool results, mutation tools and unknown decisions",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "plan_trip",
+              "arguments": {
+                "destinationCity": "Đà Nẵng"
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "result": {
+            "status": "needs_input",
+            "reply": "Bạn vui lòng cung cấp: nơi xuất phát, ngày bắt đầu (YYYY-MM-DD), ngày kết thúc (YYYY-MM-DD), số người lớn, ngân sách cả nhóm (VND), phương tiện (car hoặc motorbike).",
+            "missingFields": [
+              "departureCity",
+              "startDate",
+              "endDate",
+              "adults",
+              "totalBudget",
+              "transportation"
+            ],
+            "history": [
+              {
+                "role": "user",
+                "content": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: nơi xuất phát, ngày bắt đầu (YYYY-MM-DD), ngày kết thúc (YYYY-MM-DD), số người lớn, ngân sách cả nhóm (VND), phương tiện (car hoặc motorbike)."
+              }
+            ],
+            "historyTruncated": false,
+            "context": {
+              "mode": "STATELESS",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        }
+      ],
+      "name": "missing required travel data asks instead of Planner defaults or tool invocation",
+      "status": "PASS",
+      "origins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "72fdb9a2-0250-48d3-85e0-62d7c1ba2458",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        }
+      ]
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "plan_trip",
+              "arguments": {
+                "departureCity": "Hà Nội",
+                "destinationCity": "Đà Nẵng",
+                "startDate": "2030-06-15",
+                "endDate": "2030-06-16",
+                "adults": 2,
+                "children": 0,
+                "totalBudget": 2000000,
+                "transportation": "car",
+                "preferences": [],
+                "userId": "22222222-aaaa-4222-8222-222222222222"
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_TOOL_INPUT",
+            "statusCode": 400,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "plan_trip",
+              "arguments": {
+                "departureCity": "Hà Nội",
+                "destinationCity": "Đà Nẵng",
+                "startDate": "2030-06-15",
+                "endDate": "2030-06-16",
+                "adults": 2,
+                "children": 0,
+                "totalBudget": 2000000,
+                "transportation": "car",
+                "preferences": [],
+                "businessId": "other"
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_TOOL_INPUT",
+            "statusCode": 400,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "plan_trip",
+              "arguments": {
+                "departureCity": "Hà Nội",
+                "destinationCity": "Đà Nẵng",
+                "startDate": "2030-02-30",
+                "endDate": "2030-06-16",
+                "adults": 2,
+                "children": 0,
+                "totalBudget": 2000000,
+                "transportation": "car",
+                "preferences": []
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_TOOL_INPUT",
+            "statusCode": 400,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "plan_trip",
+              "arguments": {
+                "departureCity": "Hà Nội",
+                "destinationCity": "Đà Nẵng",
+                "startDate": "2030-06-15",
+                "endDate": "2030-06-16",
+                "adults": 2,
+                "children": 0,
+                "totalBudget": 0,
+                "transportation": "car",
+                "preferences": []
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_TOOL_INPUT",
+            "statusCode": 400,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "plan_trip",
+              "arguments": {
+                "departureCity": "Hà Nội",
+                "destinationCity": "Đà Nẵng",
+                "startDate": "2030-06-15",
+                "endDate": "2030-06-16",
+                "adults": -1,
+                "children": 0,
+                "totalBudget": 2000000,
+                "transportation": "car",
+                "preferences": []
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_TOOL_INPUT",
+            "statusCode": 400,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "plan_trip",
+              "arguments": {
+                "departureCity": "Hà Nội",
+                "destinationCity": "Đà Nẵng",
+                "startDate": "2030-06-15",
+                "endDate": "2030-06-16",
+                "adults": 2,
+                "children": 0,
+                "totalBudget": 2000000,
+                "transportation": "flight",
+                "preferences": []
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_TOOL_INPUT",
+            "statusCode": 400,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "plan_trip",
+              "arguments": {
+                "departureCity": "Hà Nội",
+                "destinationCity": "Đà Nẵng",
+                "startDate": "2030-06-15",
+                "endDate": "2030-06-16",
+                "adults": 2,
+                "children": 0,
+                "totalBudget": 2000000,
+                "transportation": "car",
+                "preferences": [
+                  "secret-profile"
+                ]
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_TOOL_INPUT",
+            "statusCode": 400,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "plan_trip",
+              "arguments": {
+                "departureCity": "Hà Nội",
+                "destinationCity": "Đà Nẵng",
+                "startDate": "2030-06-15",
+                "endDate": "2030-06-16",
+                "adults": 2,
+                "children": 0,
+                "totalBudget": 2000000,
+                "transportation": "car",
+                "preferences": [],
+                "mandatoryPlaceIds": [
+                  "not-uuid"
+                ]
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_TOOL_INPUT",
+            "statusCode": 400,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "search_places",
+              "arguments": {
+                "destinationCity": "Đà Nẵng",
+                "dailyBudgetPerPerson": -1
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_TOOL_INPUT",
+            "statusCode": 400,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "search_places",
+              "arguments": {
+                "destinationCity": "Đà Nẵng",
+                "dailyBudgetPerPerson": 0,
+                "category": "booking"
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_TOOL_INPUT",
+            "statusCode": 400,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "search_places",
+              "arguments": {
+                "destinationCity": "Đà Nẵng",
+                "dailyBudgetPerPerson": 0,
+                "weights": {}
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_TOOL_INPUT",
+            "statusCode": 400,
+            "name": "HttpError"
+          }
+        }
+      ],
+      "name": "tool parameters reject ownership injection, bad date, mode, budget, mandatory ID",
+      "status": "PASS",
+      "origins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "8ec21972-10fc-4190-bec3-5d77e5286958",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        },
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "6206bf59-0e05-4d98-8ba5-f12b7b5d5ad8",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        },
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "05b41fa6-fd7c-4e50-b8bd-231c98ef5222",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        },
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "158a6eee-da30-4bdc-ad82-ed86f333cd45",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        },
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "dbb5972b-2806-4e33-8fc6-b6e105a0a208",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        },
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "332dec50-8e8a-40dd-b1ad-d1c7555646b3",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        },
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "89f26333-a2c3-4c44-892c-f63fdf937c07",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        },
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "e2d27224-becd-4321-a0ba-7998cfeacd4a",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        },
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "228c6cc9-cd66-47f7-b186-9a2b0009a17f",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        },
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "74d27363-bde4-4c3b-85fc-dcc3701086a6",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        },
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "d469ad02-eaa8-4b40-9707-73749d36639f",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        }
+      ]
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "search_places",
+              "arguments": {
+                "destinationCity": "Đà Nẵng",
+                "dailyBudgetPerPerson": 0
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "result": {
+            "status": "needs_input",
+            "reply": "Bạn vui lòng cung cấp: điểm đến, ngân sách mỗi người/ngày (VND).",
+            "missingFields": [
+              "destinationCity",
+              "dailyBudgetPerPerson"
+            ],
+            "history": [
+              {
+                "role": "user",
+                "content": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: điểm đến, ngân sách mỗi người/ngày (VND)."
+              }
+            ],
+            "historyTruncated": false,
+            "context": {
+              "mode": "STATELESS",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        }
+      ],
+      "name": "tool backend failure and deadline are safe and do not fabricate success",
+      "status": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:156:5\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:276:101)",
+      "origins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "9763dc2c-e2c5-447d-83ec-1d6ba1fa86a0",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        }
+      ]
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "unsupported"
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "result": {
+            "status": "unsupported",
+            "reply": "Agent hiện chỉ hỗ trợ tìm địa điểm công khai và ước tính lịch trình; chưa hỗ trợ lưu Trip hoặc đặt dịch vụ.",
+            "history": [
+              {
+                "role": "user",
+                "content": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+              },
+              {
+                "role": "assistant",
+                "content": "Agent hiện chỉ hỗ trợ tìm địa điểm công khai và ước tính lịch trình; chưa hỗ trợ lưu Trip hoặc đặt dịch vụ."
+              }
+            ],
+            "historyTruncated": false,
+            "context": {
+              "mode": "STATELESS",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        }
+      ],
+      "name": "unsupported mutation request is explicit and executes no tool",
+      "status": "PASS",
+      "origins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "66830a0a-40cc-4389-9070-25fdc4013f2c",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        }
+      ]
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "plan_trip",
+              "arguments": {
+                "departureCity": "Hà Nội",
+                "destinationCity": "Đà Nẵng",
+                "startDate": "2030-06-15",
+                "endDate": "2030-06-16",
+                "adults": 2,
+                "children": 0,
+                "totalBudget": 2000000,
+                "transportation": "car",
+                "preferences": []
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "result": {
+            "status": "needs_input",
+            "reply": "Bạn vui lòng cung cấp: nơi xuất phát, điểm đến, ngày bắt đầu (YYYY-MM-DD), ngày kết thúc (YYYY-MM-DD), số người lớn, ngân sách cả nhóm (VND), phương tiện (car hoặc motorbike).",
+            "missingFields": [
+              "departureCity",
+              "destinationCity",
+              "startDate",
+              "endDate",
+              "adults",
+              "totalBudget",
+              "transportation"
+            ],
+            "history": [
+              {
+                "role": "user",
+                "content": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: nơi xuất phát, điểm đến, ngày bắt đầu (YYYY-MM-DD), ngày kết thúc (YYYY-MM-DD), số người lớn, ngân sách cả nhóm (VND), phương tiện (car hoặc motorbike)."
+              }
+            ],
+            "historyTruncated": false,
+            "context": {
+              "mode": "STATELESS",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        }
+      ],
+      "name": "real Planner adapter with synthetic catalog preserves estimates, provenance, no re-pricing",
+      "status": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'needs_input'\n- 'completed'\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:170:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:276:101)",
+      "origins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "eed47477-cf3d-4b9b-b25d-d4434f376ff6",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        }
+      ]
+    },
+    {
+      "turns": [],
+      "name": "catalog adapter public eligibility, safe projection, zero versus missing prices",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "search_places",
+              "arguments": {
+                "destinationCity": "Đà Nẵng",
+                "dailyBudgetPerPerson": 0
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "result": {
+            "status": "needs_input",
+            "reply": "Bạn vui lòng cung cấp: điểm đến, ngân sách mỗi người/ngày (VND).",
+            "missingFields": [
+              "destinationCity",
+              "dailyBudgetPerPerson"
+            ],
+            "history": [
+              {
+                "role": "user",
+                "content": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: điểm đến, ngân sách mỗi người/ngày (VND)."
+              }
+            ],
+            "historyTruncated": false,
+            "context": {
+              "mode": "STATELESS",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        }
+      ],
+      "name": "empty catalog produces explicit no-result/search and unavailable/planner, never fallback fabrication",
+      "status": "FAIL",
+      "error": "TypeError: Cannot read properties of undefined (reading 'places')\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:206:50\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:276:101)",
+      "origins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "3a1bb3d0-9630-42c6-8351-a31668c38c8b",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        }
+      ]
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "plan_trip",
+              "arguments": {
+                "departureCity": "Hà Nội",
+                "destinationCity": "Đà Nẵng",
+                "startDate": "2030-06-15",
+                "endDate": "2030-06-16",
+                "adults": 2,
+                "children": 0,
+                "totalBudget": 2000000,
+                "transportation": "car",
+                "preferences": []
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "result": {
+            "status": "needs_input",
+            "reply": "Bạn vui lòng cung cấp: nơi xuất phát, điểm đến, ngày bắt đầu (YYYY-MM-DD), ngày kết thúc (YYYY-MM-DD), số người lớn, ngân sách cả nhóm (VND), phương tiện (car hoặc motorbike).",
+            "missingFields": [
+              "departureCity",
+              "destinationCity",
+              "startDate",
+              "endDate",
+              "adults",
+              "totalBudget",
+              "transportation"
+            ],
+            "history": [
+              {
+                "role": "user",
+                "content": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: nơi xuất phát, điểm đến, ngày bắt đầu (YYYY-MM-DD), ngày kết thúc (YYYY-MM-DD), số người lớn, ngân sách cả nhóm (VND), phương tiện (car hoặc motorbike)."
+              }
+            ],
+            "historyTruncated": false,
+            "context": {
+              "mode": "STATELESS",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        }
+      ],
+      "name": "malformed Planner result is rejected, no itinerary returned",
+      "status": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:220:9\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentFoundation.server-policy-audit.js:276:101)",
+      "origins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "8544814d-29fd-4ac4-96db-98790be1e00b",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        }
+      ]
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 0,
+          "toolCalls": 0,
+          "providerReturns": [],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_PROVIDER_NOT_CONFIGURED",
+            "statusCode": 503,
+            "name": "HttpError"
+          }
+        }
+      ],
+      "name": "actual mounted API route enforces auth and returns 503 unconfigured, no DB call",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "clarify",
+              "fields": [
+                "destinationCity"
+              ]
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "result": {
+            "status": "needs_input",
+            "reply": "Bạn vui lòng cung cấp: điểm đến.",
+            "missingFields": [
+              "destinationCity"
+            ],
+            "history": [
+              {
+                "role": "user",
+                "content": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: điểm đến."
+              }
+            ],
+            "historyTruncated": false,
+            "context": {
+              "mode": "STATELESS",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "clarify",
+              "fields": [
+                "destinationCity"
+              ]
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "result": {
+            "status": "needs_input",
+            "reply": "Bạn vui lòng cung cấp: điểm đến.",
+            "missingFields": [
+              "destinationCity"
+            ],
+            "history": [
+              {
+                "role": "user",
+                "content": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND"
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: điểm đến."
+              }
+            ],
+            "historyTruncated": false,
+            "context": {
+              "mode": "STATELESS",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2030-06-15; Ngày kết thúc: 2030-06-16; Số người lớn: 2; Ngân sách cả nhóm: 2000000 VND; Phương tiện: ô tô; Ngân sách mỗi người mỗi ngày: 0 VND",
+            "userId": "11111111-aaaa-4111-8111-111111111111"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 0,
+          "toolCalls": 0,
+          "providerReturns": [],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_INPUT",
+            "statusCode": 400,
+            "name": "HttpError"
+          }
+        }
+      ],
+      "name": "HTTP MOCK_ONLY integration: real router/auth/controller, clarification and cross-account isolation",
+      "status": "PASS",
+      "origins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "019ea8e6-77c9-4724-9857-40a6acf58c11",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        },
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "c410de1e-a0b4-4a57-b867-b41b7568eb43",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        }
+      ]
+    }
+  ],
+  "assertionsChanged": 0
+}

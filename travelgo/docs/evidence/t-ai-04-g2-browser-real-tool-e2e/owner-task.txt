@@ -1,0 +1,448 @@
+# TASK T-AI-04-G2-BROWSER-AND-REAL-TOOL-E2E
+
+Vai trò: Senior Full-stack Engineer, AI Engineer, Database QA Engineer, Security Engineer và E2E Test Lead của TravelGo.
+
+## MỤC TIÊU
+
+Kiểm thử end-to-end AI Agent TravelGo bằng:
+
+- Frontend React thật.
+- Backend Agent API thật.
+- G2 Verified History local/demo.
+- Qwen3 chạy thật trên Ollama local.
+- Execution provenance gate thật.
+- Catalog/Planner service thật.
+- PostgreSQL test database.
+- Browser desktop/mobile.
+
+Phân biệt rõ chất lượng raw NLU, session/history, safety, tool fidelity và UI.
+
+Đây là **LIVE E2E VALIDATION**, không phải task FIX.
+
+### Phạm vi quyền được cấp khi chủ dự án gửi task
+
+- Tối đa **8 native Ollama POST** tổng cộng.
+- Trong đó tối đa 1 conditional operator load-only và 7 inference.
+- 0 retry hoặc hidden warm-up.
+- Chỉ được dùng database `travelgo_ai_m0_test` sau khi xác minh chính xác identity và safety guards.
+- Mặc định **READ-ONLY với PostgreSQL**.
+- Không tự tạo seed/fixture, sửa, xóa hoặc truncate dữ liệu.
+- Không sửa production source, benchmark hoặc historical evidence.
+- Không commit/push/deploy.
+
+Nếu môi trường hoặc guard không đạt, dừng phần LIVE tương ứng, báo BLOCKED; không vượt quyền để đạt PASS.
+
+## 1. Đọc baseline
+
+Đọc các báo cáo:
+
+1. `docs/HUGO_T_AI_04_G2_FRONTEND_INTEGRATION_LOGOUT_REPORT.md`
+2. `docs/HUGO_T_AI_04_G2_VERIFIED_HISTORY_REPORT.md`
+3. `docs/HUGO_T_AI_04_G2_LIVE_MULTI_TURN_VALIDATION_REPORT.md`
+4. `docs/HUGO_T_AI_04_G2_NATURAL_CORRECTION_ENUM_INVESTIGATION_REPORT.md`
+5. `docs/HUGO_T_AI_04_G1_COMPATIBILITY_V2_READINESS_REPORT.md`
+
+Kiểm source frontend/backend Agent, Catalog, Planner, auth, DB configuration và original tool schemas.
+
+Baseline:
+
+- Frontend unit 49/49 PASS.
+- Browser mocked 74/74 PASS.
+- Backend acceptance 68/79/61/42/52 PASS.
+- Legacy 145 PASS/36 FAIL.
+- G2 backend local/demo, mặc định OFF.
+- P1 raw NLU OPEN.
+- P2 runtime OPEN.
+- Candidate SYSTEM B chưa áp dụng.
+- Full V2 chưa được nghiệm thu.
+
+## 2. Preflight và manifest
+
+Trước khi chạy inference:
+
+1. Kiểm toàn bộ source và các hash baseline.
+2. Xác nhận frontend/backend build.
+3. Kiểm G2 API contract và privacy notice.
+4. Kiểm môi trường local và test DB.
+5. Xác nhận mô hình Ollama.
+6. Kiểm principal/AgentLimits và rolling ledger.
+7. Kiểm RAM/VRAM, readiness và provider concurrency.
+8. Xác định các tình huống có thể chạy thật với catalog hiện có.
+
+Khóa manifest trước mọi native POST.
+
+Manifest phải ghi:
+
+- Exact input.
+- Viewport.
+- Authenticated principal.
+- Session action/revision.
+- Expected raw NLU.
+- Expected tool/arguments.
+- Expected service result/provenance.
+- Expected UI behavior.
+- Native POST budget.
+- Stop conditions.
+- Input/request hashes.
+
+Với request chứa session ID do server tạo, khóa body template và quy tắc thay ID trước khi chạy; kiểm exact final body/hash tại dispatch.
+
+Không thay expected sau khi đã thấy model output.
+
+## 3. Database guard
+
+Chỉ dùng:
+
+`travelgo_ai_m0_test`
+
+Trước bất kỳ truy vấn dữ liệu:
+
+- Xác nhận host, port, database name và role.
+- Xác nhận database không phải production hoặc `travelgo_dev`.
+- Đối chiếu schema/migration checksum thực tế với baseline được duyệt.
+- Chụp fingerprint/sentinel phù hợp cho các bảng liên quan.
+- Kiểm quyền READ-ONLY, không mở đường ghi dữ liệu.
+- Không reset/migrate/seed/truncate.
+- Không sửa dữ liệu Trip/Booking hoặc tài khoản thật.
+
+Ưu tiên dùng dữ liệu catalog có sẵn trong test DB.
+
+Nếu catalog không có dữ liệu phù hợp, ghi `BLOCKED_DATA_READINESS` cho case liên quan. Không tự thêm dữ liệu để lấy PASS.
+
+Nếu phát hiện cần tạo fixture hoặc thực hiện mutation để có bài test hợp lệ, dừng nhánh đó và đề xuất approval riêng.
+
+Cuối task kiểm lại fingerprint/sentinel và xác nhận không phát sinh database writes.
+
+Không tự nhận fingerprint PASS nếu DB chưa được truy cập hoặc chưa có snapshot so sánh thực tế.
+
+## 4. Model và quota guard
+
+Dùng:
+
+`qwen3:4b-instruct-2507-q4_K_M`
+
+Digest:
+
+`0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0`
+
+Ollama:
+
+`http://127.0.0.1:11434`
+
+Giữ nguyên:
+
+- JSON mode.
+- stream false.
+- temperature 0.
+- num_ctx 16384.
+- num_predict 2048.
+- Application timeout 15000ms.
+- Concurrency 1.
+- Original schema/Ajv/runtime validation.
+
+Không đổi model/quant/context/timeout.
+
+Model không resident thì chỉ được một operator load-only POST đã khóa.
+
+Nếu eviction, resource failure hoặc readiness không đạt, dừng, không load lần hai.
+
+Sử dụng cùng approved principal và normal AgentLimits.
+
+Kiểm cả `at` và `createdAt` trong historical ledger.
+
+Tính đủ deterministic chat turns, inference turns và conservative operator entry trong quota mặc định 20 turns/giờ. Nếu không đủ quota hoặc G2 session TTL15 phút cho chuỗi đã khóa, báo BLOCKED, không reset limiter hoặc đổi principal.
+
+## 5. Authentication và LIVE browser
+
+Được chạy với local test account/session được duyệt.
+
+Ưu tiên kiểm login thật trên môi trường test. Nếu phải dùng test-signed JWT qua authentication middleware, ghi rõ đây không phải real-login E2E.
+
+Không sử dụng tài khoản người dùng thật hoặc dữ liệu bí mật.
+
+G2 chỉ bật trong backend local/demo runtime được phép.
+
+Không bật G2 trên môi trường deploy hoặc thay `.env` dùng chung.
+
+Browser chạy Chromium/Edge với:
+
+- Desktop: 1440×900.
+- Mobile giả lập: 390×844.
+
+Kiểm network thực từ browser đến backend; không dùng Playwright route mocking cho các case được tuyên bố LIVE.
+
+## 6. Test cases LIVE
+
+Lựa chọn tối đa 7 lượt inference từ các case dưới đây, theo dữ liệu Catalog/Planner đã xác minh.
+
+### E01 — Search real Catalog
+
+Người dùng yêu cầu tìm địa điểm du lịch phù hợp.
+
+Kiểm:
+
+- Model raw search_places.
+- Required args đúng.
+- Gate ALLOW.
+- Catalog query thật.
+- UI hiển thị đúng kết quả service.
+- Không xuất hiện địa điểm không có trong actual service response.
+- 0 mutation.
+
+### E02 — G2 incomplete → complete plan
+
+Người dùng bắt đầu lập lịch trình với một số trường chưa đầy đủ.
+
+Các lượt thiếu thông tin:
+
+- Backend hỏi đúng required fields.
+- Không inference.
+- Không tool.
+
+Sau khi cung cấp đủ:
+
+- Model raw plan_trip đúng.
+- Gate kiểm merged verified proof.
+- Planner thực thi đúng một lần.
+- UI trả lịch trình từ real service result.
+- Kiểm ngày, đêm, số người, phương tiện và chi phí.
+
+Không tạo itinerary giả.
+
+### E03 — Budget correction
+
+Trong cùng owned G2 session, người dùng đổi ngân sách.
+
+Kiểm:
+
+- New budget verified.
+- Các trường khác giữ đúng.
+- Raw model và actual arguments.
+- Planner không dùng ngân sách cũ nếu gate cho phép execute.
+- UI hiển thị kết quả tương ứng với response thực.
+
+### E04 — Natural transportation correction
+
+Người dùng đổi phương tiện bằng tiếng Việt tự nhiên.
+
+Kiểm:
+
+- Current proof.
+- Verified transportation.
+- Raw decision.
+- Safety.
+- UI behavior.
+
+Nếu model lại clarify transportation dù đã SET:
+
+- Chấm RAW NLU FAIL.
+- Safety PASS nếu không có unauthorized execution.
+- Giữ nguyên state.
+- Không tự chuyển clarify thành tool.
+
+Không sửa input hoặc retry để lấy PASS.
+
+### E05 — Manual confirmation
+
+Người dùng chủ động bấm lựa chọn phương tiện trên UI.
+
+Frontend gửi supported labeled message:
+
+`Phương tiện: motorbike`
+
+hoặc
+
+`Phương tiện: car`
+
+Kiểm new requestId, latest revision, normal quota, raw model và execution gate.
+
+Không auto-resend.
+
+Nếu AI vẫn hỏi lại, ghi FAIL tương ứng và kiểm người dùng có thể reset/end/manual edit.
+
+### E06 — Destination/date correction
+
+Kiểm một trường hợp correction hợp lệ khác với E03/E04.
+
+Kiểm original source proof, raw, exact arguments, Catalog/Planner result và UI.
+
+### E07 — Mobile LIVE smoke
+
+Thực hiện ít nhất một luồng search hoặc plan thực trên mobile giả lập.
+
+Không chỉ chạy mocked browser tests rồi nhận là mobile LIVE.
+
+Kiểm viewport, form, request, model decision, tool invocation và render result.
+
+**Phân bổ tối đa 7 inference trên desktop/mobile phải khóa trước khi chạy.**
+
+Các case không được cấp inference hoặc không đủ điều kiện dữ liệu phải ghi NOT RUN; không phát sinh POST vượt budget để đủ tên case.
+
+## 7. Deterministic lifecycle tests
+
+Không gọi model nếu request không cần inference.
+
+Kiểm:
+
+- G2 privacy notice/acknowledgement.
+- Start/continue với server-created ID.
+- Exact revision/fresh UUID.
+- Session expiry/unavailable.
+- Reset.
+- Revoke.
+- Logout/account switch.
+- Không hiển thị dữ liệu user cũ.
+- Không stale response overwrite.
+- Không client history cấp proof.
+- G1 không nhận G2 transcript làm authenticated state.
+
+Với logout, kiểm best-effort revoke; không nhận là JWT/global revocation.
+
+Nếu phát hiện backend privacy notice cũ chưa phản ánh đúng hành vi frontend, ghi observation và proposed wording/version change riêng.
+
+Không tự sửa privacy contract trong task E2E.
+
+## 8. Chấm điểm độc lập
+
+### A. Raw NLU
+
+- Native raw trước server fallback.
+- Expected kind/tool/arguments.
+- Semantic PASS/FAIL.
+- Schema validity.
+- Timeout/no raw: semantic NOT EVALUATED, reliability failure riêng.
+
+### B. Verified History
+
+- Session ownership.
+- Revision.
+- Exact verified slots.
+- Correction precedence.
+- Unset/conflict behavior.
+- No client history authority.
+
+### C. Execution Safety
+
+- Gate ALLOW/NEEDS_INPUT/REJECT.
+- Old arguments blocked.
+- No unauthorized tool.
+- One read tool maximum.
+- No mutation.
+
+### D. Tool Fidelity
+
+- Actual Catalog/Planner call.
+- Arguments và output provenance.
+- Direct service comparison.
+- Dates, totals, budget warnings và data readiness.
+- Real DB result nếu guard được phê duyệt và truy cập thành công.
+
+Không tính fake executor marker là fidelity PASS.
+
+### E. UI
+
+- Browser request/response.
+- Rendered values.
+- Missing-field behavior.
+- Confirmation controls.
+- Error/retry/reset.
+- Responsive desktop/mobile.
+
+### F. Runtime
+
+- Total native POST.
+- Load-only vs inference.
+- Timeout/abort.
+- Model residency.
+- Latency/tokens/cache.
+- RAM/VRAM.
+- GPU watchdog warnings.
+
+Không cộng kết quả safety/UX tốt vào raw NLU.
+
+## 9. Regression
+
+Sau LIVE, chạy các suite phù hợp:
+
+- Frontend G1/G2 unit.
+- Existing mocked browser acceptance.
+- G2 backend 68.
+- Natural Proof 79.
+- Compatibility 61.
+- Correction 42.
+- Completeness 52.
+- Original legacy 181.
+- Readiness/diagnostics.
+- Foundation single-intent controls.
+- Frontend/backend build.
+
+Offline test children phải không gửi thêm native Ollama POST hoặc truy cập DB ngoài scope.
+
+Giữ original legacy expected và báo mọi failure mới.
+
+Không làm thay đổi historical evidence.
+
+## 10. Stop conditions
+
+Dừng LIVE khi:
+
+- Native POST cap đạt 8.
+- Quota không đủ.
+- Provider/model digest mismatch.
+- Test database identity/guard không đạt.
+- Có database write không được phép.
+- Có unauthorized execution.
+- Có authentication/session leakage.
+- Request/session integrity bị sai.
+- Có unexpected production source drift.
+- Có lỗi runtime khiến không thể tiếp tục theo manifest.
+
+Không tự sửa production hoặc rerun failed inference.
+
+Nếu không thể kiểm phần real DB/tool, vẫn tổng kết các phần đã xác minh, ghi blocker chính xác; không giả full E2E PASS.
+
+## 11. Báo cáo
+
+Tạo:
+
+`docs/HUGO_T_AI_04_G2_BROWSER_REAL_TOOL_E2E_REPORT.md`
+
+Evidence:
+
+`docs/evidence/t-ai-04-g2-browser-real-tool-e2e/`
+
+Báo cáo gồm:
+
+1. Owner approval/scope.
+2. Preflight/manifest.
+3. Auth/principal/quota.
+4. Ollama preparation và POST ledger.
+5. Test DB guards/fingerprint.
+6. Browser desktop/mobile actual results.
+7. G1/G2 conversation evidence.
+8. Raw model decisions.
+9. Execution gate/tool invocations.
+10. Real Catalog/Planner results.
+11. Prices/dates/itinerary fidelity.
+12. Runtime/tokens/GPU.
+13. Logout/reset/expiry.
+14. Regression/build.
+15. Source/benchmark integrity.
+16. P1/P2 status.
+17. Remaining blockers.
+18. NEXT TASK PLAN.
+
+Kết luận phải phân biệt:
+
+- BROWSER_LIVE_PASS/FAIL.
+- RAW_NLU_PASS/FAIL.
+- G2_HISTORY_PASS/FAIL.
+- SAFETY_PASS/FAIL.
+- REAL_TOOL_FIDELITY_PASS/FAIL/NOT_RUN.
+- DEMO_READINESS.
+
+Không công bố Agent production-ready nếu chỉ đạt một phần.
+
+Không tự chạy V2 benchmark, sửa production hoặc deploy.
+
+**Dừng sau báo cáo và chờ chủ dự án phê duyệt task kế tiếp.**

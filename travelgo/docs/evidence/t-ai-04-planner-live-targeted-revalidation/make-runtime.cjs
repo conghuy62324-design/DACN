@@ -1,0 +1,16 @@
+const fs=require('node:fs'),path=require('node:path');
+let s=fs.readFileSync(path.join(__dirname,'../t-ai-04-planner-real-tool-live-e2e-resume-run2/run-live.cjs'),'utf8');
+s=s.slice(s.indexOf("const c=require"),s.indexOf('async function finish(page)'));
+s=s.replace(",maintenance=globalThis.__plannerMaintenance,{normalize}=require('./direct-planner.cjs')",'');
+s=s.replace('const chainStarted=Date.now();let current,','const chainStarted=Date.now();let currentCtx,current,');
+s=s.replace("globalThis.fetch=(url,init={})=>{","globalThis.fetch=(url,init={})=>{c.assert.ok(!currentCtx?.signal.aborted,'GLOBAL_STOP_GET_BLOCKED');");
+s=s.replace('nativePosts.length<7','nativePosts.length<4').replace("async function dispatch(id,url,init,operator=false){","async function nativeDispatch(id,url,init,operator=false){");
+s=s.replace("const fetcher=async(url,init={})=>{","async function dispatch(id,url,init,operator=false){c.assert.ok(currentCtx);return currentCtx[operator?'operator':'native'](()=>nativeDispatch(id,url,init,operator));}\nconst fetcher=async(url,init={})=>{c.assert.ok(!currentCtx.signal.aborted,'GLOBAL_STOP_PROVIDER_GET_BLOCKED');");
+s=s.replace('await realProvider.generate(input,signal)','await realProvider.generate(input,AbortSignal.any([signal,currentCtx.signal]))');
+s=s.replace("const tools={async execute(decision){","const tools={async execute(decision){return currentCtx.tool(async()=>{").replace('row.dbQueriesAfter=db.audit.queries;return row.result;}};','row.dbQueriesAfter=db.audit.queries;return row.result;});}};');
+s=s.replace("if(current.id==='L06'&&m)","if(current.id==='R03'&&m)");
+s=s.replace("globalThis.__onPlannerIsolationLost=()=>{store.dispose();","globalThis.__onPlannerIsolationLost=()=>{currentCtx?.fail(Error('MAINTENANCE_ISOLATION_LOST'),'dbIsolation');store.dispose();");
+s=s.replace("async function send(page,id){stage(id);","async function send(page,id){").replace('return finish(page);','return observe();');
+const tail=fs.readFileSync(path.join(__dirname,'runtime-tail.txt'),'utf8');
+const result="// Derived real runtime adapters. Import-only; no automatic DB/provider/browser startup.\nmodule.exports=async function createRuntime(maintenance){\n"+s+'\n'+tail+'\n};\n';
+fs.writeFileSync(path.join(__dirname,'runtime-adapters.cjs'),result,{flag:'wx',encoding:'utf8'});console.log('RUNTIME_ADAPTERS_GENERATED_IMPORT_ONLY');

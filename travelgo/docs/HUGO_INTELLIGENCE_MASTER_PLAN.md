@@ -1,5 +1,7 @@
 # HuGo Intelligence 2.0 — Master Plan
 
+> **Đính chính auth 30/10/2026 (T07):** hàng “Auth, refresh token, RBAC” và cách gọi JWT trong snapshot/sơ đồ dưới đây không mô tả đúng implementation. Source dùng access token HMAC hai phần có hạn; chưa có refresh-token endpoint hay server-side revocation; logout chỉ xóa phiên client. Khi dùng kế hoạch này, áp dụng [contract auth hiện hành](HUGO_AUTH_CONTRACT.md). Nội dung audit, PASS/BLOCKED và bằng chứng ngày 12/10 bên dưới được giữ nguyên như lịch sử, không phải kết quả T07 chạy lại.
+
 > Trạng thái tài liệu: **AUDIT & DESIGN COMPLETE**
 >
 > Ngày kiểm kê: 2026-10-12 (Asia/Ho_Chi_Minh)

@@ -1,0 +1,67 @@
+{
+  "at": "2026-11-10T10:32:01.627Z",
+  "status": "PASS",
+  "integrity": {
+    "status": "PASS",
+    "priorBaselineFiles": 4434,
+    "correctionArtifacts": 97
+  },
+  "protectedFiles": 4533,
+  "historicalEvidenceFiles": 4168,
+  "sourceFiles": 266,
+  "readiness": {
+    "pass": 32,
+    "fail": 1,
+    "unchangedCaseNamesAndStatuses": true,
+    "failures": [
+      "mock clarify path performs no readiness or network; existing deterministic response remains"
+    ]
+  },
+  "diagnostic": [
+    {
+      "layer": "actual-policy",
+      "pass": 8,
+      "fail": 5,
+      "allCaseNamesAndStatusesEqualBaseline": true
+    },
+    {
+      "layer": "downstream-control",
+      "pass": 13,
+      "fail": 0,
+      "allCaseNamesAndStatusesEqualBaseline": true
+    }
+  ],
+  "novelty": {
+    "historicalJsonFiles": 1842,
+    "allStringValues": 517698,
+    "newLiveRequests": 4,
+    "duplicates": 0,
+    "scope": "All historical JSON string values compared, beyond request-key-only initial check; no requests replayed"
+  },
+  "nativePostAudit": {
+    "from": 126546,
+    "to": 155880,
+    "nativeRows": [
+      "[GIN] 2026/11/10 - 17:28:13 | 200 |   10.65s |       127.0.0.1 | POST     \"/api/generate\"",
+      "[GIN] 2026/11/10 - 17:28:23 | 200 |    2.49s |       127.0.0.1 | POST     \"/api/chat\"",
+      "[GIN] 2026/11/10 - 17:28:30 | 200 |    1.76s |       127.0.0.1 | POST     \"/api/chat\"",
+      "[GIN] 2026/11/10 - 17:28:36 | 200 |    1.72s |       127.0.0.1 | POST     \"/api/chat\"",
+      "[GIN] 2026/11/10 - 17:28:42 | 200 | 454.52ms |       127.0.0.1 | POST     \"/api/chat\""
+    ],
+    "postCount": 5,
+    "loadOnly": 1,
+    "inference": 4,
+    "afterOfflineRegression": true,
+    "newProbeRequests": 0
+  },
+  "sourceChanges": 0,
+  "oldEvidenceChanges": 0,
+  "dbAttempts": 0,
+  "fixture": "NONE",
+  "fingerprint": "N/A — no PostgreSQL connection or query",
+  "limits": "Original default AgentLimits, same approved principal; 9 normal consumed plus 1 operator conservatively ledgered outside AgentLimits.",
+  "inheritedHarnesses": "Byte-identical copies from Correction FIX; new directory/output only. Compiled runner derivations retain original case bodies/assertions; readiness shim and downstream assessor control are MOCK_ONLY.",
+  "P1": "OPEN",
+  "P2Runtime": "OPEN",
+  "OBS_COMP_01": "FIXED/OFFLINE VERIFIED + LIMITED LIVE CASE VERIFIED; rejected-wrong-model-output branch offline only"
+}

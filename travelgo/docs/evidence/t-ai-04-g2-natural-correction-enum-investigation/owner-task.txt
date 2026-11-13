@@ -1,0 +1,236 @@
+# TASK T-AI-04-G2-NATURAL-CORRECTION-AND-ENUM-INVESTIGATION
+
+Vai trò: Senior LLM Engineer, NLP Engineer, Backend Architect và QA Lead của TravelGo.
+
+Đây là nhiệm vụ OFFLINE INVESTIGATION nhằm thu hẹp nguyên nhân khiến Qwen3 hỏi lại transportation dù G2 đã xác minh đầy đủ required slots.
+
+**Không sửa production. Không inference. Không truy cập PostgreSQL.**
+
+Mục tiêu là đưa ra quyết định kỹ thuật rõ ràng, không tiếp tục điều tra vô hạn.
+
+## 1. Baseline
+
+Đọc:
+
+- `docs/HUGO_T_AI_04_G2_RAW_CLARIFY_CONTROLLED_DIAGNOSTIC_REPORT.md`
+- `docs/HUGO_T_AI_04_G2_RAW_CLARIFY_INVESTIGATION_REPORT.md`
+- `docs/HUGO_T_AI_04_G2_LIVE_MULTI_TURN_VALIDATION_REPORT.md`
+- `docs/HUGO_T_AI_04_G2_VERIFIED_HISTORY_REPORT.md`
+
+Đọc evidence gốc và source liên quan.
+
+Baseline:
+
+- Original G2 LIVE: 3 PASS / 1 FAIL.
+- Controlled A/B: A 1/2, B 1/2.
+- Q01 natural correction: cả A/B FAIL.
+- Q02 labeled transportation: cả A/B PASS.
+- G2 history và safety PASS.
+- Regression 68/79/61/42/52 PASS.
+- Legacy 145 PASS / 36 FAIL.
+- P1/P2 OPEN.
+
+Candidate SYSTEM B chưa được chấp thuận triển khai production.
+
+## 2. Điều tra ba khác biệt trọng tâm
+
+### A. Natural correction vs labeled value
+
+So sánh chính xác:
+
+Q01:
+"À đổi sang xe máy, giữ thông tin còn lại."
+
+Q02:
+"Phương tiện: motorbike"
+
+Kiểm tra:
+
+- Current text.
+- Semantic intent.
+- G2 pending-turn proof.
+- Verified snapshot.
+- Canonical enum car/motorbike.
+- Source instruction.
+- Original tool schema.
+- Provider message order.
+- Native raw response.
+- Decision origin.
+
+Làm rõ việc model có thể phân biệt câu chọn phương tiện với câu sửa phương tiện hay không dựa trên evidence hiện có.
+
+Không giả định wording là nguyên nhân duy nhất.
+
+### B. Previous state và correction semantics
+
+Kiểm tra sự khác biệt giữa:
+
+1. OMITTED → UNPROVEN → SET motorbike.
+2. SET car → INVALIDATED → SET motorbike.
+3. SET car → verified correction → SET motorbike.
+4. SET motorbike được lặp lại với cùng giá trị.
+
+Đối chiếu G2 state machine và dữ liệu thực sự gửi model.
+
+Xác định model nhìn thấy thông tin gì và không nhìn thấy thông tin gì.
+
+Đặc biệt làm rõ:
+
+- Q01 có từng SET car thật hay không?
+- Snapshot gửi model có chứa trạng thái cũ hoặc hành động hủy hay không?
+- Raw prior messages có được truyền cho model không?
+- Có sự khác biệt giữa nghĩa của câu "đổi sang" và verified current state không?
+
+Không bổ sung lịch sử giả vào model để tạo kết luận.
+
+### C. Vietnamese aliases và canonical enum
+
+So sánh:
+
+- "xe máy"
+- "motorbike"
+- "chọn xe máy"
+- "đổi sang xe máy"
+- "phương tiện: xe máy"
+- "phương tiện: motorbike"
+
+Kiểm tra source parser, prompt examples và tool enum.
+
+Phân biệt:
+
+- Server hiểu và chuẩn hóa đúng.
+- Model được cung cấp verified canonical value đúng.
+- Model tự chọn đúng decision kind.
+
+Không suy ra Qwen3 chắc chắn không hiểu "xe máy", vì historical L04 đã sinh motorbike đúng.
+
+## 3. Offline verification
+
+Chỉ chạy:
+
+- Source inspection.
+- Pure-function proof checks.
+- Archived native response replay.
+- Deterministic provider serialization.
+- Fake-provider tests.
+- Existing test harness offline.
+
+Không gọi Ollama thật.
+
+Kiểm đúng:
+
+- Full SET snapshot → correct tool args có thể ALLOW.
+- UNPROVEN/CONFLICT → không execute.
+- Old transportation → không ALLOW.
+- Missing transportation → exact needs_input.
+- Verified motorbike không bị mất sau model clarify.
+- G1 stateless vẫn giữ contract.
+- G2 sessions không dùng client history làm proof.
+
+Không tự chuyển clarify thành tool.
+
+## 4. Đánh giá phương án cải thiện
+
+Đánh giá ba hướng:
+
+A. Điều chỉnh riêng instruction G2 về natural correction.
+
+B. Làm rõ semantic representation của current verified change mà không tăng quyền của client/model hoặc tạo thêm facts.
+
+C. Giữ safety fallback hiện tại, cải thiện thông báo hỏi lại trên UI và tiếp tục công việc demo.
+
+Với từng hướng, ghi:
+
+- Bằng chứng ủng hộ.
+- Bằng chứng phản bác.
+- Rủi ro.
+- Source cần thay đổi.
+- Test độc lập cần có.
+- Có cần inference thật để xác nhận không?
+- Có thay G1 SYSTEM/schema/gate không?
+- Có ảnh hưởng bảo mật/history không?
+
+Không triển khai phương án nào trong task này.
+
+Không đề xuất đổi model, tăng timeout hoặc mở rộng tool allowlist nếu không có evidence.
+
+## 5. Decision Gate bắt buộc
+
+Cuối investigation chỉ được kết luận một trong ba:
+
+### FIX_CANDIDATE_JUSTIFIED
+
+Có bằng chứng đủ mạnh để đề xuất một FIX nhỏ với scope rõ.
+
+Phải kèm independent acceptance cases và rủi ro.
+
+### NEEDS_CONTROLLED_MEASUREMENT
+
+Có giả thuyết cụ thể, có thể phân biệt bằng một thí nghiệm biến độc lập rõ ràng.
+
+Đề xuất manifest và POST cap riêng, chưa thực thi.
+
+Không tiếp tục một A/B chỉ thay SYSTEM giống task vừa FAIL.
+
+### DEMO_SAFE_LIMITATION_ACCEPTED_FOR_REVIEW
+
+Chưa đủ bằng chứng để sửa chắc chắn.
+
+Đề xuất giữ fallback hỏi lại an toàn, ghi hạn chế NLU P1 OPEN và chuyển sang tích hợp giao diện để hoàn thiện demo.
+
+Không tuyên bố đây là production NLU acceptance.
+
+## 6. Bảo vệ baseline
+
+Không sửa:
+
+- G1/G2 SYSTEM production.
+- currentTurnProof.
+- verifiedHistory.
+- AgentService.
+- Original schema/tools.
+- Execution gate.
+- Consent/auth/limits.
+- Planner/Catalog/Trip/Booking.
+- Approved V2 benchmark.
+- Historical evidence.
+
+Không inference/preload/model unload.
+
+Không PostgreSQL/migration/reset/seed/truncate.
+
+Không commit/push/deploy.
+
+Nếu chạy regression offline, báo số thực tế thay vì sử dụng baseline như một lần chạy mới.
+
+## 7. Báo cáo
+
+Tạo:
+
+`docs/HUGO_T_AI_04_G2_NATURAL_CORRECTION_ENUM_INVESTIGATION_REPORT.md`
+
+Evidence:
+
+`docs/evidence/t-ai-04-g2-natural-correction-enum-investigation/`
+
+Báo cáo bắt buộc gồm:
+
+1. Baseline.
+2. Exact Q01/Q02 comparison.
+3. Previous-state semantics.
+4. Vietnamese alias và enum analysis.
+5. Prompt/source observations.
+6. Confirmed vs likely vs hypothesis.
+7. Offline verification.
+8. Candidate options và risks.
+9. Independent acceptance plan.
+10. Decision Gate.
+11. Regression và integrity.
+12. P1/P2 status.
+13. NEXT TASK PLAN.
+
+**Không tự triển khai NEXT TASK.**
+
+Ưu tiên kết luận có thể hành động được. Nếu evidence vẫn không đủ, không tiếp tục mở rộng điều tra tùy ý.
+
+Dừng sau báo cáo.

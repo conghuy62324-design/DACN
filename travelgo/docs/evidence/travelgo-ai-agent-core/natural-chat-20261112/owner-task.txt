@@ -1,0 +1,272 @@
+# TRAVELGO — HOÀN THIỆN AI AGENT HỘI THOẠI TỰ NHIÊN VÀ GIAO DIỆN CHAT THỐNG NHẤT
+
+Tiếp tục dự án TravelGo hiện tại và đọc báo cáo:
+
+`docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md`
+
+## MỤC TIÊU QUAN TRỌNG NHẤT
+
+Tôi không muốn TravelGo chỉ là chatbot dùng keyword, form hoặc các nút thao tác cố định.
+
+Tôi muốn TravelGo có một **AI Agent du lịch thực sự**, trò chuyện tự nhiên bằng tiếng Việt, hiểu cách khách viết tắt, sai chính tả, thiếu dấu, nói ngắn gọn, nhớ ngữ cảnh hội thoại và tự chọn đúng các công cụ được phép của hệ thống.
+
+Phải kết hợp:
+
+- LLM để hiểu ngôn ngữ và đối thoại tự nhiên.
+- Backend deterministic để xác minh dữ liệu, quyền hạn và thao tác.
+- Catalog TravelGo để tìm khách sạn, nhà hàng, địa điểm thật.
+- Planner hiện có để tạo lịch trình và tính chi phí.
+- Trip/Booking services hiện có để xử lý các nghiệp vụ tương ứng.
+
+Không xây lại toàn bộ AI Agent từ đầu. Giữ các guard và kết quả đã đạt.
+
+## 1. TỰ ĐỘNG CHÀO NGƯỜI DÙNG THEO TÀI KHOẢN
+
+Khi khách hàng đăng nhập và vào trang `/assistant`, hệ thống tự động hiển thị lời chào cá nhân hóa, chưa cần người dùng nhập lời chào.
+
+Ví dụ tài khoản có tên Huy:
+
+“Xin chào anh/chị Huy! Tôi là trợ lý du lịch TravelGo. Tôi có thể giúp anh/chị tìm khách sạn, nhà hàng hoặc lên kế hoạch cho chuyến đi. Anh/chị muốn khám phá địa điểm nào?”
+
+Yêu cầu:
+
+- Lấy tên hiển thị thật từ authenticated user/profile hiện tại.
+- Không hard-code tên Huy.
+- Không lấy tên từ nội dung chat do client tự cung cấp.
+- Không hiển thị email/số điện thoại hoặc thông tin riêng tư.
+- Có fallback lịch sự nếu tài khoản chưa có tên.
+- Chỉ tạo lời chào một lần khi bắt đầu cuộc trò chuyện mới.
+- Khi bấm “Cuộc trò chuyện mới”, có lời chào mới và ngữ cảnh mới.
+- Không gửi yêu cầu tới LLM chỉ để tạo một câu chào.
+- Giữ ngôn ngữ thân thiện, tự nhiên, xưng hô phù hợp, không lặp “anh/chị” trong mọi câu nếu gây khó đọc.
+
+## 2. HỢP NHẤT GIAO DIỆN CHAT
+
+Hiện trang `/assistant` có nhiều chế độ G1, G2, Planner, Core, Gemini, làm người dùng khó hiểu.
+
+Mục tiêu giao diện CUSTOMER:
+
+- Một khung chat chính.
+- Một ô nhập tin nhắn.
+- Một nút gửi.
+- Lời chào tự động.
+- Hiển thị lịch sử hội thoại trong phiên có kiểm soát.
+- Kết quả khách sạn, nhà hàng, lịch trình được hiển thị ngay trong cùng cuộc hội thoại.
+- Có thể chọn dịch vụ, so sánh, lập lại lịch trình và xem Booking ngay trong chat.
+
+G1/G2/Core và các developer controls không cần hiển thị thành nhiều chế độ cho khách hàng thông thường. Giữ các tính năng và code cần thiết, có thể đưa công cụ debug vào khu vực development, không xóa chức năng cũ.
+
+Tập trung một trải nghiệm Agent duy nhất, không tạo thêm AssistantPage khác.
+
+## 3. HIỂU TIẾNG VIỆT TỰ NHIÊN, VIẾT TẮT VÀ THIẾU DẤU
+
+Xây dựng/hoàn thiện Vietnamese NLU với structured extraction và server validation.
+
+Các dạng người dùng phải được hiểu:
+
+- “hcm đi đà nẵng”
+- “sg ra dn”
+- “hcm đến đà nẵng ngày 13/11-15/11 2 lớn 1 bé 12tr”
+- “đi đà nẵng 3n2đ”
+- “2ng lon 1 tre em”
+- “ngan sach 12tr”
+- “đổi xe máy”
+- “xe máy”
+- “tăng lên 15tr”
+- “ks nào rẻ hơn”
+- “đổi chỗ ăn”
+- “giữ ks đổi nhà hàng”
+- “tìm nhà hàng ngon gần ks”
+- “tư vấn giúp tôi”
+- “xin chào”
+- “hello”
+
+Cần nhận diện:
+
+- Intent.
+- Departure.
+- Destination.
+- Travel dates.
+- Adults/children.
+- Budget.
+- Transport.
+- Preferences.
+- Accommodation.
+- Dining.
+- Requested changes.
+- References to previous messages.
+
+Chuẩn hóa có kiểm soát:
+
+- hcm, sg → TP. Hồ Chí Minh khi ngữ cảnh rõ.
+- dn → Đà Nẵng khi ngữ cảnh đủ rõ; không áp dụng mù quáng.
+- 12tr → 12.000.000 VND.
+- 3n2đ → 3 ngày 2 đêm.
+- 2 lớn 1 bé → 2 người lớn, 1 trẻ em.
+- Các biến thể ngày tháng Việt Nam.
+
+Không được tự khẳng định thông tin còn mơ hồ.
+
+Những trường hợp thiếu năm, thiếu tuổi trẻ em hoặc không rõ lựa chọn phải hỏi xác nhận nếu ảnh hưởng tính hợp lệ, chi phí hoặc Booking.
+
+Dùng ngày hiện tại theo timezone Asia/Ho_Chi_Minh để hiểu các ngày tương đối và tránh lập kế hoạch vào quá khứ.
+
+Không yêu cầu khách phải nhập theo cú pháp kỹ thuật hoặc một mẫu câu cố định.
+
+## 4. GHI NHỚ VÀ HIỂU NGỮ CẢNH HỘI THOẠI
+
+Ví dụ:
+
+Khách: “Tôi muốn đi Đà Nẵng 3 ngày 2 đêm, ngân sách 12 triệu.”
+
+AI: “Anh/chị đi từ đâu và có bao nhiêu người?”
+
+Khách: “HCM, 2 lớn 1 bé.”
+
+AI phải ghi nhận thông tin vừa bổ sung, không hỏi lại điểm đến/ngân sách.
+
+Khách: “xe máy”
+
+AI phải hiểu đó là phương tiện trong ngữ cảnh đang hỏi.
+
+Khách: “thôi đổi ô tô”
+
+AI chỉ sửa transport, giữ các slots khác.
+
+Khách: “tăng thêm 3tr”
+
+AI cập nhật budget từ 12 triệu lên 15 triệu nếu giá trị trước đó đã được xác minh.
+
+Khách: “khách sạn kia mắc quá, đổi rẻ hơn”
+
+AI sử dụng khách sạn đang được chọn và dữ liệu catalog thật để tìm lựa chọn phù hợp.
+
+Phải phân biệt:
+
+- Tin nhắn mới.
+- Trả lời câu hỏi trước.
+- Sửa một trường đã có.
+- Yêu cầu so sánh.
+- Yêu cầu lập lại lịch trình.
+- Yêu cầu xem/lưu Trip.
+- Hội thoại xã giao.
+
+Không hỏi lại tất cả dữ liệu khi người dùng chỉ thay đổi một trường.
+
+Vẫn giữ server-owned verified history, consent, expiry, authorization và replay protection hiện có.
+
+## 5. LLM THỰC SỰ THAM GIA HỘI THOẠI
+
+Hiện Core deterministic xử lý được một số yêu cầu nhưng không đáp ứng mong muốn về chatbot tự nhiên.
+
+Kiểm tra cấu hình Qwen/Ollama local đang có.
+
+Thiết kế một luồng rõ ràng:
+
+User → Vietnamese NLU → verified context → LLM reasoning/intent suggestion → server tool authorization → TravelGo tools → grounded response.
+
+LLM được sử dụng để:
+
+- Hiểu câu không theo mẫu cố định.
+- Hiểu các yêu cầu diễn đạt tự nhiên.
+- Diễn giải lựa chọn.
+- Tạo câu trả lời phù hợp với ngữ cảnh.
+- Đề xuất công cụ cần dùng khi intent chưa xác định được bằng parser.
+
+Nhưng LLM không được:
+
+- Bịa dữ liệu catalog, giá, rating hoặc availability.
+- Gọi SQL tùy ý.
+- Vượt qua authorization.
+- Tự ý lưu/sửa Trip.
+- Tự xác nhận Booking.
+- Tự sửa verified slots khi không có căn cứ.
+
+Sửa thiết kế P1 đúng nguyên nhân: thao tác đã được server xác minh rõ ràng không được LLM phủ quyết. Khi cần LLM đề xuất, backend phải validate và yêu cầu xác nhận nếu thao tác mơ hồ hoặc có rủi ro.
+
+Không gọi deterministic parser là toàn bộ “AI thông minh”.
+
+Nếu Qwen chưa được bật hoặc provider unavailable, phải thông báo trạng thái trung thực. Không che giấu bằng thông báo PASS.
+
+Chưa tự chạy các native model probes mới khi chưa có fresh approval/quota hợp lệ.
+
+## 6. AGENT PHẢI THỰC SỰ SỬ DỤNG TRAVELGO
+
+Agent cần sử dụng các capabilities đã triển khai:
+
+- Tìm khách sạn đã phê duyệt.
+- Tìm nhà hàng đã phê duyệt.
+- Tìm điểm tham quan.
+- So sánh lựa chọn.
+- Gợi ý theo ngân sách/sở thích.
+- Lập lịch trình.
+- Sửa lịch trình.
+- Xem Trip.
+- Xác nhận lưu/cập nhật Trip.
+- Booking preview/navigation.
+
+Tool invocation phải dùng services thật hiện có và giữ business permissions.
+
+Trả lời rõ ràng nếu catalog không đủ dữ liệu, không tự tạo địa điểm cho đẹp.
+
+## 7. BỘ KIỂM THỬ TRẢI NGHIỆM THỰC TẾ
+
+Kiểm thử luồng user-facing trên `/assistant`, desktop/mobile.
+
+Các tình huống bắt buộc:
+
+1. Đăng nhập Huy → tự động chào Huy.
+2. Nhập “xin chào” → AI chào lại tự nhiên.
+3. Nhập “hcm đi đà nẵng 13/11-15/11 2 lớn 1 bé 12tr” → trích xuất đúng các trường có thể xác minh.
+4. Trả lời “xe máy” → giữ tất cả dữ liệu trước đó.
+5. Nhập “thôi đổi ô tô” → chỉ đổi phương tiện.
+6. Nhập “tăng thêm 3tr” → cập nhật ngân sách đúng.
+7. Nhập “ks rẻ hơn” → tìm khách sạn hợp lệ.
+8. Nhập “tìm quán ăn ngon” → gọi tìm nhà hàng.
+9. Nhập “lập lịch trình đi” → dùng Planner hiện có.
+10. Nhập “giữ khách sạn đổi nhà hàng” → thay đúng mục.
+11. Nhập “lưu lịch trình” → yêu cầu xác nhận trước mutation.
+12. Phiên mới → không làm rò rỉ dữ liệu phiên cũ.
+13. Provider unavailable → giao diện báo đúng lỗi, không bịa câu trả lời.
+14. Không có sightseeing → báo thiếu dữ liệu, không bịa itinerary.
+
+Kiểm riêng:
+- NLU/parser unit tests.
+- Tool authorization.
+- Integrated HTTP.
+- Browser desktop/mobile.
+- Real model semantic acceptance sau khi có approval.
+- Full E2E có DB phù hợp sau khi có staging.
+
+Không lấy mock PASS thay cho model LIVE PASS.
+
+## 8. NGUYÊN TẮC THỰC HIỆN
+
+- Giữ source đã làm, không reset/clean.
+- Không viết lại Planner/Trip/Booking.
+- Không làm Google Maps/GPS/VPS.
+- Không tạo dữ liệu giả trong shared DB.
+- Không sửa historical raw Qwen FAIL.
+- Không tạo hàng loạt task nghiên cứu.
+- Sửa theo chức năng người dùng và kiểm thử lại.
+- Không tự commit/push/deploy.
+- Cập nhật `docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md`.
+
+## TIÊU CHÍ NGHIỆM THU
+
+Không tuyên bố AI Agent hội thoại tự nhiên đã hoàn thiện chỉ vì parser hiểu một số câu viết tắt.
+
+Phải phân biệt:
+
+- Chat greeting PASS.
+- Vietnamese shorthand extraction PASS.
+- Multi-turn context PASS.
+- Real tool execution PASS.
+- Real model natural-language PASS.
+- Full Agent E2E PASS.
+
+Nếu real model chưa được cấp quyền chạy hoặc catalog chưa đủ, ghi rõ blocker và hoàn thiện phần code có thể triển khai an toàn.
+
+**Ưu tiên số 1: trải nghiệm người dùng thực tế, tự nhiên, thân thiện.**
+
+Hoàn thiện một trợ lý du lịch có thể trò chuyện và phục vụ khách hàng thật, không phải chatbot chỉ hiểu những mẫu câu đã lập trình sẵn.

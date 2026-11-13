@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { TourService } from '../services/tourService.js';
-import { TourPlannerService, PlannerInput } from '../services/tourPlannerService.js';
-import { validateTravelPreferences } from '../utils/travelPreferences.js';
+import { TourPlannerService } from '../services/tourPlannerService.js';
 
 const tourFields=['businessId','title','destinationCity','departureCity','durationDays','durationNights','category','summary','description','meetingPoint','heroImage','galleryImages','priceVND','capacity','inclusions','exclusions','highlights','itineraryDays','startDate','endDate','isTemplate'] as const;
 const tourInput=(body:any)=>Object.fromEntries(tourFields.filter(key=>body[key]!==undefined).map(key=>[key,body[key]]));
@@ -70,29 +69,7 @@ export class TourController {
    */
   public static async planItinerary(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const input: PlannerInput = req.body;
-
-      if (!input.destinationCity) {
-        res.status(400).json({
-          success: false,
-          message: 'Vui lòng cung cấp điểm đến (destinationCity)',
-        });
-        return;
-      }
-
-      const itinerary = await TourPlannerService.generateSmartItinerary({
-        departureCity: input.departureCity || 'Hà Nội',
-        destinationCity: input.destinationCity,
-        startDate: input.startDate || new Date().toISOString().split('T')[0],
-        endDate: input.endDate || new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
-        adults: Number(input.adults) || 1,
-        children: Number(input.children) || 0,
-        totalBudget: Number(input.totalBudget) || 5000000,
-        transportation: input.transportation || 'car',
-        preferences: validateTravelPreferences(input.preferences),
-        pacing: input.pacing || 'balanced',
-        mandatoryPlaceIds: input.mandatoryPlaceIds || [],
-      });
+      const itinerary = await TourPlannerService.generateSmartItinerary(req.body);
 
       res.json({
         success: true,

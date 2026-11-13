@@ -1,0 +1,427 @@
+# TASK T-AI-04-G2-RAW-CLARIFY-CONTROLLED-DIAGNOSTIC
+
+Vai trò: Senior LLM Engineer, Backend Architect, AI Evaluation Engineer và QA Lead của HuGo Travel.
+
+Đây là nhiệm vụ **CONTROLLED LIVE A/B DIAGNOSTIC** nhằm đánh giá liệu việc phân định rõ nguồn required fields trong G2 SYSTEM có cải thiện lỗi raw clarify không cần thiết hay không.
+
+**Phạm vi được phê duyệt:**
+- Tối đa 05 native Ollama POST.
+- Tối đa 01 operator load-only POST nếu model chưa resident.
+- Tối đa 04 genuine inference POST.
+- 0 retry.
+- Không inference ngoài manifest.
+- Không sửa production source.
+- Không truy cập PostgreSQL.
+
+Việc nhận task này không phải quyền triển khai G2 prompt candidate vào production.
+
+## 1. Baseline
+
+Đọc đầy đủ:
+
+- `docs/HUGO_T_AI_04_G2_RAW_CLARIFY_INVESTIGATION_REPORT.md`
+- `docs/HUGO_T_AI_04_G2_LIVE_MULTI_TURN_VALIDATION_REPORT.md`
+- `docs/HUGO_T_AI_04_G2_VERIFIED_HISTORY_REPORT.md`
+- `docs/HUGO_T_AI_04_G1_NATURAL_LANGUAGE_PROOF_FIX_REPORT.md`
+
+Đọc evidence:
+
+- `docs/evidence/t-ai-04-g2-raw-clarify-investigation/proposed-g2-only-system.diff`
+- `docs/evidence/t-ai-04-g2-raw-clarify-investigation/g2-system-candidate-A.txt`
+- `docs/evidence/t-ai-04-g2-raw-clarify-investigation/controlled-diagnostic-proposal.json`
+- `docs/evidence/t-ai-04-g2-raw-clarify-investigation/proposal-review-checksums.json`
+
+Baseline:
+
+- Historical L03: RAW FAIL.
+- G2 LIVE: 3 PASS / 1 FAIL.
+- Verified History và Safety: PASS trong phạm vi đã kiểm.
+- Offline investigation: 32/32 PASS.
+- Causal root: NEEDS_MORE_EVIDENCE.
+- G1/G2 scope ambiguity: CONFIRMED textual observation.
+- P1/P2: OPEN.
+
+Không sửa lịch sử để tạo PASS.
+
+## 2. Hai biến thể phải so sánh
+
+### Variant A — ORIGINAL
+
+Sử dụng đúng G2 SYSTEM đang chạy production.
+
+Không chỉnh sửa hoặc lược bỏ bất kỳ instruction nào.
+
+### Variant B — CANDIDATE
+
+Sử dụng đúng candidate G2-only required-source policy trong báo cáo investigation.
+
+Candidate cần làm rõ:
+
+- Current SERVER_VERIFIED_SLOTS là nguồn required fields đã được server xác minh cho G2.
+- Chỉ SET fields mới được dùng.
+- Short correction message không bắt buộc lặp lại các required fields đã SET.
+- Missing hoặc UNPROVEN/CONFLICT thực sự phải được hỏi lại.
+- Không dùng client history, assistant text, model assumptions hoặc Planner defaults.
+- Không sửa model arguments.
+- Execution gate vẫn là tầng quyết định cấp quyền gọi tool.
+
+Chỉ khác biệt SYSTEM policy được phép giữa A và B trong cùng một controlled pair.
+
+Không thay:
+
+- Current user message.
+- Server-verified slot snapshot.
+- Roles/order.
+- Tool metadata.
+- DECISION_SCHEMA.
+- Model/options.
+- Provider implementation.
+- Consent/auth.
+- Execution gate.
+- Timeout.
+- Context.
+
+Không áp dụng candidate vào source production.
+
+Dùng trusted test-only server-side provider construction, tuyệt đối không thêm public API bypass flag.
+
+## 3. Thiết kế A/B
+
+Tối đa 04 genuine inference, chia hai pair:
+
+### Q01 — Natural correction
+
+Synthetic plan:
+
+- Departure: Bắc Giang.
+- Destination: Hòa Bình.
+- Start: 2058-07-10.
+- End: 2058-07-12.
+- Adults: 4.
+- Total budget: 9100000 VND.
+- Transportation: motorbike.
+
+Tạo server-owned G2 session và đưa state qua quá trình incomplete → explicit unset → verified SET theo grammar được hỗ trợ.
+
+Current request:
+
+"À đổi sang xe máy, giữ thông tin còn lại."
+
+So sánh:
+
+- Q01-A: Original SYSTEM.
+- Q01-B: Candidate SYSTEM.
+
+Thứ tự: **A → B**.
+
+Expected raw của mỗi variant: plan_trip với 7 required arguments chính xác và transportation motorbike.
+
+### Q02 — Labeled positive update
+
+Sử dụng cùng dữ liệu itinerary kỹ thuật nhưng session/state hợp lệ đã được tạo và xác minh độc lập theo G2 contract.
+
+Current request:
+
+"Phương tiện: motorbike"
+
+So sánh:
+
+- Q02-B: Candidate SYSTEM.
+- Q02-A: Original SYSTEM.
+
+Thứ tự: **B → A**.
+
+Expected raw của mỗi variant: plan_trip với toàn bộ required arguments chính xác.
+
+Trong từng pair phải chứng minh native request body của hai variant chỉ khác SYSTEM policy đã phê duyệt.
+
+Nếu sử dụng lặp SET trong cùng phiên để giữ native snapshot giống nhau, kiểm tra và ghi rõ ảnh hưởng của revision, TTL, replay ID và request order.
+
+Không dùng khác biệt session data hoặc correction semantics để tạo kết quả A/B có lợi.
+
+Nếu không duy trì được controlled variable, dừng trước inference và báo BLOCKED.
+
+## 4. Khóa manifest trước POST
+
+Tạo manifest mới chứa:
+
+- Exact four test requests.
+- Variant order.
+- Server session setup.
+- Required slots.
+- Expected raw kind/tool/args.
+- Expected gate result.
+- Expected fake executor count.
+- Native request body SHA-256.
+- Original/candidate SYSTEM hashes.
+- Model/options.
+- Principal/rate plan.
+- POST cap.
+- Stop conditions.
+- Scoring criteria.
+
+Khóa và kiểm hash trước khi gửi bất kỳ native POST nào.
+
+Không thay input, order hoặc expected sau khi xem raw response.
+
+Không sử dụng VI01–VI24 hoặc historical L03 làm live request mới.
+
+## 5. Preflight bắt buộc
+
+Xác minh trước chạy:
+
+- Source hashes đúng baseline.
+- G1 SYSTEM literal không đổi.
+- Original G2 SYSTEM đúng hash.
+- Candidate G2 SYSTEM đúng exact proposed diff.
+- Approved V2 benchmark/lock nguyên vẹn.
+- Same approved principal.
+- Historical quota ledger đọc cả `at` và `createdAt`.
+- Default AgentLimits 20 turns/giờ.
+- G2 session TTL 15 phút.
+- Current model availability.
+- GPU/RAM headroom.
+- No provider pending.
+- Local-only native transport.
+- No Cloud/Gemini/proxy.
+
+Model:
+
+`qwen3:4b-instruct-2507-q4_K_M`
+
+Approved digest:
+
+`0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0`
+
+Settings giữ nguyên:
+
+- localhost:11434.
+- JSON mode.
+- temperature 0.
+- stream false.
+- num_ctx 16384.
+- num_predict 2048.
+- application timeout 15000 ms.
+- concurrency 1.
+
+Nếu preflight không đạt, STOP.
+
+Không thay model, context, quantization, GPU flags hoặc timeout để vượt lỗi.
+
+## 6. Model preparation
+
+Nếu model chưa resident:
+
+- Chỉ được 01 operator load-only POST.
+- Body phải được khóa trước.
+- Empty prompt.
+- keep_alive theo quy trình đã duyệt, mặc định 5m.
+- Operator deadline riêng 60000 ms.
+- Không thay application timeout 15000 ms.
+
+Load-only tính vào tổng 05 POST.
+
+Nếu model resident đúng digest/context, bỏ bước preparation.
+
+Không hidden warm-up, heartbeat inference, retry hoặc load-only lần thứ hai.
+
+Nếu eviction xảy ra trong run, các lượt còn lại ghi NOT RUN/BLOCKED.
+
+## 7. Quota và G2 sessions
+
+Chạy cùng approved authenticated principal.
+
+Normal Agent turns, kể cả deterministic setup turns, vẫn tiêu quota.
+
+Tính đủ:
+
+- Session start.
+- Continue.
+- Unset.
+- Positive SET.
+- Four genuine inference turns.
+- Operator preparation conservative ledger entry.
+
+Không giả định còn quota từ lần trước.
+
+Không reset rate limiter, đổi principal hoặc chia account để chạy đủ.
+
+Nếu không đủ quota thực tế, STOP trước POST.
+
+G2 chỉ bật trong authorized local/demo harness.
+
+Không bật G2 website hoặc thay `.env` toàn cục.
+
+Không dùng client history làm verified proof.
+
+## 8. Runtime và security
+
+Đường LIVE phải đi qua:
+
+Production HTTP/auth
+→ G2 owned session store
+→ verified proof/completeness
+→ production provider/readiness
+→ native Ollama
+→ original schema/Ajv/parser/runtime
+→ G2 merged-proof execution gate
+→ fake read-only executor.
+
+Consent store và executor có thể MOCK_ONLY để tránh DB.
+
+Không mock model output, không đổi raw response và không tạo synthetic success.
+
+Bắt buộc:
+
+- 0 unauthorized mutation.
+- Không tool thứ hai.
+- Không dùng stale values.
+- Model arguments sai bị gate chặn.
+- Session owner/revision/TTL hợp lệ.
+- Không sửa arguments để trùng expected.
+- Không autoconvert clarify thành completed.
+- Không để provider error bị đổi thành deterministic clarification.
+
+Nếu xảy ra unauthorized execution, source/hash mismatch, unexpected POST hoặc safety blocker, dừng ngay.
+
+## 9. Chấm điểm A/B
+
+Chấm riêng:
+
+### Raw NLU
+
+Cho từng Q01-A, Q01-B, Q02-B, Q02-A:
+
+- Exact native raw.
+- Schema validation.
+- Expected kind/tool.
+- Required arguments.
+- Semantic PASS/FAIL.
+- No raw/timeout = NOT EVALUATED semantic, runtime failure riêng.
+
+### G2 history
+
+- Verified fields.
+- Revision.
+- Pending intent.
+- Corrected transportation.
+- Current SET vs stale value.
+- Exact merged proof.
+
+### Execution safety
+
+- Gate ALLOW/NEEDS_INPUT/REJECT.
+- Fake executor invocation.
+- No unauthorized tool.
+- No argument repair.
+
+### Runtime
+
+- Native POST count.
+- Provider/native latency.
+- Tokens.
+- Cache observation.
+- VRAM/RAM.
+- Readiness.
+- GPU warnings.
+- Deadline/abort.
+
+Không gộp safety PASS thành raw NLU PASS.
+
+## 10. Cách diễn giải kết quả
+
+### Trường hợp 1 — B PASS, A FAIL ở cả hai pair
+
+Có thêm bằng chứng ủng hộ G2-only policy clarification.
+
+Nhưng chỉ được kết luận LIMITED_CONTROLLED_EVIDENCE.
+
+Không tự khẳng định đã chứng minh causal root hoặc đảm bảo prompt giải quyết mọi correction.
+
+Đề xuất owner review minimal FIX riêng.
+
+### Trường hợp 2 — A và B đều PASS
+
+Không chứng minh candidate chữa L03.
+
+Ghi rõ hai variant đều hoạt động ở các probe mới.
+
+Không tự sửa production.
+
+### Trường hợp 3 — A/B kết quả hỗn hợp
+
+Giữ causal root NEEDS_MORE_EVIDENCE.
+
+Không cherry-pick pair thuận lợi.
+
+### Trường hợp 4 — B FAIL hoặc có safety regression
+
+Không duyệt candidate như FIX.
+
+Báo chính xác failure và đề xuất hướng điều tra phù hợp.
+
+Không tăng số POST để tìm PASS.
+
+## 11. Regression và integrity
+
+Sau diagnostic chạy offline:
+
+- G2 68 tests.
+- Natural Proof 79 tests.
+- Compatibility 61 tests.
+- Correction 42 tests.
+- Completeness 52 tests.
+- Original legacy 181 cases.
+- Applicable readiness/diagnostics.
+- Foundation single-intent control.
+- Backend build.
+
+Chạy offline tests với native network guard.
+
+Tách rõ original, actual-policy acceptance và isolated downstream controls.
+
+Không đổi original assertions để làm xanh 36 legacy FAIL.
+
+Kiểm source/benchmark/evidence before-after.
+
+Không PostgreSQL, migration, seed, reset, truncate.
+
+Không sửa Trip, Booking, Planner, Catalog, pricing hoặc Map.
+
+Không commit/push/deploy.
+
+Không triển khai frontend.
+
+## 12. Báo cáo
+
+Tạo:
+
+`docs/HUGO_T_AI_04_G2_RAW_CLARIFY_CONTROLLED_DIAGNOSTIC_REPORT.md`
+
+Evidence:
+
+`docs/evidence/t-ai-04-g2-raw-clarify-controlled-diagnostic/`
+
+Báo cáo gồm:
+
+1. Approval và POST budget.
+2. Exact A/B manifest.
+3. Verified request-body differences.
+4. Preflight/quota.
+5. Model preparation.
+6. Four raw LIVE responses.
+7. Variant A vs B comparison.
+8. G2 state/revision/safety.
+9. Runtime/tokens/GPU.
+10. Failure analysis.
+11. Interpretation và causal limitations.
+12. Offline regression.
+13. Source/benchmark integrity.
+14. P1/P2 status.
+15. NEXT TASK PLAN.
+
+Chỉ đề xuất `T-AI-04-G2-RAW-CLARIFY-FIX` nếu evidence ủng hộ candidate và owner tiếp tục chấp thuận.
+
+Nếu kết quả không phân biệt rõ A/B, báo NEEDS_MORE_EVIDENCE, không tự mở rộng inference.
+
+**Dừng sau báo cáo. Không tự triển khai FIX, frontend, V2 LIVE hoặc task tiếp theo.**

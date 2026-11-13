@@ -1,0 +1,219 @@
+{
+  "at": "2026-11-11T02:39:54.342Z",
+  "status": "SOURCE_REVIEW_ONLY",
+  "sources": [
+    {
+      "file": "backend/src/services/tourPlannerService.ts",
+      "sha256": "1d70a25750818f9d8eedc1cfab777ee064c3f93954f0f3f28f68f6c34a09c01d",
+      "anchors": [
+        {
+          "line": 88,
+          "text": "function isPubliclyEligible(place: PlaceData): boolean {"
+        },
+        {
+          "line": 99,
+          "text": "function matchesDestination(place: PlaceData, destinationCity: string): boolean {"
+        },
+        {
+          "line": 195,
+          "text": "const attractionCandidates = destinationPlaces.filter("
+        },
+        {
+          "line": 198,
+          "text": "if (!attractionCandidates.length) {"
+        },
+        {
+          "line": 218,
+          "text": "const spotsToSchedule = ["
+        },
+        {
+          "line": 289,
+          "text": "const lunchRestaurant = restaurantsToSchedule[dayIdx] || null;"
+        },
+        {
+          "line": 374,
+          "text": "const lodgingNights = dayIdx < nightsCount ? 1 : 0;"
+        },
+        {
+          "line": 428,
+          "text": "const selectedPlaceIds = [...new Set(days.flatMap((day) =>"
+        }
+      ]
+    },
+    {
+      "file": "backend/src/services/geoService.ts",
+      "sha256": "2a9c8765e4728ab8af4fa03558ec93810427868486c0488e9725b733b1744314",
+      "anchors": [
+        {
+          "line": 87,
+          "text": "public static clusterPlacesIntoDays<T extends { latitude: number; longitude: number }>("
+        },
+        {
+          "line": 100,
+          "text": "const itemsPerDay = Math.ceil(items.length / daysCount);"
+        },
+        {
+          "line": 49,
+          "text": "public static estimateTravelTimeMinutes("
+        }
+      ]
+    },
+    {
+      "file": "backend/src/services/recommendationService.ts",
+      "sha256": "a153ac6cc44e870ed9e7a4bd206c7613957ba91497333e6256f63fb8a98fd6d3",
+      "anchors": [
+        {
+          "line": 133,
+          "text": "public static recommendPlaces(places: PlaceData[], query: RecommendationQuery): RecommendedPlaceResult[] {"
+        },
+        {
+          "line": 199,
+          "text": "private static isPubliclyEligible(place: PlaceData): boolean {"
+        },
+        {
+          "line": 185,
+          "text": "private static applyFilters(places: PlaceData[], filters: RecommendationFilters): PlaceData[] {"
+        },
+        {
+          "line": 176,
+          "text": "return results.sort((a, b) => {"
+        }
+      ]
+    },
+    {
+      "file": "backend/src/repositories/recommendationRepository.ts",
+      "sha256": "9a8d2559f21dfb47897c005c79824a3e92548c5ed7512dc8c2a587c4d96afd68",
+      "anchors": [
+        {
+          "line": 6,
+          "text": "const databaseLoader: ApprovedPlaceLoader = async () => {"
+        },
+        {
+          "line": 12,
+          "text": "const result = await PlaceRepository.list({ page, limit }, { publicOnly: true });"
+        }
+      ]
+    },
+    {
+      "file": "backend/src/repositories/placeRepository.ts",
+      "sha256": "8edd8de32edf5778f8c234b5f358bbcf8ef24b17df8755b0a976fbb9ff03c5df",
+      "anchors": [
+        {
+          "line": 10,
+          "text": "if (scope.publicOnly) where.status = 'APPROVED';"
+        },
+        {
+          "line": 18,
+          "text": "const result = await Place.findAndCountAll({ where, include: [{ model: Business, as: 'business', attributes: ['id','name','type','status'] }], order, limit, offset, distinct: true });"
+        }
+      ]
+    },
+    {
+      "file": "backend/src/agent/tools.ts",
+      "sha256": "f59fd3218fc6e54f1053612e36d58a428bd05e98044e36a7cdc92e12647017ce",
+      "anchors": [
+        {
+          "line": 18,
+          "text": "{ name: 'plan_trip', description: 'Read-only estimate using existing Planner. Never save or book.',"
+        },
+        {
+          "line": 92,
+          "text": "const itinerary = await TourPlannerService.generatePersonalizedItinerary(validated.input as Parameters<typeof TourPlannerService.generatePersonalizedItinerary>[0]);"
+        },
+        {
+          "line": 97,
+          "text": "cost: { currency: 'VND', basis: itinerary.costBasis, estimated: itinerary.totalEstimatedCostVND,"
+        }
+      ]
+    },
+    {
+      "file": "backend/src/agent/toolProvenance.ts",
+      "sha256": "f195523913adea6daac7ca9149b113b0cc5d4f721c4b9733b28a7b11c9e803a6",
+      "anchors": [
+        {
+          "line": 16,
+          "text": "export function checkDecisionAgainstProof(decision: ToolDecision, proof: CurrentTurnProof | null): ProvenanceResult {"
+        }
+      ]
+    },
+    {
+      "file": "backend/src/utils/plannerValidation.ts",
+      "sha256": "c6f0eee319d92feee0b8afb248fcecc900bd2719f63d8a3fa7b914511741e57e",
+      "anchors": [
+        {
+          "line": 19,
+          "text": "export function calculatePlannerDays(startDate: unknown, endDate: unknown): number {"
+        },
+        {
+          "line": 48,
+          "text": "export function validatePlannerInput(value: unknown, now = new Date()): PlannerInput {"
+        }
+      ]
+    },
+    {
+      "file": "frontend/src/components/agent/AgentResultCard.tsx",
+      "sha256": "1ba07e4e8e220a54b8b38d8a570769ee646dd2cc5eff0760332f3d2f4a480fc9",
+      "anchors": [
+        {
+          "line": 24,
+          "text": "<section aria-label=\"Chi phí lịch trình\" className=\"rounded-xl border border-sky-200 bg-sky-50 p-4\">"
+        },
+        {
+          "line": 32,
+          "text": "{p.days.map((day, i) => <section key={day.date + i} className=\"rounded-xl border border-slate-200 bg-white p-4\">"
+        }
+      ]
+    },
+    {
+      "file": "database/migrations/20261010_01_init_travelgo_schema.sql",
+      "sha256": "fe7defe5c3c47c9230fe7c43fc301255a6bc0e998da71aba0fe2f747f9e52d50",
+      "anchors": [
+        {
+          "line": 20,
+          "text": "CREATE TABLE IF NOT EXISTS places ("
+        }
+      ]
+    },
+    {
+      "file": "database/migrations/20261011_03_persistent_travel_resources.sql",
+      "sha256": "1c4464625e57e27cadc560077fad83837b56c5385d8021e0592fdcb9039fabf7",
+      "anchors": [
+        {
+          "line": 5,
+          "text": "ALTER TABLE places ADD COLUMN IF NOT EXISTS business_id UUID REFERENCES businesses(id) ON DELETE SET NULL;"
+        },
+        {
+          "line": 18,
+          "text": "CREATE TABLE IF NOT EXISTS tours ("
+        }
+      ]
+    }
+  ],
+  "ruleSummary": {
+    "minimumSightseeing": 1,
+    "twoDayClusters": {
+      "one": [
+        1,
+        0
+      ],
+      "two": [
+        1,
+        1
+      ],
+      "three": [
+        2,
+        1
+      ],
+      "four": [
+        2,
+        2
+      ]
+    },
+    "noDateAvailabilityFilterOnPlace": true,
+    "noGeometryColumnUsageByPlanner": true,
+    "noHardDistanceOrTimeFeasibilityThreshold": true,
+    "noBusinessRequiredForPlatformOwnedPlace": true,
+    "mandatoryCapacity": "max2*days sightseeing,days restaurants,1 hotel;UUID/dedupe/exactly-once preserved",
+    "costLimits": "Safe integer sums;budget score ranks only,does not cap catalog price"
+  }
+}

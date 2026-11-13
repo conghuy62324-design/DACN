@@ -1,4 +1,17 @@
-# HuGo Intelligence 2.0 — M2-B2 Kaggle CPU Reproducibility Demo
+Hãy kiểm tra khả năng Browser Agent/Browser Automation hiện có của Antigravity.
+
+Mục tiêu: hỗ trợ tôi đưa HuGo M2-B2 lên Kaggle và chạy Notebook DEMO_ONLY.
+
+Trước tiên:
+1. Kiểm tra có thể mở và điều khiển Kaggle bằng trình duyệt không.
+2. Kiểm tra trạng thái đăng nhập Kaggle, không yêu cầu hoặc thu thập mật khẩu, token, cookie.
+3. Nếu có thể điều khiển trình duyệt, chỉ mở Kaggle và xác nhận khả năng thao tác.
+4. KHÔNG tự upload file, tạo dataset, tạo notebook, chạy code hoặc công khai tài nguyên khi chưa được tôi xác nhận.
+5. Nếu không có Browser Agent, báo rõ giới hạn và chuẩn bị hướng dẫn để tôi tự thao tác.
+
+Báo cáo khả năng thực tế, không suy đoán.
+
+Dừng và chờ tôi xác nhận bước tiếp theo.# HuGo Intelligence 2.0 — M2-B2 Kaggle CPU Reproducibility Demo
 
 Ngày thực hiện: 2026-10-13
 

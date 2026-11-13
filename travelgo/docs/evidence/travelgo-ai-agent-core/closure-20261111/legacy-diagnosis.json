@@ -1,0 +1,197 @@
+{
+  "at": "2026-11-11T15:56:19.359Z",
+  "results": [
+    {
+      "suite": "agentReadinessAbort",
+      "classification": "HISTORICAL_CONTRACT_OR_HARNESS_INCOMPATIBILITY_NOT_NEW_CORE_V2_REGRESSION",
+      "cause": "Current completeness correctly requires destinationCity AND dailyBudgetPerPerson; the old clarify-only expectation omits budget.",
+      "testSourceUnchanged": true,
+      "historicalBeforeM1": {
+        "at": "2026-11-10T14:55:30.042Z",
+        "evidence": "docs/evidence/t-ai-04-g2-live-multi-turn-validation/final-verified/execution.json",
+        "execution": {
+          "name": "readiness-33",
+          "exitCode": 1,
+          "passed": 32,
+          "failed": 1,
+          "expectedCount": 33,
+          "log": "readiness-33.log"
+        }
+      },
+      "originalM1Result": "FAIL_PRESERVED",
+      "newContractProposal": "agentLegacyCurrentContractV2.test.ts; separate probes, NOT original suite PASS"
+    },
+    {
+      "suite": "agentG1SafeContract",
+      "classification": "HISTORICAL_CONTRACT_OR_HARNESS_INCOMPATIBILITY_NOT_NEW_CORE_V2_REGRESSION",
+      "cause": "Old transport parses init.body for every fetch, including readiness GET with no body. A new GET-aware fixture is required, not bypassing readiness.",
+      "testSourceUnchanged": true,
+      "historicalBeforeM1": {
+        "at": "2026-11-10T14:55:30.042Z",
+        "evidence": "docs/evidence/t-ai-04-g2-live-multi-turn-validation/final-verified/execution.json",
+        "execution": {
+          "name": "actual-policy-agentG1SafeContract",
+          "exitCode": 0,
+          "passed": 26,
+          "failed": 0,
+          "expectedCount": 26,
+          "resultFile": "actual-policy-agentG1SafeContract.json"
+        }
+      },
+      "originalM1Result": "FAIL_PRESERVED",
+      "newContractProposal": "agentLegacyCurrentContractV2.test.ts; separate probes, NOT original suite PASS"
+    },
+    {
+      "suite": "agentFoundation",
+      "classification": "HISTORICAL_CONTRACT_OR_HARNESS_INCOMPATIBILITY_NOT_NEW_CORE_V2_REGRESSION",
+      "cause": "The historical shared chat fixture combines two intents. Current single-intent completeness blocks before provider/tool, so expected toolCalls=2 is obsolete for that input.",
+      "testSourceUnchanged": true,
+      "historicalBeforeM1": {
+        "at": "2026-11-10T14:55:30.042Z",
+        "evidence": "docs/evidence/t-ai-04-g2-live-multi-turn-validation/final-verified/execution.json",
+        "execution": {
+          "name": "actual-policy-agentFoundation",
+          "exitCode": 1,
+          "passed": 17,
+          "failed": 5,
+          "expectedCount": 22,
+          "resultFile": "actual-policy-agentFoundation.json"
+        }
+      },
+      "originalM1Result": "FAIL_PRESERVED",
+      "newContractProposal": "agentLegacyCurrentContractV2.test.ts; separate probes, NOT original suite PASS"
+    },
+    {
+      "suite": "agentDecisionFormatSafety",
+      "classification": "HISTORICAL_CONTRACT_OR_HARNESS_INCOMPATIBILITY_NOT_NEW_CORE_V2_REGRESSION",
+      "cause": "The TEST_ONLY input cannot exercise malformed-model-output validation after current completeness/provenance; use a complete verified request and a valid readiness envelope.",
+      "testSourceUnchanged": true,
+      "historicalBeforeM1": {
+        "at": "2026-11-10T14:55:30.042Z",
+        "evidence": "docs/evidence/t-ai-04-g2-live-multi-turn-validation/final-verified/execution.json",
+        "execution": {
+          "name": "actual-policy-agentDecisionFormatSafety",
+          "exitCode": 0,
+          "passed": 17,
+          "failed": 0,
+          "expectedCount": 17,
+          "resultFile": "actual-policy-agentDecisionFormatSafety.json"
+        }
+      },
+      "originalM1Result": "FAIL_PRESERVED",
+      "newContractProposal": "agentLegacyCurrentContractV2.test.ts; separate probes, NOT original suite PASS"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "classification": "HISTORICAL_CONTRACT_OR_HARNESS_INCOMPATIBILITY_NOT_NEW_CORE_V2_REGRESSION",
+      "cause": "Old cases expect provider output before completeness checks; current contract resolves missing required roles before calling a provider.",
+      "testSourceUnchanged": true,
+      "historicalBeforeM1": {
+        "at": "2026-11-10T14:55:30.042Z",
+        "evidence": "docs/evidence/t-ai-04-g2-live-multi-turn-validation/final-verified/execution.json",
+        "execution": {
+          "name": "actual-policy-agentMissingSlotRecovery",
+          "exitCode": 1,
+          "passed": 13,
+          "failed": 20,
+          "expectedCount": 33,
+          "resultFile": "actual-policy-agentMissingSlotRecovery.json"
+        }
+      },
+      "originalM1Result": "FAIL_PRESERVED",
+      "newContractProposal": "agentLegacyCurrentContractV2.test.ts; separate probes, NOT original suite PASS"
+    },
+    {
+      "suite": "agentTransport",
+      "classification": "HISTORICAL_CONTRACT_OR_HARNESS_INCOMPATIBILITY_NOT_NEW_CORE_V2_REGRESSION",
+      "cause": "Raw old native fixture predates version/tags/ps readiness. Historical readiness-compatible fixture is separate and must not replace original assertions.",
+      "testSourceUnchanged": true,
+      "historicalBeforeM1": {
+        "at": "2026-11-10T14:55:30.042Z",
+        "evidence": "docs/evidence/t-ai-04-g2-live-multi-turn-validation/final-verified/execution.json",
+        "execution": {
+          "name": "actual-policy-agentTransport",
+          "exitCode": 1,
+          "passed": 18,
+          "failed": 1,
+          "expectedCount": 19,
+          "resultFile": "actual-policy-agentTransport.json"
+        }
+      },
+      "originalM1Result": "FAIL_PRESERVED",
+      "newContractProposal": "agentLegacyCurrentContractV2.test.ts; separate probes, NOT original suite PASS"
+    }
+  ],
+  "unchangedRuntime": [
+    {
+      "file": "backend/src/services/agentService.ts",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/services/registeredCatalogService.ts",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/agent/currentCompleteness.ts",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/agent/currentTurnProof.ts",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/agent/liveProvider.ts",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/agent/ollamaReadiness.ts",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/agent/toolProvenance.ts",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/agent/requestLimits.ts",
+      "unchanged": true
+    }
+  ],
+  "productionLegacyFixes": 0,
+  "assertionsChanged": 0,
+  "originalCasesSkipped": 0,
+  "newVersionedProbes": {
+    "contract": "LEGACY_CURRENT_CONTRACT_V2_PROPOSAL",
+    "tier": "OFFLINE_MOCK_ONLY_NOT_ORIGINAL_SUITE_PASS",
+    "passed": 6,
+    "failed": 0,
+    "originalAssertionsChanged": 0,
+    "actualDB": 0,
+    "actualModel": 0,
+    "results": [
+      {
+        "name": "agentReadinessAbort-v2: completeness asks all missing search fields before readiness",
+        "status": "PASS"
+      },
+      {
+        "name": "agentG1SafeContract-v2: transport fixture includes three readiness GETs before one POST",
+        "status": "PASS"
+      },
+      {
+        "name": "agentFoundation-v2: complete current grammar executes while honoring consent",
+        "status": "PASS"
+      },
+      {
+        "name": "agentDecisionFormatSafety-v2: malformed raw is tested after valid current input",
+        "status": "PASS"
+      },
+      {
+        "name": "agentMissingSlotRecovery-v2: transport missing is resolved before provider guess",
+        "status": "PASS"
+      },
+      {
+        "name": "agentTransport-v2: invalid readiness metadata returns 503 with zero inference",
+        "status": "PASS"
+      }
+    ]
+  }
+}

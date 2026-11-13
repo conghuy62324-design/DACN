@@ -1,0 +1,4325 @@
+{
+  "id": "R03",
+  "project": "desktop",
+  "channel": "A1",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "browser": "157.0.4341.42",
+  "mobileEmulation": false,
+  "status": "PASS",
+  "errors": [],
+  "checkpoints": [
+    {
+      "id": "ENV_IDENTITY",
+      "expected": "Proxy reaches this run exact guarded test database",
+      "startedAt": "2026-11-07T13:25:30.989Z",
+      "status": "PASS",
+      "actual": {
+        "runId": "20261107132504-39eb34",
+        "pid": 9716,
+        "port": 5316,
+        "database": "travelgo_ai_m0_test",
+        "username": "postgres",
+        "server_address": "172.18.0.2/32",
+        "server_port": 5432,
+        "nodeEnv": "test",
+        "host": "127.0.0.1",
+        "sentinel": "PASS",
+        "writeOptIn": true,
+        "migrations": [
+          {
+            "filename": "20261010_01_init_travelgo_schema.sql",
+            "checksum": "fe7defe5c3c47c9230fe7c43fc301255a6bc0e998da71aba0fe2f747f9e52d50"
+          },
+          {
+            "filename": "20261011_02_rbac_partner_foundation.sql",
+            "checksum": "df7fd60cccf17d3f8a73f711825bb1e82a4606a17c42fce4c7fa214548c2cecd"
+          },
+          {
+            "filename": "20261011_03_persistent_travel_resources.sql",
+            "checksum": "1c4464625e57e27cadc560077fad83837b56c5385d8021e0592fdcb9039fabf7"
+          },
+          {
+            "filename": "20261011_04_hugo_intelligence_foundation.sql",
+            "checksum": "4f2519e0541bed02a5fd7811c1ef5f84be49e37dd0dc81d16c033c22a805b69d"
+          },
+          {
+            "filename": "20261012_05_user_behavior_telemetry.sql",
+            "checksum": "477200cecf2f7e8135c4473b901ae11237222083cb7fd4b9af900d2cb2bbbece"
+          },
+          {
+            "filename": "20261012_06_recommendation_exposure.sql",
+            "checksum": "9f90d12a55a57799977115b4b8922b70cba3d02649f48e4e08d54b2913a536cb"
+          },
+          {
+            "filename": "20261012_07_recommendation_booking_retention.sql",
+            "checksum": "bf885a9161b6420e096c10a3cc37de6a45715ffc2b375e38a8ec8104998cc3de"
+          },
+          {
+            "filename": "20261012_08_server_side_favorites.sql",
+            "checksum": "87980fcdf39c7fbf7e6641bb0219f64c727605ea8f8127f2ad6f62d4107d75f8"
+          },
+          {
+            "filename": "20261012_09_verified_reviews.sql",
+            "checksum": "8842947ab9cd52890cc371bf75877e191f801fd12bedb19c5c06d46080c1670e"
+          },
+          {
+            "filename": "20261012_10_review_account_deletion_privacy.sql",
+            "checksum": "4219afac618257e7970f878b83b30c72eb2fe0fe106af04e81c5083e8bc48c52"
+          },
+          {
+            "filename": "20261028_11_trip_planner_metadata.sql",
+            "checksum": "90c42676606d4d5e7458edde139b9c5b945dd3ca0d574490a581ad6bcd98a034"
+          },
+          {
+            "filename": "20261030_12_booking_request_fingerprint.sql",
+            "checksum": "09465ec9a3d3c3de1215ad6eaa1d1cf4e8d18aed43423ce6c7b4feea817e9bc5"
+          }
+        ],
+        "indexes": [
+          {
+            "indexname": "business_members_business_id_user_id_key",
+            "indexdef": "CREATE UNIQUE INDEX business_members_business_id_user_id_key ON public.business_members USING btree (business_id, user_id)"
+          },
+          {
+            "indexname": "business_members_pkey",
+            "indexdef": "CREATE UNIQUE INDEX business_members_pkey ON public.business_members USING btree (id)"
+          },
+          {
+            "indexname": "idx_business_members_user",
+            "indexdef": "CREATE INDEX idx_business_members_user ON public.business_members USING btree (user_id)"
+          },
+          {
+            "indexname": "idx_partner_applications_one_active",
+            "indexdef": "CREATE UNIQUE INDEX idx_partner_applications_one_active ON public.partner_applications USING btree (user_id) WHERE ((status)::text = ANY ((ARRAY['PENDING'::character varying, 'NEEDS_MORE_INFO'::character varying])::text[]))"
+          },
+          {
+            "indexname": "idx_partner_applications_status_created",
+            "indexdef": "CREATE INDEX idx_partner_applications_status_created ON public.partner_applications USING btree (status, created_at DESC)"
+          },
+          {
+            "indexname": "partner_applications_pkey",
+            "indexdef": "CREATE UNIQUE INDEX partner_applications_pkey ON public.partner_applications USING btree (id)"
+          },
+          {
+            "indexname": "user_roles_pkey",
+            "indexdef": "CREATE UNIQUE INDEX user_roles_pkey ON public.user_roles USING btree (id)"
+          },
+          {
+            "indexname": "user_roles_user_id_role_key",
+            "indexdef": "CREATE UNIQUE INDEX user_roles_user_id_role_key ON public.user_roles USING btree (user_id, role)"
+          }
+        ],
+        "constraints": [
+          {
+            "conname": "business_members_business_id_fkey",
+            "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE"
+          },
+          {
+            "conname": "business_members_business_id_user_id_key",
+            "definition": "UNIQUE (business_id, user_id)"
+          },
+          {
+            "conname": "business_members_pkey",
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "conname": "business_members_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "conname": "partner_applications_business_type_check",
+            "definition": "CHECK (((business_type)::text = ANY ((ARRAY['HOTEL'::character varying, 'HOMESTAY'::character varying, 'RESORT'::character varying, 'RESTAURANT'::character varying, 'TOUR_OPERATOR'::character varying])::text[])))"
+          },
+          {
+            "conname": "partner_applications_pkey",
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "conname": "partner_applications_reviewed_by_fkey",
+            "definition": "FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "conname": "partner_applications_status_check",
+            "definition": "CHECK (((status)::text = ANY ((ARRAY['PENDING'::character varying, 'APPROVED'::character varying, 'REJECTED'::character varying, 'NEEDS_MORE_INFO'::character varying, 'SUSPENDED'::character varying])::text[])))"
+          },
+          {
+            "conname": "partner_applications_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "conname": "user_roles_granted_by_fkey",
+            "definition": "FOREIGN KEY (granted_by) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "conname": "user_roles_pkey",
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "conname": "user_roles_role_check",
+            "definition": "CHECK (((role)::text = ANY ((ARRAY['CUSTOMER'::character varying, 'PARTNER'::character varying, 'SUPER_ADMIN'::character varying])::text[])))"
+          },
+          {
+            "conname": "user_roles_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "conname": "user_roles_user_id_role_key",
+            "definition": "UNIQUE (user_id, role)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "child": "audit_logs",
+            "parent": "users",
+            "conname": "audit_logs_actor_user_id_fkey",
+            "definition": "FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "blog_posts",
+            "parent": "users",
+            "conname": "blog_posts_author_id_fkey",
+            "definition": "FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "blog_posts",
+            "parent": "businesses",
+            "conname": "blog_posts_business_id_fkey",
+            "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "blog_posts",
+            "parent": "places",
+            "conname": "blog_posts_place_id_fkey",
+            "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "booking_status_history",
+            "parent": "users",
+            "conname": "booking_status_history_actor_user_id_fkey",
+            "definition": "FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "booking_status_history",
+            "parent": "bookings",
+            "conname": "booking_status_history_booking_id_fkey",
+            "definition": "FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE"
+          },
+          {
+            "child": "bookings",
+            "parent": "businesses",
+            "conname": "bookings_business_id_fkey",
+            "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "bookings",
+            "parent": "places",
+            "conname": "bookings_place_id_fkey",
+            "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "bookings",
+            "parent": "recommendation_requests",
+            "conname": "bookings_recommendation_request_id_fkey",
+            "definition": "FOREIGN KEY (recommendation_request_id) REFERENCES recommendation_requests(request_id) ON DELETE SET NULL"
+          },
+          {
+            "child": "bookings",
+            "parent": "tickets",
+            "conname": "bookings_ticket_id_fkey",
+            "definition": "FOREIGN KEY (ticket_id) REFERENCES tickets(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "bookings",
+            "parent": "tours",
+            "conname": "bookings_tour_id_fkey",
+            "definition": "FOREIGN KEY (tour_id) REFERENCES tours(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "bookings",
+            "parent": "users",
+            "conname": "bookings_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "business_members",
+            "parent": "businesses",
+            "conname": "business_members_business_id_fkey",
+            "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE"
+          },
+          {
+            "child": "business_members",
+            "parent": "users",
+            "conname": "business_members_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "child": "partner_applications",
+            "parent": "users",
+            "conname": "partner_applications_reviewed_by_fkey",
+            "definition": "FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "partner_applications",
+            "parent": "users",
+            "conname": "partner_applications_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "child": "places",
+            "parent": "businesses",
+            "conname": "places_business_id_fkey",
+            "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "recommendation_candidates",
+            "parent": "recommendation_requests",
+            "conname": "recommendation_candidates_request_id_fkey",
+            "definition": "FOREIGN KEY (request_id) REFERENCES recommendation_requests(request_id) ON DELETE CASCADE"
+          },
+          {
+            "child": "recommendation_impressions",
+            "parent": "users",
+            "conname": "recommendation_impressions_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "recommendation_requests",
+            "parent": "users",
+            "conname": "recommendation_requests_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "child": "recommendation_visible_impressions",
+            "parent": "recommendation_candidates",
+            "conname": "recommendation_visible_impressions_candidate_id_fkey",
+            "definition": "FOREIGN KEY (candidate_id) REFERENCES recommendation_candidates(id) ON DELETE CASCADE"
+          },
+          {
+            "child": "recommendation_visible_impressions",
+            "parent": "recommendation_requests",
+            "conname": "recommendation_visible_impressions_request_id_fkey",
+            "definition": "FOREIGN KEY (request_id) REFERENCES recommendation_requests(request_id) ON DELETE CASCADE"
+          },
+          {
+            "child": "recommendation_visible_impressions",
+            "parent": "users",
+            "conname": "recommendation_visible_impressions_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "child": "reviews",
+            "parent": "bookings",
+            "conname": "reviews_booking_id_fkey",
+            "definition": "FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE RESTRICT"
+          },
+          {
+            "child": "reviews",
+            "parent": "users",
+            "conname": "reviews_moderated_by_fkey",
+            "definition": "FOREIGN KEY (moderated_by) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "reviews",
+            "parent": "users",
+            "conname": "reviews_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "tickets",
+            "parent": "businesses",
+            "conname": "tickets_business_id_fkey",
+            "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE RESTRICT"
+          },
+          {
+            "child": "tickets",
+            "parent": "places",
+            "conname": "tickets_place_id_fkey",
+            "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "tickets",
+            "parent": "tours",
+            "conname": "tickets_tour_id_fkey",
+            "definition": "FOREIGN KEY (tour_id) REFERENCES tours(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "tour_places",
+            "parent": "places",
+            "conname": "tour_places_place_id_fkey",
+            "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE RESTRICT"
+          },
+          {
+            "child": "tour_places",
+            "parent": "tours",
+            "conname": "tour_places_tour_id_fkey",
+            "definition": "FOREIGN KEY (tour_id) REFERENCES tours(id) ON DELETE CASCADE"
+          },
+          {
+            "child": "tours",
+            "parent": "businesses",
+            "conname": "tours_business_id_fkey",
+            "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE RESTRICT"
+          },
+          {
+            "child": "trip_sessions",
+            "parent": "users",
+            "conname": "trip_sessions_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "child": "user_events",
+            "parent": "users",
+            "conname": "user_events_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "user_favorites",
+            "parent": "places",
+            "conname": "user_favorites_place_id_fkey",
+            "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE CASCADE"
+          },
+          {
+            "child": "user_favorites",
+            "parent": "users",
+            "conname": "user_favorites_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "child": "user_roles",
+            "parent": "users",
+            "conname": "user_roles_granted_by_fkey",
+            "definition": "FOREIGN KEY (granted_by) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "child": "user_roles",
+            "parent": "users",
+            "conname": "user_roles_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "child": "user_telemetry_consents",
+            "parent": "users",
+            "conname": "user_telemetry_consents_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          }
+        ],
+        "reviewIndexes": [
+          {
+            "indexname": "bookings_booking_code_key",
+            "indexdef": "CREATE UNIQUE INDEX bookings_booking_code_key ON public.bookings USING btree (booking_code)"
+          },
+          {
+            "indexname": "bookings_pkey",
+            "indexdef": "CREATE UNIQUE INDEX bookings_pkey ON public.bookings USING btree (id)"
+          },
+          {
+            "indexname": "idx_bookings_business_created",
+            "indexdef": "CREATE INDEX idx_bookings_business_created ON public.bookings USING btree (business_id, created_at DESC)"
+          },
+          {
+            "indexname": "idx_bookings_place",
+            "indexdef": "CREATE INDEX idx_bookings_place ON public.bookings USING btree (place_id)"
+          },
+          {
+            "indexname": "idx_bookings_recommendation_request",
+            "indexdef": "CREATE INDEX idx_bookings_recommendation_request ON public.bookings USING btree (recommendation_request_id) WHERE (recommendation_request_id IS NOT NULL)"
+          },
+          {
+            "indexname": "idx_bookings_status_created",
+            "indexdef": "CREATE INDEX idx_bookings_status_created ON public.bookings USING btree (booking_status, created_at DESC)"
+          },
+          {
+            "indexname": "idx_bookings_ticket",
+            "indexdef": "CREATE INDEX idx_bookings_ticket ON public.bookings USING btree (ticket_id)"
+          },
+          {
+            "indexname": "idx_bookings_tour",
+            "indexdef": "CREATE INDEX idx_bookings_tour ON public.bookings USING btree (tour_id)"
+          },
+          {
+            "indexname": "idx_bookings_user_created",
+            "indexdef": "CREATE INDEX idx_bookings_user_created ON public.bookings USING btree (user_id, created_at DESC)"
+          },
+          {
+            "indexname": "idx_bookings_user_idempotency",
+            "indexdef": "CREATE UNIQUE INDEX idx_bookings_user_idempotency ON public.bookings USING btree (user_id, idempotency_key) WHERE (idempotency_key IS NOT NULL)"
+          },
+          {
+            "indexname": "idx_reviews_ai_export",
+            "indexdef": "CREATE INDEX idx_reviews_ai_export ON public.reviews USING btree (environment, moderation_status, verification_status, created_at) WHERE (ai_usage_allowed = true)"
+          },
+          {
+            "indexname": "idx_reviews_target_moderation_created",
+            "indexdef": "CREATE INDEX idx_reviews_target_moderation_created ON public.reviews USING btree (target_type, target_id, moderation_status, created_at DESC)"
+          },
+          {
+            "indexname": "idx_reviews_user_created",
+            "indexdef": "CREATE INDEX idx_reviews_user_created ON public.reviews USING btree (user_id, created_at DESC) WHERE (user_id IS NOT NULL)"
+          },
+          {
+            "indexname": "idx_user_favorites_place",
+            "indexdef": "CREATE INDEX idx_user_favorites_place ON public.user_favorites USING btree (place_id)"
+          },
+          {
+            "indexname": "idx_user_favorites_user_created",
+            "indexdef": "CREATE INDEX idx_user_favorites_user_created ON public.user_favorites USING btree (user_id, created_at DESC)"
+          },
+          {
+            "indexname": "reviews_pkey",
+            "indexdef": "CREATE UNIQUE INDEX reviews_pkey ON public.reviews USING btree (id)"
+          },
+          {
+            "indexname": "uq_reviews_booking",
+            "indexdef": "CREATE UNIQUE INDEX uq_reviews_booking ON public.reviews USING btree (booking_id) WHERE (booking_id IS NOT NULL)"
+          },
+          {
+            "indexname": "user_favorites_pkey",
+            "indexdef": "CREATE UNIQUE INDEX user_favorites_pkey ON public.user_favorites USING btree (id)"
+          },
+          {
+            "indexname": "user_favorites_user_place_unique",
+            "indexdef": "CREATE UNIQUE INDEX user_favorites_user_place_unique ON public.user_favorites USING btree (user_id, place_id)"
+          }
+        ]
+      },
+      "finishedAt": "2026-11-07T13:25:31.038Z"
+    },
+    {
+      "id": "CROSS_a6c460",
+      "expected": "Foreign existing resources/Booking403, no mutation/leak; list membership and own owner immutable",
+      "startedAt": "2026-11-07T13:25:31.933Z",
+      "status": "PASS",
+      "actual": {
+        "actor": "a6c46073-c2c6-45f2-92cb-3f5f611e2e62",
+        "foreignBusiness": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+        "foreignBooking": "e073570c-aca9-47d0-8143-4dec92bd7e82"
+      },
+      "finishedAt": "2026-11-07T13:25:33.090Z"
+    },
+    {
+      "id": "CROSS_514edd",
+      "expected": "Foreign existing resources/Booking403, no mutation/leak; list membership and own owner immutable",
+      "startedAt": "2026-11-07T13:25:33.090Z",
+      "status": "PASS",
+      "actual": {
+        "actor": "514edd35-64d0-47e0-9dd2-ed0bccdb0819",
+        "foreignBusiness": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+        "foreignBooking": "d3e5dcd6-582a-43cc-9c2b-9c732d883f8a"
+      },
+      "finishedAt": "2026-11-07T13:25:34.193Z"
+    },
+    {
+      "id": "LAYOUT_final",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 1440,
+        "scrollWidth": 1440
+      },
+      "status": "PASS"
+    }
+  ],
+  "traffic": [
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/__t13b02/identity",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/__t13b02/identity",
+      "response": {
+        "status": 200,
+        "body": {
+          "runId": "20261107132504-39eb34",
+          "pid": 9716,
+          "port": 5316,
+          "database": "travelgo_ai_m0_test",
+          "username": "postgres",
+          "server_address": "172.18.0.2/32",
+          "server_port": 5432,
+          "nodeEnv": "test",
+          "host": "127.0.0.1",
+          "sentinel": "PASS",
+          "writeOptIn": true,
+          "migrations": [
+            {
+              "filename": "20261010_01_init_travelgo_schema.sql",
+              "checksum": "fe7defe5c3c47c9230fe7c43fc301255a6bc0e998da71aba0fe2f747f9e52d50"
+            },
+            {
+              "filename": "20261011_02_rbac_partner_foundation.sql",
+              "checksum": "df7fd60cccf17d3f8a73f711825bb1e82a4606a17c42fce4c7fa214548c2cecd"
+            },
+            {
+              "filename": "20261011_03_persistent_travel_resources.sql",
+              "checksum": "1c4464625e57e27cadc560077fad83837b56c5385d8021e0592fdcb9039fabf7"
+            },
+            {
+              "filename": "20261011_04_hugo_intelligence_foundation.sql",
+              "checksum": "4f2519e0541bed02a5fd7811c1ef5f84be49e37dd0dc81d16c033c22a805b69d"
+            },
+            {
+              "filename": "20261012_05_user_behavior_telemetry.sql",
+              "checksum": "477200cecf2f7e8135c4473b901ae11237222083cb7fd4b9af900d2cb2bbbece"
+            },
+            {
+              "filename": "20261012_06_recommendation_exposure.sql",
+              "checksum": "9f90d12a55a57799977115b4b8922b70cba3d02649f48e4e08d54b2913a536cb"
+            },
+            {
+              "filename": "20261012_07_recommendation_booking_retention.sql",
+              "checksum": "bf885a9161b6420e096c10a3cc37de6a45715ffc2b375e38a8ec8104998cc3de"
+            },
+            {
+              "filename": "20261012_08_server_side_favorites.sql",
+              "checksum": "87980fcdf39c7fbf7e6641bb0219f64c727605ea8f8127f2ad6f62d4107d75f8"
+            },
+            {
+              "filename": "20261012_09_verified_reviews.sql",
+              "checksum": "8842947ab9cd52890cc371bf75877e191f801fd12bedb19c5c06d46080c1670e"
+            },
+            {
+              "filename": "20261012_10_review_account_deletion_privacy.sql",
+              "checksum": "4219afac618257e7970f878b83b30c72eb2fe0fe106af04e81c5083e8bc48c52"
+            },
+            {
+              "filename": "20261028_11_trip_planner_metadata.sql",
+              "checksum": "90c42676606d4d5e7458edde139b9c5b945dd3ca0d574490a581ad6bcd98a034"
+            },
+            {
+              "filename": "20261030_12_booking_request_fingerprint.sql",
+              "checksum": "09465ec9a3d3c3de1215ad6eaa1d1cf4e8d18aed43423ce6c7b4feea817e9bc5"
+            }
+          ],
+          "indexes": [
+            {
+              "indexname": "business_members_business_id_user_id_key",
+              "indexdef": "CREATE UNIQUE INDEX business_members_business_id_user_id_key ON public.business_members USING btree (business_id, user_id)"
+            },
+            {
+              "indexname": "business_members_pkey",
+              "indexdef": "CREATE UNIQUE INDEX business_members_pkey ON public.business_members USING btree (id)"
+            },
+            {
+              "indexname": "idx_business_members_user",
+              "indexdef": "CREATE INDEX idx_business_members_user ON public.business_members USING btree (user_id)"
+            },
+            {
+              "indexname": "idx_partner_applications_one_active",
+              "indexdef": "CREATE UNIQUE INDEX idx_partner_applications_one_active ON public.partner_applications USING btree (user_id) WHERE ((status)::text = ANY ((ARRAY['PENDING'::character varying, 'NEEDS_MORE_INFO'::character varying])::text[]))"
+            },
+            {
+              "indexname": "idx_partner_applications_status_created",
+              "indexdef": "CREATE INDEX idx_partner_applications_status_created ON public.partner_applications USING btree (status, created_at DESC)"
+            },
+            {
+              "indexname": "partner_applications_pkey",
+              "indexdef": "CREATE UNIQUE INDEX partner_applications_pkey ON public.partner_applications USING btree (id)"
+            },
+            {
+              "indexname": "user_roles_pkey",
+              "indexdef": "CREATE UNIQUE INDEX user_roles_pkey ON public.user_roles USING btree (id)"
+            },
+            {
+              "indexname": "user_roles_user_id_role_key",
+              "indexdef": "CREATE UNIQUE INDEX user_roles_user_id_role_key ON public.user_roles USING btree (user_id, role)"
+            }
+          ],
+          "constraints": [
+            {
+              "conname": "business_members_business_id_fkey",
+              "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE"
+            },
+            {
+              "conname": "business_members_business_id_user_id_key",
+              "definition": "UNIQUE (business_id, user_id)"
+            },
+            {
+              "conname": "business_members_pkey",
+              "definition": "PRIMARY KEY (id)"
+            },
+            {
+              "conname": "business_members_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "conname": "partner_applications_business_type_check",
+              "definition": "CHECK (((business_type)::text = ANY ((ARRAY['HOTEL'::character varying, 'HOMESTAY'::character varying, 'RESORT'::character varying, 'RESTAURANT'::character varying, 'TOUR_OPERATOR'::character varying])::text[])))"
+            },
+            {
+              "conname": "partner_applications_pkey",
+              "definition": "PRIMARY KEY (id)"
+            },
+            {
+              "conname": "partner_applications_reviewed_by_fkey",
+              "definition": "FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL"
+            },
+            {
+              "conname": "partner_applications_status_check",
+              "definition": "CHECK (((status)::text = ANY ((ARRAY['PENDING'::character varying, 'APPROVED'::character varying, 'REJECTED'::character varying, 'NEEDS_MORE_INFO'::character varying, 'SUSPENDED'::character varying])::text[])))"
+            },
+            {
+              "conname": "partner_applications_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "conname": "user_roles_granted_by_fkey",
+              "definition": "FOREIGN KEY (granted_by) REFERENCES users(id) ON DELETE SET NULL"
+            },
+            {
+              "conname": "user_roles_pkey",
+              "definition": "PRIMARY KEY (id)"
+            },
+            {
+              "conname": "user_roles_role_check",
+              "definition": "CHECK (((role)::text = ANY ((ARRAY['CUSTOMER'::character varying, 'PARTNER'::character varying, 'SUPER_ADMIN'::character varying])::text[])))"
+            },
+            {
+              "conname": "user_roles_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "conname": "user_roles_user_id_role_key",
+              "definition": "UNIQUE (user_id, role)"
+            }
+          ],
+          "foreignKeys": [
+            {
+              "child": "audit_logs",
+              "parent": "users",
+              "conname": "audit_logs_actor_user_id_fkey",
+              "definition": "FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "blog_posts",
+              "parent": "users",
+              "conname": "blog_posts_author_id_fkey",
+              "definition": "FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "blog_posts",
+              "parent": "businesses",
+              "conname": "blog_posts_business_id_fkey",
+              "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "blog_posts",
+              "parent": "places",
+              "conname": "blog_posts_place_id_fkey",
+              "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "booking_status_history",
+              "parent": "users",
+              "conname": "booking_status_history_actor_user_id_fkey",
+              "definition": "FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "booking_status_history",
+              "parent": "bookings",
+              "conname": "booking_status_history_booking_id_fkey",
+              "definition": "FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE"
+            },
+            {
+              "child": "bookings",
+              "parent": "businesses",
+              "conname": "bookings_business_id_fkey",
+              "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "bookings",
+              "parent": "places",
+              "conname": "bookings_place_id_fkey",
+              "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "bookings",
+              "parent": "recommendation_requests",
+              "conname": "bookings_recommendation_request_id_fkey",
+              "definition": "FOREIGN KEY (recommendation_request_id) REFERENCES recommendation_requests(request_id) ON DELETE SET NULL"
+            },
+            {
+              "child": "bookings",
+              "parent": "tickets",
+              "conname": "bookings_ticket_id_fkey",
+              "definition": "FOREIGN KEY (ticket_id) REFERENCES tickets(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "bookings",
+              "parent": "tours",
+              "conname": "bookings_tour_id_fkey",
+              "definition": "FOREIGN KEY (tour_id) REFERENCES tours(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "bookings",
+              "parent": "users",
+              "conname": "bookings_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "business_members",
+              "parent": "businesses",
+              "conname": "business_members_business_id_fkey",
+              "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE"
+            },
+            {
+              "child": "business_members",
+              "parent": "users",
+              "conname": "business_members_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "child": "partner_applications",
+              "parent": "users",
+              "conname": "partner_applications_reviewed_by_fkey",
+              "definition": "FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "partner_applications",
+              "parent": "users",
+              "conname": "partner_applications_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "child": "places",
+              "parent": "businesses",
+              "conname": "places_business_id_fkey",
+              "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "recommendation_candidates",
+              "parent": "recommendation_requests",
+              "conname": "recommendation_candidates_request_id_fkey",
+              "definition": "FOREIGN KEY (request_id) REFERENCES recommendation_requests(request_id) ON DELETE CASCADE"
+            },
+            {
+              "child": "recommendation_impressions",
+              "parent": "users",
+              "conname": "recommendation_impressions_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "recommendation_requests",
+              "parent": "users",
+              "conname": "recommendation_requests_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "child": "recommendation_visible_impressions",
+              "parent": "recommendation_candidates",
+              "conname": "recommendation_visible_impressions_candidate_id_fkey",
+              "definition": "FOREIGN KEY (candidate_id) REFERENCES recommendation_candidates(id) ON DELETE CASCADE"
+            },
+            {
+              "child": "recommendation_visible_impressions",
+              "parent": "recommendation_requests",
+              "conname": "recommendation_visible_impressions_request_id_fkey",
+              "definition": "FOREIGN KEY (request_id) REFERENCES recommendation_requests(request_id) ON DELETE CASCADE"
+            },
+            {
+              "child": "recommendation_visible_impressions",
+              "parent": "users",
+              "conname": "recommendation_visible_impressions_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "child": "reviews",
+              "parent": "bookings",
+              "conname": "reviews_booking_id_fkey",
+              "definition": "FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE RESTRICT"
+            },
+            {
+              "child": "reviews",
+              "parent": "users",
+              "conname": "reviews_moderated_by_fkey",
+              "definition": "FOREIGN KEY (moderated_by) REFERENCES users(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "reviews",
+              "parent": "users",
+              "conname": "reviews_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "tickets",
+              "parent": "businesses",
+              "conname": "tickets_business_id_fkey",
+              "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE RESTRICT"
+            },
+            {
+              "child": "tickets",
+              "parent": "places",
+              "conname": "tickets_place_id_fkey",
+              "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "tickets",
+              "parent": "tours",
+              "conname": "tickets_tour_id_fkey",
+              "definition": "FOREIGN KEY (tour_id) REFERENCES tours(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "tour_places",
+              "parent": "places",
+              "conname": "tour_places_place_id_fkey",
+              "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE RESTRICT"
+            },
+            {
+              "child": "tour_places",
+              "parent": "tours",
+              "conname": "tour_places_tour_id_fkey",
+              "definition": "FOREIGN KEY (tour_id) REFERENCES tours(id) ON DELETE CASCADE"
+            },
+            {
+              "child": "tours",
+              "parent": "businesses",
+              "conname": "tours_business_id_fkey",
+              "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE RESTRICT"
+            },
+            {
+              "child": "trip_sessions",
+              "parent": "users",
+              "conname": "trip_sessions_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "child": "user_events",
+              "parent": "users",
+              "conname": "user_events_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "user_favorites",
+              "parent": "places",
+              "conname": "user_favorites_place_id_fkey",
+              "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE CASCADE"
+            },
+            {
+              "child": "user_favorites",
+              "parent": "users",
+              "conname": "user_favorites_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "child": "user_roles",
+              "parent": "users",
+              "conname": "user_roles_granted_by_fkey",
+              "definition": "FOREIGN KEY (granted_by) REFERENCES users(id) ON DELETE SET NULL"
+            },
+            {
+              "child": "user_roles",
+              "parent": "users",
+              "conname": "user_roles_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "child": "user_telemetry_consents",
+              "parent": "users",
+              "conname": "user_telemetry_consents_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            }
+          ],
+          "reviewIndexes": [
+            {
+              "indexname": "bookings_booking_code_key",
+              "indexdef": "CREATE UNIQUE INDEX bookings_booking_code_key ON public.bookings USING btree (booking_code)"
+            },
+            {
+              "indexname": "bookings_pkey",
+              "indexdef": "CREATE UNIQUE INDEX bookings_pkey ON public.bookings USING btree (id)"
+            },
+            {
+              "indexname": "idx_bookings_business_created",
+              "indexdef": "CREATE INDEX idx_bookings_business_created ON public.bookings USING btree (business_id, created_at DESC)"
+            },
+            {
+              "indexname": "idx_bookings_place",
+              "indexdef": "CREATE INDEX idx_bookings_place ON public.bookings USING btree (place_id)"
+            },
+            {
+              "indexname": "idx_bookings_recommendation_request",
+              "indexdef": "CREATE INDEX idx_bookings_recommendation_request ON public.bookings USING btree (recommendation_request_id) WHERE (recommendation_request_id IS NOT NULL)"
+            },
+            {
+              "indexname": "idx_bookings_status_created",
+              "indexdef": "CREATE INDEX idx_bookings_status_created ON public.bookings USING btree (booking_status, created_at DESC)"
+            },
+            {
+              "indexname": "idx_bookings_ticket",
+              "indexdef": "CREATE INDEX idx_bookings_ticket ON public.bookings USING btree (ticket_id)"
+            },
+            {
+              "indexname": "idx_bookings_tour",
+              "indexdef": "CREATE INDEX idx_bookings_tour ON public.bookings USING btree (tour_id)"
+            },
+            {
+              "indexname": "idx_bookings_user_created",
+              "indexdef": "CREATE INDEX idx_bookings_user_created ON public.bookings USING btree (user_id, created_at DESC)"
+            },
+            {
+              "indexname": "idx_bookings_user_idempotency",
+              "indexdef": "CREATE UNIQUE INDEX idx_bookings_user_idempotency ON public.bookings USING btree (user_id, idempotency_key) WHERE (idempotency_key IS NOT NULL)"
+            },
+            {
+              "indexname": "idx_reviews_ai_export",
+              "indexdef": "CREATE INDEX idx_reviews_ai_export ON public.reviews USING btree (environment, moderation_status, verification_status, created_at) WHERE (ai_usage_allowed = true)"
+            },
+            {
+              "indexname": "idx_reviews_target_moderation_created",
+              "indexdef": "CREATE INDEX idx_reviews_target_moderation_created ON public.reviews USING btree (target_type, target_id, moderation_status, created_at DESC)"
+            },
+            {
+              "indexname": "idx_reviews_user_created",
+              "indexdef": "CREATE INDEX idx_reviews_user_created ON public.reviews USING btree (user_id, created_at DESC) WHERE (user_id IS NOT NULL)"
+            },
+            {
+              "indexname": "idx_user_favorites_place",
+              "indexdef": "CREATE INDEX idx_user_favorites_place ON public.user_favorites USING btree (place_id)"
+            },
+            {
+              "indexname": "idx_user_favorites_user_created",
+              "indexdef": "CREATE INDEX idx_user_favorites_user_created ON public.user_favorites USING btree (user_id, created_at DESC)"
+            },
+            {
+              "indexname": "reviews_pkey",
+              "indexdef": "CREATE UNIQUE INDEX reviews_pkey ON public.reviews USING btree (id)"
+            },
+            {
+              "indexname": "uq_reviews_booking",
+              "indexdef": "CREATE UNIQUE INDEX uq_reviews_booking ON public.reviews USING btree (booking_id) WHERE (booking_id IS NOT NULL)"
+            },
+            {
+              "indexname": "user_favorites_pkey",
+              "indexdef": "CREATE UNIQUE INDEX user_favorites_pkey ON public.user_favorites USING btree (id)"
+            },
+            {
+              "indexname": "user_favorites_user_place_unique",
+              "indexdef": "CREATE UNIQUE INDEX user_favorites_user_place_unique ON public.user_favorites USING btree (user_id, place_id)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/register",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/register",
+      "request": {
+        "fullName": "T13B02 desktop R03-SA",
+        "email": "t13b02.39eb34.desktop.r03-sa.6e9f44b9@example.test",
+        "password": "[REDACTED]",
+        "phone": "0901234567"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Đăng ký tài khoản thành công",
+          "data": {
+            "user": {
+              "id": "1cd55705-322d-469b-8b67-b20f0854561b",
+              "fullName": "T13B02 desktop R03-SA",
+              "email": "t13b02.39eb34.desktop.r03-sa.6e9f44b9@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "CUSTOMER"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/places",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/blogs",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/blogs",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/places",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/login",
+      "request": {
+        "email": "t13b02.39eb34.desktop.r03-sa.6e9f44b9@example.test",
+        "password": "[REDACTED]"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "message": "Đăng nhập thành công",
+          "data": {
+            "user": {
+              "id": "1cd55705-322d-469b-8b67-b20f0854561b",
+              "fullName": "T13B02 desktop R03-SA",
+              "email": "t13b02.39eb34.desktop.r03-sa.6e9f44b9@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "CUSTOMER",
+                "SUPER_ADMIN"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/register",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/register",
+      "request": {
+        "fullName": "T13B02 desktop R03-A",
+        "email": "t13b02.39eb34.desktop.r03-a.1c83c16d@example.test",
+        "password": "[REDACTED]",
+        "phone": "0901234567"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Đăng ký tài khoản thành công",
+          "data": {
+            "user": {
+              "id": "a6c46073-c2c6-45f2-92cb-3f5f611e2e62",
+              "fullName": "T13B02 desktop R03-A",
+              "email": "t13b02.39eb34.desktop.r03-a.1c83c16d@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "CUSTOMER"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/login",
+      "request": {
+        "email": "t13b02.39eb34.desktop.r03-a.1c83c16d@example.test",
+        "password": "[REDACTED]"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "message": "Đăng nhập thành công",
+          "data": {
+            "user": {
+              "id": "a6c46073-c2c6-45f2-92cb-3f5f611e2e62",
+              "fullName": "T13B02 desktop R03-A",
+              "email": "t13b02.39eb34.desktop.r03-a.1c83c16d@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "CUSTOMER",
+                "PARTNER"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/register",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/register",
+      "request": {
+        "fullName": "T13B02 desktop R03-B",
+        "email": "t13b02.39eb34.desktop.r03-b.aaf65443@example.test",
+        "password": "[REDACTED]",
+        "phone": "0901234567"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Đăng ký tài khoản thành công",
+          "data": {
+            "user": {
+              "id": "514edd35-64d0-47e0-9dd2-ed0bccdb0819",
+              "fullName": "T13B02 desktop R03-B",
+              "email": "t13b02.39eb34.desktop.r03-b.aaf65443@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "CUSTOMER"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/login",
+      "request": {
+        "email": "t13b02.39eb34.desktop.r03-b.aaf65443@example.test",
+        "password": "[REDACTED]"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "message": "Đăng nhập thành công",
+          "data": {
+            "user": {
+              "id": "514edd35-64d0-47e0-9dd2-ed0bccdb0819",
+              "fullName": "T13B02 desktop R03-B",
+              "email": "t13b02.39eb34.desktop.r03-b.aaf65443@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "CUSTOMER",
+                "PARTNER"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/register",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/register",
+      "request": {
+        "fullName": "T13B02 desktop R03-C",
+        "email": "t13b02.39eb34.desktop.r03-c.873f825a@example.test",
+        "password": "[REDACTED]",
+        "phone": "0901234567"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Đăng ký tài khoản thành công",
+          "data": {
+            "user": {
+              "id": "1f5504a3-f797-456d-ac73-9c254bbbf1fb",
+              "fullName": "T13B02 desktop R03-C",
+              "email": "t13b02.39eb34.desktop.r03-c.873f825a@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "CUSTOMER"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/places",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/places",
+      "request": {
+        "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+        "name": "T13B02 R03-places 13973493",
+        "category": "hotel",
+        "summary": "SYNTHETIC TEST ONLY summary",
+        "description": "SYNTHETIC TEST ONLY description",
+        "city": "T13B02-39eb34-desktop",
+        "province": "T13B02-39eb34-desktop",
+        "address": "SYNTHETIC TEST ONLY address",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "priceFrom": 123456,
+        "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg=="
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "3e98848d-aac5-44c3-869b-8f53c3abc1ce",
+            "itinerary": [],
+            "name": "T13B02 R03-places 13973493",
+            "category": "hotel",
+            "summary": "SYNTHETIC TEST ONLY summary",
+            "description": "SYNTHETIC TEST ONLY description",
+            "city": "T13B02-39eb34-desktop",
+            "province": "T13B02-39eb34-desktop",
+            "address": "SYNTHETIC TEST ONLY address",
+            "latitude": 16.05,
+            "longitude": 108.2,
+            "priceFrom": 123456,
+            "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+            "slug": "t13b02-r03-places-13973493-mw6frrmq",
+            "galleryImages": [],
+            "highlights": [],
+            "amenities": [],
+            "openingHours": {},
+            "contactInfo": {},
+            "rating": 0,
+            "reviewCount": 0,
+            "bayesianRating": 4.2,
+            "isFeatured": false,
+            "status": "DRAFT",
+            "updatedAt": "2026-11-07T13:25:31.682Z",
+            "createdAt": "2026-11-07T13:25:31.682Z",
+            "district": null,
+            "duration": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/tours",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/tours",
+      "request": {
+        "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+        "title": "T13B02 R03-tours 286d3481",
+        "destinationCity": "T13B02-39eb34-desktop",
+        "departureCity": "SYNTHETIC departure",
+        "durationDays": 2,
+        "durationNights": 1,
+        "category": "culture",
+        "summary": "SYNTHETIC TEST ONLY summary",
+        "description": "SYNTHETIC TEST ONLY description",
+        "priceVND": 123456,
+        "capacity": 30,
+        "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg=="
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "977fda23-16ae-4c39-882a-397542d53f8c",
+            "rating": 0,
+            "reviewCount": 0,
+            "isTemplate": false,
+            "title": "T13B02 R03-tours 286d3481",
+            "destinationCity": "T13B02-39eb34-desktop",
+            "departureCity": "SYNTHETIC departure",
+            "durationDays": 2,
+            "durationNights": 1,
+            "category": "culture",
+            "summary": "SYNTHETIC TEST ONLY summary",
+            "description": "SYNTHETIC TEST ONLY description",
+            "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "priceVND": 123456,
+            "capacity": 30,
+            "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+            "slug": "t13b02-r03-tours-286d3481-mw6frrnv",
+            "availableCapacity": 30,
+            "galleryImages": [],
+            "inclusions": [],
+            "exclusions": [],
+            "highlights": [],
+            "itineraryDays": [],
+            "status": "DRAFT",
+            "updatedAt": "2026-11-07T13:25:31.723Z",
+            "createdAt": "2026-11-07T13:25:31.723Z",
+            "meetingPoint": null,
+            "startDate": null,
+            "endDate": null,
+            "bayesianScore": 4.2
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/tickets",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/tickets",
+      "request": {
+        "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+        "title": "T13B02 R03-tickets 858d5afc",
+        "type": "bus",
+        "operator": "SYNTHETIC TEST ONLY operator",
+        "departureCity": "T13B02-39eb34-desktop",
+        "arrivalCity": "SYNTHETIC arrival",
+        "departureTime": "2030-06-15T10:30",
+        "arrivalTime": "2030-06-15T12:30",
+        "price": 123456,
+        "capacity": 30,
+        "status": "ACTIVE",
+        "imageUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg=="
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "8d54383b-9322-4f49-975e-d91ab5bed212",
+            "title": "T13B02 R03-tickets 858d5afc",
+            "type": "bus",
+            "operator": "SYNTHETIC TEST ONLY operator",
+            "departureCity": "T13B02-39eb34-desktop",
+            "arrivalCity": "SYNTHETIC arrival",
+            "departureTime": "2030-06-15T10:30:00.000Z",
+            "arrivalTime": "2030-06-15T12:30:00.000Z",
+            "price": 123456,
+            "capacity": 30,
+            "imageUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "status": "ACTIVE",
+            "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+            "validFrom": null,
+            "validUntil": null,
+            "availableSeats": 30,
+            "features": [],
+            "createdAt": "2026-11-07T13:25:31.742Z",
+            "placeId": null,
+            "tourId": null,
+            "duration": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/blogs",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/blogs",
+      "request": {
+        "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+        "title": "T13B02 R03-blogs d7c76c95",
+        "excerpt": "SYNTHETIC TEST ONLY excerpt",
+        "content": "SYNTHETIC TEST ONLY content",
+        "destinationName": "T13B02-39eb34-desktop",
+        "coverImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+        "tags": [
+          "SYNTHETIC",
+          "T13B02"
+        ]
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "4fe5dfdc-76dd-4edf-b452-e64ad0a2fe0d",
+            "title": "T13B02 R03-blogs d7c76c95",
+            "excerpt": "SYNTHETIC TEST ONLY excerpt",
+            "content": "SYNTHETIC TEST ONLY content",
+            "destinationName": "T13B02-39eb34-desktop",
+            "coverImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "tags": [
+              "SYNTHETIC",
+              "T13B02"
+            ],
+            "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+            "slug": "t13b02-r03-blogs-d7c76c95-mw6frrox",
+            "authorId": "a6c46073-c2c6-45f2-92cb-3f5f611e2e62",
+            "authorName": "T13B02 desktop R03-A",
+            "status": "DRAFT",
+            "likesCount": 0,
+            "isFeatured": false,
+            "updatedAt": "2026-11-07T13:25:31.762Z",
+            "createdAt": "2026-11-07T13:25:31.762Z",
+            "placeId": null,
+            "authorAvatar": null,
+            "costEstimate": null,
+            "tripDuration": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/admin/places/3e98848d-aac5-44c3-869b-8f53c3abc1ce/status",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/admin/places/3e98848d-aac5-44c3-869b-8f53c3abc1ce/status",
+      "request": {
+        "status": "APPROVED",
+        "reason": "SYNTHETIC TEST ONLY moderation"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "3e98848d-aac5-44c3-869b-8f53c3abc1ce",
+            "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+            "name": "T13B02 R03-places 13973493",
+            "slug": "t13b02-r03-places-13973493-mw6frrmq",
+            "category": "hotel",
+            "summary": "SYNTHETIC TEST ONLY summary",
+            "description": "SYNTHETIC TEST ONLY description",
+            "city": "T13B02-39eb34-desktop",
+            "province": "T13B02-39eb34-desktop",
+            "address": "SYNTHETIC TEST ONLY address",
+            "district": null,
+            "latitude": 16.05,
+            "longitude": 108.2,
+            "priceFrom": 123456,
+            "rating": 0,
+            "reviewCount": 0,
+            "bayesianRating": 4.2,
+            "duration": null,
+            "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "galleryImages": [],
+            "highlights": [],
+            "amenities": [],
+            "itinerary": [],
+            "isFeatured": false,
+            "openingHours": {},
+            "contactInfo": {},
+            "status": "APPROVED",
+            "createdAt": "2026-11-07T13:25:31.682Z",
+            "updatedAt": "2026-11-07T13:25:31.780Z"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/bookings",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/bookings",
+      "request": {
+        "serviceType": "hotel",
+        "serviceId": "3e98848d-aac5-44c3-869b-8f53c3abc1ce",
+        "bookingDate": "2030-06-15",
+        "adultsCount": 1,
+        "childrenCount": 0,
+        "customerPhone": "0901234567",
+        "notes": "T13B02 SYNTHETIC prerequisite only"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Đã tạo booking, đang chờ xác nhận",
+          "data": {
+            "id": "d3e5dcd6-582a-43cc-9c2b-9c732d883f8a",
+            "bookingCode": "HG-AF5B8ACD2AFB4AA4A970B02A",
+            "userId": "1f5504a3-f797-456d-ac73-9c254bbbf1fb",
+            "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+            "placeId": "3e98848d-aac5-44c3-869b-8f53c3abc1ce",
+            "tourId": null,
+            "ticketId": null,
+            "serviceType": "hotel",
+            "serviceId": "3e98848d-aac5-44c3-869b-8f53c3abc1ce",
+            "serviceName": "T13B02 R03-places 13973493",
+            "customerName": "T13B02 desktop R03-C",
+            "customerEmail": "t13b02.39eb34.desktop.r03-c.873f825a@example.test",
+            "customerPhone": "0901234567",
+            "bookingDate": "2030-06-15",
+            "returnDate": null,
+            "adultsCount": 1,
+            "childrenCount": 0,
+            "unitPrice": 123456,
+            "quantity": 1,
+            "discountAmount": 0,
+            "totalAmount": 123456,
+            "paymentStatus": "unpaid",
+            "bookingStatus": "PENDING",
+            "notes": "T13B02 SYNTHETIC prerequisite only",
+            "idempotencyKey": null,
+            "recommendationRequestId": null,
+            "recommendationItemId": null,
+            "recommendationItemType": null,
+            "updatedAt": "2026-11-07T13:25:31.799Z",
+            "createdAt": "2026-11-07T13:25:31.799Z"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/places",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/places",
+      "request": {
+        "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+        "name": "T13B02 R03-places df51de2f",
+        "category": "hotel",
+        "summary": "SYNTHETIC TEST ONLY summary",
+        "description": "SYNTHETIC TEST ONLY description",
+        "city": "T13B02-39eb34-desktop",
+        "province": "T13B02-39eb34-desktop",
+        "address": "SYNTHETIC TEST ONLY address",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "priceFrom": 123456,
+        "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg=="
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "73174ff9-1df1-46e3-b558-86a38db069bb",
+            "itinerary": [],
+            "name": "T13B02 R03-places df51de2f",
+            "category": "hotel",
+            "summary": "SYNTHETIC TEST ONLY summary",
+            "description": "SYNTHETIC TEST ONLY description",
+            "city": "T13B02-39eb34-desktop",
+            "province": "T13B02-39eb34-desktop",
+            "address": "SYNTHETIC TEST ONLY address",
+            "latitude": 16.05,
+            "longitude": 108.2,
+            "priceFrom": 123456,
+            "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+            "slug": "t13b02-r03-places-df51de2f-mw6frrqn",
+            "galleryImages": [],
+            "highlights": [],
+            "amenities": [],
+            "openingHours": {},
+            "contactInfo": {},
+            "rating": 0,
+            "reviewCount": 0,
+            "bayesianRating": 4.2,
+            "isFeatured": false,
+            "status": "DRAFT",
+            "updatedAt": "2026-11-07T13:25:31.823Z",
+            "createdAt": "2026-11-07T13:25:31.823Z",
+            "district": null,
+            "duration": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/tours",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/tours",
+      "request": {
+        "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+        "title": "T13B02 R03-tours b9203bce",
+        "destinationCity": "T13B02-39eb34-desktop",
+        "departureCity": "SYNTHETIC departure",
+        "durationDays": 2,
+        "durationNights": 1,
+        "category": "culture",
+        "summary": "SYNTHETIC TEST ONLY summary",
+        "description": "SYNTHETIC TEST ONLY description",
+        "priceVND": 123456,
+        "capacity": 30,
+        "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg=="
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "b840d750-e325-41c7-8a92-4485ee64449f",
+            "rating": 0,
+            "reviewCount": 0,
+            "isTemplate": false,
+            "title": "T13B02 R03-tours b9203bce",
+            "destinationCity": "T13B02-39eb34-desktop",
+            "departureCity": "SYNTHETIC departure",
+            "durationDays": 2,
+            "durationNights": 1,
+            "category": "culture",
+            "summary": "SYNTHETIC TEST ONLY summary",
+            "description": "SYNTHETIC TEST ONLY description",
+            "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "priceVND": 123456,
+            "capacity": 30,
+            "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+            "slug": "t13b02-r03-tours-b9203bce-mw6frrrd",
+            "availableCapacity": 30,
+            "galleryImages": [],
+            "inclusions": [],
+            "exclusions": [],
+            "highlights": [],
+            "itineraryDays": [],
+            "status": "DRAFT",
+            "updatedAt": "2026-11-07T13:25:31.849Z",
+            "createdAt": "2026-11-07T13:25:31.849Z",
+            "meetingPoint": null,
+            "startDate": null,
+            "endDate": null,
+            "bayesianScore": 4.2
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/tickets",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/tickets",
+      "request": {
+        "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+        "title": "T13B02 R03-tickets 1a0f211f",
+        "type": "bus",
+        "operator": "SYNTHETIC TEST ONLY operator",
+        "departureCity": "T13B02-39eb34-desktop",
+        "arrivalCity": "SYNTHETIC arrival",
+        "departureTime": "2030-06-15T10:30",
+        "arrivalTime": "2030-06-15T12:30",
+        "price": 123456,
+        "capacity": 30,
+        "status": "ACTIVE",
+        "imageUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg=="
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "e92d10c6-2fd7-4c02-8bd1-6c51eef21f20",
+            "title": "T13B02 R03-tickets 1a0f211f",
+            "type": "bus",
+            "operator": "SYNTHETIC TEST ONLY operator",
+            "departureCity": "T13B02-39eb34-desktop",
+            "arrivalCity": "SYNTHETIC arrival",
+            "departureTime": "2030-06-15T10:30:00.000Z",
+            "arrivalTime": "2030-06-15T12:30:00.000Z",
+            "price": 123456,
+            "capacity": 30,
+            "imageUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "status": "ACTIVE",
+            "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+            "validFrom": null,
+            "validUntil": null,
+            "availableSeats": 30,
+            "features": [],
+            "createdAt": "2026-11-07T13:25:31.868Z",
+            "placeId": null,
+            "tourId": null,
+            "duration": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/blogs",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/blogs",
+      "request": {
+        "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+        "title": "T13B02 R03-blogs cf0bf473",
+        "excerpt": "SYNTHETIC TEST ONLY excerpt",
+        "content": "SYNTHETIC TEST ONLY content",
+        "destinationName": "T13B02-39eb34-desktop",
+        "coverImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+        "tags": [
+          "SYNTHETIC",
+          "T13B02"
+        ]
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "8daf9ca6-8a98-48e8-b7c2-b3c90a3c98aa",
+            "title": "T13B02 R03-blogs cf0bf473",
+            "excerpt": "SYNTHETIC TEST ONLY excerpt",
+            "content": "SYNTHETIC TEST ONLY content",
+            "destinationName": "T13B02-39eb34-desktop",
+            "coverImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "tags": [
+              "SYNTHETIC",
+              "T13B02"
+            ],
+            "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+            "slug": "t13b02-r03-blogs-cf0bf473-mw6frrse",
+            "authorId": "514edd35-64d0-47e0-9dd2-ed0bccdb0819",
+            "authorName": "T13B02 desktop R03-B",
+            "status": "DRAFT",
+            "likesCount": 0,
+            "isFeatured": false,
+            "updatedAt": "2026-11-07T13:25:31.886Z",
+            "createdAt": "2026-11-07T13:25:31.886Z",
+            "placeId": null,
+            "authorAvatar": null,
+            "costEstimate": null,
+            "tripDuration": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/admin/places/73174ff9-1df1-46e3-b558-86a38db069bb/status",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/admin/places/73174ff9-1df1-46e3-b558-86a38db069bb/status",
+      "request": {
+        "status": "APPROVED",
+        "reason": "SYNTHETIC TEST ONLY moderation"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "73174ff9-1df1-46e3-b558-86a38db069bb",
+            "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+            "name": "T13B02 R03-places df51de2f",
+            "slug": "t13b02-r03-places-df51de2f-mw6frrqn",
+            "category": "hotel",
+            "summary": "SYNTHETIC TEST ONLY summary",
+            "description": "SYNTHETIC TEST ONLY description",
+            "city": "T13B02-39eb34-desktop",
+            "province": "T13B02-39eb34-desktop",
+            "address": "SYNTHETIC TEST ONLY address",
+            "district": null,
+            "latitude": 16.05,
+            "longitude": 108.2,
+            "priceFrom": 123456,
+            "rating": 0,
+            "reviewCount": 0,
+            "bayesianRating": 4.2,
+            "duration": null,
+            "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "galleryImages": [],
+            "highlights": [],
+            "amenities": [],
+            "itinerary": [],
+            "isFeatured": false,
+            "openingHours": {},
+            "contactInfo": {},
+            "status": "APPROVED",
+            "createdAt": "2026-11-07T13:25:31.823Z",
+            "updatedAt": "2026-11-07T13:25:31.903Z"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/bookings",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/bookings",
+      "request": {
+        "serviceType": "hotel",
+        "serviceId": "73174ff9-1df1-46e3-b558-86a38db069bb",
+        "bookingDate": "2030-06-15",
+        "adultsCount": 1,
+        "childrenCount": 0,
+        "customerPhone": "0901234567",
+        "notes": "T13B02 SYNTHETIC prerequisite only"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Đã tạo booking, đang chờ xác nhận",
+          "data": {
+            "id": "e073570c-aca9-47d0-8143-4dec92bd7e82",
+            "bookingCode": "HG-068F12AE01DD4000962DCF1A",
+            "userId": "1f5504a3-f797-456d-ac73-9c254bbbf1fb",
+            "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+            "placeId": "73174ff9-1df1-46e3-b558-86a38db069bb",
+            "tourId": null,
+            "ticketId": null,
+            "serviceType": "hotel",
+            "serviceId": "73174ff9-1df1-46e3-b558-86a38db069bb",
+            "serviceName": "T13B02 R03-places df51de2f",
+            "customerName": "T13B02 desktop R03-C",
+            "customerEmail": "t13b02.39eb34.desktop.r03-c.873f825a@example.test",
+            "customerPhone": "0901234567",
+            "bookingDate": "2030-06-15",
+            "returnDate": null,
+            "adultsCount": 1,
+            "childrenCount": 0,
+            "unitPrice": 123456,
+            "quantity": 1,
+            "discountAmount": 0,
+            "totalAmount": 123456,
+            "paymentStatus": "unpaid",
+            "bookingStatus": "PENDING",
+            "notes": "T13B02 SYNTHETIC prerequisite only",
+            "idempotencyKey": null,
+            "recommendationRequestId": null,
+            "recommendationItemId": null,
+            "recommendationItemType": null,
+            "updatedAt": "2026-11-07T13:25:31.919Z",
+            "createdAt": "2026-11-07T13:25:31.919Z"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/places/73174ff9-1df1-46e3-b558-86a38db069bb",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/places/73174ff9-1df1-46e3-b558-86a38db069bb",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/places/73174ff9-1df1-46e3-b558-86a38db069bb",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/places/73174ff9-1df1-46e3-b558-86a38db069bb",
+      "request": {
+        "name": "UNAUTHORIZED SYNTHETIC"
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "DELETE",
+      "endpoint": "/api/partner/places/73174ff9-1df1-46e3-b558-86a38db069bb",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "DELETE",
+      "endpoint": "/partner/places/73174ff9-1df1-46e3-b558-86a38db069bb",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/places/73174ff9-1df1-46e3-b558-86a38db069bb/submit",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/places/73174ff9-1df1-46e3-b558-86a38db069bb/submit",
+      "request": {},
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/places",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/places",
+      "request": {
+        "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+        "name": "T13B02 R03-FOREIGN 4bfbe874",
+        "category": "hotel",
+        "summary": "SYNTHETIC TEST ONLY summary",
+        "description": "SYNTHETIC TEST ONLY description",
+        "city": "T13B02-39eb34-desktop",
+        "province": "T13B02-39eb34-desktop",
+        "address": "SYNTHETIC TEST ONLY address",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "priceFrom": 123456,
+        "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg=="
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/places",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/places?businessId=a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb&limit=100",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "items": [
+              {
+                "id": "3e98848d-aac5-44c3-869b-8f53c3abc1ce",
+                "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+                "name": "T13B02 R03-places 13973493",
+                "slug": "t13b02-r03-places-13973493-mw6frrmq",
+                "category": "hotel",
+                "summary": "SYNTHETIC TEST ONLY summary",
+                "description": "SYNTHETIC TEST ONLY description",
+                "city": "T13B02-39eb34-desktop",
+                "province": "T13B02-39eb34-desktop",
+                "address": "SYNTHETIC TEST ONLY address",
+                "district": null,
+                "latitude": 16.05,
+                "longitude": 108.2,
+                "priceFrom": 123456,
+                "rating": 0,
+                "reviewCount": 0,
+                "bayesianRating": 4.2,
+                "duration": null,
+                "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+                "galleryImages": [],
+                "highlights": [],
+                "amenities": [],
+                "itinerary": [],
+                "isFeatured": false,
+                "openingHours": {},
+                "contactInfo": {},
+                "status": "APPROVED",
+                "createdAt": "2026-11-07T13:25:31.682Z",
+                "updatedAt": "2026-11-07T13:25:31.780Z",
+                "business": {
+                  "id": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+                  "name": "T13B02 SYNTHETIC R03 A desktop",
+                  "type": "TOUR_OPERATOR",
+                  "status": "ACTIVE"
+                }
+              }
+            ],
+            "total": 1,
+            "page": 1,
+            "limit": 100,
+            "pages": 1
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/places",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/places",
+      "request": {
+        "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+        "name": "T13B02 R03-OWN b445d115",
+        "category": "hotel",
+        "summary": "SYNTHETIC TEST ONLY summary",
+        "description": "SYNTHETIC TEST ONLY description",
+        "city": "T13B02-39eb34-desktop",
+        "province": "T13B02-39eb34-desktop",
+        "address": "SYNTHETIC TEST ONLY address",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "priceFrom": 123456,
+        "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg=="
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "36e5c2c5-56d6-42ad-957a-0148cfcb12fa",
+            "itinerary": [],
+            "name": "T13B02 R03-OWN b445d115",
+            "category": "hotel",
+            "summary": "SYNTHETIC TEST ONLY summary",
+            "description": "SYNTHETIC TEST ONLY description",
+            "city": "T13B02-39eb34-desktop",
+            "province": "T13B02-39eb34-desktop",
+            "address": "SYNTHETIC TEST ONLY address",
+            "latitude": 16.05,
+            "longitude": 108.2,
+            "priceFrom": 123456,
+            "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+            "slug": "t13b02-r03-own-b445d115-mw6frrzl",
+            "galleryImages": [],
+            "highlights": [],
+            "amenities": [],
+            "openingHours": {},
+            "contactInfo": {},
+            "rating": 0,
+            "reviewCount": 0,
+            "bayesianRating": 4.2,
+            "isFeatured": false,
+            "status": "DRAFT",
+            "updatedAt": "2026-11-07T13:25:32.146Z",
+            "createdAt": "2026-11-07T13:25:32.146Z",
+            "district": null,
+            "duration": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/places/36e5c2c5-56d6-42ad-957a-0148cfcb12fa",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/places/36e5c2c5-56d6-42ad-957a-0148cfcb12fa",
+      "request": {
+        "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+        "name": "T13B02 R03-OWN b445d115"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "36e5c2c5-56d6-42ad-957a-0148cfcb12fa",
+            "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+            "name": "T13B02 R03-OWN b445d115",
+            "slug": "t13b02-r03-own-b445d115-mw6frrzl",
+            "category": "hotel",
+            "summary": "SYNTHETIC TEST ONLY summary",
+            "description": "SYNTHETIC TEST ONLY description",
+            "city": "T13B02-39eb34-desktop",
+            "province": "T13B02-39eb34-desktop",
+            "address": "SYNTHETIC TEST ONLY address",
+            "district": null,
+            "latitude": 16.05,
+            "longitude": 108.2,
+            "priceFrom": 123456,
+            "rating": 0,
+            "reviewCount": 0,
+            "bayesianRating": 4.2,
+            "duration": null,
+            "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "galleryImages": [],
+            "highlights": [],
+            "amenities": [],
+            "itinerary": [],
+            "isFeatured": false,
+            "openingHours": {},
+            "contactInfo": {},
+            "status": "DRAFT",
+            "createdAt": "2026-11-07T13:25:32.146Z",
+            "updatedAt": "2026-11-07T13:25:32.146Z"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/tours/b840d750-e325-41c7-8a92-4485ee64449f",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/tours/b840d750-e325-41c7-8a92-4485ee64449f",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/tours/b840d750-e325-41c7-8a92-4485ee64449f",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/tours/b840d750-e325-41c7-8a92-4485ee64449f",
+      "request": {
+        "title": "UNAUTHORIZED SYNTHETIC"
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "DELETE",
+      "endpoint": "/api/partner/tours/b840d750-e325-41c7-8a92-4485ee64449f",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "DELETE",
+      "endpoint": "/partner/tours/b840d750-e325-41c7-8a92-4485ee64449f",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/tours/b840d750-e325-41c7-8a92-4485ee64449f/submit",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/tours/b840d750-e325-41c7-8a92-4485ee64449f/submit",
+      "request": {},
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/tours",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/tours",
+      "request": {
+        "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+        "title": "T13B02 R03-FOREIGN db47bde0",
+        "destinationCity": "T13B02-39eb34-desktop",
+        "departureCity": "SYNTHETIC departure",
+        "durationDays": 2,
+        "durationNights": 1,
+        "category": "culture",
+        "summary": "SYNTHETIC TEST ONLY summary",
+        "description": "SYNTHETIC TEST ONLY description",
+        "priceVND": 123456,
+        "capacity": 30,
+        "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg=="
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/tours",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/tours?businessId=a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb&limit=100",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "items": [
+              {
+                "id": "977fda23-16ae-4c39-882a-397542d53f8c",
+                "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+                "title": "T13B02 R03-tours 286d3481",
+                "slug": "t13b02-r03-tours-286d3481-mw6frrnv",
+                "destinationCity": "T13B02-39eb34-desktop",
+                "departureCity": "SYNTHETIC departure",
+                "durationDays": 2,
+                "durationNights": 1,
+                "category": "culture",
+                "summary": "SYNTHETIC TEST ONLY summary",
+                "description": "SYNTHETIC TEST ONLY description",
+                "meetingPoint": null,
+                "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+                "galleryImages": [],
+                "priceVND": 123456,
+                "capacity": 30,
+                "availableCapacity": 30,
+                "rating": 0,
+                "reviewCount": 0,
+                "inclusions": [],
+                "exclusions": [],
+                "highlights": [],
+                "itineraryDays": [],
+                "startDate": null,
+                "endDate": null,
+                "isTemplate": false,
+                "status": "DRAFT",
+                "createdAt": "2026-11-07T13:25:31.723Z",
+                "updatedAt": "2026-11-07T13:25:31.723Z",
+                "business": {
+                  "id": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+                  "name": "T13B02 SYNTHETIC R03 A desktop",
+                  "type": "TOUR_OPERATOR"
+                },
+                "bayesianScore": 4.2
+              }
+            ],
+            "total": 1,
+            "page": 1,
+            "limit": 100,
+            "pages": 1
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/tours/977fda23-16ae-4c39-882a-397542d53f8c",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/tours/977fda23-16ae-4c39-882a-397542d53f8c",
+      "request": {
+        "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+        "title": "T13B02 R03-tours 286d3481"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "977fda23-16ae-4c39-882a-397542d53f8c",
+            "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+            "title": "T13B02 R03-tours 286d3481",
+            "slug": "t13b02-r03-tours-286d3481-mw6frrnv",
+            "destinationCity": "T13B02-39eb34-desktop",
+            "departureCity": "SYNTHETIC departure",
+            "durationDays": 2,
+            "durationNights": 1,
+            "category": "culture",
+            "summary": "SYNTHETIC TEST ONLY summary",
+            "description": "SYNTHETIC TEST ONLY description",
+            "meetingPoint": null,
+            "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "galleryImages": [],
+            "priceVND": 123456,
+            "capacity": 30,
+            "availableCapacity": 30,
+            "rating": 0,
+            "reviewCount": 0,
+            "inclusions": [],
+            "exclusions": [],
+            "highlights": [],
+            "itineraryDays": [],
+            "startDate": null,
+            "endDate": null,
+            "isTemplate": false,
+            "status": "DRAFT",
+            "createdAt": "2026-11-07T13:25:31.723Z",
+            "updatedAt": "2026-11-07T13:25:31.723Z",
+            "bayesianScore": 4.2
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/tickets/e92d10c6-2fd7-4c02-8bd1-6c51eef21f20",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/tickets/e92d10c6-2fd7-4c02-8bd1-6c51eef21f20",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/tickets/e92d10c6-2fd7-4c02-8bd1-6c51eef21f20",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/tickets/e92d10c6-2fd7-4c02-8bd1-6c51eef21f20",
+      "request": {
+        "title": "UNAUTHORIZED SYNTHETIC"
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "DELETE",
+      "endpoint": "/api/partner/tickets/e92d10c6-2fd7-4c02-8bd1-6c51eef21f20",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "DELETE",
+      "endpoint": "/partner/tickets/e92d10c6-2fd7-4c02-8bd1-6c51eef21f20",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/tickets",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/tickets",
+      "request": {
+        "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+        "title": "T13B02 R03-FOREIGN 169a62d1",
+        "type": "bus",
+        "operator": "SYNTHETIC TEST ONLY operator",
+        "departureCity": "T13B02-39eb34-desktop",
+        "arrivalCity": "SYNTHETIC arrival",
+        "departureTime": "2030-06-15T10:30",
+        "arrivalTime": "2030-06-15T12:30",
+        "price": 123456,
+        "capacity": 30,
+        "status": "ACTIVE",
+        "imageUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg=="
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/tickets",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/tickets?businessId=a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb&limit=100",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "items": [
+              {
+                "id": "8d54383b-9322-4f49-975e-d91ab5bed212",
+                "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+                "placeId": null,
+                "tourId": null,
+                "title": "T13B02 R03-tickets 858d5afc",
+                "type": "bus",
+                "operator": "SYNTHETIC TEST ONLY operator",
+                "departureCity": "T13B02-39eb34-desktop",
+                "arrivalCity": "SYNTHETIC arrival",
+                "departureTime": "2030-06-15T10:30:00.000Z",
+                "arrivalTime": "2030-06-15T12:30:00.000Z",
+                "duration": null,
+                "price": 123456,
+                "availableSeats": 30,
+                "capacity": 30,
+                "validFrom": null,
+                "validUntil": null,
+                "status": "ACTIVE",
+                "features": [],
+                "imageUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+                "createdAt": "2026-11-07T13:25:31.742Z",
+                "business": {
+                  "id": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+                  "name": "T13B02 SYNTHETIC R03 A desktop",
+                  "type": "TOUR_OPERATOR"
+                }
+              }
+            ],
+            "total": 1,
+            "page": 1,
+            "limit": 100,
+            "pages": 1
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/tickets/8d54383b-9322-4f49-975e-d91ab5bed212",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/tickets/8d54383b-9322-4f49-975e-d91ab5bed212",
+      "request": {
+        "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+        "title": "T13B02 R03-tickets 858d5afc"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "8d54383b-9322-4f49-975e-d91ab5bed212",
+            "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+            "placeId": null,
+            "tourId": null,
+            "title": "T13B02 R03-tickets 858d5afc",
+            "type": "bus",
+            "operator": "SYNTHETIC TEST ONLY operator",
+            "departureCity": "T13B02-39eb34-desktop",
+            "arrivalCity": "SYNTHETIC arrival",
+            "departureTime": "2030-06-15T10:30:00.000Z",
+            "arrivalTime": "2030-06-15T12:30:00.000Z",
+            "duration": null,
+            "price": 123456,
+            "availableSeats": 30,
+            "capacity": 30,
+            "validFrom": null,
+            "validUntil": null,
+            "status": "ACTIVE",
+            "features": [],
+            "imageUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "createdAt": "2026-11-07T13:25:31.742Z"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/blogs/8daf9ca6-8a98-48e8-b7c2-b3c90a3c98aa",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/blogs/8daf9ca6-8a98-48e8-b7c2-b3c90a3c98aa",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/blogs/8daf9ca6-8a98-48e8-b7c2-b3c90a3c98aa",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/blogs/8daf9ca6-8a98-48e8-b7c2-b3c90a3c98aa",
+      "request": {
+        "title": "UNAUTHORIZED SYNTHETIC"
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "DELETE",
+      "endpoint": "/api/partner/blogs/8daf9ca6-8a98-48e8-b7c2-b3c90a3c98aa",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "DELETE",
+      "endpoint": "/partner/blogs/8daf9ca6-8a98-48e8-b7c2-b3c90a3c98aa",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/blogs/8daf9ca6-8a98-48e8-b7c2-b3c90a3c98aa/submit",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/blogs/8daf9ca6-8a98-48e8-b7c2-b3c90a3c98aa/submit",
+      "request": {},
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/blogs",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/blogs",
+      "request": {
+        "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+        "title": "T13B02 R03-FOREIGN 175e252f",
+        "excerpt": "SYNTHETIC TEST ONLY excerpt",
+        "content": "SYNTHETIC TEST ONLY content",
+        "destinationName": "T13B02-39eb34-desktop",
+        "coverImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+        "tags": [
+          "SYNTHETIC",
+          "T13B02"
+        ]
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/blogs",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/blogs?businessId=a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb&limit=100",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "items": [
+              {
+                "id": "4fe5dfdc-76dd-4edf-b452-e64ad0a2fe0d",
+                "title": "T13B02 R03-blogs d7c76c95",
+                "slug": "t13b02-r03-blogs-d7c76c95-mw6frrox",
+                "excerpt": "SYNTHETIC TEST ONLY excerpt",
+                "content": "SYNTHETIC TEST ONLY content",
+                "destinationName": "T13B02-39eb34-desktop",
+                "placeId": null,
+                "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+                "authorId": "a6c46073-c2c6-45f2-92cb-3f5f611e2e62",
+                "authorName": "T13B02 desktop R03-A",
+                "authorAvatar": null,
+                "coverImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+                "costEstimate": null,
+                "tripDuration": null,
+                "tags": [
+                  "SYNTHETIC",
+                  "T13B02"
+                ],
+                "likesCount": 0,
+                "isFeatured": false,
+                "status": "DRAFT",
+                "createdAt": "2026-11-07T13:25:31.762Z",
+                "updatedAt": "2026-11-07T13:25:31.762Z",
+                "business": {
+                  "id": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+                  "name": "T13B02 SYNTHETIC R03 A desktop",
+                  "type": "TOUR_OPERATOR"
+                }
+              }
+            ],
+            "total": 1,
+            "page": 1,
+            "limit": 100,
+            "pages": 1
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/blogs/4fe5dfdc-76dd-4edf-b452-e64ad0a2fe0d",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/blogs/4fe5dfdc-76dd-4edf-b452-e64ad0a2fe0d",
+      "request": {
+        "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+        "title": "T13B02 R03-blogs d7c76c95"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "4fe5dfdc-76dd-4edf-b452-e64ad0a2fe0d",
+            "title": "T13B02 R03-blogs d7c76c95",
+            "slug": "t13b02-r03-blogs-d7c76c95-mw6frrox",
+            "excerpt": "SYNTHETIC TEST ONLY excerpt",
+            "content": "SYNTHETIC TEST ONLY content",
+            "destinationName": "T13B02-39eb34-desktop",
+            "placeId": null,
+            "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+            "authorId": "a6c46073-c2c6-45f2-92cb-3f5f611e2e62",
+            "authorName": "T13B02 desktop R03-A",
+            "authorAvatar": null,
+            "coverImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "costEstimate": null,
+            "tripDuration": null,
+            "tags": [
+              "SYNTHETIC",
+              "T13B02"
+            ],
+            "likesCount": 0,
+            "isFeatured": false,
+            "status": "DRAFT",
+            "createdAt": "2026-11-07T13:25:31.762Z",
+            "updatedAt": "2026-11-07T13:25:31.762Z"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/businesses/a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/businesses/a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không có quyền truy cập cơ sở này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/dashboard",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/dashboard?businessId=a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không có quyền truy cập cơ sở này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/bookings",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/bookings?businessId=a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/businesses/a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb/bookings",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/businesses/a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb/bookings",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không có quyền truy cập cơ sở này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/bookings/e073570c-aca9-47d0-8143-4dec92bd7e82",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/bookings/e073570c-aca9-47d0-8143-4dec92bd7e82",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/bookings/e073570c-aca9-47d0-8143-4dec92bd7e82/status",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/bookings/e073570c-aca9-47d0-8143-4dec92bd7e82/status",
+      "request": {
+        "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+        "status": "CONFIRMED"
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/bookings/d3e5dcd6-582a-43cc-9c2b-9c732d883f8a/status",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/bookings/d3e5dcd6-582a-43cc-9c2b-9c732d883f8a/status",
+      "request": {
+        "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+        "status": "CONFIRMED"
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Booking không thuộc cơ sở này",
+          "code": "BOOKING_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/places/3e98848d-aac5-44c3-869b-8f53c3abc1ce",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/places/3e98848d-aac5-44c3-869b-8f53c3abc1ce",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/places/3e98848d-aac5-44c3-869b-8f53c3abc1ce",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/places/3e98848d-aac5-44c3-869b-8f53c3abc1ce",
+      "request": {
+        "name": "UNAUTHORIZED SYNTHETIC"
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "DELETE",
+      "endpoint": "/api/partner/places/3e98848d-aac5-44c3-869b-8f53c3abc1ce",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "DELETE",
+      "endpoint": "/partner/places/3e98848d-aac5-44c3-869b-8f53c3abc1ce",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/places/3e98848d-aac5-44c3-869b-8f53c3abc1ce/submit",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/places/3e98848d-aac5-44c3-869b-8f53c3abc1ce/submit",
+      "request": {},
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/places",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/places",
+      "request": {
+        "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+        "name": "T13B02 R03-FOREIGN 77257f5f",
+        "category": "hotel",
+        "summary": "SYNTHETIC TEST ONLY summary",
+        "description": "SYNTHETIC TEST ONLY description",
+        "city": "T13B02-39eb34-desktop",
+        "province": "T13B02-39eb34-desktop",
+        "address": "SYNTHETIC TEST ONLY address",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "priceFrom": 123456,
+        "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg=="
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/places",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/places?businessId=3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd&limit=100",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "items": [
+              {
+                "id": "73174ff9-1df1-46e3-b558-86a38db069bb",
+                "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+                "name": "T13B02 R03-places df51de2f",
+                "slug": "t13b02-r03-places-df51de2f-mw6frrqn",
+                "category": "hotel",
+                "summary": "SYNTHETIC TEST ONLY summary",
+                "description": "SYNTHETIC TEST ONLY description",
+                "city": "T13B02-39eb34-desktop",
+                "province": "T13B02-39eb34-desktop",
+                "address": "SYNTHETIC TEST ONLY address",
+                "district": null,
+                "latitude": 16.05,
+                "longitude": 108.2,
+                "priceFrom": 123456,
+                "rating": 0,
+                "reviewCount": 0,
+                "bayesianRating": 4.2,
+                "duration": null,
+                "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+                "galleryImages": [],
+                "highlights": [],
+                "amenities": [],
+                "itinerary": [],
+                "isFeatured": false,
+                "openingHours": {},
+                "contactInfo": {},
+                "status": "APPROVED",
+                "createdAt": "2026-11-07T13:25:31.823Z",
+                "updatedAt": "2026-11-07T13:25:31.903Z",
+                "business": {
+                  "id": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+                  "name": "T13B02 SYNTHETIC R03 B desktop",
+                  "type": "TOUR_OPERATOR",
+                  "status": "ACTIVE"
+                }
+              }
+            ],
+            "total": 1,
+            "page": 1,
+            "limit": 100,
+            "pages": 1
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/places",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/places",
+      "request": {
+        "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+        "name": "T13B02 R03-OWN f50c0dc7",
+        "category": "hotel",
+        "summary": "SYNTHETIC TEST ONLY summary",
+        "description": "SYNTHETIC TEST ONLY description",
+        "city": "T13B02-39eb34-desktop",
+        "province": "T13B02-39eb34-desktop",
+        "address": "SYNTHETIC TEST ONLY address",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "priceFrom": 123456,
+        "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg=="
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "03c9ace7-e4a9-4b63-964e-91982eef1772",
+            "itinerary": [],
+            "name": "T13B02 R03-OWN f50c0dc7",
+            "category": "hotel",
+            "summary": "SYNTHETIC TEST ONLY summary",
+            "description": "SYNTHETIC TEST ONLY description",
+            "city": "T13B02-39eb34-desktop",
+            "province": "T13B02-39eb34-desktop",
+            "address": "SYNTHETIC TEST ONLY address",
+            "latitude": 16.05,
+            "longitude": 108.2,
+            "priceFrom": 123456,
+            "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+            "slug": "t13b02-r03-own-f50c0dc7-mw6frswk",
+            "galleryImages": [],
+            "highlights": [],
+            "amenities": [],
+            "openingHours": {},
+            "contactInfo": {},
+            "rating": 0,
+            "reviewCount": 0,
+            "bayesianRating": 4.2,
+            "isFeatured": false,
+            "status": "DRAFT",
+            "updatedAt": "2026-11-07T13:25:33.332Z",
+            "createdAt": "2026-11-07T13:25:33.332Z",
+            "district": null,
+            "duration": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/places/03c9ace7-e4a9-4b63-964e-91982eef1772",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/places/03c9ace7-e4a9-4b63-964e-91982eef1772",
+      "request": {
+        "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+        "name": "T13B02 R03-OWN f50c0dc7"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "03c9ace7-e4a9-4b63-964e-91982eef1772",
+            "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+            "name": "T13B02 R03-OWN f50c0dc7",
+            "slug": "t13b02-r03-own-f50c0dc7-mw6frswk",
+            "category": "hotel",
+            "summary": "SYNTHETIC TEST ONLY summary",
+            "description": "SYNTHETIC TEST ONLY description",
+            "city": "T13B02-39eb34-desktop",
+            "province": "T13B02-39eb34-desktop",
+            "address": "SYNTHETIC TEST ONLY address",
+            "district": null,
+            "latitude": 16.05,
+            "longitude": 108.2,
+            "priceFrom": 123456,
+            "rating": 0,
+            "reviewCount": 0,
+            "bayesianRating": 4.2,
+            "duration": null,
+            "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "galleryImages": [],
+            "highlights": [],
+            "amenities": [],
+            "itinerary": [],
+            "isFeatured": false,
+            "openingHours": {},
+            "contactInfo": {},
+            "status": "DRAFT",
+            "createdAt": "2026-11-07T13:25:33.332Z",
+            "updatedAt": "2026-11-07T13:25:33.332Z"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/tours/977fda23-16ae-4c39-882a-397542d53f8c",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/tours/977fda23-16ae-4c39-882a-397542d53f8c",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/tours/977fda23-16ae-4c39-882a-397542d53f8c",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/tours/977fda23-16ae-4c39-882a-397542d53f8c",
+      "request": {
+        "title": "UNAUTHORIZED SYNTHETIC"
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "DELETE",
+      "endpoint": "/api/partner/tours/977fda23-16ae-4c39-882a-397542d53f8c",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "DELETE",
+      "endpoint": "/partner/tours/977fda23-16ae-4c39-882a-397542d53f8c",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/tours/977fda23-16ae-4c39-882a-397542d53f8c/submit",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/tours/977fda23-16ae-4c39-882a-397542d53f8c/submit",
+      "request": {},
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/tours",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/tours",
+      "request": {
+        "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+        "title": "T13B02 R03-FOREIGN e0180d82",
+        "destinationCity": "T13B02-39eb34-desktop",
+        "departureCity": "SYNTHETIC departure",
+        "durationDays": 2,
+        "durationNights": 1,
+        "category": "culture",
+        "summary": "SYNTHETIC TEST ONLY summary",
+        "description": "SYNTHETIC TEST ONLY description",
+        "priceVND": 123456,
+        "capacity": 30,
+        "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg=="
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/tours",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/tours?businessId=3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd&limit=100",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "items": [
+              {
+                "id": "b840d750-e325-41c7-8a92-4485ee64449f",
+                "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+                "title": "T13B02 R03-tours b9203bce",
+                "slug": "t13b02-r03-tours-b9203bce-mw6frrrd",
+                "destinationCity": "T13B02-39eb34-desktop",
+                "departureCity": "SYNTHETIC departure",
+                "durationDays": 2,
+                "durationNights": 1,
+                "category": "culture",
+                "summary": "SYNTHETIC TEST ONLY summary",
+                "description": "SYNTHETIC TEST ONLY description",
+                "meetingPoint": null,
+                "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+                "galleryImages": [],
+                "priceVND": 123456,
+                "capacity": 30,
+                "availableCapacity": 30,
+                "rating": 0,
+                "reviewCount": 0,
+                "inclusions": [],
+                "exclusions": [],
+                "highlights": [],
+                "itineraryDays": [],
+                "startDate": null,
+                "endDate": null,
+                "isTemplate": false,
+                "status": "DRAFT",
+                "createdAt": "2026-11-07T13:25:31.849Z",
+                "updatedAt": "2026-11-07T13:25:31.849Z",
+                "business": {
+                  "id": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+                  "name": "T13B02 SYNTHETIC R03 B desktop",
+                  "type": "TOUR_OPERATOR"
+                },
+                "bayesianScore": 4.2
+              }
+            ],
+            "total": 1,
+            "page": 1,
+            "limit": 100,
+            "pages": 1
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/tours/b840d750-e325-41c7-8a92-4485ee64449f",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/tours/b840d750-e325-41c7-8a92-4485ee64449f",
+      "request": {
+        "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+        "title": "T13B02 R03-tours b9203bce"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "b840d750-e325-41c7-8a92-4485ee64449f",
+            "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+            "title": "T13B02 R03-tours b9203bce",
+            "slug": "t13b02-r03-tours-b9203bce-mw6frrrd",
+            "destinationCity": "T13B02-39eb34-desktop",
+            "departureCity": "SYNTHETIC departure",
+            "durationDays": 2,
+            "durationNights": 1,
+            "category": "culture",
+            "summary": "SYNTHETIC TEST ONLY summary",
+            "description": "SYNTHETIC TEST ONLY description",
+            "meetingPoint": null,
+            "heroImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "galleryImages": [],
+            "priceVND": 123456,
+            "capacity": 30,
+            "availableCapacity": 30,
+            "rating": 0,
+            "reviewCount": 0,
+            "inclusions": [],
+            "exclusions": [],
+            "highlights": [],
+            "itineraryDays": [],
+            "startDate": null,
+            "endDate": null,
+            "isTemplate": false,
+            "status": "DRAFT",
+            "createdAt": "2026-11-07T13:25:31.849Z",
+            "updatedAt": "2026-11-07T13:25:31.849Z",
+            "bayesianScore": 4.2
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/tickets/8d54383b-9322-4f49-975e-d91ab5bed212",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/tickets/8d54383b-9322-4f49-975e-d91ab5bed212",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/tickets/8d54383b-9322-4f49-975e-d91ab5bed212",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/tickets/8d54383b-9322-4f49-975e-d91ab5bed212",
+      "request": {
+        "title": "UNAUTHORIZED SYNTHETIC"
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "DELETE",
+      "endpoint": "/api/partner/tickets/8d54383b-9322-4f49-975e-d91ab5bed212",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "DELETE",
+      "endpoint": "/partner/tickets/8d54383b-9322-4f49-975e-d91ab5bed212",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/tickets",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/tickets",
+      "request": {
+        "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+        "title": "T13B02 R03-FOREIGN 52ac0e43",
+        "type": "bus",
+        "operator": "SYNTHETIC TEST ONLY operator",
+        "departureCity": "T13B02-39eb34-desktop",
+        "arrivalCity": "SYNTHETIC arrival",
+        "departureTime": "2030-06-15T10:30",
+        "arrivalTime": "2030-06-15T12:30",
+        "price": 123456,
+        "capacity": 30,
+        "status": "ACTIVE",
+        "imageUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg=="
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/tickets",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/tickets?businessId=3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd&limit=100",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "items": [
+              {
+                "id": "e92d10c6-2fd7-4c02-8bd1-6c51eef21f20",
+                "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+                "placeId": null,
+                "tourId": null,
+                "title": "T13B02 R03-tickets 1a0f211f",
+                "type": "bus",
+                "operator": "SYNTHETIC TEST ONLY operator",
+                "departureCity": "T13B02-39eb34-desktop",
+                "arrivalCity": "SYNTHETIC arrival",
+                "departureTime": "2030-06-15T10:30:00.000Z",
+                "arrivalTime": "2030-06-15T12:30:00.000Z",
+                "duration": null,
+                "price": 123456,
+                "availableSeats": 30,
+                "capacity": 30,
+                "validFrom": null,
+                "validUntil": null,
+                "status": "ACTIVE",
+                "features": [],
+                "imageUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+                "createdAt": "2026-11-07T13:25:31.868Z",
+                "business": {
+                  "id": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+                  "name": "T13B02 SYNTHETIC R03 B desktop",
+                  "type": "TOUR_OPERATOR"
+                }
+              }
+            ],
+            "total": 1,
+            "page": 1,
+            "limit": 100,
+            "pages": 1
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/tickets/e92d10c6-2fd7-4c02-8bd1-6c51eef21f20",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/tickets/e92d10c6-2fd7-4c02-8bd1-6c51eef21f20",
+      "request": {
+        "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+        "title": "T13B02 R03-tickets 1a0f211f"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "e92d10c6-2fd7-4c02-8bd1-6c51eef21f20",
+            "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+            "placeId": null,
+            "tourId": null,
+            "title": "T13B02 R03-tickets 1a0f211f",
+            "type": "bus",
+            "operator": "SYNTHETIC TEST ONLY operator",
+            "departureCity": "T13B02-39eb34-desktop",
+            "arrivalCity": "SYNTHETIC arrival",
+            "departureTime": "2030-06-15T10:30:00.000Z",
+            "arrivalTime": "2030-06-15T12:30:00.000Z",
+            "duration": null,
+            "price": 123456,
+            "availableSeats": 30,
+            "capacity": 30,
+            "validFrom": null,
+            "validUntil": null,
+            "status": "ACTIVE",
+            "features": [],
+            "imageUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "createdAt": "2026-11-07T13:25:31.868Z"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/blogs/4fe5dfdc-76dd-4edf-b452-e64ad0a2fe0d",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/blogs/4fe5dfdc-76dd-4edf-b452-e64ad0a2fe0d",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/blogs/4fe5dfdc-76dd-4edf-b452-e64ad0a2fe0d",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/blogs/4fe5dfdc-76dd-4edf-b452-e64ad0a2fe0d",
+      "request": {
+        "title": "UNAUTHORIZED SYNTHETIC"
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "DELETE",
+      "endpoint": "/api/partner/blogs/4fe5dfdc-76dd-4edf-b452-e64ad0a2fe0d",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "DELETE",
+      "endpoint": "/partner/blogs/4fe5dfdc-76dd-4edf-b452-e64ad0a2fe0d",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/blogs/4fe5dfdc-76dd-4edf-b452-e64ad0a2fe0d/submit",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/blogs/4fe5dfdc-76dd-4edf-b452-e64ad0a2fe0d/submit",
+      "request": {},
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner/blogs",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner/blogs",
+      "request": {
+        "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+        "title": "T13B02 R03-FOREIGN e02fca87",
+        "excerpt": "SYNTHETIC TEST ONLY excerpt",
+        "content": "SYNTHETIC TEST ONLY content",
+        "destinationName": "T13B02-39eb34-desktop",
+        "coverImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+        "tags": [
+          "SYNTHETIC",
+          "T13B02"
+        ]
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/blogs",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/blogs?businessId=3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd&limit=100",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "items": [
+              {
+                "id": "8daf9ca6-8a98-48e8-b7c2-b3c90a3c98aa",
+                "title": "T13B02 R03-blogs cf0bf473",
+                "slug": "t13b02-r03-blogs-cf0bf473-mw6frrse",
+                "excerpt": "SYNTHETIC TEST ONLY excerpt",
+                "content": "SYNTHETIC TEST ONLY content",
+                "destinationName": "T13B02-39eb34-desktop",
+                "placeId": null,
+                "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+                "authorId": "514edd35-64d0-47e0-9dd2-ed0bccdb0819",
+                "authorName": "T13B02 desktop R03-B",
+                "authorAvatar": null,
+                "coverImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+                "costEstimate": null,
+                "tripDuration": null,
+                "tags": [
+                  "SYNTHETIC",
+                  "T13B02"
+                ],
+                "likesCount": 0,
+                "isFeatured": false,
+                "status": "DRAFT",
+                "createdAt": "2026-11-07T13:25:31.886Z",
+                "updatedAt": "2026-11-07T13:25:31.886Z",
+                "business": {
+                  "id": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+                  "name": "T13B02 SYNTHETIC R03 B desktop",
+                  "type": "TOUR_OPERATOR"
+                }
+              }
+            ],
+            "total": 1,
+            "page": 1,
+            "limit": 100,
+            "pages": 1
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/blogs/8daf9ca6-8a98-48e8-b7c2-b3c90a3c98aa",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/blogs/8daf9ca6-8a98-48e8-b7c2-b3c90a3c98aa",
+      "request": {
+        "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+        "title": "T13B02 R03-blogs cf0bf473"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "8daf9ca6-8a98-48e8-b7c2-b3c90a3c98aa",
+            "title": "T13B02 R03-blogs cf0bf473",
+            "slug": "t13b02-r03-blogs-cf0bf473-mw6frrse",
+            "excerpt": "SYNTHETIC TEST ONLY excerpt",
+            "content": "SYNTHETIC TEST ONLY content",
+            "destinationName": "T13B02-39eb34-desktop",
+            "placeId": null,
+            "businessId": "a0b6b7df-4f6a-404f-b759-1c9dd9c75bbb",
+            "authorId": "514edd35-64d0-47e0-9dd2-ed0bccdb0819",
+            "authorName": "T13B02 desktop R03-B",
+            "authorAvatar": null,
+            "coverImage": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMjAiIGhlaWdodD0iMTgwIj48cmVjdCB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgZmlsbD0iIzBmNzY2ZSIvPjx0ZXh0IHg9IjEyIiB5PSI5MCIgZmlsbD0id2hpdGUiPlQxM0IwMiBTWU5USEVUSUMgVEVTVCBPTkxZPC90ZXh0Pjwvc3ZnPg==",
+            "costEstimate": null,
+            "tripDuration": null,
+            "tags": [
+              "SYNTHETIC",
+              "T13B02"
+            ],
+            "likesCount": 0,
+            "isFeatured": false,
+            "status": "DRAFT",
+            "createdAt": "2026-11-07T13:25:31.886Z",
+            "updatedAt": "2026-11-07T13:25:31.886Z"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/businesses/3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/businesses/3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không có quyền truy cập cơ sở này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/dashboard",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/dashboard?businessId=3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không có quyền truy cập cơ sở này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/bookings",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/bookings?businessId=3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/businesses/3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd/bookings",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/businesses/3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd/bookings",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không có quyền truy cập cơ sở này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/bookings/d3e5dcd6-582a-43cc-9c2b-9c732d883f8a",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner/bookings/d3e5dcd6-582a-43cc-9c2b-9c732d883f8a",
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/bookings/d3e5dcd6-582a-43cc-9c2b-9c732d883f8a/status",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/bookings/d3e5dcd6-582a-43cc-9c2b-9c732d883f8a/status",
+      "request": {
+        "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+        "status": "CONFIRMED"
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Bạn không được cấp quyền với cơ sở kinh doanh này",
+          "code": "BUSINESS_ACCESS_DENIED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/partner/bookings/e073570c-aca9-47d0-8143-4dec92bd7e82/status",
+      "status": 403
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/partner/bookings/e073570c-aca9-47d0-8143-4dec92bd7e82/status",
+      "request": {
+        "businessId": "3bf6c9f5-d0e5-4449-a96e-230f9cd6a9dd",
+        "status": "CONFIRMED"
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "success": false,
+          "message": "Booking không thuộc cơ sở này",
+          "code": "BOOKING_ACCESS_DENIED"
+        }
+      }
+    }
+  ],
+  "console": [
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    }
+  ],
+  "images": [
+    "R03-final.png",
+    "R03-final-full.png"
+  ],
+  "trace": null,
+  "dbSnapshot": "R03-db-final.json"
+}

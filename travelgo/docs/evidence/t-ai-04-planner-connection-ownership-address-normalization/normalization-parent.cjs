@@ -1,0 +1,31 @@
+'use strict';
+const c=require('./common.cjs'),assert=c.assert,{spawnSync}=require('node:child_process');
+c.fs.mkdirSync(c.path.join(__dirname,'normalization-cases'));
+const specs=[];const add=(id,spec,good,hex,family)=>specs.push({id,...spec,good,hex,family:spec.family??family});
+for(const[id,input,hex,family]of [
+ ['v4-bare','172.18.0.3','ac120003',4],['v4-host-mask','172.18.0.3/32','ac120003',4],['v4-gateway','172.18.0.1/32','ac120001',4],['v4-loopback','127.0.0.1/32','7f000001',4],['v6-loopback','::1','00000000000000000000000000000001',6],['v6-host-mask','::1/128','00000000000000000000000000000001',6],['v6-expanded','2001:0DB8:0:0:0:0:0:1/128','20010db8000000000000000000000001',6],['v6-compressed','2001:db8::1','20010db8000000000000000000000001',6]
+])add(id,{kind:'parse',input},true,hex,family);
+const invalid=[['v4-network-host','172.18.0.3/24'],['v4-network','172.18.0.0/24'],['v4-zero-prefix','172.18.0.3/0'],['v4-wrong-mask','172.18.0.3/128'],['v4-overflow-prefix','172.18.0.3/33'],['v6-network','::1/64'],['v6-wrong-mask','::1/32'],['v6-overflow-prefix','::1/129'],['empty-mask','172.18.0.3/'],['double-mask','172.18.0.3/32/32'],['zero-pad-mask','172.18.0.3/032'],['signed-mask','172.18.0.3/+32'],['negative-mask','::1/-1'],['mask-space','172.18.0.3/32 '],['octet-overflow','172.18.0.256'],['octal-ambiguous','172.018.0.3'],['short-v4','172.18.3'],['integer-v4','2886860803'],['hex-v4','0xac120003'],['hostname','localhost'],['zone-id','fe80::1%eth0'],['bracket','[::1]'],['mapped-dotted','::ffff:192.0.2.1'],['mapped-hex','::ffff:c000:201'],['mapped-expanded','0:0:0:0:0:ffff:c000:201'],['compatible-hex','::c000:201'],['compatible-dotted','::192.0.2.1'],['bad-v6','2001:::1'],['too-many-v6','1:2:3:4:5:6:7:8:9'],['space',' ::1'],['empty',''],['not-string',null],['unicode','１７２.18.0.3'],['newline','172.18.0.3\n']];
+for(const[id,input]of invalid)add(id,{kind:'parse',input},false);
+add('newline-cidr',{kind:'parse',input:'172.18.0.3/32\n'},false);
+add('wrong-family-v4',{kind:'parse',input:'172.18.0.3',family:6},false);
+add('wrong-family',{kind:'parse',input:'::1',family:4},false);add('unsupported-family',{kind:'parse',input:'172.18.0.3',family:7},false);
+for(const[id,actual,expected,good]of [['v4-equivalence','172.18.0.3/32','172.18.0.3',true],['v6-equivalence','0:0:0:0:0:0:0:1/128','::1',true],['v6-case-equivalence','2001:DB8::1/128','2001:db8:0:0:0:0:0:1',true],['foreign-v4','172.18.0.1/32','172.18.0.3',false],['cross-family','::1','127.0.0.1',false]])add(id,{kind:'equal',actual,expected},good);
+add('saved-raw-replay',{kind:'replay'},true);
+const positive=['normalized-owned','maintenance-owned'];
+const negative=['wrong-server','wrong-gateway','server-network','gateway-network','wrong-family','wrong-database','wrong-mapping','wrong-route-target','wrong-physical-target','stale-route','unexpected-listener','protocol-pid','backend-start','startup-token','copied-tag','missing-registration','pending-created','closed','pid-reuse','external','snapshot-mutation','writer-failure','empty-tag','read-write','default-read-write','wrong-role','wrong-sentinel','wrong-self-client','wrong-server-port','maintenance-unknown'];
+for(const action of [...positive,...negative])add('guard-'+action,{kind:'guard',action},positive.includes(action));
+const results=[];
+for(const spec of specs){try{
+ const encoded=Buffer.from(JSON.stringify(spec)).toString('base64'),child=spawnSync(process.execPath,[c.path.join(__dirname,'normalization-child.cjs'),encoded],{cwd:c.root,encoding:'utf8',timeout:10000,windowsHide:true});c.fs.writeFileSync(c.path.join(__dirname,'normalization-cases',spec.id+'.log'),(child.stdout||'')+(child.stderr||''),{flag:'wx'});
+ const r=c.json(c.prefix+'normalization-cases/'+spec.id+'.json');assert.equal(child.status,spec.good?0:1,'PROCESS_EXIT');assert.equal(r.error===null,spec.good,'VERDICT');assert.deepEqual(r.network.sockets,[]);assert.deepEqual(r.network.blocked,[]);assert.equal(r.network.http,0);assert.equal(r.created,r.disposed,'EXACT_ONCE_DISPOSE');assert.equal(r.lateDispatched,0);
+ if(spec.hex){assert.equal(r.result.hex,spec.hex);assert.equal(r.result.family,spec.family);}
+ if(!spec.good){assert.equal(r.lateRejected,4);assert.equal(r.fence.stopped,true);for(const k of ['agentDispatches','nativeDispatches','toolDispatches','operatorDispatches'])assert.deepEqual(r.fence[k],[]);}
+ const raw=r.events.findIndex(x=>x.type==='RAW_SELF_IDENTITY'),verdict=r.events.findIndex(x=>x.type==='REGISTRATION_PASS'||x.type==='REGISTRATION_FAIL');if(verdict>=0)assert.ok(raw>=0&&raw<verdict);
+ if(spec.action==='writer-failure')assert.equal(r.events.some(x=>x.type==='REGISTRATION_PASS'),false);
+ if(spec.action==='maintenance-unknown'){assert.deepEqual(r.result.harness.cases.map(x=>x.status),['FAIL','NOT RUN','NOT RUN']);for(const v of Object.values(r.result.harness.dispatches))assert.deepEqual(v,[]);assert.equal(r.result.harness.cleanup.action,'NOT_APPLICABLE');assert.equal(r.result.harness.cleanup.dispose,'PASS');}
+ if(spec.action==='maintenance-owned'){assert.deepEqual(r.result.harness.cases.map(x=>x.status),['PASS','PASS','PASS']);assert.equal(r.result.harness.cleanup.action,'NOT_APPLICABLE');assert.equal(r.result.harness.cleanup.dispose,'PASS');}
+ if(spec.kind==='replay'){assert.equal(r.result.tier,'OFFLINE_REPLAY_OF_HISTORICAL_RAW_DATA');assert.equal(r.result.historicalTraceStatus,'FAIL_CLOSED_PRESERVED');assert.equal(r.result.historicalRegistrationPassSynthesized,false);}
+ results.push({id:spec.id,status:'PASS',expectedGood:spec.good,exit:child.status});
+ }catch(e){results.push({id:spec.id,status:'FAIL',message:e.message});break;}}
+const failed=results.filter(x=>x.status==='FAIL'),complete=results.length===specs.length,status=failed.length||!complete?'FAIL':'PASS';c.write('normalization-acceptance.json',{at:new Date().toISOString(),status,planned:specs.length,passed:results.filter(x=>x.status==='PASS').length,failed:failed.length,notRun:specs.slice(results.length).map(x=>x.id),results,actualPostgres:0,actualOllama:0,independence:'Parent hard-coded address bytes and security outcomes; child executes actual helper/registry/managed lifecycle/maintenance bridge.'});console.log(JSON.stringify({status,passed:results.filter(x=>x.status==='PASS').length,failed,notRun:specs.length-results.length}));if(status!=='PASS')process.exitCode=1;

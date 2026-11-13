@@ -1,0 +1,53 @@
+{
+  "tier": "BROWSER_REAL_CORE_HTTP_REAL_PLANNER_IN_MEMORY_CATALOG_MODEL_TRIP_DOUBLES",
+  "status": "passed",
+  "requests": [
+    {
+      "path": "/api/agent/core/privacy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/agent/core/chat",
+      "method": "POST",
+      "body": {
+        "message": "Tư vấn theo thời tiết.",
+        "conversation": {
+          "action": "start",
+          "requestId": "5e5b221b-0457-42e5-b146-97faa72a3928",
+          "consentVersion": "TRAVELGO_CORE_SLOTS_V1"
+        },
+        "consentVersion": "TRAVELGO_CORE_SLOTS_V1",
+        "intentVersion": "CORE_INTENT_V2"
+      }
+    }
+  ],
+  "responses": [
+    {
+      "success": true,
+      "data": {
+        "version": "TRAVELGO_CORE_SLOTS_V1",
+        "mode": "CORE_VERIFIED",
+        "ttlSeconds": 900,
+        "text": "Giữ slots du lịch, ID lựa chọn và bản Planner trong RAM tối đa 15 phút; không giữ câu chat, GPS, Booking hoặc profile. Dữ liệu lấy từ catalog TravelGo. Nếu bật Qwen local, model nhận yêu cầu hiện tại và slots đã xác minh. Trip đã lưu chỉ nạp các slots du lịch khi bạn đồng ý riêng; không nạp ghi chú/profile. Lưu/sửa Trip cần xem trước và xác nhận riêng; chỉ ghi trên DB test riêng được phê duyệt. Kết thúc phiên để xóa RAM.",
+        "modelConfigured": true
+      }
+    },
+    {
+      "success": false,
+      "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+      "message": "Gợi ý thao tác không hợp lệ; chưa chạy công cụ.",
+      "conversation": {
+        "id": "0c9b99f8-e2e4-4c90-bf40-a6f8d1ee0442",
+        "revision": 1,
+        "expiresAt": "2026-11-11T16:09:53.631Z",
+        "mode": "CORE_VERIFIED",
+        "persisted": false
+      }
+    }
+  ],
+  "modelCalls": 1,
+  "catalogCalls": 0,
+  "tripWrites": 0,
+  "actualDB": 0,
+  "actualModel": 0
+}

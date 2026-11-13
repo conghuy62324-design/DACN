@@ -1,0 +1,33 @@
+// OFFLINE pure-function review, after independent tests and regression completed.
+// Freeze source BEFORE looking at V2 projections; never adjusts implementation.
+const c=require('./common.cjs'),ts=require(c.path.join(c.root,'backend/node_modules/typescript')),Module=require('node:module');
+const prefix='docs/evidence/t-ai-04-g1-natural-language-proof-fix/';
+const files=['backend/src/agent/currentTurnProof.ts','backend/src/agent/toolProvenance.ts','backend/src/agent/currentCompleteness.ts','backend/src/tests/agentNaturalLanguageProof.test.ts'];
+const frozen=Object.fromEntries(files.map(file=>[file,c.sha(c.read(file))]));
+const natural=c.json(prefix+'natural-proof-initial.json'),compat=c.json(prefix+'compatibility-results.json');
+c.assert.equal(natural.failed,0);c.assert.equal(natural.passed,69);c.assert.equal(natural.falsePositiveAuthorization,0);c.assert.equal(compat.passed,61);c.assert.equal(compat.failed,0);
+c.write('source-freeze-before-v2-review.json',{at:new Date().toISOString(),reason:'Independent47-case manifest locked before implementation;69-case suite and61/42/52/regression completed before V2 static projection',hashes:frozen,sourceChangesAfterThisReviewAllowed:false});
+function beforeModule(name, overrides={}){const filename=c.path.join(c.root,'backend/dist/agent',name+'.before-review.js'),instance=new Module(filename,module);instance.filename=filename;instance.paths=Module._nodeModulePaths(c.path.dirname(filename));const requireActual=Module.createRequire(filename);instance.require=id=>Object.hasOwn(overrides,id)?overrides[id]:requireActual(id);const source=c.fs.readFileSync(c.path.join(c.evidence,'before-'+name+'.ts'),'utf8'),compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText;instance._compile(compiled,filename);return instance.exports;}
+const oldGate=beforeModule('toolProvenance'),oldAssessment=beforeModule('currentCompleteness',{'./toolProvenance.js':oldGate});
+const proof=require(c.path.join(c.root,'backend/dist/agent/currentTurnProof.js')),gate=require(c.path.join(c.root,'backend/dist/agent/toolProvenance.js')),assessor=require(c.path.join(c.root,'backend/dist/agent/currentCompleteness.js'));
+const manifest=c.json(prefix+'natural-language-case-manifest.json');
+const comparison=manifest.cases.map(item=>({id:item.id,group:item.group,message:item.message,expected:item.expected||null,beforeAssessment:oldAssessment.assessCurrentCompleteness(item.message),afterAssessment:assessor.assessCurrentCompleteness(item.message),beforeGate:item.expected?.kind==='tool'?oldGate.checkToolProvenance(item.expected,item.message):null,afterGate:item.expected?.kind==='tool'?gate.checkToolProvenance(item.expected,item.message):null,proof:proof.readCurrentTurnProof(item.message)}));
+c.write('independent-proof-before-after.json',{at:new Date().toISOString(),tier:'OFFLINE_STATIC_NOT_NLU',positive:{count:16,beforeAllow:comparison.filter(x=>x.group==='positive'&&x.beforeGate.status==='ALLOW').length,afterAllow:comparison.filter(x=>x.group==='positive'&&x.afterGate.status==='ALLOW').length},rows:comparison});
+const benchmark='docs/evidence/t-ai-03-b-v2-lock/nlu-manifest-v2-approved.json',lock='docs/evidence/t-ai-03-b-v2-lock/nlu-manifest-v2-lock.json';
+c.assert.equal(c.sha(c.read(benchmark)),'0f1e0f1e87418bca591c6dfcd06645bd9a534326cac23989d58c7a7fd5e6fe6e');c.assert.equal(c.sha(c.read(lock)),'f4f3294623f763418393bcfa89cbb39dae9c7af080552c8ce377b3d890549706');
+const v2=c.json(benchmark),rows=[];
+for(const item of v2.cases){const actualProof=proof.readCurrentTurnProof(item.request.message),afterGate=item.expected.kind==='tool'?gate.checkToolProvenance(item.expected,item.request.message):{status:'NOT_APPLICABLE'};
+ rows.push({id:item.id,title:item.title,request:item.request,expected:item.expected,toolOutcome:item.toolOutcome,historyTurns:item.request.history?.length||0,
+  beforeAssessment:oldAssessment.assessCurrentCompleteness(item.request.message),afterAssessment:assessor.assessCurrentCompleteness(item.request.message),beforeGate:item.expected.kind==='tool'?oldGate.checkToolProvenance(item.expected,item.request.message):{status:'NOT_APPLICABLE'},afterGate,proof:actualProof,
+  historyBlocker:!!item.request.history?.length,rawNlu:'NOT EVALUATED',inference:'NOT RUN',productExecution:'NOT RUN',fidelity:'NOT RUN',classification:item.expected.kind==='tool'?(afterGate.status==='ALLOW'?'INDEPENDENT_CURRENT_TURN_PROOF':'STILL_NEEDS_INPUT'):'NO_TOOL_EXPECTED; assess only, no inferred model output'});
+}
+const single=rows.filter(x=>x.expected.kind==='tool'&&!x.historyTurns),historyRows=rows.filter(x=>x.historyTurns);
+c.assert.equal(single.length,8);c.assert.ok(historyRows.every(x=>x.afterGate.status!=='ALLOW'));
+for(const [file,hash]of Object.entries(frozen))c.assert.equal(c.sha(c.read(file)),hash,file);
+const result={at:new Date().toISOString(),tier:'STATIC_EXPECTED_DECISION_REVIEW_NOT_LIVE_BENCHMARK',benchmarkSha256:c.sha(c.read(benchmark)),benchmarkLockSha256:c.sha(c.read(lock)),productionFrozenBeforeReview:true,implementationAdjustedFromV2Review:false,
+ singleTurnExpectedTools:{total:8,allow:single.filter(x=>x.afterGate.status==='ALLOW').length,needsInput:single.filter(x=>x.afterGate.status==='NEEDS_INPUT').length},history:{total:5,blocked:historyRows.filter(x=>x.afterGate.status!=='ALLOW').length},allCases:24,rows};
+c.write('v2-static-review.json',result);
+let md='| VI | Expected | Before gate | After assessment / gate | Independent proof / remaining blocker |\n|---|---|---|---|---|\n';
+for(const x of rows)md+=`| ${x.id} ${x.title} | ${x.expected.kind==='tool'?x.expected.name:x.expected.kind==='clarify'?'clarify '+x.expected.fields.join(','):x.expected.kind} | ${x.beforeGate.status} | ${x.afterAssessment.status} / ${x.afterGate.status} | ${x.historyBlocker?'Client history remains untrusted; no G2/state; cannot fill current required fields':x.afterGate.status==='ALLOW'?'Exact current-message proof; no inference or actual tool execution':x.afterAssessment.status==='SUPPORTED_INCOMPLETE'?'Exact omitted fields '+x.afterAssessment.missingFields.join(',')+' from current proof; no raw model score':'Conservative provider/safety path; no output inferred'} |\n`;
+c.fs.writeFileSync(c.path.join(c.evidence,'v2-static-review.md'),md,{flag:'wx'});
+console.log(JSON.stringify({sourceFrozen:true,independentPositive:comparison.filter(x=>x.group==='positive').map(x=>({id:x.id,before:x.beforeGate.status,after:x.afterGate.status})),v2Single:result.singleTurnExpectedTools,history:result.history,assessments:rows.map(x=>({id:x.id,assessment:x.afterAssessment.status,gate:x.afterGate.status}))}));

@@ -1,4 +1,9 @@
 export interface Place {
+  geography?:{locationId:string|null;provinceCode:string|null;provinceName:string|null;version:string};
+  isDemo?:boolean;
+  priceUnit?:string;
+  catalogMetadata?:{source?:string;cohort?:string;accommodationType?:string;cuisines?:string[];sourceUrls?:string[];coordinateBasis?:string;priceBasis?:string};
+  approvedAt?:string|null;
   id: string;
   businessId?: string;
   name: string;
@@ -208,9 +213,9 @@ export interface PlannerInput {
   adults: number;
   children: number;
   totalBudget: number;
-  transportation: 'flight' | 'car' | 'train' | 'motorbike';
+  transportation: 'car' | 'motorbike';
   preferences: string[];
-  pacing: 'relaxed' | 'balanced' | 'packed';
+  pacing: 'balanced';
   mandatoryPlaceIds?: string[];
 }
 
@@ -223,6 +228,7 @@ export interface ItineraryActivity {
   category: 'sightseeing' | 'food' | 'hotel' | 'leisure';
   durationMinutes: number;
   estimatedCostVND: number;
+  costSource?: string;
   latitude: number;
   longitude: number;
   imageUrl?: string;
@@ -237,6 +243,9 @@ export interface ItineraryDay {
   themeTitle: string;
   activities: ItineraryActivity[];
   dayEstimatedCostVND: number;
+  lodgingNights?: number;
+  lodgingEstimatedCostVND?: number;
+  lodgingCostSource?: string;
   centroid: { latitude: number; longitude: number };
 }
 
@@ -248,6 +257,10 @@ export interface GeneratedItinerary {
   startDate: string;
   endDate: string;
   daysCount: number;
+  nightsCount?: number;
+  costBasis?: 'GROUP_VND_V1';
+  costAssumptions?: string[];
+  transportation?: 'flight' | 'car' | 'train' | 'motorbike'; // Legacy read data remains viewable.
   adults: number;
   children: number;
   pacing: 'relaxed' | 'balanced' | 'packed';
@@ -256,6 +269,8 @@ export interface GeneratedItinerary {
   totalEstimatedCostVND: number;
   costDifferenceVND: number;
   budgetStatus: 'within_budget' | 'over_budget';
+  overBudgetVND?: number;
+  constraintViolations?: string[];
   budgetAdvice: string;
   days: ItineraryDay[];
   summary: string;
@@ -265,12 +280,17 @@ export interface GeneratedItinerary {
 }
 
 export interface TripCheckin {
-  placeId: string;
+  activityId?: string;
+  resolvedActivityId?: string;
+  placeId?: string;
   placeName: string;
   checkedInAt: string;
   latitude?: number;
   longitude?: number;
-  verifiedViaGeo: boolean;
+  verifiedViaGeo?: boolean;
+  hasAttachedLocation?: boolean;
+  accuracyMeters?: number;
+  excludedFromProgress?: string;
   notes?: string;
   photoUrl?: string;
 }
@@ -295,9 +315,20 @@ export interface TripSession {
   selectedPlaceIds: string[];
   checkins: TripCheckin[];
   progressPercent: number;
+  progress?: { eligibleActivityIds: string[]; checkedActivityIds: string[]; unmatchedCheckinCount: number; ineligibleActivityCount: number };
   notes?: string;
   isPublic: boolean;
   createdAt: string;
   updatedAt: string;
+  costBasis?: string;
+  nightsCount?: number;
+  costAssumptions?: string[];
+  transportation?: 'flight' | 'car' | 'train' | 'motorbike';
+  adults?: number;
+  children?: number;
+  costDifferenceVND?: number;
+  budgetStatus?: 'within_budget' | 'over_budget';
+  overBudgetVND?: number;
+  constraintViolations?: string[];
 }
 

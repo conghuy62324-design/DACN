@@ -1,3 +1,4 @@
+import {CatalogPageFilters,CatalogPagination,useCatalogPage} from '../components/explore/CatalogPageFilters';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PlaceService } from '../services/placeService';
@@ -9,32 +10,10 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useBooking } from '../context/BookingContext';
 
 export const RestaurantsPage: React.FC = () => {
-  const [restaurants, setRestaurants] = useState<Place[]>([]);
-  const [city, setCity] = useState('all');
-  const [loading, setLoading] = useState(true);
-
-  const { toggleFavorite, isFavorite } = useFavorites();
-  const { openBooking } = useBooking();
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    const fetchRestaurants = async () => {
-      setLoading(true);
-      try {
-        const data = await PlaceService.getPlaces({
-          category: 'restaurant',
-          city: city !== 'all' ? city : undefined,
-        });
-        setRestaurants(data);
-      } catch (e) {
-        console.error('Failed to load restaurants:', e);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRestaurants();
-  }, [city]);
+  const catalog=useCatalogPage('restaurant');
+  const restaurants=catalog.items;
+  const {toggleFavorite,isFavorite}=useFavorites();
+  const {openBooking}=useBooking();
 
   return (
     <div className="min-h-screen pt-24 pb-20 bg-slate-50">
@@ -48,30 +27,11 @@ export const RestaurantsPage: React.FC = () => {
             Khám phá những nhà hàng & quán ăn trứ danh
           </h1>
           <p className="text-amber-200 text-sm sm:text-base max-w-2xl leading-relaxed">
-            Thưởng thức hương vị ẩm thực truyền thống và ẩm thực fusion độc đáo, đặt bàn trước dễ dàng không lo hết chỗ.
+            Tìm quán ăn theo loại ẩm thực và ngân sách. Thực đơn, chất gây dị ứng và tình trạng bàn cần được nhà cung cấp xác nhận riêng.
           </p>
         </div>
 
-        {/* Filter bar */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm mb-8 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <span className="text-xs font-bold text-slate-500">Lọc theo thành phố:</span>
-            {['all', 'Đà Nẵng', 'Hội An'].map((c) => (
-              <button
-                key={c}
-                onClick={() => setCity(c)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                  city === c
-                    ? 'bg-amber-500 text-white shadow'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                {c === 'all' ? 'Tất cả' : c}
-              </button>
-            ))}
-          </div>
-          <span className="text-xs text-slate-400">{restaurants.length} Nhà hàng nổi bật</span>
-        </div>
+        <CatalogPageFilters {...catalog}/>
 
         {/* Restaurant Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -81,6 +41,7 @@ export const RestaurantsPage: React.FC = () => {
             return (
               <div
                 key={rest.id}
+                data-testid="service-catalog-card"
                 className="bg-white rounded-3xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 border border-slate-100 flex flex-col justify-between"
               >
                 <div>
@@ -109,6 +70,7 @@ export const RestaurantsPage: React.FC = () => {
                       </h3>
                     </Link>
 
+                    <Link className="text-sm font-bold text-teal-700 underline" to={'/assistant?listing='+encodeURIComponent(rest.id)}>Tư vấn bằng AI</Link>
                     <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
                       {rest.summary}
                     </p>
@@ -123,10 +85,10 @@ export const RestaurantsPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="p-6 pt-0 border-t border-slate-100 flex items-center justify-between mt-4">
+                <div className="p-6 pt-0 border-t border-slate-100 flex flex-wrap gap-3 items-center justify-between mt-4">
                   <div>
-                    <span className="text-[11px] text-slate-400 block">Mức giá trung bình từ</span>
-                    <span className="text-xl font-black text-slate-900">{formatCurrencyVND(rest.priceFrom)}</span>
+                    <span className="text-[11px] text-slate-400 block">Giá từ catalog, đơn vị chưa xác minh</span>
+                    <span className="text-xl font-black text-slate-900">{rest.priceFrom==null?'Chưa có giá':formatCurrencyVND(rest.priceFrom)}</span>
                   </div>
 
                   <div className="flex items-center space-x-2">
@@ -134,9 +96,10 @@ export const RestaurantsPage: React.FC = () => {
                       to={`/places/${rest.id}`}
                       className="px-4 py-2.5 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-50 transition-colors"
                     >
-                      Xem thực đơn
+                      Xem chi tiết
                     </Link>
                     <button
+                      disabled={rest.isDemo||rest.priceFrom==null}
                       onClick={() =>
                         openBooking({
                           serviceType: 'restaurant',
@@ -149,7 +112,7 @@ export const RestaurantsPage: React.FC = () => {
                       className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow transition-colors flex items-center space-x-1.5"
                     >
                       <Users className="w-3.5 h-3.5" />
-                      <span>Đặt bàn ngay</span>
+                      <span>{rest.isDemo?'DEMO · Không nhận đặt':'Đặt dịch vụ'}</span>
                     </button>
                   </div>
                 </div>
@@ -157,6 +120,7 @@ export const RestaurantsPage: React.FC = () => {
             );
           })}
         </div>
+        <CatalogPagination {...catalog}/>
       </div>
     </div>
   );

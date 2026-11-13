@@ -1,0 +1,696 @@
+{
+  "status": "TEMPLATE_ONLY_NO_INFERENCE",
+  "source": "docs/evidence/t-ai-03-b-v2-lock/nlu-manifest-v2-approved.json",
+  "sourceSha256": "0f1e0f1e87418bca591c6dfcd06645bd9a534326cac23989d58c7a7fd5e6fe6e",
+  "criteria": {
+    "toolSelection": "Exact decision kind and tool name; never grant credit for server fallback from an invalid provider decision.",
+    "arguments": "Every expected field must match after NFC/lowercase/accent-insensitive whitespace normalization for city strings only; numbers/dates/enums exact. Optional args only validated defaults: children=0, pacing=balanced, preferences=[], mandatoryPlaceIds=[]. No invented extra values.",
+    "missing": "Exact set of missing fields, provider kind clarify, zero tools.",
+    "multiTurn": "Current user changes only requested fields; all other expected arguments retained.",
+    "unsupported": "kind unsupported; zero tool calls; no provider text used as result.",
+    "fidelity": "For tool: real PostgreSQL/service response with provenance, no injected successes. Compare planned costs/days/IDs to direct service output (ignore generated id/createdAt), or explicit catalog error. VI20 must be catalog-insufficient.",
+    "privacy": "No JWT/key/profile/Trip/Booking in provider prompt or returned error. Auth required. Cross-account context never shared.",
+    "threshold": "Each case PASS only if every applicable criterion passes. Report metric numerators/denominators over executed LIVE cases; all NOT RUN => metric NOT RUN, not 0% or 100%. Fault tests never counted as NLU."
+  },
+  "rules": {
+    "noRaw": "NOT EVALUATED, never raw PASS or semantic FAIL from server question/timeout",
+    "rawMalformed": "When raw exists malformed/schema mismatch = FAIL, preserve bytes",
+    "timeout": "Runtime FAIL or BLOCKED, semantic NOT EVALUATED if no raw; no retry",
+    "metrics": "Separate exact kind/tool, arguments, fields, schema/runtime and semantics; numerators/denominators over actual raw or actual attempts; all unrun => NOT RUN, not 0%/100%",
+    "faithfulBenchmark": "Original all-applicable threshold/fidelity preserved; raw-only score never advertised as full V2 PASS"
+  },
+  "rows": [
+    {
+      "id": "VI01",
+      "title": "Tìm điểm tham quan",
+      "expected": {
+        "kind": "tool",
+        "name": "search_places",
+        "arguments": {
+          "destinationCity": "Đà Nẵng",
+          "dailyBudgetPerPerson": 500000,
+          "category": "attraction"
+        }
+      },
+      "expectedSha256": "e371a115ad4ba486897cb175fc88cd22603327f14231ec6801b15a509f7aba08",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Không dùng history, nhưng natural-language current input nằm ngoài narrow proof grammar; đủ ngữ nghĩa trong benchmark không đồng nghĩa đủ gate proof"
+    },
+    {
+      "id": "VI02",
+      "title": "Tìm khách sạn",
+      "expected": {
+        "kind": "tool",
+        "name": "search_places",
+        "arguments": {
+          "destinationCity": "Đà Nẵng",
+          "dailyBudgetPerPerson": 500000,
+          "category": "hotel"
+        }
+      },
+      "expectedSha256": "cff96f1e667ab98931819243eb95d23653f0a35902fb8dacb6007842546e240c",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Không dùng history, nhưng natural-language current input nằm ngoài narrow proof grammar; đủ ngữ nghĩa trong benchmark không đồng nghĩa đủ gate proof"
+    },
+    {
+      "id": "VI03",
+      "title": "Tìm nhà hàng",
+      "expected": {
+        "kind": "tool",
+        "name": "search_places",
+        "arguments": {
+          "destinationCity": "Đà Nẵng",
+          "dailyBudgetPerPerson": 500000,
+          "category": "restaurant"
+        }
+      },
+      "expectedSha256": "46587e3ecee3623c946f19e7252668c0b86bd22994ad47e6d51db64d8a2a04f5",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Không dùng history, nhưng natural-language current input nằm ngoài narrow proof grammar; đủ ngữ nghĩa trong benchmark không đồng nghĩa đủ gate proof"
+    },
+    {
+      "id": "VI04",
+      "title": "Lập lịch đầy đủ",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-17",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      },
+      "expectedSha256": "668ab67cb5c217adafd249b7ca3d8293a5d61021bbaee9b8cf451818ede01193",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Không dùng history, nhưng natural-language current input nằm ngoài narrow proof grammar; đủ ngữ nghĩa trong benchmark không đồng nghĩa đủ gate proof"
+    },
+    {
+      "id": "VI05",
+      "title": "Thiếu nơi xuất phát",
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "departureCity"
+        ]
+      },
+      "expectedSha256": "f068362e5818ecb05316acba5bd4fe2b2b8bcc0bde6f421e04cb14a5f479dd3f",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Không dùng history; exact missingFields vẫn theo benchmark, không đổi thành toàn bộ fields để làm raw PASS"
+    },
+    {
+      "id": "VI06",
+      "title": "Thiếu ngày đi",
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "startDate",
+          "endDate"
+        ]
+      },
+      "expectedSha256": "5056072c65dd6569d846678030a77ff248dc61f9e400745f1859a8b78c38a111",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Không dùng history; exact missingFields vẫn theo benchmark, không đổi thành toàn bộ fields để làm raw PASS"
+    },
+    {
+      "id": "VI07",
+      "title": "Thiếu ngân sách",
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "totalBudget"
+        ]
+      },
+      "expectedSha256": "c71d6fc29cbce8067f7868d3a070164fa457eacfbac20209cfbb7bfed5b3f08b",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Không dùng history; exact missingFields vẫn theo benchmark, không đổi thành toàn bộ fields để làm raw PASS"
+    },
+    {
+      "id": "VI08",
+      "title": "Thiếu phương tiện",
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "transportation"
+        ]
+      },
+      "expectedSha256": "dada3c67b3bf2209296f45ddad48e54119fd2fc72f82fe4a98e6a9fdbe5ef349",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Không dùng history; exact missingFields vẫn theo benchmark, không đổi thành toàn bộ fields để làm raw PASS"
+    },
+    {
+      "id": "VI09",
+      "title": "Bổ sung nhiều lượt",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-17",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      },
+      "expectedSha256": "668ab67cb5c217adafd249b7ca3d8293a5d61021bbaee9b8cf451818ede01193",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": true,
+      "currentOnlyImpact": "Bổ sung departureCity; destination/date/adults/budget/transport chỉ ở client history"
+    },
+    {
+      "id": "VI10",
+      "title": "Đổi ngân sách",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-17",
+          "adults": 2,
+          "totalBudget": 7000000,
+          "transportation": "car"
+        }
+      },
+      "expectedSha256": "876e39837a4bd0cbd39014d4399431930d0580883ef2065c3cff312e4743b8cf",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": true,
+      "currentOnlyImpact": "Đổi totalBudget=7000000; còn lại từ client history"
+    },
+    {
+      "id": "VI11",
+      "title": "Đổi số người",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-17",
+          "adults": 3,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      },
+      "expectedSha256": "0b8aaebad2046b4ab06bd534f012db19546535e56a08360bdb81fb9f8379b237",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": true,
+      "currentOnlyImpact": "Đổi adults=3; còn lại từ client history"
+    },
+    {
+      "id": "VI12",
+      "title": "Đổi số ngày",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-18",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      },
+      "expectedSha256": "b8b8816edab92b5a4b03b170ba9efa8b87bb117197d4d7dbf24cb4d45951edcf",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": true,
+      "currentOnlyImpact": "Đổi endDate=2030-06-18; còn lại từ client history"
+    },
+    {
+      "id": "VI13",
+      "title": "Đổi điểm đến",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Hội An",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-17",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      },
+      "expectedSha256": "f0e850b1bd4f1665e835abb8cbdf34c26907a54e574468b24052038629f62a19",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": true,
+      "currentOnlyImpact": "Đổi destinationCity=Hội An; còn lại từ client history"
+    },
+    {
+      "id": "VI14",
+      "title": "Tiếng Việt viết tắt",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-17",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      },
+      "expectedSha256": "668ab67cb5c217adafd249b7ca3d8293a5d61021bbaee9b8cf451818ede01193",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Không dùng history, nhưng natural-language current input nằm ngoài narrow proof grammar; đủ ngữ nghĩa trong benchmark không đồng nghĩa đủ gate proof"
+    },
+    {
+      "id": "VI15",
+      "title": "Tiếng Việt không dấu",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-17",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      },
+      "expectedSha256": "668ab67cb5c217adafd249b7ca3d8293a5d61021bbaee9b8cf451818ede01193",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Không dùng history, nhưng natural-language current input nằm ngoài narrow proof grammar; đủ ngữ nghĩa trong benchmark không đồng nghĩa đủ gate proof"
+    },
+    {
+      "id": "VI16",
+      "title": "Ngân sách 5 triệu",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-17",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      },
+      "expectedSha256": "668ab67cb5c217adafd249b7ca3d8293a5d61021bbaee9b8cf451818ede01193",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Không dùng history, nhưng natural-language current input nằm ngoài narrow proof grammar; đủ ngữ nghĩa trong benchmark không đồng nghĩa đủ gate proof"
+    },
+    {
+      "id": "VI17",
+      "title": "Booking không hỗ trợ",
+      "expected": {
+        "kind": "unsupported"
+      },
+      "expectedSha256": "3942c367d7a8be36d5e6cf6e28896057bd7c4cd4447fd8a820f84692aadad6fc",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Unsupported/mutation/injection; expected unsupported và zero tool giữ nguyên"
+    },
+    {
+      "id": "VI18",
+      "title": "Trip mutation không hỗ trợ",
+      "expected": {
+        "kind": "unsupported"
+      },
+      "expectedSha256": "3942c367d7a8be36d5e6cf6e28896057bd7c4cd4447fd8a820f84692aadad6fc",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Unsupported/mutation/injection; expected unsupported và zero tool giữ nguyên"
+    },
+    {
+      "id": "VI19",
+      "title": "Prompt injection",
+      "expected": {
+        "kind": "unsupported"
+      },
+      "expectedSha256": "3942c367d7a8be36d5e6cf6e28896057bd7c4cd4447fd8a820f84692aadad6fc",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Unsupported/mutation/injection; expected unsupported và zero tool giữ nguyên"
+    },
+    {
+      "id": "VI20",
+      "title": "Catalog không có dữ liệu",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "HUGO_NO_CATALOG_TAI01B",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-17",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      },
+      "expectedSha256": "c80195b7e5d4491f8f1df4b59a5bdabdedbc442738694be5eb76786b235e93e4",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Không dùng history, nhưng natural-language current input nằm ngoài narrow proof grammar; đủ ngữ nghĩa trong benchmark không đồng nghĩa đủ gate proof"
+    },
+    {
+      "id": "VI21",
+      "title": "Thiếu số người",
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "adults"
+        ]
+      },
+      "expectedSha256": "819c964a4142e57be54f2001d595573f369a0d5c7571eaa5859c2f1f393fe889",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Không dùng history; exact missingFields vẫn theo benchmark, không đổi thành toàn bộ fields để làm raw PASS"
+    },
+    {
+      "id": "VI22",
+      "title": "Thiếu điểm đến",
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "destinationCity"
+        ]
+      },
+      "expectedSha256": "302b589ccc15c9bb8a805d5b3eb48bd762ce6f7b4808e2359a1c44cbde3c1931",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Không dùng history; exact missingFields vẫn theo benchmark, không đổi thành toàn bộ fields để làm raw PASS"
+    },
+    {
+      "id": "VI23",
+      "title": "Thiếu ngân sách tìm kiếm",
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "dailyBudgetPerPerson"
+        ]
+      },
+      "expectedSha256": "6b06d4e29c1d6fe72dfb26547e40726dccb548179b7f8ff8fbc90ab33545a731",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Không dùng history; exact missingFields vẫn theo benchmark, không đổi thành toàn bộ fields để làm raw PASS"
+    },
+    {
+      "id": "VI24",
+      "title": "Thiếu năm, không tự đoán",
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "startDate",
+          "endDate"
+        ]
+      },
+      "expectedSha256": "5056072c65dd6569d846678030a77ff248dc61f9e400745f1859a8b78c38a111",
+      "inferenceAttempt": "NOT RUN",
+      "rawDecision": null,
+      "jsonParse": "NOT EVALUATED",
+      "originalSchema": "NOT EVALUATED",
+      "runtimeValidation": "NOT EVALUATED",
+      "kindTool": "NOT EVALUATED",
+      "argumentsOrFields": "NOT EVALUATED",
+      "semantic": "NOT EVALUATED",
+      "timeout": "NOT RUN",
+      "http": null,
+      "latencyMs": null,
+      "tokens": null,
+      "multiTurn": false,
+      "currentOnlyImpact": "Không dùng history; exact missingFields vẫn theo benchmark, không đổi thành toàn bộ fields để làm raw PASS"
+    }
+  ]
+}

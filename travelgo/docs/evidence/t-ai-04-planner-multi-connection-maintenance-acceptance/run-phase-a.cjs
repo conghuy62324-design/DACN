@@ -1,0 +1,13 @@
+'use strict';
+const c=require('./common.cjs'),assert=c.assert,{spawnSync}=require('node:child_process');
+function snapshot(){return Object.fromEntries(c.fs.readdirSync(__dirname).filter(f=>f.endsWith('.cjs')||f==='ui-strings.json'||f==='collect-route.ps1').sort().map(f=>[f,c.sha(c.fs.readFileSync(c.path.join(__dirname,f)))]));}
+function main(){
+ const integrity=c.integrity();for(const[f,h]of Object.entries(c.json(c.baseline+'phase-a-gate.json').sourceHashes)){if(['common.cjs','initialize.cjs','run-phase-a.cjs','network-boundary.cjs'].includes(f))continue;assert.equal(c.sha(c.fs.readFileSync(c.path.join(__dirname,f))),h,'COPIED_SOURCE_DRIFT:'+f);}
+ const sourceHashes=snapshot();c.write('phase-a-start.json',{at:new Date().toISOString(),sourceHashes,integrity,postgresAllowed:0});
+ const suites=[['acceptance-parent.cjs',['01']],['integration-parent.cjs',['01']],['normalization-parent.cjs',[]],['multi-parent.cjs',[]]];
+ for(const[script,args]of suites){const child=spawnSync(process.execPath,[c.path.join(__dirname,script),...args],{cwd:c.root,encoding:'utf8',timeout:120000,windowsHide:true});c.fs.writeFileSync(c.path.join(__dirname,script+'.log'),(child.stdout||'')+(child.stderr||''),{flag:'wx'});if(child.status!==0){c.write('phase-a-stop.json',{at:new Date().toISOString(),status:'STOP_PHASE_A',failedSuite:script,exit:child.status,traceAllowed:false});console.log(JSON.stringify({status:'STOP_PHASE_A',failedSuite:script,stdout:child.stdout,stderr:child.stderr}));process.exitCode=1;return;}}
+ const a=c.json(c.prefix+'offline-acceptance-01.json'),b=c.json(c.prefix+'integration-acceptance-01.json'),n=c.json(c.prefix+'normalization-acceptance.json'),m=c.json(c.prefix+'multi-acceptance.json');assert.equal(a.passed,39);assert.equal(b.passed,12);assert.equal(n.passed,84);assert.equal(m.status,'PASS');assert.equal(m.passed,m.planned);assert.deepEqual(snapshot(),sourceHashes);
+ const audits=c.fs.readdirSync(c.path.join(__dirname,'network-audit')).map(f=>c.json(c.prefix+'network-audit/'+f));for(const x of audits){assert.deepEqual(x.sockets,[]);assert.deepEqual(x.blocked,[]);assert.equal(x.http,0);}
+ c.write('phase-a-gate.json',{at:new Date().toISOString(),status:'PASS',original135:135,multiPassed:m.passed,passed:135+m.passed,failed:0,sourceHashes,networkProcesses:audits.length,postgresSockets:0,http:0,integrity:c.integrity()});console.log(JSON.stringify({status:'PASS',original135:135,multi:m.passed,total:135+m.passed}));
+}
+try{main();}catch(e){c.write('phase-a-guard-stop.json',{status:'STOP_PHASE_A',message:e.message,traceAllowed:false});console.error(e.stack);process.exitCode=1;}

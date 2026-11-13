@@ -24,6 +24,15 @@ export interface TicketInput {
   status?: 'ACTIVE' | 'INACTIVE';
 }
 
+function parseLocalDatetime(value: string | Date): Date {
+  if (value instanceof Date) return value;
+  // Offset-free minute strings follow the API UTC convention; explicit offsets are preserved.
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) {
+    return new Date(value + ':00.000Z');
+  }
+  return new Date(value);
+}
+
 const serialize = (model: any) => {
   const value = model.toJSON ? model.toJSON() : model;
   return {
@@ -68,10 +77,10 @@ export class TicketService {
     return serialize(await Ticket.create({
       ...input,
       businessId,
-      departureTime: new Date(input.departureTime),
-      arrivalTime: input.arrivalTime ? new Date(input.arrivalTime) : undefined,
-      validFrom: input.validFrom ? new Date(input.validFrom) : undefined,
-      validUntil: input.validUntil ? new Date(input.validUntil) : undefined,
+      departureTime: parseLocalDatetime(input.departureTime),
+      arrivalTime: input.arrivalTime ? parseLocalDatetime(input.arrivalTime) : undefined,
+      validFrom: input.validFrom ? parseLocalDatetime(input.validFrom) : undefined,
+      validUntil: input.validUntil ? parseLocalDatetime(input.validUntil) : undefined,
       capacity,
       availableSeats: capacity,
       features: input.features || [],
@@ -85,7 +94,7 @@ export class TicketService {
     await BusinessAccessService.assert(userId, ticket.businessId, 'MANAGE_BUSINESS');
     const values: any = { ...input };
     for (const key of ['departureTime', 'arrivalTime', 'validFrom', 'validUntil'] as const) {
-      if (input[key] !== undefined) values[key] = input[key] ? new Date(input[key] as string | Date) : null;
+      if (input[key] !== undefined) values[key] = input[key] ? parseLocalDatetime(input[key] as string | Date) : null;
     }
     if (input.capacity !== undefined) {
       const sold = ticket.capacity - ticket.availableSeats;

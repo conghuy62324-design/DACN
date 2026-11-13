@@ -4,6 +4,9 @@ import { RecommendationService } from './recommendationService.js';
 import { GeoService } from './geoService.js';
 import type { TravelPreference } from '../utils/travelPreferences.js';
 import { HttpError } from '../utils/httpError.js';
+import { calculatePlannerDays, validatePlannerInput } from '../utils/plannerValidation.js';
+import { assessPlannerBudget } from '../utils/plannerFeasibility.js';
+import {matchesLocation,resolveLocation} from '../geography/vietnam.js';
 
 export interface PlannerInput {
   departureCity: string;
@@ -13,9 +16,9 @@ export interface PlannerInput {
   adults: number;
   children: number;
   totalBudget: number; // VNĐ
-  transportation: 'flight' | 'car' | 'train' | 'motorbike';
+  transportation: 'car' | 'motorbike';
   preferences: TravelPreference[];
-  pacing: 'relaxed' | 'balanced' | 'packed';
+  pacing: 'balanced';
   mandatoryPlaceIds?: string[];
 }
 
@@ -28,6 +31,7 @@ export interface ItineraryActivity {
   category: 'sightseeing' | 'food' | 'hotel' | 'leisure';
   durationMinutes: number;
   estimatedCostVND: number;
+  costSource?: string;
   latitude: number;
   longitude: number;
   imageUrl?: string;
@@ -42,6 +46,9 @@ export interface ItineraryDay {
   themeTitle: string;
   activities: ItineraryActivity[];
   dayEstimatedCostVND: number;
+  lodgingNights: number;
+  lodgingEstimatedCostVND: number; // Whole-group estimate, separate from activities.
+  lodgingCostSource?: string;
   centroid: { latitude: number; longitude: number };
 }
 
@@ -53,6 +60,10 @@ export interface GeneratedItinerary {
   startDate: string;
   endDate: string;
   daysCount: number;
+  nightsCount: number;
+  costBasis: 'GROUP_VND_V1';
+  costAssumptions: string[];
+  transportation: PlannerInput['transportation'];
   adults: number;
   children: number;
   pacing: 'relaxed' | 'balanced' | 'packed';
@@ -61,6 +72,8 @@ export interface GeneratedItinerary {
   totalEstimatedCostVND: number;
   costDifferenceVND: number;
   budgetStatus: 'within_budget' | 'over_budget';
+  overBudgetVND: number;
+  constraintViolations: string[];
   budgetAdvice: string;
   days: ItineraryDay[];
   summary: string;
@@ -85,10 +98,11 @@ function isPubliclyEligible(place: PlaceData): boolean {
 }
 
 function matchesDestination(place: PlaceData, destinationCity: string): boolean {
+  if(resolveLocation(destinationCity))return matchesLocation(place,destinationCity);
   const destination = normalizedText(destinationCity);
   return [place.city, place.province].some((value) => {
     const location = normalizedText(value);
-    return location === destination || location.includes(destination) || destination.includes(location);
+    return Boolean(location && destination) && location === destination;
   });
 }
 
@@ -97,11 +111,7 @@ export class TourPlannerService {
    * Tính số ngày từ ngày bắt đầu đến ngày kết thúc
    */
   public static calculateDaysBetween(startDateStr: string, endDateStr: string): number {
-    const start = new Date(startDateStr);
-    const end = new Date(endDateStr);
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    return Math.max(1, Math.min(10, diffDays || 3));
+    return calculatePlannerDays(startDateStr, endDateStr);
   }
 
   public static async generateSmartItinerary(
@@ -114,17 +124,38 @@ export class TourPlannerService {
    * Tạo lịch trình cá nhân hóa thông minh
    */
   public static async generatePersonalizedItinerary(
-    input: PlannerInput
+    rawInput: PlannerInput,
+    options?: { catalog: PlaceData[] }
   ): Promise<GeneratedItinerary> {
-
+    const input = validatePlannerInput(rawInput);
     const daysCount = this.calculateDaysBetween(input.startDate, input.endDate);
-    const totalPassengers = Math.max(1, input.adults + input.children * 0.7);
-    const dailyBudgetPerPerson = input.totalBudget > 0
-      ? input.totalBudget / totalPassengers / daysCount
-      : 1500000;
+    const nightsCount = Math.max(daysCount - 1, 0);
+    const totalPassengers = input.adults + input.children * 0.7;
+    const dailyBudgetPerPerson = input.totalBudget / totalPassengers / daysCount;
+    const groupCost = (perAdultEquivalent: number): number => {
+      const amount = Math.round(perAdultEquivalent * totalPassengers);
+      if (!Number.isSafeInteger(amount) || amount < 0) {
+        throw new HttpError(400, 'Chi phí ước tính vượt giới hạn tính toán an toàn.', 'PLANNER_COST_LIMIT_EXCEEDED');
+      }
+      return amount;
+    };
+    // Preserve genuine zero. Missing values stay missing even if a public serializer
+    // normalizes them to zero; the repository carries availability separately.
+    const priceEstimate = (place: PlaceData | null | undefined, fallback: number, unit: string) => {
+      const price = place?.priceFrom;
+      const available = place?.catalogPriceAvailable !== false &&
+        typeof price === 'number' && Number.isFinite(price) && price >= 0;
+      return {
+        amount: available ? price : fallback,
+        source: available
+          ? `Catalog priceFrom (${place!.name}): ${price} VND; giả định ${unit}, chưa xác minh đơn vị/giá dịch vụ.`
+          : `Giả định planner T11-B: ${fallback} VND/${unit}; ${place?.name ?? 'chưa chọn dịch vụ'} thiếu giá catalog hợp lệ, chưa xác minh.`,
+      };
+    };
 
     // 1. Lấy tất cả dữ liệu địa điểm, nhà hàng và khách sạn
-    const catalog = await RecommendationRepository.getApprovedPlaces();
+    // Internal service seam for request-scoped catalog constraints. HTTP never supplies catalog rows.
+    const catalog = options?.catalog ?? await RecommendationRepository.getApprovedPlaces();
     const allPlaces = catalog.filter(isPubliclyEligible);
     const rawMandatoryIds = input.mandatoryPlaceIds ?? [];
     if (!Array.isArray(rawMandatoryIds)) {
@@ -164,11 +195,17 @@ export class TourPlannerService {
     }
 
     // Tách riêng danh mục
-    const attractionCandidates = allPlaces.filter(
+    const destinationPlaces = allPlaces.filter((place) => matchesDestination(place, input.destinationCity));
+    const attractionCandidates = destinationPlaces.filter(
       (p) => p.category === 'tour' || p.category === 'attraction'
     );
-    const restaurantCandidates = allPlaces.filter((p) => p.category === 'restaurant');
-    const hotelCandidates = allPlaces.filter((p) => p.category === 'hotel');
+    if (!attractionCandidates.length) {
+      throw new HttpError(422,
+        `Chưa đủ dữ liệu để tạo lịch trình tham quan tại ${input.destinationCity}: không có điểm tham quan hợp lệ. Hãy sửa yêu cầu hoặc chọn điểm đến khác rồi tạo lại.`,
+        'NO_SIGHTSEEING_FOR_DESTINATION');
+    }
+    const restaurantCandidates = destinationPlaces.filter((p) => p.category === 'restaurant');
+    const hotelCandidates = destinationPlaces.filter((p) => p.category === 'hotel');
 
     // 2. Chạy thuật toán Recommendation cho điểm tham quan
     const recommendedAttractions = RecommendationService.recommendPlaces(
@@ -190,7 +227,7 @@ export class TourPlannerService {
 
     // 4. Khách sạn lưu trú phù hợp
     const recommendedHotels = RecommendationService.recommendPlaces(
-      hotelCandidates.length > 0 ? hotelCandidates : allPlaces,
+      hotelCandidates,
       {
         destinationCity: input.destinationCity,
         preferences: ['Nghỉ dưỡng', ...input.preferences],
@@ -219,7 +256,7 @@ export class TourPlannerService {
 
     for (let dayIdx = 0; dayIdx < daysCount; dayIdx++) {
       const currentDate = new Date(startDateObj);
-      currentDate.setDate(startDateObj.getDate() + dayIdx);
+      currentDate.setUTCDate(startDateObj.getUTCDate() + dayIdx);
       const dateStr = currentDate.toISOString().split('T')[0];
 
       const dayNumber = dayIdx + 1;
@@ -230,7 +267,8 @@ export class TourPlannerService {
       // Buổi sáng: Điểm tham quan 1
       const morningSpot = daySpots[0];
       if (morningSpot) {
-        const morningCost = Math.min(morningSpot.priceFrom || 300000, dailyBudgetPerPerson * 0.4);
+        const estimate = priceEstimate(morningSpot, 300000, 'người lớn quy đổi/lượt tham quan');
+        const morningCost = groupCost(estimate.amount);
         activities.push({
           id: `act-${dayNumber}-morning`,
           placeId: morningSpot.id,
@@ -240,6 +278,7 @@ export class TourPlannerService {
           category: 'sightseeing',
           durationMinutes: 180,
           estimatedCostVND: morningCost,
+          costSource: estimate.source,
           latitude: morningSpot.latitude,
           longitude: morningSpot.longitude,
           imageUrl: morningSpot.heroImage,
@@ -252,7 +291,8 @@ export class TourPlannerService {
 
       // Buổi trưa: Ăn trưa tại nhà hàng đặc sản
       const lunchRestaurant = restaurantsToSchedule[dayIdx] || null;
-      const lunchCost = 150000;
+      const lunchEstimate = priceEstimate(lunchRestaurant, 150000, 'người lớn quy đổi/bữa trưa');
+      const lunchCost = groupCost(lunchEstimate.amount);
       activities.push({
         id: `act-${dayNumber}-lunch`,
         placeId: lunchRestaurant?.id,
@@ -262,6 +302,7 @@ export class TourPlannerService {
         category: 'food',
         durationMinutes: 90,
         estimatedCostVND: lunchCost,
+        costSource: lunchEstimate.source,
         latitude: lunchRestaurant ? lunchRestaurant.latitude : (morningSpot?.latitude || 16.0544) + 0.005,
         longitude: lunchRestaurant ? lunchRestaurant.longitude : (morningSpot?.longitude || 108.2022) + 0.005,
         imageUrl: lunchRestaurant?.heroImage || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80',
@@ -274,7 +315,8 @@ export class TourPlannerService {
       // Buổi chiều: Điểm tham quan 2 / Check-in
       const afternoonSpot = daySpots[1];
       if (afternoonSpot) {
-        const afternoonCost = Math.min(afternoonSpot.priceFrom || 200000, dailyBudgetPerPerson * 0.3);
+        const estimate = priceEstimate(afternoonSpot, 300000, 'người lớn quy đổi/lượt tham quan');
+        const afternoonCost = groupCost(estimate.amount);
         activities.push({
           id: `act-${dayNumber}-afternoon`,
           placeId: afternoonSpot.id,
@@ -284,6 +326,7 @@ export class TourPlannerService {
           category: 'sightseeing',
           durationMinutes: 150,
           estimatedCostVND: afternoonCost,
+          costSource: estimate.source,
           latitude: afternoonSpot.latitude,
           longitude: afternoonSpot.longitude,
           imageUrl: afternoonSpot.heroImage,
@@ -295,7 +338,7 @@ export class TourPlannerService {
       }
 
       // Buổi tối: Dạo phố / Ăn tối & Khách sạn
-      const dinnerCost = 200000;
+      const dinnerCost = groupCost(200000);
       activities.push({
         id: `act-${dayNumber}-dinner`,
         timeSlot: 'dinner',
@@ -304,6 +347,7 @@ export class TourPlannerService {
         category: 'food',
         durationMinutes: 120,
         estimatedCostVND: dinnerCost,
+        costSource: 'Giả định planner T11-B: 200000 VND/người lớn quy đổi/bữa tối; chưa chọn dịch vụ, chưa xác minh giá.',
         latitude: (afternoonSpot?.latitude || 16.0544) - 0.004,
         longitude: (afternoonSpot?.longitude || 108.2022) + 0.003,
         imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80',
@@ -316,21 +360,30 @@ export class TourPlannerService {
           id: `act-${dayNumber}-hotel`,
           placeId: mandatoryHotels[0].id,
           timeSlot: 'evening',
-          title: `Nhận phòng tại ${mandatoryHotels[0].name}`,
+          title: nightsCount > 0 ? `Khách sạn dự kiến: ${mandatoryHotels[0].name}` : `Khách sạn tham khảo: ${mandatoryHotels[0].name}`,
           description: mandatoryHotels[0].summary || 'Khách sạn do bạn chủ động chọn cho hành trình.',
           category: 'hotel',
           durationMinutes: 60,
           estimatedCostVND: 0,
+          costSource: 'Mốc khách sạn 0đ; chi phí lưu trú tách riêng, không tính trùng.',
           latitude: mandatoryHotels[0].latitude,
           longitude: mandatoryHotels[0].longitude,
           imageUrl: mandatoryHotels[0].heroImage,
-          recommendationReason: 'Khách sạn bắt buộc do bạn chọn từ trang chi tiết địa điểm.',
+          recommendationReason: 'Khách sạn do bạn chọn. Phí lưu trú ước tính nằm ở mục riêng của ngày; không phải xác nhận đặt phòng.',
         });
       }
 
-      // Tiền phòng khách sạn mỗi đêm (nếu chuyến đi nhiều ngày)
-      const hotelNightCost = selectedHotel ? Math.round(selectedHotel.priceFrom / totalPassengers) : 400000;
-      dayCost += hotelNightCost;
+      // One estimated room for the group; only the first N-1 days have a night.
+      // priceFrom has no reliable room/night unit yet; disclose the assumption.
+      const lodgingNights = dayIdx < nightsCount ? 1 : 0;
+      const lodgingEstimate = priceEstimate(selectedHotel, 400000, 'nhóm/đêm (1 phòng giả định)');
+      const lodgingEstimatedCostVND = lodgingNights
+        ? Math.round(lodgingEstimate.amount)
+        : 0;
+      if (!Number.isSafeInteger(lodgingEstimatedCostVND)) {
+        throw new HttpError(400, 'Chi phí lưu trú vượt giới hạn tính toán an toàn.', 'PLANNER_COST_LIMIT_EXCEEDED');
+      }
+      dayCost += lodgingEstimatedCostVND;
 
       // Tính khoảng cách cự ly giữa các hoạt động trong ngày
       for (let i = 0; i < activities.length - 1; i++) {
@@ -339,7 +392,7 @@ export class TourPlannerService {
           { latitude: activities[i + 1].latitude, longitude: activities[i + 1].longitude }
         );
         activities[i].aerialDistanceToNextKm = dist;
-        activities[i].estimatedTransitMinutes = GeoService.estimateTravelTimeMinutes(dist, 'car');
+        activities[i].estimatedTransitMinutes = GeoService.estimateTravelTimeMinutes(dist, input.transportation);
       }
 
       const centroid = GeoService.calculateCentroid(
@@ -352,14 +405,20 @@ export class TourPlannerService {
         themeTitle: `Ngày ${dayNumber}: Khám phá văn hóa & danh thắng ${input.destinationCity}`,
         activities,
         dayEstimatedCostVND: dayCost,
+        lodgingNights,
+        lodgingEstimatedCostVND,
+        lodgingCostSource: lodgingNights ? lodgingEstimate.source : '0 đêm: không tính phí lưu trú.',
         centroid,
       });
 
       grandTotalCost += dayCost;
     }
 
-    // Nhân tổng chi phí cho toàn bộ số người
-    const totalTripEstimatedCost = Math.round(grandTotalCost * totalPassengers);
+    // Activity/day amounts already refer to the whole group; do not multiply twice.
+    const totalTripEstimatedCost = grandTotalCost;
+    if (!Number.isSafeInteger(totalTripEstimatedCost)) {
+      throw new HttpError(400, 'Tổng chi phí vượt giới hạn tính toán an toàn.', 'PLANNER_COST_LIMIT_EXCEEDED');
+    }
     const costDiff = input.totalBudget - totalTripEstimatedCost;
     const isWithinBudget = costDiff >= 0;
 
@@ -380,23 +439,33 @@ export class TourPlannerService {
 
     return {
       id: `itinerary-${Date.now()}`,
-      title: `Hành trình ${daysCount}N${daysCount > 1 ? daysCount - 1 : 1}Đ khám phá ${input.destinationCity}`,
-      departureCity: input.departureCity || 'Toàn quốc',
-      destinationCity: input.destinationCity,
+      title: `Hành trình ${daysCount}N${nightsCount}Đ khám phá ${resolveLocation(input.destinationCity)?.catalogName||input.destinationCity}`,
+      departureCity: resolveLocation(input.departureCity)?.catalogName||input.departureCity||'Toàn quốc',
+      destinationCity: resolveLocation(input.destinationCity)?.catalogName||input.destinationCity,
       startDate: input.startDate,
       endDate: input.endDate,
       daysCount,
+      nightsCount,
+      costBasis: 'GROUP_VND_V1',
+      transportation: input.transportation,
+      costAssumptions: [
+        'Mọi khoản activity, tổng ngày và tổng chuyến là VND cho cả nhóm, làm tròn từng khoản đến 1 VND; ngân sách cũng cho cả nhóm.',
+        'Ước tính hoạt động/ăn uống quy đổi mỗi người lớn = 1, trẻ em = 0,7; đây là giả định lập kế hoạch, không phải chính sách giá của nhà cung cấp.',
+        'priceFrom chưa có đơn vị và sức chứa đáng tin cậy. Tạm ước tính một phòng cho cả nhóm mỗi đêm; không bảo đảm đủ chỗ hoặc đúng giá phòng/đêm.',
+        'Lưu trú dùng priceFrom khách sạn, thiếu giá dùng 400.000đ/nhóm/đêm; chỉ tính N−1 đêm. Phí này tách khỏi activity khách sạn có giá 0đ.',
+        'Tham quan dùng priceFrom, thiếu giá tạm tính 300.000đ/người lớn quy đổi/lượt. Bữa trưa dùng priceFrom nhà hàng, thiếu giá tạm tính 150.000đ; bữa tối tạm tính 200.000đ/người lớn quy đổi. Nguồn giả định: định mức planner T11-B trong source, chưa khảo sát giá thị trường; xem nhãn từng khoản. Giá 0 được giữ nguyên; không cắt giá theo ngân sách.',
+        'Chưa bao gồm vé máy bay/tàu, chi phí chặng khởi hành hoặc giá vận chuyển thực tế; tổng này không phải giá trọn gói hay bảo đảm đủ ngân sách.',
+      ],
       adults: input.adults,
       children: input.children,
       pacing: input.pacing,
       preferences: [...input.preferences],
       totalBudgetUserVND: input.totalBudget,
       totalEstimatedCostVND: totalTripEstimatedCost,
-      costDifferenceVND: costDiff,
-      budgetStatus: isWithinBudget ? 'within_budget' : 'over_budget',
+      ...assessPlannerBudget(input.totalBudget, totalTripEstimatedCost),
       budgetAdvice,
       days,
-      summary: `Hành trình du lịch ${daysCount} ngày được thiết kế thông minh dựa trên thuật toán Content-Based và khoảng cách địa lý, đáp ứng các sở thích [${input.preferences.join(', ')}] với nhịp độ ${input.pacing === 'relaxed' ? 'Thư giãn' : input.pacing === 'packed' ? 'Khám phá nhiều' : 'Cân bằng'}.`,
+      summary: `Hành trình ${daysCount} ngày theo tiêu chí đã chọn. Nhịp cân bằng: tối đa 2 điểm tham quan/ngày, không tính bữa ăn. ETA giữa các điểm bằng ${input.transportation === 'motorbike' ? 'xe máy' : 'ô tô'} là ước lượng từ khoảng cách Haversine, không phải tuyến đường bộ hoặc thời gian thực; chưa tính chặng và chi phí liên tỉnh.`,
       hotelSuggestion: selectedHotel,
       selectedPlaceIds,
       createdAt: new Date().toISOString(),

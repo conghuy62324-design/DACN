@@ -1,0 +1,820 @@
+{
+  "status": "REVIEWED_NO_UNCLASSIFIED_FAILURE",
+  "suites": [
+    {
+      "suite": "agentMissingSlotRecovery",
+      "actualPolicy": {
+        "pass": 13,
+        "fail": 20,
+        "notRun": 0
+      },
+      "downstreamControl": {
+        "pass": 33,
+        "fail": 0
+      }
+    },
+    {
+      "suite": "agentSlotFillingPrompt",
+      "actualPolicy": {
+        "pass": 11,
+        "fail": 10,
+        "notRun": 0
+      },
+      "downstreamControl": {
+        "pass": 21,
+        "fail": 0
+      }
+    },
+    {
+      "suite": "agentG1SafeContract",
+      "actualPolicy": {
+        "pass": 26,
+        "fail": 0,
+        "notRun": 0
+      },
+      "downstreamControl": {
+        "pass": 26,
+        "fail": 0
+      }
+    },
+    {
+      "suite": "agentDecisionRouting",
+      "actualPolicy": {
+        "pass": 10,
+        "fail": 0,
+        "notRun": 0
+      },
+      "downstreamControl": {
+        "pass": 10,
+        "fail": 0
+      }
+    },
+    {
+      "suite": "agentDecisionFormatSafety",
+      "actualPolicy": {
+        "pass": 17,
+        "fail": 0,
+        "notRun": 0
+      },
+      "downstreamControl": {
+        "pass": 17,
+        "fail": 0
+      }
+    },
+    {
+      "suite": "agentFoundation",
+      "actualPolicy": {
+        "pass": 22,
+        "fail": 0,
+        "notRun": 0
+      },
+      "downstreamControl": {
+        "pass": 22,
+        "fail": 0
+      }
+    },
+    {
+      "suite": "agentTransport",
+      "actualPolicy": {
+        "pass": 18,
+        "fail": 1,
+        "notRun": 0
+      },
+      "downstreamControl": {
+        "pass": 19,
+        "fail": 0
+      }
+    },
+    {
+      "suite": "agentContractSlotInvestigation.g1-applicable",
+      "actualPolicy": {
+        "pass": 23,
+        "fail": 0,
+        "notRun": 0
+      },
+      "downstreamControl": {
+        "pass": 23,
+        "fail": 0
+      }
+    }
+  ],
+  "conflicts": [
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "historical S01 offline replay: raw FAIL/schema reject retained; safe UX needs_input with zero execution",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Old assertion required a returned/rejected raw model decision or one provider invocation for proven incomplete input. SERVER_COMPLETENESS now asks exact fields before provider; raw model not evaluated.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "13e00429-f75d-4e34-ba87-03399876e27d",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== 1\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:79:22\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "prompt explicitly treats omitted field as missing; examples and request stay within unchanged contract",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Known incomplete turn sends no provider payload. Access to old fake captured request is undefined by design; privacy/history checks downstream retained in layer control.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "6994bf15-f1b5-4cbf-9ccc-9b3af5dd52b5",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "TypeError: Cannot read properties of undefined (reading 'body')\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:93:29\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "recover one omitted plan required field: departureCity",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Old assertion required a returned/rejected raw model decision or one provider invocation for proven incomplete input. SERVER_COMPLETENESS now asks exact fields before provider; raw model not evaluated.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "4d56ff1f-e3fa-414c-9ef3-44a2e204df9f",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:118:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "recover one omitted plan required field: destinationCity",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Old assertion required a returned/rejected raw model decision or one provider invocation for proven incomplete input. SERVER_COMPLETENESS now asks exact fields before provider; raw model not evaluated.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "2d0e341d-7d30-49bd-9aa3-8fa1e0eae896",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:118:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "recover one omitted plan required field: startDate",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Old assertion required a returned/rejected raw model decision or one provider invocation for proven incomplete input. SERVER_COMPLETENESS now asks exact fields before provider; raw model not evaluated.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "cccff2f4-6645-4b4f-b555-7fe1ab01ce8e",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:118:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "recover one omitted plan required field: endDate",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Old assertion required a returned/rejected raw model decision or one provider invocation for proven incomplete input. SERVER_COMPLETENESS now asks exact fields before provider; raw model not evaluated.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "f8efa5bc-ce05-4814-94e7-1c0c119c4db8",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:118:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "recover one omitted plan required field: adults",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Old assertion required a returned/rejected raw model decision or one provider invocation for proven incomplete input. SERVER_COMPLETENESS now asks exact fields before provider; raw model not evaluated.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "b6dc6b99-81d2-46a5-a845-b215c734e67a",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:118:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "recover one omitted plan required field: totalBudget",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Old assertion required a returned/rejected raw model decision or one provider invocation for proven incomplete input. SERVER_COMPLETENESS now asks exact fields before provider; raw model not evaluated.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "a1a3134f-b48f-4c3a-9db6-a10fb594ed43",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:118:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "recover one omitted plan required field: transportation",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Old assertion required a returned/rejected raw model decision or one provider invocation for proven incomplete input. SERVER_COMPLETENESS now asks exact fields before provider; raw model not evaluated.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "00dd9b10-6581-4abd-a4d1-32ae7ace19d0",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:118:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "multiple missing fields preserve AGENT_TOOLS order, never Planner defaults",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Old assertion required a returned/rejected raw model decision or one provider invocation for proven incomplete input. SERVER_COMPLETENESS now asks exact fields before provider; raw model not evaluated.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "cafb38c7-1854-4fce-aea5-7639a6472dda",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "TypeError: Cannot convert undefined or null to object\n    at Object.hasOwn (<anonymous>)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:138:35\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "model guessing car remains raw FAIL and independent G1 gate blocks, without recovery or mutation",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Old assertion required a returned/rejected raw model decision or one provider invocation for proven incomplete input. SERVER_COMPLETENESS now asks exact fields before provider; raw model not evaluated.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "f994d097-c805-4f0c-a379-5e56bb93efd3",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ []\n- [\n-   {\n-     arguments: {\n-       adults: 2,\n-       departureCity: 'Hà Nội',\n-       destinationCity: 'Quy Nhơn',\n-       endDate: '2036-03-12',\n-       startDate: '2036-03-10',\n-       totalBudget: 8000000,\n-       transportation: 'car'\n-     },\n-     kind: 'tool',\n-     name: 'plan_trip'\n-   }\n- ]\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:177:22\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "unsupported decision remains unsupported and does not trigger recovery from missing user slots",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Previously injected unsupported on an incomplete supported turn is never requested. Server missing question takes precedence; unsupported behavior on actual provider paths unchanged.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "0050c4dc-308e-4bfb-a271-79d2f4c5f2bd",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        },
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "c52fda71-5a0b-4477-811f-96bec0043a6d",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'needs_input'\n- 'unsupported'\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:205:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "unknown tool, missing argument object and extra root/argument keys remain invalid",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Fault was injected only into an uncalled provider for known incomplete input. No actual provider/network/validation error occurred; new COMPLETE/UNDETERMINED tests verify real errors remain errors.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "e525cd99-8b1d-4886-95b9-9d4662807020",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:215:9\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "all schema errors are checked: missing key cannot conceal wrong type/date/enum/negative budget",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Fault was injected only into an uncalled provider for known incomplete input. No actual provider/network/validation error occurred; new COMPLETE/UNDETERMINED tests verify real errors remain errors.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "9287a223-0354-45b2-b7c4-93fe438fd78a",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:225:9\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "contradicted or invented supplied argument does not recover, even with the correct missing key",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Fault was injected only into an uncalled provider for known incomplete input. No actual provider/network/validation error occurred; new COMPLETE/UNDETERMINED tests verify real errors remain errors.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "6177efc3-c983-47b6-9701-7d62b2ccbb92",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:233:9\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "malformed JSON stays invalid output, no broad parse-error recovery",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Fault was injected only into an uncalled provider for known incomplete input. No actual provider/network/validation error occurred; new COMPLETE/UNDETERMINED tests verify real errors remain errors.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "8d9cdc8d-6eb8-409a-a3d8-2d6be7ef95a0",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:258:5\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "network, HTTP rejection/quota/unavailable remain errors even with trustworthy missing slots",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Fault was injected only into an uncalled provider for known incomplete input. No actual provider/network/validation error occurred; new COMPLETE/UNDETERMINED tests verify real errors remain errors.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "c17f6e80-14ac-42a6-8dd4-7e5374581f92",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:267:9\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "timeout and ordinary invalid-output HttpError cannot impersonate classified missing-slot rejection",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Fault was injected only into an uncalled provider for known incomplete input. No actual provider/network/validation error occurred; new COMPLETE/UNDETERMINED tests verify real errors remain errors.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "a57b2f98-a6fb-4a01-800c-062a938dba57",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:276:5\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "auth, external consent and rate limit still precede recovery and consume normal quota",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Auth/consent/quota checks remain before precheck; assertion counted a provider call that is now correctly zero.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "36d9201c-0f73-4ad9-8c90-b86459b15251",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== 1\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:299:22\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentMissingSlotRecovery",
+      "name": "HTTP MOCK_ONLY: authenticated recovery is 200 needs_input; malformed/network failures remain safe 502",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Fault was injected only into an uncalled provider for known incomplete input. No actual provider/network/validation error occurred; new COMPLETE/UNDETERMINED tests verify real errors remain errors.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "96b822d8-a64f-4d0c-980a-fd938913a214",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:368:34\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentMissingSlotRecovery.server-policy-audit.js:391:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentSlotFillingPrompt",
+      "name": "MOCK_ONLY clarify contract: missing destinationCity in search",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Old assertion required a returned/rejected raw model decision or one provider invocation for proven incomplete input. SERVER_COMPLETENESS now asks exact fields before provider; raw model not evaluated.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "d2ddb755-a0a5-44f2-b5d7-7bb3c658ad58",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ []\n- [\n-   {\n-     fields: [\n-       'destinationCity'\n-     ],\n-     kind: 'clarify'\n-   }\n- ]\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:114:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:224:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentSlotFillingPrompt",
+      "name": "MOCK_ONLY clarify contract: missing dailyBudgetPerPerson in search",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Old assertion required a returned/rejected raw model decision or one provider invocation for proven incomplete input. SERVER_COMPLETENESS now asks exact fields before provider; raw model not evaluated.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "7c004b52-d917-4e3d-abd2-4965ddba6d21",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ []\n- [\n-   {\n-     fields: [\n-       'dailyBudgetPerPerson'\n-     ],\n-     kind: 'clarify'\n-   }\n- ]\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:114:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:224:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentSlotFillingPrompt",
+      "name": "MOCK_ONLY clarify contract: missing transportation",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Old assertion required a returned/rejected raw model decision or one provider invocation for proven incomplete input. SERVER_COMPLETENESS now asks exact fields before provider; raw model not evaluated.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "0d575dd4-9837-48b5-9561-7633e59f35a7",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ []\n- [\n-   {\n-     fields: [\n-       'transportation'\n-     ],\n-     kind: 'clarify'\n-   }\n- ]\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:114:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:224:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentSlotFillingPrompt",
+      "name": "MOCK_ONLY clarify contract: missing adults",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Old assertion required a returned/rejected raw model decision or one provider invocation for proven incomplete input. SERVER_COMPLETENESS now asks exact fields before provider; raw model not evaluated.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "623a2cb2-d862-41f5-b0cc-2fb0a67a139c",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ []\n- [\n-   {\n-     fields: [\n-       'adults'\n-     ],\n-     kind: 'clarify'\n-   }\n- ]\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:114:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:224:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentSlotFillingPrompt",
+      "name": "MOCK_ONLY clarify contract: missing startDate and endDate",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Old assertion required a returned/rejected raw model decision or one provider invocation for proven incomplete input. SERVER_COMPLETENESS now asks exact fields before provider; raw model not evaluated.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "00acfe45-e796-4efe-a26d-984b675bb111",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ []\n- [\n-   {\n-     fields: [\n-       'startDate',\n-       'endDate'\n-     ],\n-     kind: 'clarify'\n-   }\n- ]\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:114:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:224:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentSlotFillingPrompt",
+      "name": "MOCK_ONLY clarify contract: missing group budget",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Old assertion required a returned/rejected raw model decision or one provider invocation for proven incomplete input. SERVER_COMPLETENESS now asks exact fields before provider; raw model not evaluated.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "c2fe64bd-8a6e-4592-ac0a-46fdef08e933",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ []\n- [\n-   {\n-     fields: [\n-       'totalBudget'\n-     ],\n-     kind: 'clarify'\n-   }\n- ]\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:114:26\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:224:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentSlotFillingPrompt",
+      "name": "every absent required field independently blocks a schema-valid hallucinated tool, with exact missing set",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Old assertion required a returned/rejected raw model decision or one provider invocation for proven incomplete input. SERVER_COMPLETENESS now asks exact fields before provider; raw model not evaluated.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "5ccf10fc-c234-45ba-bac1-0c3b9a2796dc",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ []\n- [\n-   {\n-     arguments: {\n-       dailyBudgetPerPerson: 480000,\n-       destinationCity: 'Quy Nhơn'\n-     },\n-     kind: 'tool',\n-     name: 'search_places'\n-   }\n- ]\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:138:30\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:224:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentSlotFillingPrompt",
+      "name": "guessing car remains raw NLU mismatch while independent G1 gate returns exact missing transportation",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Old assertion required a returned/rejected raw model decision or one provider invocation for proven incomplete input. SERVER_COMPLETENESS now asks exact fields before provider; raw model not evaluated.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "baa38bbb-95df-4def-8bc5-ba2b40c4d25b",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ undefined\n- {\n-   arguments: {\n-     adults: 3,\n-     departureCity: 'Hà Nội',\n-     destinationCity: 'Quy Nhơn',\n-     endDate: '2034-02-12',\n-     startDate: '2034-02-10',\n-     totalBudget: 8000000,\n-     transportation: 'car'\n-   },\n-   kind: 'tool',\n-   name: 'plan_trip'\n- }\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:149:22\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:224:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentSlotFillingPrompt",
+      "name": "client user/assistant history remains untrusted and cannot supply missing current transportation",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Known incomplete turn sends no provider payload. Access to old fake captured request is undefined by design; privacy/history checks downstream retained in layer control.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "e96a3427-2aff-43a4-934e-455fea018154",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "TypeError: Cannot read properties of undefined (reading 'body')\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:193:43\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:224:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentSlotFillingPrompt",
+      "name": "production request keeps JSON mode, size/context limits and local transport",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Known incomplete turn sends no provider payload. Access to old fake captured request is undefined by design; privacy/history checks downstream retained in layer control.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "ed7e5842-babf-4eec-af01-827e20280dac",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "originalError": "TypeError: Cannot destructure property 'body' of 'h.calls[0]' as it is undefined.\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:211:13\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentSlotFillingPrompt.server-policy-audit.js:224:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    },
+    {
+      "suite": "agentTransport",
+      "name": "prompt excludes account/private context and acknowledgement, no shared account state",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Known incomplete turn sends no provider payload. Access to old fake captured request is undefined by design; privacy/history checks downstream retained in layer control.",
+      "actualOrigins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "8d0b290f-0e40-4958-a3fa-ffd88367646a",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        },
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "a8d3f222-91a1-4a96-981b-a49c2ca1ab65",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        }
+      ],
+      "originalError": "TypeError: Cannot read properties of undefined (reading 'includes')\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentTransport.server-policy-audit.js:200:38\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentTransport.server-policy-audit.js:267:73)",
+      "downstreamControl": "PASS",
+      "rawNluForServerTurn": "NOT_EVALUATED"
+    }
+  ],
+  "readinessConflict": [
+    {
+      "name": "mock clarify path performs no readiness or network; existing deterministic response remains",
+      "status": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    'destinationCity',\n+   'dailyBudgetPerPerson'\n  ]\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentReadinessAbort.test.js:312:22\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\agentReadinessAbort.test.js:390:17)",
+      "disposition": "APPROVED_EXACT_MISSING_SET_CHANGE",
+      "reason": "Pure search intent omits both destinationCity and dailyBudgetPerPerson; old mock only clarified destinationCity. New test explicitly requires both, zero provider."
+    }
+  ],
+  "diagnosticConflicts": [
+    {
+      "name": "outer 15000ms deadline propagates abort to cooperative fetch; no response, recovery or tool",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Input is the known positive G1 incomplete fixture. Precheck does not invoke fake fetch; the old injected error/timeout/raw-recovery observation is not reached.",
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== 1\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-policy-fix\\actual-policy-diagnostics\\offline-diagnostics.cjs:68:25\n    at async withClock (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-policy-fix\\actual-policy-diagnostics\\offline-diagnostics.cjs:48:9)\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-policy-fix\\actual-policy-diagnostics\\offline-diagnostics.cjs:228:13)"
+    },
+    {
+      "name": "body-read abort also produces timeout without fallback execution",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Input is the known positive G1 incomplete fixture. Precheck does not invoke fake fetch; the old injected error/timeout/raw-recovery observation is not reached.",
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\ntrue !== false\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-policy-fix\\actual-policy-diagnostics\\offline-diagnostics.cjs:103:10\n    at async withClock (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-policy-fix\\actual-policy-diagnostics\\offline-diagnostics.cjs:48:9)\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-policy-fix\\actual-policy-diagnostics\\offline-diagnostics.cjs:228:13)"
+    },
+    {
+      "name": "network failures keep their safe error and never become needs_input",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Input is the known positive G1 incomplete fixture. Precheck does not invoke fake fetch; the old injected error/timeout/raw-recovery observation is not reached.",
+      "originalError": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-policy-fix\\actual-policy-diagnostics\\offline-diagnostics.cjs:132:28\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-policy-fix\\actual-policy-diagnostics\\offline-diagnostics.cjs:228:13)"
+    },
+    {
+      "name": "one/multiple missing-only raw tool outputs retain model failure while recovery asks exact fields",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Input is the known positive G1 incomplete fixture. Precheck does not invoke fake fetch; the old injected error/timeout/raw-recovery observation is not reached.",
+      "originalError": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-policy-fix\\actual-policy-diagnostics\\offline-diagnostics.cjs:145:61\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-policy-fix\\actual-policy-diagnostics\\offline-diagnostics.cjs:228:13)"
+    },
+    {
+      "name": "unknown/malformed model output cannot opt into recovery",
+      "originalStatus": "FAIL",
+      "disposition": "APPROVED_POLICY_EXPECTATION_CONFLICT",
+      "reason": "Input is the known positive G1 incomplete fixture. Precheck does not invoke fake fetch; the old injected error/timeout/raw-recovery observation is not reached.",
+      "originalError": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-policy-fix\\actual-policy-diagnostics\\offline-diagnostics.cjs:162:30\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-policy-fix\\actual-policy-diagnostics\\offline-diagnostics.cjs:228:13)"
+    }
+  ],
+  "actualPolicyTotals": {
+    "baseline": {
+      "pass": 150,
+      "fail": 31,
+      "notRun": 0,
+      "passedCasesWithServerShortCircuit": 3
+    },
+    "readiness": {
+      "pass": 32,
+      "fail": 1,
+      "notRun": 0
+    },
+    "diagnostics": {
+      "pass": 8,
+      "fail": 5,
+      "notRun": 0
+    }
+  },
+  "layerIsolationTotals": {
+    "baseline": 181,
+    "readiness": 33,
+    "diagnostics": 13,
+    "meaning": "MOCK_ONLY assessor stub isolates downstream only; not production-policy end-to-end acceptance or model NLU."
+  },
+  "approvedNewPolicyTests": {
+    "pass": 50,
+    "fail": 0
+  },
+  "unexpectedRegressions": 0,
+  "historicalF": {
+    "passBeforeStop": 22,
+    "fail": 1,
+    "notRun": 1,
+    "assertionUnchanged": true
+  }
+}

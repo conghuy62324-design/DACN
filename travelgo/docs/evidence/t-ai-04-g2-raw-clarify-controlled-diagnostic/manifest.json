@@ -1,0 +1,538 @@
+{
+  "at": "2026-11-10T16:46:09.637Z",
+  "task": "T-AI-04-G2-RAW-CLARIFY-CONTROLLED-DIAGNOSTIC",
+  "approval": "Owner current task, diagnostic-only max5 native POST/one conditional load/four inference,0 retries,0 production edits,0 PostgreSQL",
+  "principalHash": "6b982d095bc6bc30c87955cd38c78afa9ef31d3447ef30f62e8684bbe8bce600",
+  "principalSource": "docs/evidence/t-ai-04-e-final/run-20261109T041645807Z-ae626a88/attempt-E04-B.json",
+  "model": "qwen3:4b-instruct-2507-q4_K_M",
+  "digest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+  "env": {
+    "LLM_PROVIDER": "ollama",
+    "LLM_LIVE_ENABLED": "true",
+    "LLM_USAGE_APPROVED": "true",
+    "OLLAMA_LOCAL_ONLY_CONFIRMED": "true",
+    "OLLAMA_MODEL": "qwen3:4b-instruct-2507-q4_K_M",
+    "OLLAMA_MODEL_DIGEST": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+    "OLLAMA_BASE_URL": "http://127.0.0.1:11434",
+    "AGENT_G2_MODE": "local-demo"
+  },
+  "ttlMs": 900000,
+  "retentionVersion": "LOCAL_DEMO_SLOTS_V1",
+  "required": {
+    "departureCity": "Bắc Giang",
+    "destinationCity": "Hòa Bình",
+    "startDate": "2058-07-10",
+    "endDate": "2058-07-12",
+    "adults": 4,
+    "totalBudget": 9100000,
+    "transportation": "motorbike"
+  },
+  "definitions": [
+    {
+      "pair": "Q01",
+      "message": "À đổi sang xe máy, giữ thông tin còn lại.",
+      "order": [
+        "A",
+        "B"
+      ]
+    },
+    {
+      "pair": "Q02",
+      "message": "Phương tiện: motorbike",
+      "order": [
+        "B",
+        "A"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "Q01-START",
+      "pair": "Q01",
+      "phase": "DETERMINISTIC",
+      "action": "start",
+      "message": "Lập lịch trình; Nơi xuất phát: Bắc Giang; Điểm đến: Hòa Bình; Ngày bắt đầu: 2058-07-10; Ngày kết thúc: 2058-07-12; Số người lớn: 4; Ngân sách cả nhóm: 9100000 VND",
+      "revision": 1,
+      "origin": "SERVER_COMPLETENESS",
+      "transportState": "OMITTED",
+      "requestId": "e5c8d307-0499-48d6-9a32-a2c2ac67c696",
+      "expectedValues": {
+        "departureCity": "Bắc Giang",
+        "destinationCity": "Hòa Bình",
+        "startDate": "2058-07-10",
+        "endDate": "2058-07-12",
+        "adults": 4,
+        "totalBudget": 9100000
+      },
+      "expectedMissing": [
+        "transportation"
+      ],
+      "expectedProvider": 0,
+      "expectedGets": 0,
+      "expectedPosts": 0,
+      "expectedTools": 0,
+      "expectedStatus": "needs_input",
+      "expectedGate": "NOT_APPLICABLE_INCOMPLETE",
+      "expectedSlotStates": {
+        "departureCity": "SET",
+        "destinationCity": "SET",
+        "startDate": "SET",
+        "endDate": "SET",
+        "adults": "SET",
+        "totalBudget": "SET",
+        "transportation": "OMITTED"
+      }
+    },
+    {
+      "id": "Q01-UNSET",
+      "pair": "Q01",
+      "phase": "DETERMINISTIC",
+      "action": "continue",
+      "message": "Tôi hủy phương tiện, giữ thông tin còn lại.",
+      "revision": 2,
+      "origin": "VERIFIED_HISTORY_COMPLETENESS",
+      "transportState": "UNPROVEN",
+      "requestId": "5fd3fb74-9a18-440b-a5ff-bbf1ef4cee99",
+      "expectedValues": {
+        "departureCity": "Bắc Giang",
+        "destinationCity": "Hòa Bình",
+        "startDate": "2058-07-10",
+        "endDate": "2058-07-12",
+        "adults": 4,
+        "totalBudget": 9100000
+      },
+      "expectedMissing": [
+        "transportation"
+      ],
+      "expectedProvider": 0,
+      "expectedGets": 0,
+      "expectedPosts": 0,
+      "expectedTools": 0,
+      "expectedStatus": "needs_input",
+      "expectedGate": "NOT_APPLICABLE_INCOMPLETE",
+      "expectedSlotStates": {
+        "departureCity": "SET",
+        "destinationCity": "SET",
+        "startDate": "SET",
+        "endDate": "SET",
+        "adults": "SET",
+        "totalBudget": "SET",
+        "transportation": "UNPROVEN"
+      }
+    },
+    {
+      "id": "Q01-A",
+      "pair": "Q01",
+      "variant": "A",
+      "phase": "LIVE_LLM",
+      "action": "continue",
+      "message": "À đổi sang xe máy, giữ thông tin còn lại.",
+      "revision": 3,
+      "origin": "MODEL",
+      "transportState": "SET",
+      "requestId": "1dd66360-27e8-42e1-abe7-cbc8c05f1c7c",
+      "expectedValues": {
+        "departureCity": "Bắc Giang",
+        "destinationCity": "Hòa Bình",
+        "startDate": "2058-07-10",
+        "endDate": "2058-07-12",
+        "adults": 4,
+        "totalBudget": 9100000,
+        "transportation": "motorbike"
+      },
+      "expectedMissing": [],
+      "expectedProvider": 1,
+      "expectedGets": 3,
+      "expectedPosts": 1,
+      "expectedTools": 1,
+      "expectedStatus": "completed",
+      "expectedGate": "ALLOW",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Bắc Giang",
+          "destinationCity": "Hòa Bình",
+          "startDate": "2058-07-10",
+          "endDate": "2058-07-12",
+          "adults": 4,
+          "totalBudget": 9100000,
+          "transportation": "motorbike"
+        }
+      },
+      "providerSystemSha256": "0beed4a7afece45a586fe52f2094f1cca4e460b3cabe389f34c0e206faca0600",
+      "wireSystemSha256": "76e1aa153284ef953685d1f2289dc788ac2e962b763c0a3404495268459632a0",
+      "bodyFile": "body-Q01-A.json",
+      "bodySha256": "59c2266962d0e073cbedb5b546aaef6116cafc1f9516ba8c645fa6cf8e896916",
+      "providerBudgetBytes": 11290,
+      "expectedSlotStates": {
+        "departureCity": "SET",
+        "destinationCity": "SET",
+        "startDate": "SET",
+        "endDate": "SET",
+        "adults": "SET",
+        "totalBudget": "SET",
+        "transportation": "SET"
+      }
+    },
+    {
+      "id": "Q01-B",
+      "pair": "Q01",
+      "variant": "B",
+      "phase": "LIVE_LLM",
+      "action": "continue",
+      "message": "À đổi sang xe máy, giữ thông tin còn lại.",
+      "revision": 4,
+      "origin": "MODEL",
+      "transportState": "SET",
+      "requestId": "c66ddbc7-c8af-4b4f-9fe7-e65fb11fd5b6",
+      "expectedValues": {
+        "departureCity": "Bắc Giang",
+        "destinationCity": "Hòa Bình",
+        "startDate": "2058-07-10",
+        "endDate": "2058-07-12",
+        "adults": 4,
+        "totalBudget": 9100000,
+        "transportation": "motorbike"
+      },
+      "expectedMissing": [],
+      "expectedProvider": 1,
+      "expectedGets": 3,
+      "expectedPosts": 1,
+      "expectedTools": 1,
+      "expectedStatus": "completed",
+      "expectedGate": "ALLOW",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Bắc Giang",
+          "destinationCity": "Hòa Bình",
+          "startDate": "2058-07-10",
+          "endDate": "2058-07-12",
+          "adults": 4,
+          "totalBudget": 9100000,
+          "transportation": "motorbike"
+        }
+      },
+      "providerSystemSha256": "0f89b8b983601a9e84b6826b6de04d7fbeef01c094d9c1156b54f75cf2ea981d",
+      "wireSystemSha256": "01fd91dcbc221a48c40c2c3fed9cdb7337bf65265a00b851529308dfa03fc286",
+      "bodyFile": "body-Q01-B.json",
+      "bodySha256": "ef65b4846d822764b3c82735aac320c220d411f20ed0d63cfb6c4859cf1c59bb",
+      "providerBudgetBytes": 11561,
+      "expectedSlotStates": {
+        "departureCity": "SET",
+        "destinationCity": "SET",
+        "startDate": "SET",
+        "endDate": "SET",
+        "adults": "SET",
+        "totalBudget": "SET",
+        "transportation": "SET"
+      }
+    },
+    {
+      "id": "Q02-START",
+      "pair": "Q02",
+      "phase": "DETERMINISTIC",
+      "action": "start",
+      "message": "Lập lịch trình; Nơi xuất phát: Bắc Giang; Điểm đến: Hòa Bình; Ngày bắt đầu: 2058-07-10; Ngày kết thúc: 2058-07-12; Số người lớn: 4; Ngân sách cả nhóm: 9100000 VND",
+      "revision": 1,
+      "origin": "SERVER_COMPLETENESS",
+      "transportState": "OMITTED",
+      "requestId": "a8f02ca8-6841-41fe-92c0-3e4c22300336",
+      "expectedValues": {
+        "departureCity": "Bắc Giang",
+        "destinationCity": "Hòa Bình",
+        "startDate": "2058-07-10",
+        "endDate": "2058-07-12",
+        "adults": 4,
+        "totalBudget": 9100000
+      },
+      "expectedMissing": [
+        "transportation"
+      ],
+      "expectedProvider": 0,
+      "expectedGets": 0,
+      "expectedPosts": 0,
+      "expectedTools": 0,
+      "expectedStatus": "needs_input",
+      "expectedGate": "NOT_APPLICABLE_INCOMPLETE",
+      "expectedSlotStates": {
+        "departureCity": "SET",
+        "destinationCity": "SET",
+        "startDate": "SET",
+        "endDate": "SET",
+        "adults": "SET",
+        "totalBudget": "SET",
+        "transportation": "OMITTED"
+      }
+    },
+    {
+      "id": "Q02-UNSET",
+      "pair": "Q02",
+      "phase": "DETERMINISTIC",
+      "action": "continue",
+      "message": "Tôi hủy phương tiện, giữ thông tin còn lại.",
+      "revision": 2,
+      "origin": "VERIFIED_HISTORY_COMPLETENESS",
+      "transportState": "UNPROVEN",
+      "requestId": "a070d7cd-570c-49f7-b0a3-bacc2c1c95c8",
+      "expectedValues": {
+        "departureCity": "Bắc Giang",
+        "destinationCity": "Hòa Bình",
+        "startDate": "2058-07-10",
+        "endDate": "2058-07-12",
+        "adults": 4,
+        "totalBudget": 9100000
+      },
+      "expectedMissing": [
+        "transportation"
+      ],
+      "expectedProvider": 0,
+      "expectedGets": 0,
+      "expectedPosts": 0,
+      "expectedTools": 0,
+      "expectedStatus": "needs_input",
+      "expectedGate": "NOT_APPLICABLE_INCOMPLETE",
+      "expectedSlotStates": {
+        "departureCity": "SET",
+        "destinationCity": "SET",
+        "startDate": "SET",
+        "endDate": "SET",
+        "adults": "SET",
+        "totalBudget": "SET",
+        "transportation": "UNPROVEN"
+      }
+    },
+    {
+      "id": "Q02-B",
+      "pair": "Q02",
+      "variant": "B",
+      "phase": "LIVE_LLM",
+      "action": "continue",
+      "message": "Phương tiện: motorbike",
+      "revision": 3,
+      "origin": "MODEL",
+      "transportState": "SET",
+      "requestId": "c1cc0a8d-20d3-4773-b13d-b21b913afe5d",
+      "expectedValues": {
+        "departureCity": "Bắc Giang",
+        "destinationCity": "Hòa Bình",
+        "startDate": "2058-07-10",
+        "endDate": "2058-07-12",
+        "adults": 4,
+        "totalBudget": 9100000,
+        "transportation": "motorbike"
+      },
+      "expectedMissing": [],
+      "expectedProvider": 1,
+      "expectedGets": 3,
+      "expectedPosts": 1,
+      "expectedTools": 1,
+      "expectedStatus": "completed",
+      "expectedGate": "ALLOW",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Bắc Giang",
+          "destinationCity": "Hòa Bình",
+          "startDate": "2058-07-10",
+          "endDate": "2058-07-12",
+          "adults": 4,
+          "totalBudget": 9100000,
+          "transportation": "motorbike"
+        }
+      },
+      "providerSystemSha256": "0f89b8b983601a9e84b6826b6de04d7fbeef01c094d9c1156b54f75cf2ea981d",
+      "wireSystemSha256": "01fd91dcbc221a48c40c2c3fed9cdb7337bf65265a00b851529308dfa03fc286",
+      "bodyFile": "body-Q02-B.json",
+      "bodySha256": "20af0bc069a68b40c361c63f77f071b3f092a189444799323cf819d85bd80086",
+      "providerBudgetBytes": 11535,
+      "expectedSlotStates": {
+        "departureCity": "SET",
+        "destinationCity": "SET",
+        "startDate": "SET",
+        "endDate": "SET",
+        "adults": "SET",
+        "totalBudget": "SET",
+        "transportation": "SET"
+      }
+    },
+    {
+      "id": "Q02-A",
+      "pair": "Q02",
+      "variant": "A",
+      "phase": "LIVE_LLM",
+      "action": "continue",
+      "message": "Phương tiện: motorbike",
+      "revision": 4,
+      "origin": "MODEL",
+      "transportState": "SET",
+      "requestId": "bce0b312-8cbe-40ae-a2a5-dc0467e89ad4",
+      "expectedValues": {
+        "departureCity": "Bắc Giang",
+        "destinationCity": "Hòa Bình",
+        "startDate": "2058-07-10",
+        "endDate": "2058-07-12",
+        "adults": 4,
+        "totalBudget": 9100000,
+        "transportation": "motorbike"
+      },
+      "expectedMissing": [],
+      "expectedProvider": 1,
+      "expectedGets": 3,
+      "expectedPosts": 1,
+      "expectedTools": 1,
+      "expectedStatus": "completed",
+      "expectedGate": "ALLOW",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Bắc Giang",
+          "destinationCity": "Hòa Bình",
+          "startDate": "2058-07-10",
+          "endDate": "2058-07-12",
+          "adults": 4,
+          "totalBudget": 9100000,
+          "transportation": "motorbike"
+        }
+      },
+      "providerSystemSha256": "0beed4a7afece45a586fe52f2094f1cca4e460b3cabe389f34c0e206faca0600",
+      "wireSystemSha256": "76e1aa153284ef953685d1f2289dc788ac2e962b763c0a3404495268459632a0",
+      "bodyFile": "body-Q02-A.json",
+      "bodySha256": "cf25e35417bfa03aa2b743c80f56818a21ae5ae9ab5d200ead5f1189827533c7",
+      "providerBudgetBytes": 11264,
+      "expectedSlotStates": {
+        "departureCity": "SET",
+        "destinationCity": "SET",
+        "startDate": "SET",
+        "endDate": "SET",
+        "adults": "SET",
+        "totalBudget": "SET",
+        "transportation": "SET"
+      }
+    }
+  ],
+  "variants": {
+    "A": {
+      "source": "Production original AgentService G2 SYSTEM unchanged",
+      "providerSystemSha256": "0beed4a7afece45a586fe52f2094f1cca4e460b3cabe389f34c0e206faca0600",
+      "wireSystemSha256": "76e1aa153284ef953685d1f2289dc788ac2e962b763c0a3404495268459632a0"
+    },
+    "B": {
+      "source": "docs/evidence/t-ai-04-g2-raw-clarify-investigation/g2-system-candidate-A.txt",
+      "providerSystemSha256": "0f89b8b983601a9e84b6826b6de04d7fbeef01c094d9c1156b54f75cf2ea981d",
+      "wireSystemSha256": "01fd91dcbc221a48c40c2c3fed9cdb7337bf65265a00b851529308dfa03fc286",
+      "construction": "Trusted test-only provider wrapper replaces SYSTEM only; no public API flag or production source patch"
+    }
+  },
+  "pairs": [
+    {
+      "pair": "Q01",
+      "order": [
+        "A",
+        "B"
+      ],
+      "onlySystemPolicyDiff": true,
+      "normalizedBodySha256": "3764d98209c1fb9b699620ddc7526c7803113ab265044501114291fa74363e6d",
+      "toolMetadataAndSchemaSuffixIdentical": true,
+      "messagesAfterSystemIdentical": true,
+      "systemRolesIdentical": true
+    },
+    {
+      "pair": "Q02",
+      "order": [
+        "B",
+        "A"
+      ],
+      "onlySystemPolicyDiff": true,
+      "normalizedBodySha256": "d3b2407ff8d09a712811ca267555bcd88a524a97bd7c4501e0dd3f009a0b3acd",
+      "toolMetadataAndSchemaSuffixIdentical": true,
+      "messagesAfterSystemIdentical": true,
+      "systemRolesIdentical": true
+    }
+  ],
+  "cleanup": [
+    {
+      "id": "Q01-REVOKE",
+      "pair": "Q01",
+      "method": "DELETE",
+      "path": "/verified-history/{id}",
+      "normalQuota": 1,
+      "expectedHttp": 200
+    },
+    {
+      "id": "Q02-REVOKE",
+      "pair": "Q02",
+      "method": "DELETE",
+      "path": "/verified-history/{id}",
+      "normalQuota": 1,
+      "expectedHttp": 200
+    }
+  ],
+  "auxiliary": [
+    {
+      "id": "AUTH-ANONYMOUS",
+      "method": "GET",
+      "path": "/verified-history/privacy",
+      "expectedHttp": 401,
+      "normalQuota": 0
+    },
+    {
+      "id": "PRIVACY",
+      "method": "GET",
+      "path": "/verified-history/privacy",
+      "expectedHttp": 200,
+      "normalQuota": 0
+    }
+  ],
+  "budget": {
+    "normalTurns": 8,
+    "cleanupNormalTurns": 2,
+    "mainNormalTotal": 10,
+    "conditionalOperatorConservative": 1,
+    "requiredConservativeSlots": 11,
+    "maxNativePosts": 5,
+    "maxInference": 4,
+    "maxOperatorLoadOnly": 1,
+    "concurrency": 1,
+    "retries": 0
+  },
+  "operator": {
+    "bodyFile": "operator-load-body.json",
+    "bodySha256": "4e86b724bb5567dfb08b8f53807c4423e2de86a7fd48e56ddd125431d8e76c01",
+    "endpoint": "http://127.0.0.1:11434/api/generate",
+    "conditional": "Only nonresident; wrong resident context or eviction stops, no reload",
+    "deadlineMs": 60000,
+    "keepAlive": "5m",
+    "expected": {
+      "status": 200,
+      "done": true,
+      "done_reason": "load",
+      "response": ""
+    }
+  },
+  "scoring": {
+    "raw": "Original JSON/schema/runtime; exact kind/name/seven required values. Only existing harmless optional defaults children0/pacing balanced/preferences[] allowed; other unexpected/unproven properties FAIL. No raw/timeout=semantic NOT EVALUATED + reliability failure, never a synthetic PASS.",
+    "history": "Expected state/revision/owner/TTL/merged proof independent of model output; repeat SET updates source revision, never injects client history.",
+    "safety": "At most one fake read-only marker for unchanged valid raw passing original owned gate. No repair/autocomplete/second tool; hypothetical car must not ALLOW.",
+    "control": "Same model/options/schema/metadata/role/order/current/snapshot within pair; native body only SYSTEM differs.",
+    "runtime": "Real provider/readiness/native; default15s deadline, no retry/unapproved POST",
+    "interpretation": "B2/2 vs A0/2 only LIMITED_CONTROLLED_EVIDENCE. All-pass does not prove fix. Mixed/B failure keeps NEEDS_MORE_EVIDENCE and no production candidate approval."
+  },
+  "stopConditions": [
+    "Any source/manifest/body/control mismatch before POST",
+    "Quota insufficient for locked remaining turns",
+    "Safety blocker/unexpected POST",
+    "Model readiness/eviction/wrong digest/context, no reload",
+    "Provider pending/deadline/abort, no retry",
+    "Session expiry/revision/ownership failure"
+  ],
+  "boundaries": {
+    "real": "HTTP/auth/AgentOrchestrator/limits/G2 store/proof/completeness/provider/readiness/schema/runtime/gate/native Ollama",
+    "mockOnly": "Consent and marker executor only; preparation decisions are offline serialization, not LIVE results",
+    "database": false
+  }
+}

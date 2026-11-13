@@ -1,0 +1,341 @@
+{
+  "title": "A_AUTH UI register/login/Profile/logout/account-switch/invalid-expired",
+  "project": "desktop",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "browser": "Microsoft Edge Chromium headless",
+  "mobile": false,
+  "matrix": [
+    {
+      "id": "ENV_PROXY_DB",
+      "expected": "Frontend proxy reaches this run backend and exact test DB",
+      "status": "PASS",
+      "actual": {
+        "runId": "20261031014715-0e4c3d",
+        "pid": 10904,
+        "port": 5313,
+        "nodeEnv": "test",
+        "host": "127.0.0.1",
+        "database": "travelgo_ai_m0_test",
+        "username": "postgres",
+        "sentinel": "PASS"
+      }
+    },
+    {
+      "id": "AUTH_REGISTER_A",
+      "expected": "Registration through UI persists CUSTOMER account",
+      "status": "PASS",
+      "actual": {
+        "user": {
+          "id": "558fa9ad-5e21-43cf-a5c3-2dec2d43cc86",
+          "fullName": "T13A desktop AuthA",
+          "email": "t13a.0e4c3d.desktop.autha.430c0713-c53@example.test",
+          "phone": "0901234567",
+          "avatarUrl": null,
+          "roles": [
+            "CUSTOMER"
+          ]
+        },
+        "token": "eyJpZCI6IjU1OGZhOWFkLTVlMjEtNDNjZi1hNWMzLTJkZWMyZDQzY2M4NiIsImZ1bGxOYW1lIjoiVDEzQSBkZXNrdG9wIEF1dGhBIiwiZW1haWwiOiJ0MTNhLjBlNGMzZC5kZXNrdG9wLmF1dGhhLjQzMGMwNzEzLWM1M0BleGFtcGxlLnRlc3QiLCJwaG9uZSI6IjA5MDEyMzQ1NjciLCJhdmF0YXJVcmwiOm51bGwsInJvbGVzIjpbIkNVU1RPTUVSIl0sImlhdCI6MTc5MzQxMTI1MiwiZXhwIjoxNzkzNDQwMDUyfQ.lG9YOEymJ7aW5r0yYCokKxZQQI1UA4DDv2gE0AMwr-w",
+        "fullName": "T13A desktop AuthA",
+        "email": "t13a.0e4c3d.desktop.autha.430c0713-c53@example.test",
+        "password": "R7Yj5e0xvH8tYOTB615glHYBviU1a"
+      }
+    },
+    {
+      "id": "PROFILE_A",
+      "expected": "DB-backed profile and reload show A",
+      "status": "PASS"
+    },
+    {
+      "id": "LAYOUT_profile-A",
+      "expected": "No document horizontal overflow",
+      "actual": {
+        "width": 1440,
+        "scrollWidth": 1440,
+        "culprits": []
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "AUTH_LOGIN_A",
+      "expected": "Login via UI returns A, wrong password rejected first",
+      "status": "PASS"
+    },
+    {
+      "id": "AUTH_SWITCH_B",
+      "expected": "B profile never shows A identity",
+      "status": "PASS"
+    },
+    {
+      "id": "LAYOUT_profile-B",
+      "expected": "No document horizontal overflow",
+      "actual": {
+        "width": 1440,
+        "scrollWidth": 1440,
+        "culprits": []
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "AUTH_INVALID",
+      "expected": "Real 401 clears client session and returns to login",
+      "status": "PASS"
+    },
+    {
+      "id": "AUTH_EXPIRED",
+      "expected": "Real 401 clears client session and returns to login",
+      "status": "PASS"
+    }
+  ],
+  "traffic": [
+    {
+      "method": "GET",
+      "path": "/api/__t13a/identity",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/places",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/blogs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/places",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/blogs",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 401
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/places",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/blogs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/blogs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/places",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 401
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 401
+    }
+  ],
+  "external": [
+    {
+      "url": "https://example.test/suspended.jpg",
+      "error": "net::ERR_NAME_NOT_RESOLVED"
+    },
+    {
+      "url": "https://example.test/suspended.jpg",
+      "error": "net::ERR_NAME_NOT_RESOLVED"
+    }
+  ],
+  "testStatus": "passed"
+}

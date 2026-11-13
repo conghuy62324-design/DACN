@@ -1,0 +1,94 @@
+{
+  "at": "2026-11-10T16:29:26.787Z",
+  "status": "PROPOSED_REQUIRES_SEPARATE_OWNER_APPROVAL_NO_REQUESTS_AUTHORIZED_HERE",
+  "task": "T-AI-04-G2-RAW-CLARIFY-CONTROLLED-DIAGNOSTIC",
+  "question": "Does scoped G2 required-source wording alter false clarification while preserving independent proof? Not a causal proof of every model failure.",
+  "maxGenuineInferences": 4,
+  "maxConditionalLoadOnly": 1,
+  "maxNativePosts": 5,
+  "currentTaskNativePosts": 0,
+  "variants": {
+    "A": {
+      "system": "Original G2 current; current hash locked in contract-hashes.json"
+    },
+    "B": {
+      "systemFile": "g2-system-candidate-A.txt",
+      "sha256": "0f89b8b983601a9e84b6826b6de04d7fbeef01c094d9c1156b54f75cf2ea981d",
+      "wireSha256": "01fd91dcbc221a48c40c2c3fed9cdb7337bf65265a00b851529308dfa03fc286",
+      "scope": "Diagnostic harness variant only; production source unchanged"
+    }
+  },
+  "pairs": [
+    {
+      "id": "Q01",
+      "currentMessage": "À đổi sang xe máy, giữ thông tin còn lại.",
+      "order": [
+        "A",
+        "B"
+      ],
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Bắc Giang",
+          "destinationCity": "Hòa Bình",
+          "startDate": "2058-07-10",
+          "endDate": "2058-07-12",
+          "adults": 4,
+          "totalBudget": 9100000,
+          "transportation": "motorbike"
+        }
+      }
+    },
+    {
+      "id": "Q02",
+      "currentMessage": "Phương tiện: motorbike",
+      "order": [
+        "B",
+        "A"
+      ],
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Bắc Giang",
+          "destinationCity": "Hòa Bình",
+          "startDate": "2058-07-10",
+          "endDate": "2058-07-12",
+          "adults": 4,
+          "totalBudget": 9100000,
+          "transportation": "motorbike"
+        }
+      }
+    }
+  ],
+  "setupPerPair": [
+    {
+      "message": "Lập lịch trình; Nơi xuất phát: Bắc Giang; Điểm đến: Hòa Bình; Ngày bắt đầu: 2058-07-10; Ngày kết thúc: 2058-07-12; Số người lớn: 4; Ngân sách cả nhóm: 9100000 VND",
+      "expectedMissing": [
+        "transportation"
+      ],
+      "providerCalls": 0
+    },
+    {
+      "message": "Tôi hủy phương tiện, giữ thông tin còn lại.",
+      "expectedMissing": [
+        "transportation"
+      ],
+      "providerCalls": 0
+    }
+  ],
+  "sessions": "Real server-created owned session per pair, same approved principal/default AgentLimits. Two variants send same positive patch with fresh IDs/revisions; native snapshot/body identical within pair except SYSTEM.",
+  "singleVariable": "Only G2 SYSTEM variant within each pair; roles/order/schema/options/model/current/snapshot fixed. Across pairs wording differs intentionally; do not treat cross-pair as causal A/B.",
+  "normalQuotaPlan": "8 normal turns across two pairs +1 conditional operator conservative entry, plus any checks explicitly added before lock. Recompute real ledger reading at+createdAt; no bypass/reset/new inference principal.",
+  "runtime": "Same model/digest as baseline, loopback/no proxy/cloud, JSON streamfalse temp0 ctx16384 predict2048 deadline15000ms; one preapproved load if nonresident; eviction/readiness failure stops.",
+  "safety": "Original schema/runtime/owned proof gate; only marker executor or no tool executor, no Planner/Catalog/DB. Provider raw before fallback; no successful output simulation.",
+  "criteria": "Exact plan_trip and args, original schema/runtime, safety separately. Clarify on complete is semantic FAIL. Timeout/no raw semantic NOT EVALUATED + reliability failure. No retry, no benchmark/historical expected changes.",
+  "interpretation": "If both A/B pass, ambiguity remains a confirmed design observation but L03 root cause is not identified. Tiny AB cannot establish general quality; mixed results keep NEEDS_MORE_EVIDENCE. No P1 closure from4 probes alone.",
+  "ownerGates": [
+    "Review candidate diff/byte budget and independent expectations",
+    "Approve exact future manifest/body hashes/POST cap, not this proposal checksum as approval",
+    "Verify source/history/benchmark/model readiness/resources/rate before dispatch",
+    "Stop after report; conditional FIX/source edits need separate approval"
+  ]
+}

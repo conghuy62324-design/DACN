@@ -95,7 +95,7 @@ const MobileLink: React.FC<MobileLinkProps> = ({ to, label, isActive, onClick, e
   <Link
     to={to}
     onClick={onClick}
-    className={`block px-3 py-2 rounded-lg text-base font-medium ${
+    className={`block min-w-0 [overflow-wrap:anywhere] px-3 py-2 rounded-lg text-base font-medium ${
       extraClass ?? (isActive ? 'bg-orange-50 text-orange-600 font-semibold' : 'text-slate-700 hover:bg-slate-50')
     }`}
   >
@@ -142,6 +142,7 @@ export const Navbar: React.FC = () => {
   const isGroupActive = (paths: string[]) => paths.some((p) => isActive(p));
 
   const tourItems: DropdownItem[] = [
+    ...(!user || user.roles.includes('CUSTOMER') ? [{ label: 'Trợ lý AI', path: '/assistant', icon: <Sparkles className="w-4 h-4" />, description: 'Trao đổi để phác thảo chuyến đi' }] : []),
     { label: 'Tour du lịch', path: '/tours', icon: <Route className="w-4 h-4" />, description: 'Khám phá các gói tour hấp dẫn' },
     { label: 'Tạo lịch trình', path: '/tour-planner', icon: <CalendarDays className="w-4 h-4" />, description: 'Tự thiết kế hành trình cá nhân' },
     { label: 'Chuyến đi của tôi', path: '/my-trips', icon: <Map className="w-4 h-4" />, description: 'Xem và quản lý chuyến đi' },
@@ -195,7 +196,7 @@ export const Navbar: React.FC = () => {
             <NavDropdown
               label="Tour & Lịch trình"
               items={tourItems}
-              isActive={isGroupActive(['/tours', '/tour-planner', '/my-trips'])}
+              isActive={isGroupActive(['/tours', '/tour-planner', '/my-trips', '/assistant'])}
             />
             <NavDropdown
               label="Dịch vụ"
@@ -234,9 +235,10 @@ export const Navbar: React.FC = () => {
                 <button
                   onClick={() => setUserDropdownOpen((v) => !v)}
                   aria-expanded={userDropdownOpen}
+                  aria-label="Menu tài khoản"
                   className="flex items-center space-x-2 p-1.5 rounded-full hover:bg-slate-100 transition-colors border border-slate-200"
                 >
-                  <img src={user.avatarUrl} alt={user.fullName} className="w-8 h-8 rounded-full object-cover" />
+                  {user.avatarUrl ? <img src={user.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" /> : <User aria-hidden="true" className="w-8 h-8 p-1 rounded-full bg-orange-50 text-orange-600" />}
                   <span className="text-sm font-medium text-slate-800 pr-1 max-w-[100px] truncate">{user.fullName}</span>
                   <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -304,7 +306,7 @@ export const Navbar: React.FC = () => {
 
           {/* Mobile Controls */}
           <div className="flex items-center space-x-2 lg:hidden">
-            <Link to="/favorites" className="relative p-2 text-slate-700">
+            <Link to="/favorites" aria-label="Danh sách yêu thích" className="relative p-2 text-slate-700">
               <Heart className="w-6 h-6" />
               {favorites.length > 0 && (
                 <span className="absolute top-1 right-1 w-4 h-4 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">

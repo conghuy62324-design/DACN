@@ -1,0 +1,240 @@
+# TASK T-AI-04-PLANNER-ADAPTER-BINDING-ACCEPTANCE-FIX
+
+Vai trò: Senior E2E Automation Engineer, JavaScript Engineer, QA Lead và Security Engineer của TravelGo.
+
+## MỤC TIÊU
+
+Sửa lỗi acceptance test ở Phase A của `T-AI-04-PLANNER-LIVE-TARGETED-REVALIDATION`.
+
+Task này chỉ thực hiện **OFFLINE FIX + INDEPENDENT ACCEPTANCE**.
+
+Không chạy LIVE, Ollama hoặc PostgreSQL.
+
+Không sửa production.
+
+## 1. ĐỌC BASELINE
+
+Đọc:
+
+- `docs/HUGO_T_AI_04_PLANNER_LIVE_TARGETED_REVALIDATION_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_LIVE_HARNESS_RELIABILITY_FIX_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_REAL_TOOL_LIVE_E2E_RESUME_RUN2_REPORT.md`
+
+Kiểm tra evidence:
+
+- `phase-a-adapter-acceptance.json`
+- `binding-manifest.json`
+- `adapter-binding.test.cjs`
+- `runtime-adapters.cjs`
+- `real-guards.cjs`
+- Corrected orchestrator.
+- `ADAPTER_CONTRACT.md`
+
+Baseline:
+
+- 20 PASS / 1 FAIL.
+- Manifest injection FAIL tại parent assertion.
+- Original error được giữ.
+- Global stop hoạt động.
+- R02/R03 NOT RUN.
+- Native dispatch0.
+- Resource dispose1.
+- Cleanup action0 vì chưa đạt preconditions.
+- R01–R03 LIVE NOT RUN.
+- P1/P2 OPEN.
+
+Không chỉnh sửa historical evidence hoặc đổi verdict cũ.
+
+## 2. PHÂN TÍCH ROOT CAUSE
+
+Xác minh chính xác ba trạng thái:
+
+### STATE A — Fail trước case stage
+
+- Manifest validation FAIL.
+- Chưa có active case.
+- Chưa tạo fixture.
+- Không có committed ownership ledger.
+
+Expected:
+
+- Global stop TRUE.
+- Original error preserved.
+- Later cases NOT RUN.
+- Cleanup fixture action BLOCKED/NOT APPLICABLE.
+- Resource dispose gọi đúng một lần.
+- No further dispatch.
+- Exit nonzero.
+
+### STATE B — Fail sau case stage nhưng trước fixture creation
+
+Expected:
+
+- Không xóa fixture chưa được tạo.
+- Dispose đúng.
+- Không tự sinh ownership ledger.
+- Global stop đúng.
+
+### STATE C — Fail sau committed fixture creation
+
+Dùng synthetic ledger và fake DB adapter để kiểm.
+
+Expected:
+
+- Dừng Agent/native/tool dispatch.
+- Kiểm cleanup preconditions.
+- Chỉ thực thi cleanup khi ownership, row hashes, IDs, FK references và isolation đều hợp lệ.
+- Không thực hiện cleanup khi thiếu bất kỳ điều kiện nào.
+- Dispose đúng một lần.
+- Original error không bị secondary cleanup error ghi đè.
+
+Không sử dụng PostgreSQL thật trong các kiểm thử này.
+
+## 3. SỬA ASSERTION SAI
+
+Trong manifest injection test:
+
+Không còn mặc định yêu cầu `cleanupActionCount === 1` cho mọi failure.
+
+Thay bằng kiểm tra phù hợp lifecycle:
+
+- Cleanup finally handler được truy cập đúng.
+- Cleanup precondition được đánh giá.
+- Nếu chưa có resource/fixture hợp lệ: action BLOCKED.
+- Nếu có committed fixture hợp lệ và đủ guards: action được gọi đúng một lần.
+- Resource dispose luôn được kiểm độc lập.
+- Không cho phép cleanup bypass preconditions.
+
+Chỉ sửa test/harness contract khi source chứng minh assertion sai.
+
+Không nới actual production safety guard.
+
+Không thay assertion để bỏ qua cleanup failures thực sự.
+
+## 4. INDEPENDENT ACCEPTANCE
+
+Chạy lại toàn bộ 21 adapter-binding checks.
+
+Bổ sung các negative tests:
+
+1. Manifest FAIL trước stage.
+2. Fail sau stage nhưng chưa tạo fixture.
+3. Fail sau fixture creation thành công.
+4. Fixture ledger thiếu ownership.
+5. Fixture row hash mismatch.
+6. Foreign reference xuất hiện.
+7. Maintenance isolation không hợp lệ.
+8. Cleanup callback bị lỗi.
+9. Resource dispose bị lỗi.
+10. First failure không bị secondary error ghi đè.
+11. R01 FAIL thì R02/R03 không dispatch.
+12. Missing runtime adapter phải FAIL CLOSED.
+
+Các trường hợp có cleanup action bị chặn hợp lệ không được coi là bug chỉ vì callback không được gọi.
+
+Các trường hợp cần cleanup nhưng bị bỏ qua trái contract phải FAIL.
+
+Tất cả failure injection phải xác minh process exit code và dispatch counters.
+
+## 5. REAL ADAPTER CONTRACT
+
+Review lại candidate:
+
+- `runtime-adapters.cjs`
+- `real-guards.cjs`
+- Corrected orchestrator.
+- Shared fail-fast fence.
+
+Bắt buộc xác nhận:
+
+- Không có guard giả `async () => true` trong LIVE path.
+- Missing adapter không được mặc định PASS.
+- Shared cap gồm operator + inference.
+- Native cap tổng4.
+- Inference tối đa3.
+- Operator load-only tối đa1.
+- Agent quota kiểm độc lập với native POST cap.
+- Không có retry.
+- Manifest/request/body hashes không bị bỏ qua.
+- Mọi dispatch đi qua stop fence.
+- Cleanup được xử lý qua cùng lifecycle đã kiểm.
+
+Dùng sensor doubles độc lập để đo, không kết nối các dịch vụ thật.
+
+Không được tuyên bố real adapter LIVE PASS chỉ bằng static review hoặc mock acceptance.
+
+## 6. BẢO VỆ PHẠM VI
+
+Tuyệt đối không:
+
+- Gọi Ollama GET/POST.
+- Load/unload model.
+- Kết nối PostgreSQL.
+- INSERT/DELETE fixture.
+- Chạy direct Planner thật.
+- Chạy LIVE browser.
+- Thay production Agent/Planner/Auth.
+- Thay SYSTEM/schema/gate.
+- Thay approved benchmark/expected.
+- Sửa historical results.
+- Commit/push/deploy.
+
+Chỉ sửa harness/tests trong evidence task mới.
+
+## 7. EXIT GATE
+
+Chỉ nhận:
+
+`ADAPTER_BINDING_ACCEPTANCE_PASS_OFFLINE`
+
+nếu:
+
+1. Original 21 checks PASS.
+2. New lifecycle/cleanup negative tests PASS.
+3. Global fail-fast vẫn PASS.
+4. Shared native cap được kiểm.
+5. Missing adapters FAIL CLOSED.
+6. Source/benchmark/historical evidence nguyên vẹn.
+7. PostgreSQL connections0.
+8. Ollama requests0.
+9. Fixture writes0.
+
+Nếu còn lỗi:
+
+`ADAPTER_BINDING_ACCEPTANCE_INCOMPLETE`
+
+Dừng sau báo cáo, không tự chuyển sang LIVE.
+
+## 8. BÁO CÁO
+
+Tạo:
+
+`docs/HUGO_T_AI_04_PLANNER_ADAPTER_BINDING_ACCEPTANCE_FIX_REPORT.md`
+
+Evidence:
+
+`docs/evidence/t-ai-04-planner-adapter-binding-acceptance-fix/`
+
+Báo cáo gồm:
+
+1. Root cause.
+2. Assertion change.
+3. Cleanup lifecycle distinction.
+4. Original 21 checks.
+5. Independent negative tests.
+6. Shared native cap.
+7. Real adapter review.
+8. Fail-fast results.
+9. Network/DB audit.
+10. Source integrity.
+11. Historical results preserved.
+12. P1/P2.
+13. NEXT TASK PLAN.
+
+NEXT TASK chỉ đề xuất:
+
+`T-AI-04-PLANNER-LIVE-TARGETED-REVALIDATION-RESUME`
+
+Lượt LIVE tiếp theo phải có fresh owner approval/scope confirmation, quota, DB/fixture guards, manifest và POST budget riêng. Không kế thừa 4 POST chưa dùng của task bị chặn như quyền tự thực thi.
+
+**DỪNG SAU BÁO CÁO.**

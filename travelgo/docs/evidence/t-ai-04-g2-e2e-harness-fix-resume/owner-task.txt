@@ -1,0 +1,421 @@
+# TASK T-AI-04-G2-E2E-HARNESS-FIX-AND-RESUME
+
+Vai trò: Senior Full-stack Engineer, E2E Automation Engineer, Database QA Engineer và AI Evaluation Lead của TravelGo.
+
+## MỤC TIÊU
+
+Khắc phục lỗi H01 trong test harness và tiếp tục kiểm thử Browser → Backend → Ollama → Real Catalog → PostgreSQL.
+
+Không sửa production. Không thay benchmark. Không thực hiện Planner fixture hoặc DB mutation.
+
+Task có **hai giai đoạn bắt buộc**:
+
+- PHASE A: Sửa harness và kiểm chứng offline.
+- PHASE B: Resume LIVE desktop/mobile chỉ khi PHASE A và mọi preflight đạt.
+
+### Phạm vi LIVE được đề xuất phê duyệt
+
+Nếu chủ dự án gửi nguyên task này để thực thi thì cho phép tối đa:
+
+- 01 conditional operator load-only POST.
+- 02 genuine inference POST, E01 và E07.
+- Tổng tối đa 03 native Ollama POST.
+- 0 retry, 0 hidden warm-up.
+
+Đây là ngân sách mới của task resume. Không kế thừa hoặc sử dụng tùy ý phần ngân sách chưa dùng từ task trước.
+
+Nếu một điều kiện an toàn không đạt, phải dừng mà không dùng POST còn lại.
+
+## 1. BASELINE
+
+Đọc đầy đủ:
+
+- `docs/HUGO_T_AI_04_G2_BROWSER_REAL_TOOL_E2E_REPORT.md`
+- `docs/HUGO_T_AI_04_G2_FRONTEND_INTEGRATION_LOGOUT_REPORT.md`
+- `docs/HUGO_T_AI_04_G2_VERIFIED_HISTORY_REPORT.md`
+- `docs/HUGO_T_AI_04_G2_NATURAL_CORRECTION_ENUM_INVESTIGATION_REPORT.md`
+
+Đọc evidence:
+
+- `docs/evidence/t-ai-04-g2-browser-real-tool-e2e/harness-binding-diagnosis.json`
+- `docs/evidence/t-ai-04-g2-browser-real-tool-e2e/harness-correction.patch`
+- `docs/evidence/t-ai-04-g2-browser-real-tool-e2e/manifest.json`
+- `docs/evidence/t-ai-04-g2-browser-real-tool-e2e/results-reviewed.json`
+- `docs/evidence/t-ai-04-g2-browser-real-tool-e2e/data-readiness.json`
+
+Baseline:
+
+- 6 LIVE deterministic checks PASS.
+- H01 harness URL placeholder FAIL.
+- 0 Ollama inference/POST.
+- Desktop LIVE search NOT RUN.
+- Mobile LIVE search NOT RUN.
+- Planner success BLOCKED_DATA_READINESS.
+- PostgreSQL fingerprint 25/25 unchanged.
+- Trip sessions 27/27.
+- Frontend 49/49 unit, 74/74 mocked browser PASS.
+- Backend 68/79/61/42/52 PASS.
+- Legacy 145 PASS / 36 FAIL.
+- P1/P2 OPEN.
+
+Giữ nguyên toàn bộ historical evidence và expected.
+
+---
+
+# PHASE A — HARNESS FIX OFFLINE
+
+## 2. Sửa H01
+
+Lỗi đã xác nhận:
+
+Frontend gửi URL:
+
+`/api/agent/verified-history/<server-created-id>/reset`
+
+Nhưng test harness không thay placeholder `$desktop.id` khi placeholder nằm giữa một URL đầy đủ.
+
+Nhiệm vụ:
+
+1. Đọc đúng implementation harness hiện tại.
+2. Review proposed patch.
+3. Sửa cơ chế bind placeholder ở harness.
+4. Hỗ trợ placeholder nằm trong full URL/path.
+5. Không thay nhầm các chuỗi không phải placeholder.
+6. Không thay session ID bằng giá trị client tự tạo.
+7. Không bỏ exact path/body/hash guards.
+8. Không sửa production Agent routes.
+
+Chỉ sửa file harness/test mới được phép.
+
+## 3. Offline acceptance
+
+Tạo independent tests cho:
+
+- Placeholder là toàn bộ value.
+- Placeholder nằm trong URL path.
+- Reset endpoint.
+- Revoke endpoint.
+- Start/continue request.
+- Server-created UUID.
+- Fresh requestId.
+- Unresolved placeholder bị reject.
+- Sai endpoint vẫn bị guard chặn.
+- Sai method/body vẫn bị guard chặn.
+- URL encoding đúng.
+- Không thay các chuỗi trùng một phần nhưng không phải token.
+
+Thực hiện dry integration:
+
+Frontend thật → local test HTTP router → production reset/revoke G2 code.
+
+Dùng fake provider/consent và in-memory session để tránh Ollama/PostgreSQL.
+
+Kiểm reset thật trả đúng metadata/revision, revoke xóa session đúng owner.
+
+Nếu offline tests FAIL, không bước sang PHASE B.
+
+## 4. Phase A exit gate
+
+Bắt buộc:
+
+- Harness patch PASS.
+- Dry integration PASS.
+- Không bỏ guard.
+- Không production changes.
+- 0 Ollama POST.
+- 0 PostgreSQL access trong offline harness.
+- Source/evidence baseline nguyên vẹn.
+
+Nếu đạt, ghi `PHASE_A_PASS`.
+
+---
+
+# PHASE B — RESUME LIVE
+
+## 5. Resume manifest mới
+
+Không sửa hoặc ghi đè manifest của lượt E2E bị chặn.
+
+Tạo manifest resume mới, tham chiếu kết quả cũ.
+
+Chỉ chạy lại deterministic setup cần thiết vì process/session cũ đã đóng.
+
+Không phát lại sáu kiểm tra đã PASS trừ khi cần thiết để khởi tạo session mới.
+
+Các case inference:
+
+- **E01:** Desktop LIVE real Catalog search.
+- **E07:** Mobile LIVE real Catalog search.
+
+Giữ nguyên exact user inputs, expected tool arguments và scoring criteria đã khóa cho E01/E07 ở task trước.
+
+Nếu cần thay input vì data/source drift, dừng và yêu cầu manifest review riêng, không âm thầm chỉnh để có PASS.
+
+Tạo server-owned session mới. Ghi rõ đây là setup bắt buộc, không phải retry inference trước đó vì inference cũ chưa từng chạy.
+
+## 6. Database safety
+
+Chỉ dùng:
+
+`travelgo_ai_m0_test`
+
+Bắt buộc:
+
+- Exact DB identity.
+- Sentinel `hugotravel-isolated-test-database-v1`.
+- 12/12 migration checksum.
+- Schema baseline.
+- READ ONLY session.
+- SQL SELECT/SHOW guard.
+- Fingerprint before/after.
+- Không tạo fixture.
+- Không seed/migrate/truncate.
+- Không sửa Trip/Booking/user data.
+
+Lưu ý database role `postgres` là superuser.
+
+Không được xem superuser là least-privilege. Phải giữ session-level READ ONLY, SQL guards và kiểm identity trước khi truy vấn.
+
+Nếu không chứng minh được READ ONLY, dừng phần DB LIVE.
+
+Expected Catalog sử dụng direct-service data đã xác minh:
+
+- HuGo Seafood.
+- HuGo Riverside Hotel.
+
+Đối chiếu exact public result và pricing hiện tại với snapshot mới trước inference.
+
+Không tự giả định catalog không đổi chỉ vì có evidence trước đó.
+
+Planner success vẫn BLOCKED_DATA_READINESS nếu không có attraction/tour hợp lệ. Không tạo fixture trong task này.
+
+## 7. Browser LIVE
+
+Dùng:
+
+- Desktop 1440×900.
+- Mobile giả lập 390×844.
+
+Actual React/Vite → backend Express Agent → Ollama local → Catalog service → test PostgreSQL.
+
+Không Playwright route mocking cho các case LIVE.
+
+Nếu dùng test-signed JWT, ghi đúng là authenticated test session, không gọi real-login E2E.
+
+Kiểm:
+
+- G2 opt-in.
+- Privacy acknowledgement.
+- Fresh request UUID.
+- Server-created ID/revision.
+- Correct browser request.
+- Real model raw decision.
+- Original schema/validator.
+- Execution gate.
+- Exactly one permitted read-only tool.
+- Actual Catalog output.
+- UI rendering.
+- Không hiển thị fake results.
+
+Nếu model chọn sai raw decision:
+
+- RAW NLU FAIL.
+- Không đổi expected.
+- Không retry.
+- Không sửa output.
+- Chấm safety độc lập.
+
+Nếu model hỏi lại không cần thiết, ghi nhận đúng lỗi, không biến thành completed.
+
+## 8. Ollama
+
+Giữ model:
+
+`qwen3:4b-instruct-2507-q4_K_M`
+
+Digest:
+
+`0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0`
+
+Giữ:
+
+- `127.0.0.1:11434`
+- JSON mode.
+- stream false.
+- temperature 0.
+- num_ctx 16384.
+- num_predict 2048.
+- Application timeout 15000ms.
+- Concurrency 1.
+
+Preflight:
+
+- GET version/tags/ps.
+- Exact digest.
+- Local-only transport.
+- No proxy/cloud.
+- RAM/VRAM.
+- Model residency.
+- Pending provider state.
+
+Nếu model chưa resident, cho phép 01 operator load-only POST theo approved body/deadline.
+
+Nếu load fail hoặc model bị eviction, dừng.
+
+Không đổi timeout/context/model/GPU flags để lấy PASS.
+
+## 9. AgentLimits và session TTL
+
+Dùng cùng approved principal như baseline.
+
+Recompute quota tại thời điểm thực thi:
+
+- Scan `at` và `createdAt`.
+- Tính cả historical attempts.
+- Tính cả main turns của lượt E2E trước.
+- Tính deterministic setup mới.
+- Tính E01/E07.
+- Tính reset/revoke nếu có.
+- Tính conservative operator entry.
+
+Default 20 turns/principal/hour.
+
+Không reset hoặc đổi principal để vượt quota.
+
+G2 TTL 15 phút absolute.
+
+Nếu không đủ quota/TTL để hoàn thành chuỗi đã khóa, dừng trước native POST.
+
+Không sử dụng timestamp cũ như quota hiện tại.
+
+## 10. Scoring bắt buộc
+
+Báo riêng:
+
+**Browser LIVE**
+- Desktop/mobile.
+- Actual API/browser results.
+- Error/rendering.
+
+**Raw NLU**
+- Native raw.
+- Expected decision.
+- Tool/arguments.
+- Schema.
+- Semantic PASS/FAIL.
+
+**G2 History**
+- Session owner.
+- Revision.
+- Verified slots.
+- Expiry/replay.
+
+**Safety**
+- Gate.
+- Execution count.
+- Unauthorized/stale values.
+- No mutation.
+
+**Real Tool Fidelity**
+- Actual Catalog call.
+- Exact service output.
+- DB provenance.
+- UI price/place consistency.
+
+**Runtime**
+- POST ledger.
+- Latency/tokens.
+- Readiness.
+- Memory.
+- GPU warnings.
+- Timeout/abort.
+
+Không cộng deterministic PASS thành raw NLU PASS.
+
+Không nhận direct Catalog readiness trước inference là full browser tool PASS.
+
+## 11. Regression
+
+Sau resume:
+
+- Frontend unit 49.
+- Mocked browser 74.
+- Backend 68/79/61/42/52.
+- Original legacy181.
+- Readiness/diagnostics.
+- Foundation control.
+- Frontend/backend build.
+
+Giữ original expected.
+
+Offline regression phải không phát sinh thêm native inference hoặc DB mutations.
+
+Kiểm checksum source/benchmark/evidence.
+
+## 12. Stop conditions
+
+Dừng khi:
+
+- PHASE A FAIL.
+- Manifest/source/hash mismatch.
+- DB guard fail.
+- Quota thiếu.
+- Auth/consent không hợp lệ.
+- Model/digest mismatch.
+- Ollama POST cap đạt3.
+- Unauthorized tool execution.
+- Unexpected DB write.
+- Cross-account leakage.
+- Runtime failure không thể tiếp tục an toàn.
+
+Không tiếp tục E02–E06 nếu Planner vẫn thiếu dữ liệu.
+
+Không sửa source production để làm E2E PASS.
+
+## 13. Báo cáo
+
+Tạo:
+
+`docs/HUGO_T_AI_04_G2_E2E_HARNESS_FIX_RESUME_REPORT.md`
+
+Evidence:
+
+`docs/evidence/t-ai-04-g2-e2e-harness-fix-resume/`
+
+Bao gồm:
+
+1. Harness root cause/fix.
+2. Offline acceptance.
+3. PHASE A gate.
+4. Resume manifest.
+5. Quota/model/DB preflight.
+6. Native POST ledger.
+7. Desktop E01.
+8. Mobile E07.
+9. Raw NLU scoring.
+10. Verified History.
+11. Safety.
+12. Real Catalog fidelity.
+13. DB fingerprint.
+14. Runtime/P2.
+15. Regression/build.
+16. Integrity.
+17. Remaining Planner blocker.
+18. P1/P2.
+19. NEXT TASK PLAN.
+
+Nếu LIVE search hoàn thành nhưng Planner vẫn không đủ data, kết luận phải là:
+
+`SEARCH_LIVE_E2E_RESULT_RECORDED / PLANNER_E2E_BLOCKED_DATA_READINESS`
+
+Với mỗi lớp, ghi PASS/FAIL/NOT RUN thực tế, không mặc định SEARCH PASS trước khi có evidence.
+
+NEXT TASK đề xuất sau đó:
+
+`T-AI-04-PLANNER-TEST-DATA-READINESS`
+
+Task Planner data phải có approval riêng trước mọi fixture/write.
+
+Không tự V2 LIVE, không sửa production, không deploy.
+
+**Dừng sau báo cáo.**

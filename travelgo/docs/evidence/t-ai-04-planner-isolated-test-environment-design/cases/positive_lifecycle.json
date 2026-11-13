@@ -1,0 +1,90 @@
+{
+  "name": "positive_lifecycle",
+  "tier": "OFFLINE_SYMBOLIC_SPECIFICATION_NOT_ENFORCEMENT",
+  "decision": "VERIFIED_MODEL_ONLY",
+  "recovery": "CLOSE_OWNED_AFTER_FINGERPRINT",
+  "facts": {
+    "writerAdmitted": true,
+    "runtimeAdmitted": true,
+    "writerInsert": true,
+    "writerOtherTable": false,
+    "runtimeDml": false
+  },
+  "phase": "VERIFIED",
+  "intervalActive": false,
+  "fixture": "ABSENT",
+  "stopped": false,
+  "callbacks": {
+    "live": 1,
+    "cleanup": 1
+  },
+  "lateCallbacks": 0,
+  "events": [
+    {
+      "seq": 1,
+      "type": "INIT",
+      "phase": "BEFORE_READY",
+      "active": false,
+      "fixture": "ABSENT",
+      "stopped": false
+    },
+    {
+      "seq": 2,
+      "type": "ISOLATION_READY",
+      "phase": "READY",
+      "active": true,
+      "fixture": "ABSENT",
+      "stopped": false
+    },
+    {
+      "seq": 3,
+      "type": "INSERT_PENDING",
+      "phase": "INSERT_PENDING",
+      "active": true,
+      "fixture": "UNCOMMITTED",
+      "stopped": false
+    },
+    {
+      "seq": 4,
+      "type": "COMMITTED",
+      "phase": "COMMITTED",
+      "active": true,
+      "fixture": "COMMITTED",
+      "stopped": false
+    },
+    {
+      "seq": 5,
+      "type": "PLANNER",
+      "phase": "PLANNER",
+      "active": true,
+      "fixture": "COMMITTED",
+      "stopped": false
+    },
+    {
+      "seq": 6,
+      "type": "CLEANUP_PENDING",
+      "phase": "CLEANUP_PENDING",
+      "active": true,
+      "fixture": "COMMITTED",
+      "stopped": false
+    },
+    {
+      "seq": 7,
+      "type": "FINAL_VERIFY",
+      "phase": "FINAL_VERIFY",
+      "active": true,
+      "fixture": "ABSENT",
+      "stopped": false
+    },
+    {
+      "seq": 8,
+      "type": "SAFE_END",
+      "phase": "VERIFIED",
+      "active": false,
+      "fixture": "ABSENT",
+      "stopped": false
+    }
+  ],
+  "actualPostgres": 0,
+  "actualSql": 0
+}

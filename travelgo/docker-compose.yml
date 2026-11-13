@@ -1,4 +1,4 @@
-version: '3.9'
+name: travelgo
 
 services:
   # ─────────────────────────────────────────────
@@ -20,7 +20,7 @@ services:
       # Migration được quản lý bởi Node.js script (npm run db:migrate:apply)
       # KHÔNG mount vào docker-entrypoint-initdb.d để tránh conflict với schema_migrations tracker
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-travelgo_db}"]
+      test: ["CMD-SHELL", "psql -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\" -tAc 'SELECT 1' >/dev/null"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -44,7 +44,12 @@ services:
       - "5050:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
-      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+      - type: bind
+        source: ./docker/pgadmin/servers.json
+        target: /pgadmin4/servers.json
+        read_only: true
+        bind:
+          create_host_path: false
     depends_on:
       postgres:
         condition: service_healthy
@@ -53,9 +58,11 @@ services:
 
 volumes:
   postgres_data:
-    driver: local
+    external: true
+    name: travelgo_postgres_data
   pgadmin_data:
-    driver: local
+    external: true
+    name: travelgo_pgadmin_data
 
 networks:
   travelgo_net:

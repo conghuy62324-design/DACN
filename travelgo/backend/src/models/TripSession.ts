@@ -7,6 +7,7 @@ export interface TripSessionAttributes {
   pacing: 'relaxed' | 'balanced' | 'packed'; status: 'upcoming' | 'active' | 'completed' | 'cancelled';
   preferences: string[]; itinerary: unknown[]; selectedPlaceIds: string[]; selectedTourIds: string[]; checkins: unknown[];
   progressPercent: number; notes?: string; isPublic: boolean; createdAt?: Date; updatedAt?: Date;
+  plannerMetadata?: Record<string, any> | null;
 }
 type TripSessionCreationAttributes = Optional<TripSessionAttributes, 'id' | 'actualSpentVND' | 'status' | 'preferences' | 'selectedPlaceIds' | 'selectedTourIds' | 'checkins' | 'progressPercent' | 'notes' | 'isPublic'>;
 export class TripSession extends Model<TripSessionAttributes, TripSessionCreationAttributes> implements TripSessionAttributes {
@@ -16,6 +17,7 @@ export class TripSession extends Model<TripSessionAttributes, TripSessionCreatio
   public preferences!: string[]; public itinerary!: unknown[]; public selectedPlaceIds!: string[]; public selectedTourIds!: string[];
   public checkins!: unknown[]; public progressPercent!: number; public notes?: string; public isPublic!: boolean;
   public readonly createdAt!: Date; public readonly updatedAt!: Date;
+  public plannerMetadata?: Record<string, any> | null;
 }
 TripSession.init({
   id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true }, userId: { type: DataTypes.UUID, allowNull: false },
@@ -28,4 +30,5 @@ TripSession.init({
   selectedPlaceIds: { type: DataTypes.JSONB, allowNull: false, defaultValue: [] }, selectedTourIds: { type: DataTypes.JSONB, allowNull: false, defaultValue: [] },
   checkins: { type: DataTypes.JSONB, allowNull: false, defaultValue: [] }, progressPercent: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
   notes: { type: DataTypes.TEXT, allowNull: true }, isPublic: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+  plannerMetadata: { type: DataTypes.JSONB, allowNull: true, field: 'planner_metadata' },
 }, { sequelize, tableName: 'trip_sessions', timestamps: true, underscored: true });

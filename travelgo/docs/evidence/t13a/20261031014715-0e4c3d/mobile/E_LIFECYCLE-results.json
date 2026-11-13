@@ -1,0 +1,497 @@
+{
+  "title": "E_LIFECYCLE real API activity edit/reopen + UI start/GPS-denied/checkin/retry/complete",
+  "project": "mobile",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "browser": "Microsoft Edge Chromium headless",
+  "mobile": "viewport/touch emulation, not physical device",
+  "matrix": [
+    {
+      "id": "ENV_PROXY_DB",
+      "expected": "Frontend proxy reaches this run backend and exact test DB",
+      "status": "PASS",
+      "actual": {
+        "runId": "20261031014715-0e4c3d",
+        "pid": 10904,
+        "port": 5313,
+        "nodeEnv": "test",
+        "host": "127.0.0.1",
+        "database": "travelgo_ai_m0_test",
+        "username": "postgres",
+        "sentinel": "PASS"
+      }
+    },
+    {
+      "id": "SAVED_TRIP_API_EDIT",
+      "expected": "Real browser fetch edits existing Trip, DB/reopen totals/IDs/warnings follow current data",
+      "status": "PASS",
+      "actual": {
+        "id": "a43600d2-0ba5-4848-aa7d-54e62642d840",
+        "total": 3570000,
+        "selectedPlaceIds": [
+          "ca4a488f-192e-44a2-ab03-035f5e7053fa",
+          "b90811a6-ea80-41de-9783-f56b8e4e98e4",
+          "23344a15-53e0-403a-91c4-f99acd3425f4",
+          "d217ff3c-ec45-4f9f-9b05-97b8a68b8f29",
+          "5494ffe7-c72d-4494-8dd6-d22ce4158bad"
+        ],
+        "budgetStatus": "over_budget",
+        "overBudgetVND": 3470000
+      }
+    },
+    {
+      "id": "BUDGET_EDIT_CURRENT",
+      "expected": "Budget edits clear then restore current warning without changing prices",
+      "status": "PASS"
+    },
+    {
+      "id": "START_GPS_MANUAL",
+      "expected": "Start enables manual check-in even with real geolocation permission denied",
+      "status": "PASS"
+    },
+    {
+      "id": "CHECKIN_RETRY",
+      "expected": "UI check-in + real retry persist once and do not duplicate progress",
+      "status": "PASS",
+      "actual": {
+        "progress": 13,
+        "checkins": 1
+      }
+    },
+    {
+      "id": "COMPLETE_ACTUAL_PROGRESS",
+      "expected": "Complete keeps partial progress, does not force 100%",
+      "status": "PASS"
+    },
+    {
+      "id": "LAYOUT_trip-complete-partial",
+      "expected": "No document horizontal overflow",
+      "actual": {
+        "width": 390,
+        "scrollWidth": 390,
+        "culprits": []
+      },
+      "status": "PASS"
+    }
+  ],
+  "traffic": [
+    {
+      "method": "GET",
+      "path": "/api/__t13a/identity",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/places",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/blogs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/places",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/blogs",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/places/ca4a488f-192e-44a2-ab03-035f5e7053fa",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/places/ca4a488f-192e-44a2-ab03-035f5e7053fa",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/tours/plan",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/trips",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200,
+      "origin": "browser fetch -> Vite proxy -> real API"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "endpoint": "/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200,
+      "origin": "browser fetch -> Vite proxy -> real API"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200,
+      "origin": "browser fetch -> Vite proxy -> real API"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "endpoint": "/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200,
+      "origin": "browser fetch -> Vite proxy -> real API"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200,
+      "origin": "browser fetch -> Vite proxy -> real API"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "endpoint": "/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200,
+      "origin": "browser fetch -> Vite proxy -> real API"
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840/start",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840/checkin",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840/checkin",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "endpoint": "/trips/a43600d2-0ba5-4848-aa7d-54e62642d840/checkin",
+      "status": 200,
+      "origin": "browser fetch -> Vite proxy -> real API"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840/complete",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/favorites",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/trips/a43600d2-0ba5-4848-aa7d-54e62642d840",
+      "status": 200
+    }
+  ],
+  "external": [
+    {
+      "url": "https://example.test/suspended.jpg",
+      "error": "net::ERR_NAME_NOT_RESOLVED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3278/1862.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3278/1861.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3279/1861.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3278/1863.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3279/1863.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3279/1862.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3278/1862.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3279/1862.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3278/1863.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3279/1863.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3278/1862.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3279/1862.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3278/1863.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3279/1863.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3278/1862.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3279/1862.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3278/1863.png",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "https://a.tile.openstreetmap.de/12/3279/1863.png",
+      "error": "net::ERR_ABORTED"
+    }
+  ],
+  "testStatus": "passed"
+}

@@ -1,0 +1,587 @@
+# MASTER TASK — HOÀN THIỆN TOÀN BỘ AI AGENT TRAVELGO (M1 CORE)
+
+Bạn đóng vai Principal AI Agent Engineer, Senior Full-stack Engineer, Database Engineer và QA Lead của dự án TravelGo.
+
+## MỤC TIÊU
+
+Hoàn thiện AI Agent TravelGo thành trợ lý du lịch thông minh có khả năng:
+
+- Hiểu và ghi nhớ yêu cầu của người dùng.
+- Tìm kiếm dữ liệu khách sạn, nhà hàng và địa điểm thực sự được đăng ký trên TravelGo.
+- Đánh giá, so sánh và đề xuất lựa chọn phù hợp.
+- Tạo lịch trình bằng Planner hiện có.
+- Tính chi phí chính xác từ dữ liệu được xác minh.
+- Cho phép người dùng xem, lưu và sửa lịch trình thông qua các tool được cấp quyền.
+- Tích hợp với hệ thống Booking hiện có.
+- Hoạt động trên giao diện desktop và mobile.
+
+**Google Maps, GPS, Google Places, Google Routes và triển khai VPS chưa thuộc task này.**
+
+Không để các API chưa có key ngăn việc hoàn thiện Agent Core.
+
+---
+
+# PHASE 1 — AUDIT SOURCE VÀ HOÀN THIỆN THIẾT KẾ
+
+## 1.1. Đọc code và baseline
+
+Đọc toàn bộ cấu trúc thực tế của repository TravelGo, đặc biệt:
+
+- Frontend React hiện tại.
+- Backend Express.
+- Authentication và Authorization.
+- AI Agent G1/G2.
+- Verified History.
+- Agent tools và tool execution gate.
+- Planner/Catalog/Recommendation.
+- Khách sạn, nhà hàng, Business/Place.
+- Trip Save/Update/Reopen.
+- Booking.
+- PostgreSQL schema, migrations và repositories.
+- Các báo cáo T03–T13.
+- Các báo cáo AI Agent/Search/Planner đã có.
+- P1 natural NLU và P2 runtime.
+
+Kiểm tra `git status` trước khi chỉnh sửa.
+
+Có thể tồn tại nhiều file đã được Codex chỉnh sửa trong task M1 trước đó. Phải kiểm tra, bảo toàn và tiếp tục từ những thay đổi hợp lệ; không reset, checkout, clean hoặc ghi đè working tree.
+
+Không triển khai lại chức năng đã hoạt động đúng.
+
+## 1.2. Phân loại trạng thái
+
+Đối với từng thành phần, xác định:
+
+- WORKING: đã có code và bằng chứng phù hợp.
+- PARTIAL: có code nhưng thiếu tích hợp.
+- BUG: lỗi có thể tái hiện.
+- MISSING: chưa có chức năng.
+- EXTERNAL_BLOCKED: phụ thuộc API/credential ngoài.
+
+Không tạo kế hoạch trùng lặp với phần đã hoàn thiện.
+
+Phải đọc schema thực tế trước khi viết query. Không tự giả định tên bảng, cột hoặc quan hệ.
+
+---
+
+# PHASE 2 — AI AGENT KẾT NỐI DỮ LIỆU TRAVELGO THẬT
+
+## 2.1. Khách sạn và nhà hàng đăng ký trên website
+
+AI Agent phải truy xuất dữ liệu từ các repository/service hiện tại.
+
+Khách sạn/nhà hàng do đối tác đăng ký trên TravelGo phải có thể trở thành ứng viên được Agent gợi ý khi đáp ứng các điều kiện của hệ thống.
+
+Kiểm tra thực tế:
+
+- Quan hệ Business và Place.
+- Quan hệ khách sạn, phòng, giá phòng nếu tồn tại.
+- Quan hệ nhà hàng, món ăn, giá và thực đơn nếu tồn tại.
+- Trạng thái doanh nghiệp.
+- Trạng thái kiểm duyệt địa điểm/dịch vụ.
+- City/province.
+- Giá tiền và đơn vị tính.
+- Hình ảnh.
+- Rating/reviews.
+- Tiện ích.
+- Số lượng người hoặc khả năng phục vụ.
+- Availability, nếu hệ thống thật sự quản lý.
+
+Chỉ truy xuất các dịch vụ hợp lệ, đang hoạt động và được phép hiển thị.
+
+Không đưa vào danh sách đề xuất:
+
+- Business đã bị khóa.
+- Place chưa được duyệt.
+- Dịch vụ đã bị ẩn hoặc vô hiệu hóa.
+- Dữ liệu test không thuộc catalog được phép hiển thị.
+- Địa điểm không có thật trong query result.
+
+Không tạo khách sạn hoặc nhà hàng giả trong database production để Agent có kết quả.
+
+Nếu thiếu dữ liệu, phải trả lời trung thực rằng chưa có lựa chọn phù hợp.
+
+## 2.2. Các tool cần hoàn thiện
+
+Tái sử dụng tool hiện có nếu đã đáp ứng chức năng. Chỉ tạo mới khi thật sự thiếu.
+
+Tool capabilities mục tiêu:
+
+1. `search_registered_hotels`
+   - Tìm khách sạn trong catalog TravelGo.
+   - Lọc theo khu vực, ngân sách, ngày, số khách và tiện ích nếu dữ liệu hỗ trợ.
+
+2. `search_registered_restaurants`
+   - Tìm nhà hàng được đăng ký/phê duyệt.
+   - Lọc theo khu vực, giá, loại ẩm thực và sở thích nếu dữ liệu hỗ trợ.
+
+3. `get_listing_details`
+   - Xem thông tin đầy đủ của khách sạn, nhà hàng hoặc địa điểm.
+   - Trả về ID, nguồn dữ liệu, trạng thái, giá và thông tin có thật.
+
+4. `compare_travel_options`
+   - So sánh các lựa chọn lấy từ catalog.
+   - Không tự tạo candidates hoặc điểm đánh giá giả.
+
+5. `search_places`
+   - Giữ công cụ tìm địa điểm hiện có.
+   - Sử dụng catalog hợp lệ của TravelGo.
+
+6. `plan_trip`
+   - Gọi Planner thật hiện tại.
+   - Không để AI tự dựng itinerary thay cho Planner.
+
+7. `get_trip`
+   - Đọc Trip đã lưu theo đúng quyền sở hữu.
+
+8. `save_or_update_trip`
+   - Lưu hoặc chỉnh sửa Trip thông qua service/authorization hiện có.
+   - Chỉ thực hiện mutation khi có xác nhận hợp lệ.
+
+9. Booking integration
+   - Tái sử dụng Booking service hiện có.
+   - Chỉ xác nhận availability nếu backend có dữ liệu inventory thật.
+   - Không tự tạo Booking hoặc thanh toán bằng lời nói của AI.
+
+Tên tool có thể điều chỉnh theo convention hiện tại để không tạo duplicate endpoint/schema.
+
+## 2.3. Ranh giới dữ liệu
+
+Agent không được:
+
+- Gọi SQL tùy ý.
+- Bịa khách sạn/nhà hàng.
+- Bịa giá phòng hoặc số lượng phòng trống.
+- Tự tạo rating hoặc review.
+- Tự xác nhận Booking.
+- Tự tạo địa điểm không có trong catalog.
+- Truy cập Trip của người khác.
+- Dùng dữ liệu private của Business để trả cho khách du lịch.
+
+Mọi tool result phải được kiểm tra bằng schema và phân quyền backend.
+
+---
+
+# PHASE 3 — HỆ THỐNG GỢI Ý DU LỊCH THÔNG MINH
+
+AI không chỉ liệt kê khách sạn/nhà hàng mà phải đề xuất phương án phù hợp.
+
+## 3.1. Thu thập yêu cầu
+
+Agent cần hiểu:
+
+- Điểm khởi hành.
+- Điểm đến.
+- Ngày bắt đầu/kết thúc.
+- Số người.
+- Ngân sách.
+- Phương tiện.
+- Sở thích.
+- Loại khách sạn mong muốn.
+- Loại nhà hàng mong muốn.
+- Các ràng buộc đặc biệt.
+
+Chỉ hỏi lại những thông tin thật sự cần thiết.
+
+Nếu người dùng đã cung cấp đủ thông tin, không được hỏi lại vô lý.
+
+## 3.2. Recommendation engine
+
+Tạo hoặc hoàn thiện service đánh giá các candidates thật dựa trên:
+
+- Mức độ phù hợp ngân sách.
+- Vị trí/khu vực.
+- Sở thích người dùng.
+- Tiện ích.
+- Rating/reviews có thật nếu tồn tại.
+- Chi phí toàn chuyến.
+- Các ràng buộc bắt buộc.
+- Availability đã được xác minh nếu có.
+
+Phân biệt:
+
+- Hard constraints: những điều kiện bắt buộc.
+- Soft preferences: những điều kiện ưu tiên.
+
+Không đặt trọng số tùy tiện mà không giải thích. Nếu dùng scoring, phải có logic minh bạch, deterministic và regression tests.
+
+Không để LLM tự tính điểm dựa trên dữ liệu không tồn tại.
+
+LLM sử dụng kết quả recommendation service để giải thích cho khách du lịch.
+
+Ví dụ:
+
+“Khách sạn A được đề xuất vì nằm trong khu vực bạn chọn, có mức giá phù hợp và các tiện ích đáp ứng yêu cầu.”
+
+Lời giải thích chỉ được đưa ra nếu từng yếu tố có bằng chứng trong dữ liệu.
+
+## 3.3. Kết quả gợi ý
+
+Trả về danh sách lựa chọn hợp lý, ví dụ 3–5 khách sạn hoặc nhà hàng nếu catalog có đủ.
+
+Mỗi lựa chọn cần có:
+
+- Tên thật.
+- ID trong hệ thống.
+- Hình ảnh hợp lệ nếu có.
+- Khu vực.
+- Giá và đơn vị tính nếu đã xác minh.
+- Các tiện ích liên quan.
+- Lý do đề xuất.
+- Link hoặc hành động xem chi tiết.
+
+Không hiển thị giá giả để làm giao diện đẹp.
+
+Nếu không đủ candidates, hiển thị ít hơn và giải thích.
+
+---
+
+# PHASE 4 — PLANNER VÀ CHI PHÍ
+
+Giữ nguyên thuật toán Planner đã kiểm thử.
+
+Tích hợp lựa chọn khách sạn, nhà hàng và địa điểm từ catalog thật.
+
+Bắt buộc xác minh:
+
+- Ngày và số đêm.
+- Số người.
+- Chi phí phòng theo số đêm và đơn vị giá thực tế.
+- Chi phí ăn uống theo số người/đơn vị giá.
+- Chi phí địa điểm.
+- Tổng chi phí nhóm.
+- Budget remaining.
+- Over-budget warnings.
+- selectedPlaceIds.
+- Source/provenance.
+- ETA hiện tại là ước lượng cho đến khi Google Routes được tích hợp.
+
+Không cắt giá thật để ép itinerary nằm trong ngân sách.
+
+Không tính tiền khách sạn cho chuyến đi không có đêm lưu trú.
+
+Nếu khách sạn/nhà hàng được chọn không đáp ứng điều kiện, Planner phải trả lỗi hoặc lựa chọn hợp lệ khác; không tự tạo dịch vụ giả.
+
+Khi dữ liệu chi phí chưa đủ, phân biệt estimated/unknown và không công bố tổng như giá đã xác nhận.
+
+Không sửa original independent oracle để khớp output.
+
+---
+
+# PHASE 5 — VERIFIED HISTORY VÀ NATURAL CORRECTION
+
+Ưu tiên xử lý dứt điểm lỗi P1 NLU đã biết.
+
+Các câu cần hiểu đúng:
+
+- “Đổi sang xe máy, giữ thông tin còn lại.”
+- “Tăng ngân sách lên 8 triệu.”
+- “Thêm một ngày.”
+- “Đổi khách sạn rẻ hơn.”
+- “Không ăn hải sản nữa.”
+- “Giữ khách sạn, chỉ thay nhà hàng.”
+- “Lập lại lịch trình với ngân sách mới.”
+
+Yêu cầu:
+
+1. Dùng server-verified slots.
+2. Không tin lịch sử do client tự cung cấp.
+3. Giữ các thông tin người dùng không yêu cầu sửa.
+4. Không hỏi lại field đã được SET hợp lệ.
+5. Không gọi tool khi thiếu thông tin bắt buộc.
+6. Chống stale revision và request replay.
+7. Giữ conversation ownership, session TTL và rate limits.
+8. Không cho kết quả model tự bypass execution gate.
+
+Phải kiểm thử natural corrections bằng positive/negative tests và một lượt model thực được giới hạn, nếu có quota/authorization hợp lệ.
+
+Không tuyên bố P1 đã FIXED chỉ từ mocks.
+
+P2 runtime:
+
+- Kiểm timeout.
+- Provider errors.
+- Model unavailable.
+- Pending requests.
+- Abort handling.
+- Provider concurrency.
+- Graceful UI errors.
+
+Không thay model/options liên tục để tìm PASS.
+
+Phân biệt Qwen3 LOCAL và Gemini PUBLIC.
+
+Không cần Gemini credentials trong task này.
+
+---
+
+# PHASE 6 — TRIP VÀ BOOKING
+
+## 6.1. Trip
+
+Agent cần hỗ trợ:
+
+- Xem lịch trình đã lưu.
+- Lưu lịch trình mới.
+- Thay đổi lựa chọn khách sạn.
+- Thay đổi nhà hàng.
+- Thay đổi ngày/ngân sách.
+- Tính lại lịch trình sau thay đổi.
+- Mở lại Trip.
+- Giữ quyền sở hữu và tính nhất quán dữ liệu.
+
+Tái sử dụng Trip Save/Update/Reopen service hiện tại.
+
+Không tạo một hệ thống Trip thứ hai dành riêng cho AI.
+
+Không ghi dữ liệu khi người dùng chỉ yêu cầu xem hoặc so sánh.
+
+## 6.2. Booking
+
+Tích hợp với Booking flow hiện có.
+
+AI có thể:
+
+- Giới thiệu dịch vụ phù hợp.
+- Hiển thị thông tin Booking.
+- Giúp người dùng đi tới màn hình xác nhận.
+- Giải thích tổng tiền do server xác định.
+
+Không tự khẳng định “đã đặt thành công” nếu chưa có confirmation thật.
+
+Không tự xử lý thanh toán ngoài hệ thống.
+
+Kiểm tra lỗi historical Booking header/confirmation pricing nếu vẫn tồn tại.
+
+---
+
+# PHASE 7 — GIAO DIỆN AI AGENT
+
+Hoàn thiện UI chatbot hiện tại thay vì tạo một chatbot mới.
+
+Các thành phần:
+
+- Chat messages.
+- Loading/typing.
+- Clarification controls.
+- Hotel recommendation cards.
+- Restaurant recommendation cards.
+- Place cards.
+- Comparison presentation.
+- Itinerary result.
+- Cost summary.
+- Save Trip confirmation.
+- Error/retry states có kiểm soát.
+
+Desktop và mobile đều phải hoạt động.
+
+Khi người dùng chọn khách sạn hoặc nhà hàng, UI phải truyền ID thật về backend, không truyền tên tự do như bằng chứng lựa chọn.
+
+Không dùng giá giả hoặc mock results trên LIVE UI.
+
+Giữ hệ thống Map hiện tại hoạt động trong phạm vi đang có. Không thay Maps/GPS ở task này.
+
+---
+
+# PHASE 8 — KIỂM THỬ E2E VÀ ACCEPTANCE
+
+## 8.1. Bộ kịch bản bắt buộc
+
+Tạo một bộ acceptance tập trung vào nghiệp vụ thật.
+
+Ít nhất gồm:
+
+1. Tìm khách sạn đã đăng ký.
+2. Tìm nhà hàng đã đăng ký.
+3. Loại dịch vụ chưa được phê duyệt.
+4. Không có khách sạn phù hợp.
+5. Không có nhà hàng phù hợp.
+6. Gợi ý theo ngân sách.
+7. Gợi ý theo sở thích.
+8. So sánh hai khách sạn.
+9. Lập lịch trình đầy đủ.
+10. Sửa ngân sách trong hội thoại.
+11. Đổi phương tiện bằng ngôn ngữ tự nhiên.
+12. Đổi nhà hàng nhưng giữ khách sạn.
+13. Đổi khách sạn và tính lại chi phí.
+14. Lưu Trip sau xác nhận.
+15. Mở lại Trip.
+16. Không truy cập Trip người khác.
+17. Không tự tạo Booking.
+18. Booking server total đúng.
+19. Provider timeout/error.
+20. Desktop/mobile UI.
+
+Bổ sung negative cases nếu source cho thấy risk thực tế.
+
+## 8.2. Phân biệt bằng chứng
+
+Báo cáo riêng:
+
+- UNIT PASS.
+- MOCK PASS.
+- REAL DATABASE READ PASS.
+- REAL PLANNER PASS.
+- REAL MODEL RAW PASS.
+- REAL BROWSER E2E PASS.
+- NOT RUN.
+- BLOCKED.
+
+Không dùng mock PASS để khẳng định LIVE PASS.
+
+Không sửa historical results.
+
+## 8.3. Database safety
+
+Không INSERT/DELETE fixture trên shared dev/test DB chỉ để phục vụ acceptance.
+
+Dùng catalog đã có cho các test READ ONLY.
+
+Với các kịch bản cần mutation, dùng database môi trường test riêng đã xác minh identity và được phép ghi; tuyệt đối không ghi vào dữ liệu gốc hoặc reset 27 Trip.
+
+Nếu thiếu safe database, hoàn thiện code và offline tests trước; ghi đúng blocker cho LIVE mutation.
+
+Không sử dụng lại A/B maintenance lock handoff đã bị bác bỏ.
+
+## 8.4. Credit và test efficiency
+
+- Chạy targeted unit tests sau từng nhóm code.
+- Chạy integration khi hoàn thành từng functional capability.
+- Full regression một lần tại final milestone.
+- Không gửi hàng chục Ollama prompts để dò model.
+- Fresh quota + capped manifest trước model LIVE.
+- Không retry để biến FAIL thành PASS.
+- Không tạo báo cáo/task mới cho mỗi assertion nhỏ.
+
+Các bug in-scope phải được sửa ngay trong cùng implementation cycle, thêm regression và chạy lại affected tests.
+
+Nếu là external blocker thật, giữ nguyên evidence và tiếp tục các phần độc lập có thể hoàn thành an toàn.
+
+---
+
+# PHASE 9 — YÊU CẦU HOÀN THÀNH
+
+Chỉ kết luận:
+
+`TRAVELGO_AI_AGENT_CORE_READY`
+
+khi:
+
+1. Agent đọc được khách sạn/nhà hàng từ catalog thực.
+2. Gợi ý dựa trên dữ liệu có thật và constraints hợp lệ.
+3. Planner thật tạo được lịch trình.
+4. Chi phí khớp với dữ liệu đã xác minh.
+5. Verified history và natural correction đạt acceptance.
+6. Trip tools có authentication/authorization đúng.
+7. Booking integration không tạo xác nhận giả.
+8. Desktop/mobile UI PASS.
+9. Không gây regression nghiêm trọng.
+10. Có bằng chứng E2E thật cho các luồng bắt buộc.
+
+Nếu có external blocker, dùng:
+
+`TRAVELGO_AI_AGENT_CORE_PARTIAL`
+
+Ghi chính xác phần còn thiếu, không nhận hoàn thành giả.
+
+P1/P2 chỉ đóng khi có bằng chứng phù hợp.
+
+---
+
+# PHASE 10 — BÁO CÁO VÀ LỘ TRÌNH TIẾP THEO
+
+Dùng một file báo cáo tổng:
+
+`docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md`
+
+Báo cáo gồm:
+
+1. Những chức năng đã có.
+2. Những chức năng đã sửa.
+3. Tools đã hoàn thiện.
+4. Mapping khách sạn/nhà hàng/Business.
+5. Recommendation logic.
+6. Planner và cost validation.
+7. Verified History/P1.
+8. Runtime/P2.
+9. Trip/Booking.
+10. Desktop/mobile.
+11. Actual tests.
+12. Remaining bugs.
+13. Files changed.
+14. Next implementation priorities.
+
+Chỉ tạo một thư mục evidence chính:
+
+`docs/evidence/travelgo-ai-agent-core/`
+
+Không tạo các báo cáo task nhỏ lặp đi lặp lại.
+
+## LỘ TRÌNH SAU KHI AGENT CORE ĐẠT
+
+### M2 — GOOGLE MAPS + GPS + ROUTES
+
+Sau khi có API key hợp lệ:
+
+- Google Maps JavaScript API.
+- Places API (New).
+- Routes API.
+- Browser Geolocation.
+- Real road distance/ETA.
+- Marker/polyline.
+- Agent tool integration.
+
+Không làm trong task hiện tại.
+
+### M3 — PUBLIC PROVIDER + VPS
+
+Sau khi lựa chọn provider và tài khoản đủ điều kiện:
+
+- Production AI provider abstraction.
+- Dedicated PostgreSQL.
+- HTTPS.
+- VPS + Docker.
+- Domain.
+- Rate limits.
+- API budget controls.
+- Demo accounts.
+- Security/reliability checks.
+
+Không deploy trong task hiện tại.
+
+### M4 — FINAL GRADUATION DEMO
+
+- End-to-end user journeys.
+- Desktop/mobile.
+- Real Agent tools.
+- Trip/Booking.
+- Real Maps.
+- Public website.
+- Demo scenarios và evidence.
+- Báo cáo và thuyết trình DACN.
+
+---
+
+# NGUYÊN TẮC THỰC THI CUỐI CÙNG
+
+**Tập trung vào sản phẩm, không quay lại vòng lặp nghiên cứu PostgreSQL concurrency.**
+
+Không tự viết lại code đã đạt.
+
+Không tạo tool trùng.
+
+Không bịa business data.
+
+Không tự sửa expected.
+
+Không xóa/sửa dữ liệu gốc.
+
+Không commit/push/deploy khi chưa được phê duyệt.
+
+Không tự chạy Google Maps/Gemini paid APIs.
+
+Bạn được phép thực hiện các thay đổi code và kiểm thử offline, READ ONLY phù hợp với scope để hoàn thiện Agent Core.
+
+Thực hiện đầy đủ các phase triển khai thuộc M1 trong cùng master task, tự sửa các bug nhỏ thuộc phạm vi, giữ nguyên source/evidence lịch sử và cập nhật báo cáo tổng.
+
+**DỪNG sau khi hoàn thành M1 hoặc khi có blocker thực sự không thể giải quyết trong phạm vi đã cấp. Không tự chuyển sang Google Maps/VPS.**

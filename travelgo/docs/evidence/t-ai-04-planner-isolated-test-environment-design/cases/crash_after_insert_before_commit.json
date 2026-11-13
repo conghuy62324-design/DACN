@@ -1,0 +1,53 @@
+{
+  "name": "crash_after_insert_before_commit",
+  "tier": "OFFLINE_SYMBOLIC_SPECIFICATION_NOT_ENFORCEMENT",
+  "decision": "STOP_SAFE_ABORT",
+  "recovery": "VERIFY_ROLLBACK_NEW_SCOPE",
+  "facts": {},
+  "phase": "SAFE_ABORT",
+  "intervalActive": false,
+  "fixture": "ABSENT",
+  "stopped": true,
+  "callbacks": {
+    "live": 0,
+    "cleanup": 0
+  },
+  "lateCallbacks": 0,
+  "events": [
+    {
+      "seq": 1,
+      "type": "INIT",
+      "phase": "BEFORE_READY",
+      "active": false,
+      "fixture": "ABSENT",
+      "stopped": false
+    },
+    {
+      "seq": 2,
+      "type": "ISOLATION_READY",
+      "phase": "READY",
+      "active": true,
+      "fixture": "ABSENT",
+      "stopped": false
+    },
+    {
+      "seq": 3,
+      "type": "INSERT_PENDING",
+      "phase": "INSERT_PENDING",
+      "active": true,
+      "fixture": "UNCOMMITTED",
+      "stopped": false
+    },
+    {
+      "seq": 4,
+      "type": "STOP_SAFE_ABORT",
+      "phase": "SAFE_ABORT",
+      "active": false,
+      "fixture": "ABSENT",
+      "stopped": true,
+      "reason": "MODEL_KNOWN_SERVER_ROLLBACK; real evidence required"
+    }
+  ],
+  "actualPostgres": 0,
+  "actualSql": 0
+}

@@ -1,0 +1,835 @@
+{
+  "at": "2026-11-11T02:17:33.340Z",
+  "manifestSha256": "f000791d4835cdd6da0c715769df0ac942206d9ce8ef3461bf0709e3110eb2d6",
+  "results": [
+    {
+      "id": "D01",
+      "viewport": "desktop",
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "quota": 1,
+      "body": {
+        "message": "Lập lịch trình; Điểm đến: Đà Nẵng",
+        "conversation": {
+          "action": "start",
+          "requestId": "$FRESH_UUID",
+          "consentVersion": "LOCAL_DEMO_SLOTS_V1"
+        }
+      },
+      "expected": {
+        "http": 200,
+        "status": "needs_input",
+        "revision": 1,
+        "missingFields": [
+          "departureCity",
+          "startDate",
+          "endDate",
+          "adults",
+          "totalBudget",
+          "transportation"
+        ],
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "82b6abce093bc4f559e2cdecd3b533ab8f7682af4dd680403ced60cc43daafa1",
+      "startedAt": "2026-11-11T02:17:31.733Z",
+      "providerCalls": 0,
+      "traces": [],
+      "transport": [],
+      "origins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "d7939da6-ecce-4c6f-b1be-9853d5f29291",
+          "origin": "SERVER_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "gates": [],
+      "executed": [],
+      "quotaBefore": {
+        "main": 0,
+        "secondary": 0
+      },
+      "stateBefore": null,
+      "boundBodySha256": "766ef60d26b9aec7e0fc89e7375592156d4d926776bb5b964230763ad3f6c065",
+      "dispatched": true,
+      "finalRequest": {
+        "method": "POST",
+        "path": "/api/agent/chat",
+        "body": {
+          "message": "Lập lịch trình; Điểm đến: Đà Nẵng",
+          "conversation": {
+            "action": "start",
+            "requestId": "bdd3db5a-3496-4d96-a55b-746e70a208f9",
+            "consentVersion": "LOCAL_DEMO_SLOTS_V1"
+          }
+        },
+        "bodySha256": "caf20e9e9a1755adcf52edd7ed47b9103e66af3e82e9109f5eefbfc201911a11",
+        "actorHash": "6b982d095bc6bc30c87955cd38c78afa9ef31d3447ef30f62e8684bbe8bce600"
+      },
+      "committed": {
+        "id": "0dc9078e-325b-485f-8594-925f915aaf1f",
+        "revision": 1,
+        "expiresAt": "2026-11-11T02:32:31.799Z",
+        "intent": "plan_trip",
+        "slots": {
+          "departureCity": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "destinationCity": {
+            "state": "SET",
+            "value": "Đà Nẵng",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "startDate": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "endDate": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "adults": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "totalBudget": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "transportation": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          }
+        },
+        "optional": {}
+      },
+      "verifiedData": {
+        "type": "SERVER_VERIFIED_SLOTS",
+        "intent": "plan_trip",
+        "values": {
+          "destinationCity": "Đà Nẵng"
+        },
+        "states": {
+          "departureCity": "OMITTED",
+          "destinationCity": "SET",
+          "startDate": "OMITTED",
+          "endDate": "OMITTED",
+          "adults": "OMITTED",
+          "totalBudget": "OMITTED",
+          "transportation": "OMITTED"
+        }
+      },
+      "api": {
+        "httpStatus": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "status": "needs_input",
+            "reply": "Bạn vui lòng cung cấp: nơi xuất phát, ngày bắt đầu (YYYY-MM-DD), ngày kết thúc (YYYY-MM-DD), số người lớn, ngân sách cả nhóm (VND), phương tiện (car hoặc motorbike).",
+            "missingFields": [
+              "departureCity",
+              "startDate",
+              "endDate",
+              "adults",
+              "totalBudget",
+              "transportation"
+            ],
+            "history": [
+              {
+                "role": "user",
+                "content": "Lập lịch trình; Điểm đến: Đà Nẵng"
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: nơi xuất phát, ngày bắt đầu (YYYY-MM-DD), ngày kết thúc (YYYY-MM-DD), số người lớn, ngân sách cả nhóm (VND), phương tiện (car hoặc motorbike)."
+              }
+            ],
+            "historyTruncated": false,
+            "conversation": {
+              "id": "0dc9078e-325b-485f-8594-925f915aaf1f",
+              "revision": 1,
+              "expiresAt": "2026-11-11T02:32:31.799Z",
+              "mode": "LOCAL_DEMO",
+              "persisted": false
+            },
+            "context": {
+              "mode": "LOCAL_DEMO_VERIFIED_HISTORY",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        },
+        "cacheControl": "no-store"
+      },
+      "metadata": {
+        "id": "0dc9078e-325b-485f-8594-925f915aaf1f",
+        "revision": 1,
+        "expiresAt": "2026-11-11T02:32:31.799Z",
+        "mode": "LOCAL_DEMO",
+        "persisted": false
+      },
+      "elapsedMs": 79,
+      "quotaConsumed": 1,
+      "stateAfter": {
+        "id": "0dc9078e-325b-485f-8594-925f915aaf1f",
+        "revision": 1,
+        "expiresAt": "2026-11-11T02:32:31.799Z",
+        "intent": "plan_trip",
+        "slots": {
+          "departureCity": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "destinationCity": {
+            "state": "SET",
+            "value": "Đà Nẵng",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "startDate": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "endDate": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "adults": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "totalBudget": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "transportation": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          }
+        },
+        "optional": {}
+      },
+      "safety": "PASS",
+      "history": "PASS",
+      "rawNlu": "NOT EVALUATED",
+      "fidelity": "NOT RUN",
+      "runtime": "PASS",
+      "ui": "PASS",
+      "status": "PASS"
+    },
+    {
+      "id": "D02",
+      "viewport": "desktop",
+      "method": "POST",
+      "path": "/api/agent/chat",
+      "quota": 1,
+      "body": {
+        "message": "Nơi xuất phát: Huế; Ngày bắt đầu: 2036-04-22; Ngày kết thúc: 2036-04-23; Số người lớn: 2; Ngân sách cả nhóm: 6400000 VND",
+        "conversation": {
+          "action": "continue",
+          "requestId": "$FRESH_UUID",
+          "consentVersion": "LOCAL_DEMO_SLOTS_V1",
+          "id": "$desktop.id",
+          "revision": 1
+        }
+      },
+      "expected": {
+        "http": 200,
+        "status": "needs_input",
+        "revision": 2,
+        "missingFields": [
+          "transportation"
+        ],
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "e5179e86362ac3099e428756a006907b35a2d3371fa7f0f7c3ca5021c0b65aff",
+      "startedAt": "2026-11-11T02:17:31.985Z",
+      "providerCalls": 0,
+      "traces": [],
+      "transport": [],
+      "origins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "f0949f6f-e556-4cb3-b531-680183b17a5b",
+          "origin": "VERIFIED_HISTORY_COMPLETENESS",
+          "assessment": "SUPPORTED_INCOMPLETE",
+          "providerInvoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        }
+      ],
+      "gates": [],
+      "executed": [],
+      "quotaBefore": {
+        "main": 1,
+        "secondary": 0
+      },
+      "stateBefore": {
+        "id": "0dc9078e-325b-485f-8594-925f915aaf1f",
+        "revision": 1,
+        "expiresAt": "2026-11-11T02:32:31.799Z",
+        "intent": "plan_trip",
+        "slots": {
+          "departureCity": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "destinationCity": {
+            "state": "SET",
+            "value": "Đà Nẵng",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "startDate": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "endDate": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "adults": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "totalBudget": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "transportation": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          }
+        },
+        "optional": {}
+      },
+      "boundBodySha256": "78873ee0882528f2704766a058012da28ec58df9d76f00d058174a8df7ad1cfe",
+      "dispatched": true,
+      "finalRequest": {
+        "method": "POST",
+        "path": "/api/agent/chat",
+        "body": {
+          "message": "Nơi xuất phát: Huế; Ngày bắt đầu: 2036-04-22; Ngày kết thúc: 2036-04-23; Số người lớn: 2; Ngân sách cả nhóm: 6400000 VND",
+          "conversation": {
+            "action": "continue",
+            "requestId": "17edbe99-ec6c-4451-a9d5-382723df4ba5",
+            "consentVersion": "LOCAL_DEMO_SLOTS_V1",
+            "id": "0dc9078e-325b-485f-8594-925f915aaf1f",
+            "revision": 1
+          }
+        },
+        "bodySha256": "efab8b2cdbf9d00855e709eecce390c8af517801638bdcdf4125e1ca07dc99b7",
+        "actorHash": "6b982d095bc6bc30c87955cd38c78afa9ef31d3447ef30f62e8684bbe8bce600"
+      },
+      "committed": {
+        "id": "0dc9078e-325b-485f-8594-925f915aaf1f",
+        "revision": 2,
+        "expiresAt": "2026-11-11T02:32:31.799Z",
+        "intent": "plan_trip",
+        "slots": {
+          "departureCity": {
+            "state": "SET",
+            "value": "Huế",
+            "revision": 2,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "destinationCity": {
+            "state": "SET",
+            "value": "Đà Nẵng",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "startDate": {
+            "state": "SET",
+            "value": "2036-04-22",
+            "revision": 2,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "endDate": {
+            "state": "SET",
+            "value": "2036-04-23",
+            "revision": 2,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "adults": {
+            "state": "SET",
+            "value": 2,
+            "revision": 2,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "totalBudget": {
+            "state": "SET",
+            "value": 6400000,
+            "revision": 2,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "transportation": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          }
+        },
+        "optional": {}
+      },
+      "verifiedData": {
+        "type": "SERVER_VERIFIED_SLOTS",
+        "intent": "plan_trip",
+        "values": {
+          "departureCity": "Huế",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2036-04-22",
+          "endDate": "2036-04-23",
+          "adults": 2,
+          "totalBudget": 6400000
+        },
+        "states": {
+          "departureCity": "SET",
+          "destinationCity": "SET",
+          "startDate": "SET",
+          "endDate": "SET",
+          "adults": "SET",
+          "totalBudget": "SET",
+          "transportation": "OMITTED"
+        }
+      },
+      "api": {
+        "httpStatus": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "status": "needs_input",
+            "reply": "Bạn vui lòng cung cấp: phương tiện (car hoặc motorbike).",
+            "missingFields": [
+              "transportation"
+            ],
+            "history": [
+              {
+                "role": "user",
+                "content": "Nơi xuất phát: Huế; Ngày bắt đầu: 2036-04-22; Ngày kết thúc: 2036-04-23; Số người lớn: 2; Ngân sách cả nhóm: 6400000 VND"
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: phương tiện (car hoặc motorbike)."
+              }
+            ],
+            "historyTruncated": false,
+            "conversation": {
+              "id": "0dc9078e-325b-485f-8594-925f915aaf1f",
+              "revision": 2,
+              "expiresAt": "2026-11-11T02:32:31.799Z",
+              "mode": "LOCAL_DEMO",
+              "persisted": false
+            },
+            "context": {
+              "mode": "LOCAL_DEMO_VERIFIED_HISTORY",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        },
+        "cacheControl": "no-store"
+      },
+      "metadata": {
+        "id": "0dc9078e-325b-485f-8594-925f915aaf1f",
+        "revision": 2,
+        "expiresAt": "2026-11-11T02:32:31.799Z",
+        "mode": "LOCAL_DEMO",
+        "persisted": false
+      },
+      "elapsedMs": 431,
+      "quotaConsumed": 1,
+      "stateAfter": {
+        "id": "0dc9078e-325b-485f-8594-925f915aaf1f",
+        "revision": 2,
+        "expiresAt": "2026-11-11T02:32:31.799Z",
+        "intent": "plan_trip",
+        "slots": {
+          "departureCity": {
+            "state": "SET",
+            "value": "Huế",
+            "revision": 2,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "destinationCity": {
+            "state": "SET",
+            "value": "Đà Nẵng",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "startDate": {
+            "state": "SET",
+            "value": "2036-04-22",
+            "revision": 2,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "endDate": {
+            "state": "SET",
+            "value": "2036-04-23",
+            "revision": 2,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "adults": {
+            "state": "SET",
+            "value": 2,
+            "revision": 2,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "totalBudget": {
+            "state": "SET",
+            "value": 6400000,
+            "revision": 2,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "transportation": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          }
+        },
+        "optional": {}
+      },
+      "safety": "PASS",
+      "history": "PASS",
+      "rawNlu": "NOT EVALUATED",
+      "fidelity": "NOT RUN",
+      "runtime": "PASS",
+      "ui": "PASS",
+      "status": "PASS"
+    },
+    {
+      "id": "D-RESET",
+      "viewport": "desktop",
+      "method": "POST",
+      "path": "/api/agent/verified-history/$desktop.id/reset",
+      "quota": 1,
+      "body": {},
+      "expected": {
+        "http": 200,
+        "revision": 3,
+        "clearSlots": true,
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "startedAt": "2026-11-11T02:17:32.554Z",
+      "providerCalls": 0,
+      "traces": [],
+      "transport": [],
+      "origins": [],
+      "gates": [],
+      "executed": [],
+      "quotaBefore": {
+        "main": 2,
+        "secondary": 0
+      },
+      "stateBefore": {
+        "id": "0dc9078e-325b-485f-8594-925f915aaf1f",
+        "revision": 2,
+        "expiresAt": "2026-11-11T02:32:31.799Z",
+        "intent": "plan_trip",
+        "slots": {
+          "departureCity": {
+            "state": "SET",
+            "value": "Huế",
+            "revision": 2,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "destinationCity": {
+            "state": "SET",
+            "value": "Đà Nẵng",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "startDate": {
+            "state": "SET",
+            "value": "2036-04-22",
+            "revision": 2,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "endDate": {
+            "state": "SET",
+            "value": "2036-04-23",
+            "revision": 2,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "adults": {
+            "state": "SET",
+            "value": 2,
+            "revision": 2,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "totalBudget": {
+            "state": "SET",
+            "value": 6400000,
+            "revision": 2,
+            "source": "CURRENT_TURN_PROOF"
+          },
+          "transportation": {
+            "state": "OMITTED",
+            "revision": 1,
+            "source": "CURRENT_TURN_PROOF"
+          }
+        },
+        "optional": {}
+      },
+      "boundBodySha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "dispatched": true,
+      "finalRequest": {
+        "method": "POST",
+        "path": "/api/agent/verified-history/0dc9078e-325b-485f-8594-925f915aaf1f/reset",
+        "body": {},
+        "bodySha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "actorHash": "6b982d095bc6bc30c87955cd38c78afa9ef31d3447ef30f62e8684bbe8bce600"
+      },
+      "api": {
+        "httpStatus": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "0dc9078e-325b-485f-8594-925f915aaf1f",
+            "revision": 3,
+            "expiresAt": "2026-11-11T02:32:31.799Z",
+            "mode": "LOCAL_DEMO",
+            "persisted": false
+          }
+        },
+        "cacheControl": "no-store"
+      },
+      "metadata": {
+        "id": "0dc9078e-325b-485f-8594-925f915aaf1f",
+        "revision": 3,
+        "expiresAt": "2026-11-11T02:32:31.799Z",
+        "mode": "LOCAL_DEMO",
+        "persisted": false
+      },
+      "elapsedMs": 225,
+      "quotaConsumed": 1,
+      "stateAfter": {
+        "id": "0dc9078e-325b-485f-8594-925f915aaf1f",
+        "revision": 3,
+        "expiresAt": "2026-11-11T02:32:31.799Z",
+        "intent": null,
+        "slots": {},
+        "optional": {}
+      },
+      "safety": "PASS",
+      "history": "PASS",
+      "rawNlu": "NOT EVALUATED",
+      "fidelity": "NOT RUN",
+      "runtime": "PASS",
+      "ui": "PASS",
+      "status": "PASS"
+    },
+    {
+      "id": "DRY-FOREIGN-REVOKE",
+      "viewport": "desktop",
+      "method": "DELETE",
+      "path": "/api/agent/verified-history/$desktop.id",
+      "quota": 1,
+      "expected": {
+        "http": 404,
+        "code": "AGENT_G2_SESSION_UNAVAILABLE",
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "actor": "secondary",
+      "startedAt": "2026-11-11T02:17:32.864Z",
+      "providerCalls": 0,
+      "traces": [],
+      "transport": [],
+      "origins": [],
+      "gates": [],
+      "executed": [],
+      "quotaBefore": {
+        "main": 3,
+        "secondary": 0
+      },
+      "stateBefore": {
+        "id": "0dc9078e-325b-485f-8594-925f915aaf1f",
+        "revision": 3,
+        "expiresAt": "2026-11-11T02:32:31.799Z",
+        "intent": null,
+        "slots": {},
+        "optional": {}
+      },
+      "boundBodySha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "dispatched": true,
+      "finalRequest": {
+        "method": "DELETE",
+        "path": "/api/agent/verified-history/0dc9078e-325b-485f-8594-925f915aaf1f",
+        "body": {},
+        "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "actorHash": "28e3c20900f899a3497a83ca6258f8152e4d50963ba0492395c34231d5d8672b"
+      },
+      "api": {
+        "httpStatus": 404,
+        "body": {
+          "success": false,
+          "code": "AGENT_G2_SESSION_UNAVAILABLE",
+          "message": "Phiên hội thoại chưa thể xử lý yêu cầu. Hãy bắt đầu lại hoặc kiểm tra phiên hiện tại."
+        },
+        "cacheControl": "no-store"
+      },
+      "elapsedMs": 4,
+      "quotaConsumed": 1,
+      "stateAfter": {
+        "id": "0dc9078e-325b-485f-8594-925f915aaf1f",
+        "revision": 3,
+        "expiresAt": "2026-11-11T02:32:31.799Z",
+        "intent": null,
+        "slots": {},
+        "optional": {}
+      },
+      "safety": "PASS",
+      "history": "PASS",
+      "rawNlu": "NOT EVALUATED",
+      "fidelity": "NOT RUN",
+      "runtime": "PASS",
+      "ui": "NOT RUN",
+      "status": "PASS"
+    },
+    {
+      "id": "D-END",
+      "viewport": "desktop",
+      "method": "DELETE",
+      "path": "/api/agent/verified-history/$desktop.id",
+      "quota": 1,
+      "expected": {
+        "http": 200,
+        "revoked": true,
+        "native": 0,
+        "toolCalls": 0
+      },
+      "bodyTemplateSha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "startedAt": "2026-11-11T02:17:32.869Z",
+      "providerCalls": 0,
+      "traces": [],
+      "transport": [],
+      "origins": [],
+      "gates": [],
+      "executed": [],
+      "quotaBefore": {
+        "main": 3,
+        "secondary": 1
+      },
+      "stateBefore": {
+        "id": "0dc9078e-325b-485f-8594-925f915aaf1f",
+        "revision": 3,
+        "expiresAt": "2026-11-11T02:32:31.799Z",
+        "intent": null,
+        "slots": {},
+        "optional": {}
+      },
+      "boundBodySha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "dispatched": true,
+      "finalRequest": {
+        "method": "DELETE",
+        "path": "/api/agent/verified-history/0dc9078e-325b-485f-8594-925f915aaf1f",
+        "body": {},
+        "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "actorHash": "6b982d095bc6bc30c87955cd38c78afa9ef31d3447ef30f62e8684bbe8bce600"
+      },
+      "api": {
+        "httpStatus": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "revoked": true
+          }
+        },
+        "cacheControl": "no-store"
+      },
+      "elapsedMs": 36,
+      "quotaConsumed": 1,
+      "stateAfter": null,
+      "safety": "PASS",
+      "history": "PASS",
+      "rawNlu": "NOT EVALUATED",
+      "fidelity": "NOT RUN",
+      "runtime": "PASS",
+      "ui": "PASS",
+      "status": "PASS"
+    }
+  ],
+  "notRun": [],
+  "dataBlocked": [],
+  "uiChecks": [
+    {
+      "id": "PRIVACY",
+      "status": "PASS",
+      "g2NoticeVersion": "LOCAL_DEMO_SLOTS_V1",
+      "telemetryConsent": "Existing unresolved DB consent left unchanged; no writes/click acknowledgement"
+    }
+  ],
+  "nativePosts": [],
+  "quota": {
+    "initial": {
+      "recent": [],
+      "futureDatedEntries": [],
+      "remainingConservativeSlots": 20,
+      "offline": true
+    },
+    "consumed": {
+      "main": 4,
+      "secondary": 1
+    },
+    "after": {
+      "recent": [],
+      "futureDatedEntries": [],
+      "remainingConservativeSlots": 20,
+      "offline": true
+    }
+  },
+  "providerPending": 0,
+  "database": {
+    "audit": {
+      "queries": 0,
+      "forbidden": 0,
+      "connections": 0
+    },
+    "fingerprint": {
+      "status": "PASS",
+      "tables": 0,
+      "changed": []
+    },
+    "writes": 0,
+    "fixtures": 0
+  },
+  "remainingSessions": {
+    "sessions": 0,
+    "startTombstones": 1,
+    "ownerEpochs": 1,
+    "serializedBytes": 0
+  },
+  "real": "DRY actual React/Vite/HTTP/auth/Agent/store/reset/revoke; fake provider+consent;0 Ollama/DB",
+  "identityBootstrap": "TEST_SIGNED_JWT_THROUGH_PRODUCTION_AUTH_MIDDLEWARE. No DB account/credentials for main UUID. Harness GET /auth/me projects signed claims for frontend bootstrap; NOT real-login/AuthService.getById E2E. Agent router/auth/consent/tool services REAL.",
+  "noRouteMocking": true,
+  "expiry": "NOT RUN natural15min wait; reset expiry unchanged and owned revoke observed; offline68 separately",
+  "liveRace": "NOT RUN pending GPU logout/reset or direct AuthService login replacement; offline frontend/browser race tests separate"
+}

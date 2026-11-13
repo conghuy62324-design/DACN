@@ -10,7 +10,13 @@ const databaseLoader: ApprovedPlaceLoader = async () => {
   let totalPages = 1;
   do {
     const result = await PlaceRepository.list({ page, limit }, { publicOnly: true });
-    places.push(...result.items.map(serializePlace));
+    places.push(...result.items.map((place) => {
+      const value = place.toJSON ? place.toJSON() : place;
+      const raw: unknown = value.priceFrom;
+      return { ...serializePlace(place), catalogPriceAvailable:
+        (typeof raw === 'number' || (typeof raw === 'string' && raw.trim() !== '')) &&
+        Number.isFinite(Number(raw)) && Number(raw) >= 0 };
+    }));
     totalPages = result.pages;
     page += 1;
   } while (page <= totalPages);

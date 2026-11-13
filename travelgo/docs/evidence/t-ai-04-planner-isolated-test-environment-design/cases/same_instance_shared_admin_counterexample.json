@@ -1,0 +1,48 @@
+{
+  "name": "same_instance_shared_admin_counterexample",
+  "tier": "OFFLINE_SYMBOLIC_SPECIFICATION_NOT_ENFORCEMENT",
+  "decision": "BOUNDARY_BREACH",
+  "recovery": "RETAIN_QUARANTINE_SECURITY_REVIEW",
+  "facts": {
+    "optionBAcceptable": false,
+    "notAnActualSuperuserConnection": true
+  },
+  "phase": "READY",
+  "intervalActive": true,
+  "fixture": "ABSENT",
+  "stopped": true,
+  "callbacks": {
+    "live": 0,
+    "cleanup": 0
+  },
+  "lateCallbacks": 0,
+  "events": [
+    {
+      "seq": 1,
+      "type": "INIT",
+      "phase": "BEFORE_READY",
+      "active": false,
+      "fixture": "ABSENT",
+      "stopped": false
+    },
+    {
+      "seq": 2,
+      "type": "ISOLATION_READY",
+      "phase": "READY",
+      "active": true,
+      "fixture": "ABSENT",
+      "stopped": false
+    },
+    {
+      "seq": 3,
+      "type": "BOUNDARY_BREACH",
+      "phase": "READY",
+      "active": true,
+      "fixture": "ABSENT",
+      "stopped": true,
+      "reason": "Same-instance shared superuser can bypass database ACL; Option B NOT ACCEPTABLE"
+    }
+  ],
+  "actualPostgres": 0,
+  "actualSql": 0
+}

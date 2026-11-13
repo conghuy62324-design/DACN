@@ -1,0 +1,12 @@
+{
+  "payloadSha256": "f62275d6b2a6bf725b9fc5473657154759cc46d13f31580e865099fa9fb414f6",
+  "payload": {
+    "at": "2026-11-11T09:56:29.272Z",
+    "type": "SQL_INTENT",
+    "number": 33,
+    "instanceId": "03011ad7-9193-4aa9-a834-c1f8ee3e58df",
+    "kind": "bootstrap",
+    "sql": "SELECT current_database() AS database,current_user AS role,pg_backend_pid() AS pg_backend_pid,a.pid,to_char(a.backend_start AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') AS backend_start,a.application_name,a.usename,a.datname,a.backend_type,a.client_addr::text AS client_addr,a.client_port,inet_client_addr()::text AS inet_client_addr,inet_client_port() AS inet_client_port,inet_server_addr()::text AS server_addr,inet_server_port() AS server_port,current_setting('transaction_read_only') AS transaction_read_only,current_setting('default_transaction_read_only') AS default_transaction_read_only,current_setting('statement_timeout') AS statement_timeout,shobj_description((SELECT oid FROM pg_database WHERE datname=current_database()),'pg_database') AS sentinel FROM pg_stat_activity a WHERE a.pid=pg_backend_pid()",
+    "valuesSha256": null
+  }
+}

@@ -2,6 +2,7 @@ import { PlaceData } from './placeService.js';
 import { RecommendationRepository } from '../repositories/recommendationRepository.js';
 import { RatingService } from './ratingService.js';
 import { GeoService, Coordinates } from './geoService.js';
+import {matchesLocation,resolveLocation} from '../geography/vietnam.js';
 
 export interface RecommendationWeights {
   quality: number;
@@ -188,7 +189,7 @@ export class RecommendationService {
       : undefined;
     const search = filters.search ? text(filters.search.trim()) : undefined;
     return places.filter((place) => {
-      if (destination && !text(place.city).includes(destination) && !text(place.province).includes(destination)) return false;
+      if(destination&&(resolveLocation(filters.destinationCity)?!matchesLocation(place,filters.destinationCity):!text(place.city).includes(destination)&&!text(place.province).includes(destination)))return false;
       if (filters.category && filters.category !== 'all' && place.category !== filters.category) return false;
       if (filters.minRating !== undefined && Number(place.rating) < filters.minRating) return false;
       if (search && !text(`${place.name} ${place.summary} ${place.city}`).includes(search)) return false;

@@ -338,12 +338,12 @@ export const TourDetailPage: React.FC = () => {
                   <span className="font-semibold text-slate-800">{tour.destinationCity}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>Hỗ trợ hủy:</span>
-                  <span className="font-semibold text-emerald-600">Miễn phí trước 48h</span>
+                  <span>Theo dõi đơn:</span>
+                  <span className="font-semibold text-emerald-600">Trong lịch sử tài khoản</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>Bảo hiểm du lịch:</span>
-                  <span className="font-semibold text-slate-800">Đã bao gồm 100tr</span>
+                  <span>Thanh toán:</span>
+                  <span className="font-semibold text-slate-800">MVP chưa xử lý thanh toán</span>
                 </div>
               </div>
             </div>

@@ -1,0 +1,3296 @@
+{
+  "id": "A04",
+  "project": "mobile",
+  "channel": "U2+A1 desktop probes",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "browser": "156.0.4314.58",
+  "mobileEmulation": true,
+  "status": "PASS",
+  "errors": [],
+  "checkpoints": [
+    {
+      "id": "ENV_IDENTITY",
+      "expected": "Proxy reaches this run exact guarded test database",
+      "startedAt": "2026-11-07T03:05:40.540Z",
+      "status": "PASS",
+      "actual": {
+        "runId": "20261107030355-79d231",
+        "pid": 7132,
+        "port": 5315,
+        "database": "travelgo_ai_m0_test",
+        "username": "postgres",
+        "server_address": "172.18.0.3/32",
+        "server_port": 5432,
+        "nodeEnv": "test",
+        "host": "127.0.0.1",
+        "sentinel": "PASS",
+        "writeOptIn": true,
+        "migrations": [
+          {
+            "filename": "20261010_01_init_travelgo_schema.sql",
+            "checksum": "fe7defe5c3c47c9230fe7c43fc301255a6bc0e998da71aba0fe2f747f9e52d50"
+          },
+          {
+            "filename": "20261011_02_rbac_partner_foundation.sql",
+            "checksum": "df7fd60cccf17d3f8a73f711825bb1e82a4606a17c42fce4c7fa214548c2cecd"
+          },
+          {
+            "filename": "20261011_03_persistent_travel_resources.sql",
+            "checksum": "1c4464625e57e27cadc560077fad83837b56c5385d8021e0592fdcb9039fabf7"
+          },
+          {
+            "filename": "20261011_04_hugo_intelligence_foundation.sql",
+            "checksum": "4f2519e0541bed02a5fd7811c1ef5f84be49e37dd0dc81d16c033c22a805b69d"
+          },
+          {
+            "filename": "20261012_05_user_behavior_telemetry.sql",
+            "checksum": "477200cecf2f7e8135c4473b901ae11237222083cb7fd4b9af900d2cb2bbbece"
+          },
+          {
+            "filename": "20261012_06_recommendation_exposure.sql",
+            "checksum": "9f90d12a55a57799977115b4b8922b70cba3d02649f48e4e08d54b2913a536cb"
+          },
+          {
+            "filename": "20261012_07_recommendation_booking_retention.sql",
+            "checksum": "bf885a9161b6420e096c10a3cc37de6a45715ffc2b375e38a8ec8104998cc3de"
+          },
+          {
+            "filename": "20261012_08_server_side_favorites.sql",
+            "checksum": "87980fcdf39c7fbf7e6641bb0219f64c727605ea8f8127f2ad6f62d4107d75f8"
+          },
+          {
+            "filename": "20261012_09_verified_reviews.sql",
+            "checksum": "8842947ab9cd52890cc371bf75877e191f801fd12bedb19c5c06d46080c1670e"
+          },
+          {
+            "filename": "20261012_10_review_account_deletion_privacy.sql",
+            "checksum": "4219afac618257e7970f878b83b30c72eb2fe0fe106af04e81c5083e8bc48c52"
+          },
+          {
+            "filename": "20261028_11_trip_planner_metadata.sql",
+            "checksum": "90c42676606d4d5e7458edde139b9c5b945dd3ca0d574490a581ad6bcd98a034"
+          },
+          {
+            "filename": "20261030_12_booking_request_fingerprint.sql",
+            "checksum": "09465ec9a3d3c3de1215ad6eaa1d1cf4e8d18aed43423ce6c7b4feea817e9bc5"
+          }
+        ],
+        "indexes": [
+          {
+            "indexname": "business_members_business_id_user_id_key",
+            "indexdef": "CREATE UNIQUE INDEX business_members_business_id_user_id_key ON public.business_members USING btree (business_id, user_id)"
+          },
+          {
+            "indexname": "business_members_pkey",
+            "indexdef": "CREATE UNIQUE INDEX business_members_pkey ON public.business_members USING btree (id)"
+          },
+          {
+            "indexname": "idx_business_members_user",
+            "indexdef": "CREATE INDEX idx_business_members_user ON public.business_members USING btree (user_id)"
+          },
+          {
+            "indexname": "idx_partner_applications_one_active",
+            "indexdef": "CREATE UNIQUE INDEX idx_partner_applications_one_active ON public.partner_applications USING btree (user_id) WHERE ((status)::text = ANY ((ARRAY['PENDING'::character varying, 'NEEDS_MORE_INFO'::character varying])::text[]))"
+          },
+          {
+            "indexname": "idx_partner_applications_status_created",
+            "indexdef": "CREATE INDEX idx_partner_applications_status_created ON public.partner_applications USING btree (status, created_at DESC)"
+          },
+          {
+            "indexname": "partner_applications_pkey",
+            "indexdef": "CREATE UNIQUE INDEX partner_applications_pkey ON public.partner_applications USING btree (id)"
+          },
+          {
+            "indexname": "user_roles_pkey",
+            "indexdef": "CREATE UNIQUE INDEX user_roles_pkey ON public.user_roles USING btree (id)"
+          },
+          {
+            "indexname": "user_roles_user_id_role_key",
+            "indexdef": "CREATE UNIQUE INDEX user_roles_user_id_role_key ON public.user_roles USING btree (user_id, role)"
+          }
+        ],
+        "constraints": [
+          {
+            "conname": "business_members_business_id_fkey",
+            "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE"
+          },
+          {
+            "conname": "business_members_business_id_user_id_key",
+            "definition": "UNIQUE (business_id, user_id)"
+          },
+          {
+            "conname": "business_members_pkey",
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "conname": "business_members_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "conname": "partner_applications_business_type_check",
+            "definition": "CHECK (((business_type)::text = ANY ((ARRAY['HOTEL'::character varying, 'HOMESTAY'::character varying, 'RESORT'::character varying, 'RESTAURANT'::character varying, 'TOUR_OPERATOR'::character varying])::text[])))"
+          },
+          {
+            "conname": "partner_applications_pkey",
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "conname": "partner_applications_reviewed_by_fkey",
+            "definition": "FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "conname": "partner_applications_status_check",
+            "definition": "CHECK (((status)::text = ANY ((ARRAY['PENDING'::character varying, 'APPROVED'::character varying, 'REJECTED'::character varying, 'NEEDS_MORE_INFO'::character varying, 'SUSPENDED'::character varying])::text[])))"
+          },
+          {
+            "conname": "partner_applications_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "conname": "user_roles_granted_by_fkey",
+            "definition": "FOREIGN KEY (granted_by) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "conname": "user_roles_pkey",
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "conname": "user_roles_role_check",
+            "definition": "CHECK (((role)::text = ANY ((ARRAY['CUSTOMER'::character varying, 'PARTNER'::character varying, 'SUPER_ADMIN'::character varying])::text[])))"
+          },
+          {
+            "conname": "user_roles_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "conname": "user_roles_user_id_role_key",
+            "definition": "UNIQUE (user_id, role)"
+          }
+        ]
+      },
+      "finishedAt": "2026-11-07T03:05:40.584Z"
+    },
+    {
+      "id": "REJECT_UI",
+      "expected": "Reject with reason persists/audits and grants no business or PARTNER",
+      "startedAt": "2026-11-07T03:05:40.918Z",
+      "status": "PASS",
+      "actual": {
+        "application": {
+          "id": "0d5f84e0-1972-46a8-b8d5-ec50f56672c0",
+          "userId": "e9129802-2ece-4e4d-9e68-c3b59bf7cfdc",
+          "representativeName": "T13B01 mobile A04-REJECT",
+          "businessName": "T13B01 SYNTHETIC mobile A04-REJECT eb5cf2f7",
+          "businessType": "HOTEL",
+          "email": "t13b01.79d231.mobile.a04-reject.9d7f8b50@example.test",
+          "phone": "0901234567",
+          "address": "SYNTHETIC TEST ONLY - no real business",
+          "city": "T13B01-20261107030355-79d231-mobile",
+          "latitude": "16.0500000",
+          "longitude": "108.2000000",
+          "imageUrls": [],
+          "verificationDetails": {
+            "taxCode": "SYNTHETIC TEST ONLY"
+          },
+          "status": "REJECTED",
+          "decisionReason": "SYNTHETIC TEST ONLY rejected",
+          "reviewedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+          "reviewedAt": {},
+          "createdAt": {},
+          "updatedAt": {}
+        },
+        "grants": [],
+        "members": [],
+        "audit": [
+          {
+            "id": "a7011261-e3b3-40a8-8582-5cc3836030a4",
+            "actorUserId": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+            "action": "PARTNER_APPLICATION_REJECTED",
+            "entityType": "PartnerApplication",
+            "entityId": "0d5f84e0-1972-46a8-b8d5-ec50f56672c0",
+            "previousData": {
+              "status": "PENDING"
+            },
+            "newData": {
+              "status": "REJECTED"
+            },
+            "reason": "SYNTHETIC TEST ONLY rejected",
+            "ipAddress": "127.0.0.1",
+            "createdAt": {}
+          }
+        ]
+      },
+      "finishedAt": "2026-11-07T03:05:42.974Z"
+    },
+    {
+      "id": "LAYOUT_admin-rejected",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "LAYOUT_customer-rejected",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "NEEDS_INFO_UI",
+      "expected": "Needs-info persists with feedback and no business/grant",
+      "startedAt": "2026-11-07T03:05:42.974Z",
+      "status": "PASS",
+      "actual": {
+        "application": {
+          "id": "511a15b6-baec-4430-a1b3-6d2404ace45a",
+          "userId": "39d80f2e-b40c-46e9-a78e-b5c20c10befd",
+          "representativeName": "T13B01 mobile A04-NEEDS",
+          "businessName": "T13B01 SYNTHETIC mobile A04-NEEDS cc354646",
+          "businessType": "HOTEL",
+          "email": "t13b01.79d231.mobile.a04-needs.aaf50f6e@example.test",
+          "phone": "0901234567",
+          "address": "SYNTHETIC TEST ONLY - no real business",
+          "city": "T13B01-20261107030355-79d231-mobile",
+          "latitude": "16.0500000",
+          "longitude": "108.2000000",
+          "imageUrls": [],
+          "verificationDetails": {
+            "taxCode": "SYNTHETIC TEST ONLY"
+          },
+          "status": "NEEDS_MORE_INFO",
+          "decisionReason": "SYNTHETIC TEST ONLY additional information",
+          "reviewedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+          "reviewedAt": {},
+          "createdAt": {},
+          "updatedAt": {}
+        },
+        "grants": [],
+        "members": [],
+        "audit": [
+          {
+            "id": "2e88ba61-2f5d-4a6b-8e43-92bb5e36733b",
+            "actorUserId": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+            "action": "PARTNER_APPLICATION_NEEDS_MORE_INFO",
+            "entityType": "PartnerApplication",
+            "entityId": "511a15b6-baec-4430-a1b3-6d2404ace45a",
+            "previousData": {
+              "status": "PENDING"
+            },
+            "newData": {
+              "status": "NEEDS_MORE_INFO"
+            },
+            "reason": "SYNTHETIC TEST ONLY additional information",
+            "ipAddress": "127.0.0.1",
+            "createdAt": {}
+          }
+        ]
+      },
+      "finishedAt": "2026-11-07T03:05:44.822Z"
+    },
+    {
+      "id": "LAYOUT_admin-needs-info",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "LAYOUT_customer-needs_more_info",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "DECIDE_NEEDS_INFO",
+      "expected": "SA can approve needs-info later; terminal rejected cannot be decided again",
+      "startedAt": "2026-11-07T03:05:44.822Z",
+      "status": "PASS",
+      "actual": {
+        "application": {
+          "id": "511a15b6-baec-4430-a1b3-6d2404ace45a",
+          "userId": "39d80f2e-b40c-46e9-a78e-b5c20c10befd",
+          "representativeName": "T13B01 mobile A04-NEEDS",
+          "businessName": "T13B01 SYNTHETIC mobile A04-NEEDS cc354646",
+          "businessType": "HOTEL",
+          "email": "t13b01.79d231.mobile.a04-needs.aaf50f6e@example.test",
+          "phone": "0901234567",
+          "address": "SYNTHETIC TEST ONLY - no real business",
+          "city": "T13B01-20261107030355-79d231-mobile",
+          "latitude": "16.0500000",
+          "longitude": "108.2000000",
+          "imageUrls": [],
+          "verificationDetails": {
+            "taxCode": "SYNTHETIC TEST ONLY"
+          },
+          "status": "APPROVED",
+          "decisionReason": "SYNTHETIC TEST ONLY additional information",
+          "reviewedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+          "reviewedAt": {},
+          "createdAt": {},
+          "updatedAt": {}
+        },
+        "grants": [
+          {
+            "id": "53a9fe25-c37d-4808-9425-8049de681643",
+            "userId": "39d80f2e-b40c-46e9-a78e-b5c20c10befd",
+            "role": "PARTNER",
+            "grantedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+            "createdAt": {}
+          }
+        ],
+        "members": [
+          {
+            "id": "c81366bf-e656-4e73-9069-7124df056689",
+            "businessId": "2b39b4cd-f13d-4ae6-9585-2c393efa5b94",
+            "userId": "39d80f2e-b40c-46e9-a78e-b5c20c10befd",
+            "permissions": [
+              "MANAGE_BUSINESS",
+              "MANAGE_BOOKINGS"
+            ],
+            "createdAt": {},
+            "updatedAt": {}
+          }
+        ],
+        "audit": [
+          {
+            "id": "2e88ba61-2f5d-4a6b-8e43-92bb5e36733b",
+            "actorUserId": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+            "action": "PARTNER_APPLICATION_NEEDS_MORE_INFO",
+            "entityType": "PartnerApplication",
+            "entityId": "511a15b6-baec-4430-a1b3-6d2404ace45a",
+            "previousData": {
+              "status": "PENDING"
+            },
+            "newData": {
+              "status": "NEEDS_MORE_INFO"
+            },
+            "reason": "SYNTHETIC TEST ONLY additional information",
+            "ipAddress": "127.0.0.1",
+            "createdAt": {}
+          },
+          {
+            "id": "e52ff676-e92a-4c6d-ba7b-6f08f9dea32b",
+            "actorUserId": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+            "action": "PARTNER_APPLICATION_APPROVED",
+            "entityType": "PartnerApplication",
+            "entityId": "511a15b6-baec-4430-a1b3-6d2404ace45a",
+            "previousData": {
+              "status": "NEEDS_MORE_INFO"
+            },
+            "newData": {
+              "status": "APPROVED",
+              "businessId": "2b39b4cd-f13d-4ae6-9585-2c393efa5b94"
+            },
+            "reason": null,
+            "ipAddress": "127.0.0.1",
+            "createdAt": {}
+          }
+        ]
+      },
+      "finishedAt": "2026-11-07T03:05:47.481Z"
+    },
+    {
+      "id": "LAYOUT_customer-approved",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "FIX_REJECTED_VIEW_PERSISTENCE",
+      "expected": "Rejected reason survives reload, direct URL and real logout/login; viewing never mutates application/Business/role/audit",
+      "startedAt": "2026-11-07T03:05:47.481Z",
+      "status": "PASS",
+      "actual": {
+        "applicationId": "0d5f84e0-1972-46a8-b8d5-ec50f56672c0",
+        "viewOnlyUnchanged": true
+      },
+      "finishedAt": "2026-11-07T03:05:50.397Z"
+    },
+    {
+      "id": "LAYOUT_customer-rejected",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "LAYOUT_fix-rejected-relogin",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "FIX_ACCOUNT_ISOLATION",
+      "expected": "Account B cannot display account A application/reason, including direct URL and reload",
+      "startedAt": "2026-11-07T03:05:50.397Z",
+      "status": "PASS",
+      "actual": {
+        "accountA": "e9129802-2ece-4e4d-9e68-c3b59bf7cfdc",
+        "accountB": "39d80f2e-b40c-46e9-a78e-b5c20c10befd",
+        "displayedApplicationId": "511a15b6-baec-4430-a1b3-6d2404ace45a"
+      },
+      "finishedAt": "2026-11-07T03:05:52.643Z"
+    },
+    {
+      "id": "LAYOUT_customer-approved",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "LAYOUT_fix-account-b",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "FIX_HISTORY_AND_REAPPLY",
+      "expected": "Newest rejected submission wins over historical APPROVED; UI reapply creates one PENDING and old feedback never overwrites it",
+      "startedAt": "2026-11-07T03:05:52.643Z",
+      "status": "PASS",
+      "actual": {
+        "historicalApproved": "72ce8741-a9bb-4c88-9f8f-acdf3caf13dc",
+        "latestRejected": "82789d42-4bff-471b-b884-88bdaa14e296",
+        "reappliedPending": "8d866cf3-aea2-4e5d-9012-73857702e758",
+        "applicationCount": 3,
+        "oldRowsPreserved": true,
+        "membershipAndRolesUnchanged": true
+      },
+      "finishedAt": "2026-11-07T03:05:56.953Z"
+    },
+    {
+      "id": "LAYOUT_customer-rejected",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "LAYOUT_fix-newest-rejected-history",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "LAYOUT_fix-reapplied-pending",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "LAYOUT_final",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 390,
+        "scrollWidth": 390
+      },
+      "status": "PASS"
+    }
+  ],
+  "traffic": [
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/__t13b01/identity",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/__t13b01/identity",
+      "response": {
+        "status": 200,
+        "body": {
+          "runId": "20261107030355-79d231",
+          "pid": 7132,
+          "port": 5315,
+          "database": "travelgo_ai_m0_test",
+          "username": "postgres",
+          "server_address": "172.18.0.3/32",
+          "server_port": 5432,
+          "nodeEnv": "test",
+          "host": "127.0.0.1",
+          "sentinel": "PASS",
+          "writeOptIn": true,
+          "migrations": [
+            {
+              "filename": "20261010_01_init_travelgo_schema.sql",
+              "checksum": "fe7defe5c3c47c9230fe7c43fc301255a6bc0e998da71aba0fe2f747f9e52d50"
+            },
+            {
+              "filename": "20261011_02_rbac_partner_foundation.sql",
+              "checksum": "df7fd60cccf17d3f8a73f711825bb1e82a4606a17c42fce4c7fa214548c2cecd"
+            },
+            {
+              "filename": "20261011_03_persistent_travel_resources.sql",
+              "checksum": "1c4464625e57e27cadc560077fad83837b56c5385d8021e0592fdcb9039fabf7"
+            },
+            {
+              "filename": "20261011_04_hugo_intelligence_foundation.sql",
+              "checksum": "4f2519e0541bed02a5fd7811c1ef5f84be49e37dd0dc81d16c033c22a805b69d"
+            },
+            {
+              "filename": "20261012_05_user_behavior_telemetry.sql",
+              "checksum": "477200cecf2f7e8135c4473b901ae11237222083cb7fd4b9af900d2cb2bbbece"
+            },
+            {
+              "filename": "20261012_06_recommendation_exposure.sql",
+              "checksum": "9f90d12a55a57799977115b4b8922b70cba3d02649f48e4e08d54b2913a536cb"
+            },
+            {
+              "filename": "20261012_07_recommendation_booking_retention.sql",
+              "checksum": "bf885a9161b6420e096c10a3cc37de6a45715ffc2b375e38a8ec8104998cc3de"
+            },
+            {
+              "filename": "20261012_08_server_side_favorites.sql",
+              "checksum": "87980fcdf39c7fbf7e6641bb0219f64c727605ea8f8127f2ad6f62d4107d75f8"
+            },
+            {
+              "filename": "20261012_09_verified_reviews.sql",
+              "checksum": "8842947ab9cd52890cc371bf75877e191f801fd12bedb19c5c06d46080c1670e"
+            },
+            {
+              "filename": "20261012_10_review_account_deletion_privacy.sql",
+              "checksum": "4219afac618257e7970f878b83b30c72eb2fe0fe106af04e81c5083e8bc48c52"
+            },
+            {
+              "filename": "20261028_11_trip_planner_metadata.sql",
+              "checksum": "90c42676606d4d5e7458edde139b9c5b945dd3ca0d574490a581ad6bcd98a034"
+            },
+            {
+              "filename": "20261030_12_booking_request_fingerprint.sql",
+              "checksum": "09465ec9a3d3c3de1215ad6eaa1d1cf4e8d18aed43423ce6c7b4feea817e9bc5"
+            }
+          ],
+          "indexes": [
+            {
+              "indexname": "business_members_business_id_user_id_key",
+              "indexdef": "CREATE UNIQUE INDEX business_members_business_id_user_id_key ON public.business_members USING btree (business_id, user_id)"
+            },
+            {
+              "indexname": "business_members_pkey",
+              "indexdef": "CREATE UNIQUE INDEX business_members_pkey ON public.business_members USING btree (id)"
+            },
+            {
+              "indexname": "idx_business_members_user",
+              "indexdef": "CREATE INDEX idx_business_members_user ON public.business_members USING btree (user_id)"
+            },
+            {
+              "indexname": "idx_partner_applications_one_active",
+              "indexdef": "CREATE UNIQUE INDEX idx_partner_applications_one_active ON public.partner_applications USING btree (user_id) WHERE ((status)::text = ANY ((ARRAY['PENDING'::character varying, 'NEEDS_MORE_INFO'::character varying])::text[]))"
+            },
+            {
+              "indexname": "idx_partner_applications_status_created",
+              "indexdef": "CREATE INDEX idx_partner_applications_status_created ON public.partner_applications USING btree (status, created_at DESC)"
+            },
+            {
+              "indexname": "partner_applications_pkey",
+              "indexdef": "CREATE UNIQUE INDEX partner_applications_pkey ON public.partner_applications USING btree (id)"
+            },
+            {
+              "indexname": "user_roles_pkey",
+              "indexdef": "CREATE UNIQUE INDEX user_roles_pkey ON public.user_roles USING btree (id)"
+            },
+            {
+              "indexname": "user_roles_user_id_role_key",
+              "indexdef": "CREATE UNIQUE INDEX user_roles_user_id_role_key ON public.user_roles USING btree (user_id, role)"
+            }
+          ],
+          "constraints": [
+            {
+              "conname": "business_members_business_id_fkey",
+              "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE"
+            },
+            {
+              "conname": "business_members_business_id_user_id_key",
+              "definition": "UNIQUE (business_id, user_id)"
+            },
+            {
+              "conname": "business_members_pkey",
+              "definition": "PRIMARY KEY (id)"
+            },
+            {
+              "conname": "business_members_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "conname": "partner_applications_business_type_check",
+              "definition": "CHECK (((business_type)::text = ANY ((ARRAY['HOTEL'::character varying, 'HOMESTAY'::character varying, 'RESORT'::character varying, 'RESTAURANT'::character varying, 'TOUR_OPERATOR'::character varying])::text[])))"
+            },
+            {
+              "conname": "partner_applications_pkey",
+              "definition": "PRIMARY KEY (id)"
+            },
+            {
+              "conname": "partner_applications_reviewed_by_fkey",
+              "definition": "FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL"
+            },
+            {
+              "conname": "partner_applications_status_check",
+              "definition": "CHECK (((status)::text = ANY ((ARRAY['PENDING'::character varying, 'APPROVED'::character varying, 'REJECTED'::character varying, 'NEEDS_MORE_INFO'::character varying, 'SUSPENDED'::character varying])::text[])))"
+            },
+            {
+              "conname": "partner_applications_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "conname": "user_roles_granted_by_fkey",
+              "definition": "FOREIGN KEY (granted_by) REFERENCES users(id) ON DELETE SET NULL"
+            },
+            {
+              "conname": "user_roles_pkey",
+              "definition": "PRIMARY KEY (id)"
+            },
+            {
+              "conname": "user_roles_role_check",
+              "definition": "CHECK (((role)::text = ANY ((ARRAY['CUSTOMER'::character varying, 'PARTNER'::character varying, 'SUPER_ADMIN'::character varying])::text[])))"
+            },
+            {
+              "conname": "user_roles_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "conname": "user_roles_user_id_role_key",
+              "definition": "UNIQUE (user_id, role)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/register",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/register",
+      "request": {
+        "fullName": "T13B01 mobile A04-SA",
+        "email": "t13b01.79d231.mobile.a04-sa.d72a089a@example.test",
+        "password": "[REDACTED]",
+        "phone": "0901234567"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Đăng ký tài khoản thành công",
+          "data": {
+            "user": {
+              "id": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+              "fullName": "T13B01 mobile A04-SA",
+              "email": "t13b01.79d231.mobile.a04-sa.d72a089a@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "CUSTOMER"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/login",
+      "request": {
+        "email": "t13b01.79d231.mobile.a04-sa.d72a089a@example.test",
+        "password": "[REDACTED]"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "message": "Đăng nhập thành công",
+          "data": {
+            "user": {
+              "id": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+              "fullName": "T13B01 mobile A04-SA",
+              "email": "t13b01.79d231.mobile.a04-sa.d72a089a@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "SUPER_ADMIN"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/places",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/blogs",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/places",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/blogs",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/register",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/register",
+      "request": {
+        "fullName": "T13B01 mobile A04-REJECT",
+        "email": "t13b01.79d231.mobile.a04-reject.9d7f8b50@example.test",
+        "password": "[REDACTED]",
+        "phone": "0901234567"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Đăng ký tài khoản thành công",
+          "data": {
+            "user": {
+              "id": "e9129802-2ece-4e4d-9e68-c3b59bf7cfdc",
+              "fullName": "T13B01 mobile A04-REJECT",
+              "email": "t13b01.79d231.mobile.a04-reject.9d7f8b50@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "CUSTOMER"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/register",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/register",
+      "request": {
+        "fullName": "T13B01 mobile A04-NEEDS",
+        "email": "t13b01.79d231.mobile.a04-needs.aaf50f6e@example.test",
+        "password": "[REDACTED]",
+        "phone": "0901234567"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Đăng ký tài khoản thành công",
+          "data": {
+            "user": {
+              "id": "39d80f2e-b40c-46e9-a78e-b5c20c10befd",
+              "fullName": "T13B01 mobile A04-NEEDS",
+              "email": "t13b01.79d231.mobile.a04-needs.aaf50f6e@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "CUSTOMER"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner-applications",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner-applications",
+      "request": {
+        "representativeName": "T13B01 mobile A04-REJECT",
+        "businessName": "T13B01 SYNTHETIC mobile A04-REJECT eb5cf2f7",
+        "businessType": "HOTEL",
+        "email": "t13b01.79d231.mobile.a04-reject.9d7f8b50@example.test",
+        "phone": "0901234567",
+        "address": "SYNTHETIC TEST ONLY - no real business",
+        "city": "T13B01-20261107030355-79d231-mobile",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "verificationDetails": {
+          "taxCode": "SYNTHETIC TEST ONLY"
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Hồ sơ đã được gửi và đang chờ xét duyệt",
+          "data": {
+            "id": "0d5f84e0-1972-46a8-b8d5-ec50f56672c0",
+            "status": "PENDING",
+            "userId": "e9129802-2ece-4e4d-9e68-c3b59bf7cfdc",
+            "representativeName": "T13B01 mobile A04-REJECT",
+            "businessName": "T13B01 SYNTHETIC mobile A04-REJECT eb5cf2f7",
+            "businessType": "HOTEL",
+            "email": "t13b01.79d231.mobile.a04-reject.9d7f8b50@example.test",
+            "phone": "0901234567",
+            "address": "SYNTHETIC TEST ONLY - no real business",
+            "city": "T13B01-20261107030355-79d231-mobile",
+            "latitude": "16.0500000",
+            "longitude": "108.2000000",
+            "imageUrls": [],
+            "verificationDetails": {
+              "taxCode": "SYNTHETIC TEST ONLY"
+            },
+            "updatedAt": "2026-11-07T03:05:40.886Z",
+            "createdAt": "2026-11-07T03:05:40.886Z",
+            "decisionReason": null,
+            "reviewedBy": null,
+            "reviewedAt": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner-applications",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner-applications",
+      "request": {
+        "representativeName": "T13B01 mobile A04-NEEDS",
+        "businessName": "T13B01 SYNTHETIC mobile A04-NEEDS cc354646",
+        "businessType": "HOTEL",
+        "email": "t13b01.79d231.mobile.a04-needs.aaf50f6e@example.test",
+        "phone": "0901234567",
+        "address": "SYNTHETIC TEST ONLY - no real business",
+        "city": "T13B01-20261107030355-79d231-mobile",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "verificationDetails": {
+          "taxCode": "SYNTHETIC TEST ONLY"
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Hồ sơ đã được gửi và đang chờ xét duyệt",
+          "data": {
+            "id": "511a15b6-baec-4430-a1b3-6d2404ace45a",
+            "status": "PENDING",
+            "userId": "39d80f2e-b40c-46e9-a78e-b5c20c10befd",
+            "representativeName": "T13B01 mobile A04-NEEDS",
+            "businessName": "T13B01 SYNTHETIC mobile A04-NEEDS cc354646",
+            "businessType": "HOTEL",
+            "email": "t13b01.79d231.mobile.a04-needs.aaf50f6e@example.test",
+            "phone": "0901234567",
+            "address": "SYNTHETIC TEST ONLY - no real business",
+            "city": "T13B01-20261107030355-79d231-mobile",
+            "latitude": "16.0500000",
+            "longitude": "108.2000000",
+            "imageUrls": [],
+            "verificationDetails": {
+              "taxCode": "SYNTHETIC TEST ONLY"
+            },
+            "updatedAt": "2026-11-07T03:05:40.904Z",
+            "createdAt": "2026-11-07T03:05:40.904Z",
+            "decisionReason": null,
+            "reviewedBy": null,
+            "reviewedAt": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/dashboard",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/dashboard",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/partner-applications",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/partner-applications",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/admin/partners/0d5f84e0-1972-46a8-b8d5-ec50f56672c0/approval",
+      "status": 200
+    },
+    {
+      "channel": "UI decision → real API",
+      "method": "PATCH",
+      "endpoint": "/admin/partners/0d5f84e0-1972-46a8-b8d5-ec50f56672c0/approval",
+      "request": {
+        "status": "REJECTED",
+        "reason": "SYNTHETIC TEST ONLY rejected"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "message": "Đã cập nhật hồ sơ đối tác",
+          "data": {
+            "application": {
+              "id": "0d5f84e0-1972-46a8-b8d5-ec50f56672c0",
+              "userId": "e9129802-2ece-4e4d-9e68-c3b59bf7cfdc",
+              "representativeName": "T13B01 mobile A04-REJECT",
+              "businessName": "T13B01 SYNTHETIC mobile A04-REJECT eb5cf2f7",
+              "businessType": "HOTEL",
+              "email": "t13b01.79d231.mobile.a04-reject.9d7f8b50@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-mobile",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "REJECTED",
+              "decisionReason": "SYNTHETIC TEST ONLY rejected",
+              "reviewedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+              "reviewedAt": "2026-11-07T03:05:41.343Z",
+              "createdAt": "2026-11-07T03:05:40.886Z",
+              "updatedAt": "2026-11-07T03:05:41.343Z"
+            },
+            "business": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/partner-applications",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/blogs",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/places",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/blogs",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/places",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PUT",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner-applications/me",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": [
+            {
+              "id": "0d5f84e0-1972-46a8-b8d5-ec50f56672c0",
+              "userId": "e9129802-2ece-4e4d-9e68-c3b59bf7cfdc",
+              "representativeName": "T13B01 mobile A04-REJECT",
+              "businessName": "T13B01 SYNTHETIC mobile A04-REJECT eb5cf2f7",
+              "businessType": "HOTEL",
+              "email": "t13b01.79d231.mobile.a04-reject.9d7f8b50@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-mobile",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "REJECTED",
+              "decisionReason": "SYNTHETIC TEST ONLY rejected",
+              "reviewedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+              "reviewedAt": "2026-11-07T03:05:41.343Z",
+              "createdAt": "2026-11-07T03:05:40.886Z",
+              "updatedAt": "2026-11-07T03:05:41.343Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/dashboard",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/dashboard",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/partner-applications",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/partner-applications",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/admin/partners/511a15b6-baec-4430-a1b3-6d2404ace45a/approval",
+      "status": 200
+    },
+    {
+      "channel": "UI decision → real API",
+      "method": "PATCH",
+      "endpoint": "/admin/partners/511a15b6-baec-4430-a1b3-6d2404ace45a/approval",
+      "request": {
+        "status": "NEEDS_MORE_INFO",
+        "reason": "SYNTHETIC TEST ONLY additional information"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "message": "Đã cập nhật hồ sơ đối tác",
+          "data": {
+            "application": {
+              "id": "511a15b6-baec-4430-a1b3-6d2404ace45a",
+              "userId": "39d80f2e-b40c-46e9-a78e-b5c20c10befd",
+              "representativeName": "T13B01 mobile A04-NEEDS",
+              "businessName": "T13B01 SYNTHETIC mobile A04-NEEDS cc354646",
+              "businessType": "HOTEL",
+              "email": "t13b01.79d231.mobile.a04-needs.aaf50f6e@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-mobile",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "NEEDS_MORE_INFO",
+              "decisionReason": "SYNTHETIC TEST ONLY additional information",
+              "reviewedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+              "reviewedAt": "2026-11-07T03:05:43.336Z",
+              "createdAt": "2026-11-07T03:05:40.904Z",
+              "updatedAt": "2026-11-07T03:05:43.336Z"
+            },
+            "business": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/partner-applications",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/places",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/blogs",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PUT",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner-applications/me",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": [
+            {
+              "id": "511a15b6-baec-4430-a1b3-6d2404ace45a",
+              "userId": "39d80f2e-b40c-46e9-a78e-b5c20c10befd",
+              "representativeName": "T13B01 mobile A04-NEEDS",
+              "businessName": "T13B01 SYNTHETIC mobile A04-NEEDS cc354646",
+              "businessType": "HOTEL",
+              "email": "t13b01.79d231.mobile.a04-needs.aaf50f6e@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-mobile",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "NEEDS_MORE_INFO",
+              "decisionReason": "SYNTHETIC TEST ONLY additional information",
+              "reviewedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+              "reviewedAt": "2026-11-07T03:05:43.336Z",
+              "createdAt": "2026-11-07T03:05:40.904Z",
+              "updatedAt": "2026-11-07T03:05:43.336Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/dashboard",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/dashboard",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/partner-applications",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/partner-applications",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/admin/partners/511a15b6-baec-4430-a1b3-6d2404ace45a/approval",
+      "status": 200
+    },
+    {
+      "channel": "UI decision → real API",
+      "method": "PATCH",
+      "endpoint": "/admin/partners/511a15b6-baec-4430-a1b3-6d2404ace45a/approval",
+      "request": {
+        "status": "APPROVED"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "message": "Đã cập nhật hồ sơ đối tác",
+          "data": {
+            "application": {
+              "id": "511a15b6-baec-4430-a1b3-6d2404ace45a",
+              "userId": "39d80f2e-b40c-46e9-a78e-b5c20c10befd",
+              "representativeName": "T13B01 mobile A04-NEEDS",
+              "businessName": "T13B01 SYNTHETIC mobile A04-NEEDS cc354646",
+              "businessType": "HOTEL",
+              "email": "t13b01.79d231.mobile.a04-needs.aaf50f6e@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-mobile",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "APPROVED",
+              "decisionReason": "SYNTHETIC TEST ONLY additional information",
+              "reviewedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+              "reviewedAt": "2026-11-07T03:05:45.206Z",
+              "createdAt": "2026-11-07T03:05:40.904Z",
+              "updatedAt": "2026-11-07T03:05:45.206Z"
+            },
+            "business": {
+              "id": "2b39b4cd-f13d-4ae6-9585-2c393efa5b94",
+              "status": "ACTIVE",
+              "name": "T13B01 SYNTHETIC mobile A04-NEEDS cc354646",
+              "type": "HOTEL",
+              "email": "t13b01.79d231.mobile.a04-needs.aaf50f6e@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-mobile",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "updatedAt": "2026-11-07T03:05:45.208Z",
+              "createdAt": "2026-11-07T03:05:45.208Z"
+            }
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/partner-applications",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/partner-applications",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/partner-applications",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/dashboard",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/dashboard",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner-applications/me",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": [
+            {
+              "id": "511a15b6-baec-4430-a1b3-6d2404ace45a",
+              "userId": "39d80f2e-b40c-46e9-a78e-b5c20c10befd",
+              "representativeName": "T13B01 mobile A04-NEEDS",
+              "businessName": "T13B01 SYNTHETIC mobile A04-NEEDS cc354646",
+              "businessType": "HOTEL",
+              "email": "t13b01.79d231.mobile.a04-needs.aaf50f6e@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-mobile",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "APPROVED",
+              "decisionReason": "SYNTHETIC TEST ONLY additional information",
+              "reviewedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+              "reviewedAt": "2026-11-07T03:05:45.206Z",
+              "createdAt": "2026-11-07T03:05:40.904Z",
+              "updatedAt": "2026-11-07T03:05:45.206Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/places",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/blogs",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner-applications/me",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": [
+            {
+              "id": "0d5f84e0-1972-46a8-b8d5-ec50f56672c0",
+              "userId": "e9129802-2ece-4e4d-9e68-c3b59bf7cfdc",
+              "representativeName": "T13B01 mobile A04-REJECT",
+              "businessName": "T13B01 SYNTHETIC mobile A04-REJECT eb5cf2f7",
+              "businessType": "HOTEL",
+              "email": "t13b01.79d231.mobile.a04-reject.9d7f8b50@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-mobile",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "REJECTED",
+              "decisionReason": "SYNTHETIC TEST ONLY rejected",
+              "reviewedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+              "reviewedAt": "2026-11-07T03:05:41.343Z",
+              "createdAt": "2026-11-07T03:05:40.886Z",
+              "updatedAt": "2026-11-07T03:05:41.343Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner-applications/me",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": [
+            {
+              "id": "511a15b6-baec-4430-a1b3-6d2404ace45a",
+              "userId": "39d80f2e-b40c-46e9-a78e-b5c20c10befd",
+              "representativeName": "T13B01 mobile A04-NEEDS",
+              "businessName": "T13B01 SYNTHETIC mobile A04-NEEDS cc354646",
+              "businessType": "HOTEL",
+              "email": "t13b01.79d231.mobile.a04-needs.aaf50f6e@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-mobile",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "APPROVED",
+              "decisionReason": "SYNTHETIC TEST ONLY additional information",
+              "reviewedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+              "reviewedAt": "2026-11-07T03:05:45.206Z",
+              "createdAt": "2026-11-07T03:05:40.904Z",
+              "updatedAt": "2026-11-07T03:05:45.206Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner-applications/me",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": [
+            {
+              "id": "511a15b6-baec-4430-a1b3-6d2404ace45a",
+              "userId": "39d80f2e-b40c-46e9-a78e-b5c20c10befd",
+              "representativeName": "T13B01 mobile A04-NEEDS",
+              "businessName": "T13B01 SYNTHETIC mobile A04-NEEDS cc354646",
+              "businessType": "HOTEL",
+              "email": "t13b01.79d231.mobile.a04-needs.aaf50f6e@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-mobile",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "APPROVED",
+              "decisionReason": "SYNTHETIC TEST ONLY additional information",
+              "reviewedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+              "reviewedAt": "2026-11-07T03:05:45.206Z",
+              "createdAt": "2026-11-07T03:05:40.904Z",
+              "updatedAt": "2026-11-07T03:05:45.206Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/register",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/register",
+      "request": {
+        "fullName": "T13B01 mobile A04-HISTORY",
+        "email": "t13b01.79d231.mobile.a04-history.5a5a9580@example.test",
+        "password": "[REDACTED]",
+        "phone": "0901234567"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Đăng ký tài khoản thành công",
+          "data": {
+            "user": {
+              "id": "9b3768e8-6550-4cd1-a317-a57e4169a805",
+              "fullName": "T13B01 mobile A04-HISTORY",
+              "email": "t13b01.79d231.mobile.a04-history.5a5a9580@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "CUSTOMER"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner-applications",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner-applications",
+      "request": {
+        "representativeName": "T13B01 mobile A04-HISTORY",
+        "businessName": "T13B01 SYNTHETIC mobile A04-OLD 0be6ee77",
+        "businessType": "HOTEL",
+        "email": "t13b01.79d231.mobile.a04-history.5a5a9580@example.test",
+        "phone": "0901234567",
+        "address": "SYNTHETIC TEST ONLY - no real business",
+        "city": "T13B01-20261107030355-79d231-mobile",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "verificationDetails": {
+          "taxCode": "SYNTHETIC TEST ONLY"
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Hồ sơ đã được gửi và đang chờ xét duyệt",
+          "data": {
+            "id": "72ce8741-a9bb-4c88-9f8f-acdf3caf13dc",
+            "status": "PENDING",
+            "userId": "9b3768e8-6550-4cd1-a317-a57e4169a805",
+            "representativeName": "T13B01 mobile A04-HISTORY",
+            "businessName": "T13B01 SYNTHETIC mobile A04-OLD 0be6ee77",
+            "businessType": "HOTEL",
+            "email": "t13b01.79d231.mobile.a04-history.5a5a9580@example.test",
+            "phone": "0901234567",
+            "address": "SYNTHETIC TEST ONLY - no real business",
+            "city": "T13B01-20261107030355-79d231-mobile",
+            "latitude": "16.0500000",
+            "longitude": "108.2000000",
+            "imageUrls": [],
+            "verificationDetails": {
+              "taxCode": "SYNTHETIC TEST ONLY"
+            },
+            "updatedAt": "2026-11-07T03:05:52.784Z",
+            "createdAt": "2026-11-07T03:05:52.784Z",
+            "decisionReason": null,
+            "reviewedBy": null,
+            "reviewedAt": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/admin/partners/72ce8741-a9bb-4c88-9f8f-acdf3caf13dc/approval",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/admin/partners/72ce8741-a9bb-4c88-9f8f-acdf3caf13dc/approval",
+      "request": {
+        "status": "APPROVED"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "message": "Đã cập nhật hồ sơ đối tác",
+          "data": {
+            "application": {
+              "id": "72ce8741-a9bb-4c88-9f8f-acdf3caf13dc",
+              "userId": "9b3768e8-6550-4cd1-a317-a57e4169a805",
+              "representativeName": "T13B01 mobile A04-HISTORY",
+              "businessName": "T13B01 SYNTHETIC mobile A04-OLD 0be6ee77",
+              "businessType": "HOTEL",
+              "email": "t13b01.79d231.mobile.a04-history.5a5a9580@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-mobile",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "APPROVED",
+              "decisionReason": null,
+              "reviewedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+              "reviewedAt": "2026-11-07T03:05:52.804Z",
+              "createdAt": "2026-11-07T03:05:52.784Z",
+              "updatedAt": "2026-11-07T03:05:52.804Z"
+            },
+            "business": {
+              "id": "9dc40d30-80a1-4b18-ba80-0566bd4f4a46",
+              "status": "ACTIVE",
+              "name": "T13B01 SYNTHETIC mobile A04-OLD 0be6ee77",
+              "type": "HOTEL",
+              "email": "t13b01.79d231.mobile.a04-history.5a5a9580@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-mobile",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "updatedAt": "2026-11-07T03:05:52.805Z",
+              "createdAt": "2026-11-07T03:05:52.805Z"
+            }
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner-applications",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner-applications",
+      "request": {
+        "representativeName": "T13B01 mobile A04-HISTORY",
+        "businessName": "T13B01 SYNTHETIC mobile A04-LATEST 2196ce5d",
+        "businessType": "HOTEL",
+        "email": "t13b01.79d231.mobile.a04-history.5a5a9580@example.test",
+        "phone": "0901234567",
+        "address": "SYNTHETIC TEST ONLY - no real business",
+        "city": "T13B01-20261107030355-79d231-mobile",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "verificationDetails": {
+          "taxCode": "SYNTHETIC TEST ONLY"
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Hồ sơ đã được gửi và đang chờ xét duyệt",
+          "data": {
+            "id": "82789d42-4bff-471b-b884-88bdaa14e296",
+            "status": "PENDING",
+            "userId": "9b3768e8-6550-4cd1-a317-a57e4169a805",
+            "representativeName": "T13B01 mobile A04-HISTORY",
+            "businessName": "T13B01 SYNTHETIC mobile A04-LATEST 2196ce5d",
+            "businessType": "HOTEL",
+            "email": "t13b01.79d231.mobile.a04-history.5a5a9580@example.test",
+            "phone": "0901234567",
+            "address": "SYNTHETIC TEST ONLY - no real business",
+            "city": "T13B01-20261107030355-79d231-mobile",
+            "latitude": "16.0500000",
+            "longitude": "108.2000000",
+            "imageUrls": [],
+            "verificationDetails": {
+              "taxCode": "SYNTHETIC TEST ONLY"
+            },
+            "updatedAt": "2026-11-07T03:05:52.829Z",
+            "createdAt": "2026-11-07T03:05:52.829Z",
+            "decisionReason": null,
+            "reviewedBy": null,
+            "reviewedAt": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/admin/partners/82789d42-4bff-471b-b884-88bdaa14e296/approval",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/admin/partners/82789d42-4bff-471b-b884-88bdaa14e296/approval",
+      "request": {
+        "status": "REJECTED",
+        "reason": "SYNTHETIC TEST ONLY latest rejection LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "message": "Đã cập nhật hồ sơ đối tác",
+          "data": {
+            "application": {
+              "id": "82789d42-4bff-471b-b884-88bdaa14e296",
+              "userId": "9b3768e8-6550-4cd1-a317-a57e4169a805",
+              "representativeName": "T13B01 mobile A04-HISTORY",
+              "businessName": "T13B01 SYNTHETIC mobile A04-LATEST 2196ce5d",
+              "businessType": "HOTEL",
+              "email": "t13b01.79d231.mobile.a04-history.5a5a9580@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-mobile",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "REJECTED",
+              "decisionReason": "SYNTHETIC TEST ONLY latest rejection LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_",
+              "reviewedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+              "reviewedAt": "2026-11-07T03:05:52.848Z",
+              "createdAt": "2026-11-07T03:05:52.829Z",
+              "updatedAt": "2026-11-07T03:05:52.848Z"
+            },
+            "business": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/dashboard",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/dashboard",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PUT",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner-applications/me",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": [
+            {
+              "id": "82789d42-4bff-471b-b884-88bdaa14e296",
+              "userId": "9b3768e8-6550-4cd1-a317-a57e4169a805",
+              "representativeName": "T13B01 mobile A04-HISTORY",
+              "businessName": "T13B01 SYNTHETIC mobile A04-LATEST 2196ce5d",
+              "businessType": "HOTEL",
+              "email": "t13b01.79d231.mobile.a04-history.5a5a9580@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-mobile",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "REJECTED",
+              "decisionReason": "SYNTHETIC TEST ONLY latest rejection LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_",
+              "reviewedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+              "reviewedAt": "2026-11-07T03:05:52.848Z",
+              "createdAt": "2026-11-07T03:05:52.829Z",
+              "updatedAt": "2026-11-07T03:05:52.848Z"
+            },
+            {
+              "id": "72ce8741-a9bb-4c88-9f8f-acdf3caf13dc",
+              "userId": "9b3768e8-6550-4cd1-a317-a57e4169a805",
+              "representativeName": "T13B01 mobile A04-HISTORY",
+              "businessName": "T13B01 SYNTHETIC mobile A04-OLD 0be6ee77",
+              "businessType": "HOTEL",
+              "email": "t13b01.79d231.mobile.a04-history.5a5a9580@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-mobile",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "APPROVED",
+              "decisionReason": null,
+              "reviewedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+              "reviewedAt": "2026-11-07T03:05:52.804Z",
+              "createdAt": "2026-11-07T03:05:52.784Z",
+              "updatedAt": "2026-11-07T03:05:52.804Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner-applications",
+      "status": 201
+    },
+    {
+      "channel": "UI form → real API",
+      "method": "POST",
+      "endpoint": "/partner-applications",
+      "request": {
+        "representativeName": "T13B01 mobile A04-HISTORY",
+        "businessName": "T13B01 SYNTHETIC mobile A04-REAPPLY eb671907",
+        "businessType": "HOTEL",
+        "email": "t13b01.79d231.mobile.a04-history.5a5a9580@example.test",
+        "phone": "0901234567",
+        "address": "SYNTHETIC TEST ONLY - no real business",
+        "city": "T13B01-20261107030355-79d231-mobile",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "taxCode": "SYNTHETIC TEST ONLY",
+        "verificationDetails": {
+          "taxCode": "SYNTHETIC TEST ONLY"
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Hồ sơ đã được gửi và đang chờ xét duyệt",
+          "data": {
+            "id": "8d866cf3-aea2-4e5d-9012-73857702e758",
+            "status": "PENDING",
+            "userId": "9b3768e8-6550-4cd1-a317-a57e4169a805",
+            "representativeName": "T13B01 mobile A04-HISTORY",
+            "businessName": "T13B01 SYNTHETIC mobile A04-REAPPLY eb671907",
+            "businessType": "HOTEL",
+            "email": "t13b01.79d231.mobile.a04-history.5a5a9580@example.test",
+            "phone": "0901234567",
+            "address": "SYNTHETIC TEST ONLY - no real business",
+            "city": "T13B01-20261107030355-79d231-mobile",
+            "latitude": "16.0500000",
+            "longitude": "108.2000000",
+            "imageUrls": [],
+            "verificationDetails": {
+              "taxCode": "SYNTHETIC TEST ONLY"
+            },
+            "updatedAt": "2026-11-07T03:05:56.190Z",
+            "createdAt": "2026-11-07T03:05:56.190Z",
+            "decisionReason": null,
+            "reviewedBy": null,
+            "reviewedAt": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner-applications/me",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": [
+            {
+              "id": "8d866cf3-aea2-4e5d-9012-73857702e758",
+              "userId": "9b3768e8-6550-4cd1-a317-a57e4169a805",
+              "representativeName": "T13B01 mobile A04-HISTORY",
+              "businessName": "T13B01 SYNTHETIC mobile A04-REAPPLY eb671907",
+              "businessType": "HOTEL",
+              "email": "t13b01.79d231.mobile.a04-history.5a5a9580@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-mobile",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "PENDING",
+              "decisionReason": null,
+              "reviewedBy": null,
+              "reviewedAt": null,
+              "createdAt": "2026-11-07T03:05:56.190Z",
+              "updatedAt": "2026-11-07T03:05:56.190Z"
+            },
+            {
+              "id": "82789d42-4bff-471b-b884-88bdaa14e296",
+              "userId": "9b3768e8-6550-4cd1-a317-a57e4169a805",
+              "representativeName": "T13B01 mobile A04-HISTORY",
+              "businessName": "T13B01 SYNTHETIC mobile A04-LATEST 2196ce5d",
+              "businessType": "HOTEL",
+              "email": "t13b01.79d231.mobile.a04-history.5a5a9580@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-mobile",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "REJECTED",
+              "decisionReason": "SYNTHETIC TEST ONLY latest rejection LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_LONG_REASON_",
+              "reviewedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+              "reviewedAt": "2026-11-07T03:05:52.848Z",
+              "createdAt": "2026-11-07T03:05:52.829Z",
+              "updatedAt": "2026-11-07T03:05:52.848Z"
+            },
+            {
+              "id": "72ce8741-a9bb-4c88-9f8f-acdf3caf13dc",
+              "userId": "9b3768e8-6550-4cd1-a317-a57e4169a805",
+              "representativeName": "T13B01 mobile A04-HISTORY",
+              "businessName": "T13B01 SYNTHETIC mobile A04-OLD 0be6ee77",
+              "businessType": "HOTEL",
+              "email": "t13b01.79d231.mobile.a04-history.5a5a9580@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107030355-79d231-mobile",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "APPROVED",
+              "decisionReason": null,
+              "reviewedBy": "07ff60d0-b643-451b-8e9e-d0aef8d3bd26",
+              "reviewedAt": "2026-11-07T03:05:52.804Z",
+              "createdAt": "2026-11-07T03:05:52.784Z",
+              "updatedAt": "2026-11-07T03:05:52.804Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    }
+  ],
+  "console": [
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    }
+  ],
+  "images": [
+    "A04-admin-rejected.png",
+    "A04-admin-rejected-full.png",
+    "A04-customer-rejected.png",
+    "A04-customer-rejected-full.png",
+    "A04-admin-needs-info.png",
+    "A04-admin-needs-info-full.png",
+    "A04-customer-needs_more_info.png",
+    "A04-customer-needs_more_info-full.png",
+    "A04-customer-approved.png",
+    "A04-customer-approved-full.png",
+    "A04-customer-rejected.png",
+    "A04-customer-rejected-full.png",
+    "A04-fix-rejected-relogin.png",
+    "A04-fix-rejected-relogin-full.png",
+    "A04-customer-approved.png",
+    "A04-customer-approved-full.png",
+    "A04-fix-account-b.png",
+    "A04-fix-account-b-full.png",
+    "A04-customer-rejected.png",
+    "A04-customer-rejected-full.png",
+    "A04-fix-newest-rejected-history.png",
+    "A04-fix-newest-rejected-history-full.png",
+    "A04-fix-reapplied-pending.png",
+    "A04-fix-reapplied-pending-full.png",
+    "A04-final.png",
+    "A04-final-full.png"
+  ],
+  "trace": null,
+  "dbSnapshot": "A04-db-final.json"
+}

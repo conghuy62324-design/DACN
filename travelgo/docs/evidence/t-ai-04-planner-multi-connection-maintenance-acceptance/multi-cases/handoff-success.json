@@ -1,0 +1,1145 @@
+{
+  "scenario": "handoff-success",
+  "tier": "OFFLINE_MULTI_CONNECTION_SENSOR_CHILD",
+  "error": null,
+  "observed": {
+    "smoke": {
+      "status": "PASS",
+      "tables": 25,
+      "probeConflict": "55P03",
+      "handoff": "QUEUED_B_BEFORE_A_COMMIT_THEN_ALL25_GRANTED",
+      "locksAfter": []
+    },
+    "lockCalls": [
+      {
+        "pid": 20001,
+        "sql": "BEGIN READ WRITE"
+      },
+      {
+        "pid": 20001,
+        "sql": "LOCK_A"
+      },
+      {
+        "pid": 20003,
+        "sql": "BEGIN READ WRITE"
+      },
+      {
+        "pid": 20003,
+        "sql": "LOCK TABLE public.\"places\" IN ROW EXCLUSIVE MODE NOWAIT"
+      },
+      {
+        "pid": 20003,
+        "sql": "ROLLBACK"
+      },
+      {
+        "pid": 20002,
+        "sql": "BEGIN READ WRITE"
+      },
+      {
+        "pid": 20002,
+        "sql": "LOCK_B"
+      },
+      {
+        "pid": 20001,
+        "sql": "SELECT pg_blocking_pids($1::int) AS blockers"
+      },
+      {
+        "pid": 20001,
+        "sql": "COMMIT"
+      },
+      {
+        "pid": 20002,
+        "sql": "COMMIT"
+      }
+    ],
+    "simTransactionsRemaining": 0
+  },
+  "cleanup": {
+    "status": "RESOURCE_CLEANUP_PASS",
+    "allOwnedDisposed": true,
+    "noOwnedResidual": true,
+    "errors": [],
+    "residual": [],
+    "locks": [],
+    "unknown": [],
+    "records": [
+      {
+        "instanceId": "f0fe9a8c-dd23-40a9-827e-42eabef0fe02",
+        "kind": "observer",
+        "disposed": true,
+        "identity": {
+          "pid": 20001,
+          "backend_start": "2026-11-11T08:00:00.123456Z",
+          "application_name": "og-maintenance-a-a880121ff64744d8844a3ea0d589c89e",
+          "datname": "travelgo_ai_m0_test",
+          "usename": "postgres",
+          "backend_type": "client backend",
+          "client_addr": "127.0.0.1",
+          "client_port": 61001
+        }
+      },
+      {
+        "instanceId": "3d0a6134-2e78-462b-b74a-716c0361201c",
+        "kind": "observer",
+        "disposed": true,
+        "identity": {
+          "pid": 20002,
+          "backend_start": "2026-11-11T08:00:00.123456Z",
+          "application_name": "og-maintenance-b-9ed1066e1ddd481386c93dea642baf8f",
+          "datname": "travelgo_ai_m0_test",
+          "usename": "postgres",
+          "backend_type": "client backend",
+          "client_addr": "127.0.0.1",
+          "client_port": 61001
+        }
+      },
+      {
+        "instanceId": "98796010-126b-4a3f-a7c4-3369a18ee4ff",
+        "kind": "observer",
+        "disposed": true,
+        "identity": {
+          "pid": 20003,
+          "backend_start": "2026-11-11T08:00:00.123456Z",
+          "application_name": "og-probe-fee12116d66a44fcb76df9d22efcc845",
+          "datname": "travelgo_ai_m0_test",
+          "usename": "postgres",
+          "backend_type": "client backend",
+          "client_addr": "127.0.0.1",
+          "client_port": 61001
+        }
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "number": 1,
+      "at": "2026-11-11T09:52:06.730Z",
+      "kind": "observer",
+      "instanceId": "f0fe9a8c-dd23-40a9-827e-42eabef0fe02",
+      "factory": "maintenance-a"
+    },
+    {
+      "number": 2,
+      "at": "2026-11-11T09:52:06.731Z",
+      "kind": "observer",
+      "instanceId": "3d0a6134-2e78-462b-b74a-716c0361201c",
+      "factory": "maintenance-b"
+    },
+    {
+      "number": 3,
+      "at": "2026-11-11T09:52:06.731Z",
+      "kind": "observer",
+      "instanceId": "98796010-126b-4a3f-a7c4-3369a18ee4ff",
+      "factory": "probe"
+    }
+  ],
+  "created": 3,
+  "disposed": 3,
+  "events": [
+    {
+      "sequence": 1,
+      "at": "2026-11-11T09:52:06.729Z",
+      "type": "CREATE",
+      "id": "f0fe9a8c-dd23-40a9-827e-42eabef0fe02",
+      "factory": "maintenance-a",
+      "token": "a880121ff64744d8844a3ea0d589c89e",
+      "application_name": "og-maintenance-a-a880121ff64744d8844a3ea0d589c89e",
+      "state": "CREATED",
+      "config": {
+        "host": "127.0.0.1",
+        "port": 5432,
+        "database": "travelgo_ai_m0_test",
+        "user": "postgres"
+      },
+      "identity": null,
+      "physical": null
+    },
+    {
+      "type": "FACTORY_INSTANCE_CREATED",
+      "kind": "observer",
+      "instanceId": "f0fe9a8c-dd23-40a9-827e-42eabef0fe02",
+      "factory": "maintenance-a"
+    },
+    {
+      "type": "PHYSICAL_CONNECT_ATTEMPT",
+      "number": 1,
+      "at": "2026-11-11T09:52:06.730Z",
+      "kind": "observer",
+      "instanceId": "f0fe9a8c-dd23-40a9-827e-42eabef0fe02",
+      "factory": "maintenance-a"
+    },
+    {
+      "sequence": 2,
+      "at": "2026-11-11T09:52:06.730Z",
+      "type": "PHYSICAL_OPEN",
+      "instanceId": "f0fe9a8c-dd23-40a9-827e-42eabef0fe02",
+      "factory": "maintenance-a",
+      "state": "PENDING_REGISTRATION",
+      "physical": {
+        "expectedEndpoint": {
+          "host": "127.0.0.1",
+          "port": 5432
+        },
+        "localAddress": "127.0.0.1",
+        "localPort": 61001,
+        "remoteAddress": "127.0.0.1",
+        "remotePort": 5432
+      },
+      "startup": {
+        "application_name": "og-maintenance-a-a880121ff64744d8844a3ea0d589c89e",
+        "options": "-c default_transaction_read_only=on -c statement_timeout=15000 -c idle_in_transaction_session_timeout=30000 -c timezone=UTC",
+        "database": "travelgo_ai_m0_test",
+        "user": "postgres"
+      }
+    },
+    {
+      "type": "SQL_INTENT",
+      "number": 1,
+      "instanceId": "f0fe9a8c-dd23-40a9-827e-42eabef0fe02",
+      "kind": "observer",
+      "sql": "SELECT current_database() AS database,current_user AS role,pg_backend_pid() AS pg_backend_pid,a.pid,to_char(a.backend_start AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') AS backend_start,a.application_name,a.usename,a.datname,a.backend_type,a.client_addr::text AS client_addr,a.client_port,inet_client_addr()::text AS inet_client_addr,inet_client_port() AS inet_client_port,inet_server_addr()::text AS server_addr,inet_server_port() AS server_port,current_setting('transaction_read_only') AS transaction_read_only,current_setting('default_transaction_read_only') AS default_transaction_read_only,current_setting('statement_timeout') AS statement_timeout,shobj_description((SELECT oid FROM pg_database WHERE datname=current_database()),'pg_database') AS sentinel FROM pg_stat_activity a WHERE a.pid=pg_backend_pid()",
+      "valuesSha256": null
+    },
+    {
+      "type": "SQL_COMPLETED",
+      "number": 1,
+      "instanceId": "f0fe9a8c-dd23-40a9-827e-42eabef0fe02",
+      "durationMs": 0,
+      "rowCount": null
+    },
+    {
+      "sequence": 3,
+      "at": "2026-11-11T09:52:06.730Z",
+      "type": "RAW_SELF_IDENTITY",
+      "instanceId": "f0fe9a8c-dd23-40a9-827e-42eabef0fe02",
+      "row": {
+        "database": "travelgo_ai_m0_test",
+        "role": "postgres",
+        "pid": 20001,
+        "pg_backend_pid": 20001,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-maintenance-a-a880121ff64744d8844a3ea0d589c89e",
+        "usename": "postgres",
+        "datname": "travelgo_ai_m0_test",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001,
+        "inet_client_addr": "127.0.0.1",
+        "inet_client_port": 61001,
+        "server_addr": "127.0.0.1",
+        "server_port": 5432,
+        "default_transaction_read_only": "on",
+        "transaction_read_only": "on",
+        "statement_timeout": "15s",
+        "sentinel": "hugotravel-isolated-test-database-v1"
+      }
+    },
+    {
+      "sequence": 4,
+      "at": "2026-11-11T09:52:06.731Z",
+      "type": "REGISTRATION_PASS",
+      "instanceId": "f0fe9a8c-dd23-40a9-827e-42eabef0fe02",
+      "state": "REGISTERED",
+      "identity": {
+        "pid": 20001,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-maintenance-a-a880121ff64744d8844a3ea0d589c89e",
+        "datname": "travelgo_ai_m0_test",
+        "usename": "postgres",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001
+      }
+    },
+    {
+      "sequence": 5,
+      "at": "2026-11-11T09:52:06.731Z",
+      "type": "CREATE",
+      "id": "3d0a6134-2e78-462b-b74a-716c0361201c",
+      "factory": "maintenance-b",
+      "token": "9ed1066e1ddd481386c93dea642baf8f",
+      "application_name": "og-maintenance-b-9ed1066e1ddd481386c93dea642baf8f",
+      "state": "CREATED",
+      "config": {
+        "host": "127.0.0.1",
+        "port": 5432,
+        "database": "travelgo_ai_m0_test",
+        "user": "postgres"
+      },
+      "identity": null,
+      "physical": null
+    },
+    {
+      "type": "FACTORY_INSTANCE_CREATED",
+      "kind": "observer",
+      "instanceId": "3d0a6134-2e78-462b-b74a-716c0361201c",
+      "factory": "maintenance-b"
+    },
+    {
+      "type": "PHYSICAL_CONNECT_ATTEMPT",
+      "number": 2,
+      "at": "2026-11-11T09:52:06.731Z",
+      "kind": "observer",
+      "instanceId": "3d0a6134-2e78-462b-b74a-716c0361201c",
+      "factory": "maintenance-b"
+    },
+    {
+      "sequence": 6,
+      "at": "2026-11-11T09:52:06.731Z",
+      "type": "PHYSICAL_OPEN",
+      "instanceId": "3d0a6134-2e78-462b-b74a-716c0361201c",
+      "factory": "maintenance-b",
+      "state": "PENDING_REGISTRATION",
+      "physical": {
+        "expectedEndpoint": {
+          "host": "127.0.0.1",
+          "port": 5432
+        },
+        "localAddress": "127.0.0.1",
+        "localPort": 61001,
+        "remoteAddress": "127.0.0.1",
+        "remotePort": 5432
+      },
+      "startup": {
+        "application_name": "og-maintenance-b-9ed1066e1ddd481386c93dea642baf8f",
+        "options": "-c default_transaction_read_only=on -c statement_timeout=15000 -c idle_in_transaction_session_timeout=30000 -c timezone=UTC",
+        "database": "travelgo_ai_m0_test",
+        "user": "postgres"
+      }
+    },
+    {
+      "type": "SQL_INTENT",
+      "number": 2,
+      "instanceId": "3d0a6134-2e78-462b-b74a-716c0361201c",
+      "kind": "observer",
+      "sql": "SELECT current_database() AS database,current_user AS role,pg_backend_pid() AS pg_backend_pid,a.pid,to_char(a.backend_start AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') AS backend_start,a.application_name,a.usename,a.datname,a.backend_type,a.client_addr::text AS client_addr,a.client_port,inet_client_addr()::text AS inet_client_addr,inet_client_port() AS inet_client_port,inet_server_addr()::text AS server_addr,inet_server_port() AS server_port,current_setting('transaction_read_only') AS transaction_read_only,current_setting('default_transaction_read_only') AS default_transaction_read_only,current_setting('statement_timeout') AS statement_timeout,shobj_description((SELECT oid FROM pg_database WHERE datname=current_database()),'pg_database') AS sentinel FROM pg_stat_activity a WHERE a.pid=pg_backend_pid()",
+      "valuesSha256": null
+    },
+    {
+      "type": "SQL_COMPLETED",
+      "number": 2,
+      "instanceId": "3d0a6134-2e78-462b-b74a-716c0361201c",
+      "durationMs": 0,
+      "rowCount": null
+    },
+    {
+      "sequence": 7,
+      "at": "2026-11-11T09:52:06.731Z",
+      "type": "RAW_SELF_IDENTITY",
+      "instanceId": "3d0a6134-2e78-462b-b74a-716c0361201c",
+      "row": {
+        "database": "travelgo_ai_m0_test",
+        "role": "postgres",
+        "pid": 20002,
+        "pg_backend_pid": 20002,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-maintenance-b-9ed1066e1ddd481386c93dea642baf8f",
+        "usename": "postgres",
+        "datname": "travelgo_ai_m0_test",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001,
+        "inet_client_addr": "127.0.0.1",
+        "inet_client_port": 61001,
+        "server_addr": "127.0.0.1",
+        "server_port": 5432,
+        "default_transaction_read_only": "on",
+        "transaction_read_only": "on",
+        "statement_timeout": "15s",
+        "sentinel": "hugotravel-isolated-test-database-v1"
+      }
+    },
+    {
+      "sequence": 8,
+      "at": "2026-11-11T09:52:06.731Z",
+      "type": "REGISTRATION_PASS",
+      "instanceId": "3d0a6134-2e78-462b-b74a-716c0361201c",
+      "state": "REGISTERED",
+      "identity": {
+        "pid": 20002,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-maintenance-b-9ed1066e1ddd481386c93dea642baf8f",
+        "datname": "travelgo_ai_m0_test",
+        "usename": "postgres",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001
+      }
+    },
+    {
+      "sequence": 9,
+      "at": "2026-11-11T09:52:06.731Z",
+      "type": "CREATE",
+      "id": "98796010-126b-4a3f-a7c4-3369a18ee4ff",
+      "factory": "probe",
+      "token": "fee12116d66a44fcb76df9d22efcc845",
+      "application_name": "og-probe-fee12116d66a44fcb76df9d22efcc845",
+      "state": "CREATED",
+      "config": {
+        "host": "127.0.0.1",
+        "port": 5432,
+        "database": "travelgo_ai_m0_test",
+        "user": "postgres"
+      },
+      "identity": null,
+      "physical": null
+    },
+    {
+      "type": "FACTORY_INSTANCE_CREATED",
+      "kind": "observer",
+      "instanceId": "98796010-126b-4a3f-a7c4-3369a18ee4ff",
+      "factory": "probe"
+    },
+    {
+      "type": "PHYSICAL_CONNECT_ATTEMPT",
+      "number": 3,
+      "at": "2026-11-11T09:52:06.731Z",
+      "kind": "observer",
+      "instanceId": "98796010-126b-4a3f-a7c4-3369a18ee4ff",
+      "factory": "probe"
+    },
+    {
+      "sequence": 10,
+      "at": "2026-11-11T09:52:06.731Z",
+      "type": "PHYSICAL_OPEN",
+      "instanceId": "98796010-126b-4a3f-a7c4-3369a18ee4ff",
+      "factory": "probe",
+      "state": "PENDING_REGISTRATION",
+      "physical": {
+        "expectedEndpoint": {
+          "host": "127.0.0.1",
+          "port": 5432
+        },
+        "localAddress": "127.0.0.1",
+        "localPort": 61001,
+        "remoteAddress": "127.0.0.1",
+        "remotePort": 5432
+      },
+      "startup": {
+        "application_name": "og-probe-fee12116d66a44fcb76df9d22efcc845",
+        "options": "-c default_transaction_read_only=on -c statement_timeout=15000 -c idle_in_transaction_session_timeout=30000 -c timezone=UTC",
+        "database": "travelgo_ai_m0_test",
+        "user": "postgres"
+      }
+    },
+    {
+      "type": "SQL_INTENT",
+      "number": 3,
+      "instanceId": "98796010-126b-4a3f-a7c4-3369a18ee4ff",
+      "kind": "observer",
+      "sql": "SELECT current_database() AS database,current_user AS role,pg_backend_pid() AS pg_backend_pid,a.pid,to_char(a.backend_start AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.US\"Z\"') AS backend_start,a.application_name,a.usename,a.datname,a.backend_type,a.client_addr::text AS client_addr,a.client_port,inet_client_addr()::text AS inet_client_addr,inet_client_port() AS inet_client_port,inet_server_addr()::text AS server_addr,inet_server_port() AS server_port,current_setting('transaction_read_only') AS transaction_read_only,current_setting('default_transaction_read_only') AS default_transaction_read_only,current_setting('statement_timeout') AS statement_timeout,shobj_description((SELECT oid FROM pg_database WHERE datname=current_database()),'pg_database') AS sentinel FROM pg_stat_activity a WHERE a.pid=pg_backend_pid()",
+      "valuesSha256": null
+    },
+    {
+      "type": "SQL_COMPLETED",
+      "number": 3,
+      "instanceId": "98796010-126b-4a3f-a7c4-3369a18ee4ff",
+      "durationMs": 1,
+      "rowCount": null
+    },
+    {
+      "sequence": 11,
+      "at": "2026-11-11T09:52:06.732Z",
+      "type": "RAW_SELF_IDENTITY",
+      "instanceId": "98796010-126b-4a3f-a7c4-3369a18ee4ff",
+      "row": {
+        "database": "travelgo_ai_m0_test",
+        "role": "postgres",
+        "pid": 20003,
+        "pg_backend_pid": 20003,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-probe-fee12116d66a44fcb76df9d22efcc845",
+        "usename": "postgres",
+        "datname": "travelgo_ai_m0_test",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001,
+        "inet_client_addr": "127.0.0.1",
+        "inet_client_port": 61001,
+        "server_addr": "127.0.0.1",
+        "server_port": 5432,
+        "default_transaction_read_only": "on",
+        "transaction_read_only": "on",
+        "statement_timeout": "15s",
+        "sentinel": "hugotravel-isolated-test-database-v1"
+      }
+    },
+    {
+      "sequence": 12,
+      "at": "2026-11-11T09:52:06.732Z",
+      "type": "REGISTRATION_PASS",
+      "instanceId": "98796010-126b-4a3f-a7c4-3369a18ee4ff",
+      "state": "REGISTERED",
+      "identity": {
+        "pid": 20003,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-probe-fee12116d66a44fcb76df9d22efcc845",
+        "datname": "travelgo_ai_m0_test",
+        "usename": "postgres",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001
+      }
+    },
+    {
+      "sequence": 13,
+      "at": "2026-11-11T09:52:06.735Z",
+      "type": "CLOSING_GUARD_PASS",
+      "snapshotSequence": 12,
+      "observed": 3
+    },
+    {
+      "sequence": 14,
+      "at": "2026-11-11T09:52:06.735Z",
+      "type": "CLOSING_GUARD_PASS",
+      "snapshotSequence": 13,
+      "observed": 3
+    },
+    {
+      "type": "PROBE_CONFLICT_VERIFIED",
+      "pid": 20003,
+      "sqlstate": "55P03",
+      "dmlIssued": false
+    },
+    {
+      "sequence": 15,
+      "at": "2026-11-11T09:52:06.736Z",
+      "type": "CLOSING_GUARD_PASS",
+      "snapshotSequence": 14,
+      "observed": 3
+    },
+    {
+      "sequence": 16,
+      "at": "2026-11-11T09:52:06.736Z",
+      "type": "CLOSING_GUARD_PASS",
+      "snapshotSequence": 15,
+      "observed": 3
+    },
+    {
+      "type": "HANDOFF_B_QUEUED_BEFORE_A_COMMIT",
+      "aPid": 20001,
+      "bPid": 20002,
+      "events": [
+        {
+          "at": "2026-11-11T09:52:06.736Z",
+          "event": "SMOKE_A_ALL25_SRE",
+          "holderPid": 20001,
+          "mode": "ShareRowExclusiveLock",
+          "tables": 25,
+          "locks": [
+            {
+              "pid": 20001,
+              "relname": "ai_model_registry",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "audit_logs",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "blog_posts",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "booking_status_history",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "bookings",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "business_members",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "businesses",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "partner_applications",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "places",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "recommendation_candidates",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "recommendation_impressions",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "recommendation_requests",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "recommendation_visible_impressions",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "reviews",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "schema_migrations",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "spatial_ref_sys",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "tickets",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "tour_places",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "tours",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "trip_sessions",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "user_events",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "user_favorites",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "user_roles",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "user_telemetry_consents",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "users",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            }
+          ]
+        },
+        {
+          "at": "2026-11-11T09:52:06.736Z",
+          "event": "SHARE_GUARD_QUEUED_BEFORE_COMMIT",
+          "waiter": 20002,
+          "blocker": 20001
+        }
+      ]
+    },
+    {
+      "type": "HANDOFF_A_COMMIT_ACK"
+    },
+    {
+      "sequence": 17,
+      "at": "2026-11-11T09:52:06.736Z",
+      "type": "CLOSING_GUARD_PASS",
+      "snapshotSequence": 16,
+      "observed": 3
+    },
+    {
+      "type": "HANDOFF_B_ALL25_GRANTED",
+      "aPid": 20001,
+      "bPid": 20002,
+      "events": [
+        {
+          "at": "2026-11-11T09:52:06.736Z",
+          "event": "SMOKE_A_ALL25_SRE",
+          "holderPid": 20001,
+          "mode": "ShareRowExclusiveLock",
+          "tables": 25,
+          "locks": [
+            {
+              "pid": 20001,
+              "relname": "ai_model_registry",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "audit_logs",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "blog_posts",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "booking_status_history",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "bookings",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "business_members",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "businesses",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "partner_applications",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "places",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "recommendation_candidates",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "recommendation_impressions",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "recommendation_requests",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "recommendation_visible_impressions",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "reviews",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "schema_migrations",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "spatial_ref_sys",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "tickets",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "tour_places",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "tours",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "trip_sessions",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "user_events",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "user_favorites",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "user_roles",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "user_telemetry_consents",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            },
+            {
+              "pid": 20001,
+              "relname": "users",
+              "mode": "ShareRowExclusiveLock",
+              "granted": true
+            }
+          ]
+        },
+        {
+          "at": "2026-11-11T09:52:06.736Z",
+          "event": "SHARE_GUARD_QUEUED_BEFORE_COMMIT",
+          "waiter": 20002,
+          "blocker": 20001
+        },
+        {
+          "at": "2026-11-11T09:52:06.736Z",
+          "event": "SMOKE_B_ALL25_SHARE",
+          "holderPid": 20002,
+          "mode": "ShareLock",
+          "tables": 25,
+          "locks": [
+            {
+              "pid": 20002,
+              "relname": "ai_model_registry",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "audit_logs",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "blog_posts",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "booking_status_history",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "bookings",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "business_members",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "businesses",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "partner_applications",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "places",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "recommendation_candidates",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "recommendation_impressions",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "recommendation_requests",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "recommendation_visible_impressions",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "reviews",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "schema_migrations",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "spatial_ref_sys",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "tickets",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "tour_places",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "tours",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "trip_sessions",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "user_events",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "user_favorites",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "user_roles",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "user_telemetry_consents",
+              "mode": "ShareLock",
+              "granted": true
+            },
+            {
+              "pid": 20002,
+              "relname": "users",
+              "mode": "ShareLock",
+              "granted": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "RAW_LOCKS_AFTER_SMOKE_RELEASE",
+      "rows": []
+    },
+    {
+      "sequence": 18,
+      "at": "2026-11-11T09:52:06.736Z",
+      "type": "DISPOSE_START",
+      "instanceId": "f0fe9a8c-dd23-40a9-827e-42eabef0fe02"
+    },
+    {
+      "sequence": 19,
+      "at": "2026-11-11T09:52:06.736Z",
+      "type": "DISPOSE_PASS",
+      "instanceId": "f0fe9a8c-dd23-40a9-827e-42eabef0fe02",
+      "identity": {
+        "pid": 20001,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-maintenance-a-a880121ff64744d8844a3ea0d589c89e",
+        "datname": "travelgo_ai_m0_test",
+        "usename": "postgres",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001
+      }
+    },
+    {
+      "type": "FACTORY_INSTANCE_DISPOSED",
+      "instanceId": "f0fe9a8c-dd23-40a9-827e-42eabef0fe02",
+      "kind": "observer"
+    },
+    {
+      "sequence": 20,
+      "at": "2026-11-11T09:52:06.736Z",
+      "type": "DISPOSE_START",
+      "instanceId": "3d0a6134-2e78-462b-b74a-716c0361201c"
+    },
+    {
+      "sequence": 21,
+      "at": "2026-11-11T09:52:06.736Z",
+      "type": "DISPOSE_PASS",
+      "instanceId": "3d0a6134-2e78-462b-b74a-716c0361201c",
+      "identity": {
+        "pid": 20002,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-maintenance-b-9ed1066e1ddd481386c93dea642baf8f",
+        "datname": "travelgo_ai_m0_test",
+        "usename": "postgres",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001
+      }
+    },
+    {
+      "type": "FACTORY_INSTANCE_DISPOSED",
+      "instanceId": "3d0a6134-2e78-462b-b74a-716c0361201c",
+      "kind": "observer"
+    },
+    {
+      "sequence": 22,
+      "at": "2026-11-11T09:52:06.736Z",
+      "type": "DISPOSE_START",
+      "instanceId": "98796010-126b-4a3f-a7c4-3369a18ee4ff"
+    },
+    {
+      "sequence": 23,
+      "at": "2026-11-11T09:52:06.736Z",
+      "type": "DISPOSE_PASS",
+      "instanceId": "98796010-126b-4a3f-a7c4-3369a18ee4ff",
+      "identity": {
+        "pid": 20003,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-probe-fee12116d66a44fcb76df9d22efcc845",
+        "datname": "travelgo_ai_m0_test",
+        "usename": "postgres",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001
+      }
+    },
+    {
+      "type": "FACTORY_INSTANCE_DISPOSED",
+      "instanceId": "98796010-126b-4a3f-a7c4-3369a18ee4ff",
+      "kind": "observer"
+    }
+  ],
+  "fence": {
+    "stopped": false,
+    "closed": true,
+    "current": "MULTI_SENSOR",
+    "firstFailure": null,
+    "secondaryFailures": [],
+    "events": [
+      {
+        "sequence": 1,
+        "type": "CASE_START",
+        "caseId": "MULTI_SENSOR"
+      }
+    ],
+    "agentDispatches": [],
+    "nativeDispatches": [],
+    "toolDispatches": [],
+    "operatorDispatches": [],
+    "retry": 0
+  },
+  "lateRejected": 0,
+  "lateDispatched": 0,
+  "network": {
+    "pid": 17816,
+    "mode": "OFFLINE",
+    "sockets": [],
+    "blocked": [],
+    "http": 0
+  }
+}

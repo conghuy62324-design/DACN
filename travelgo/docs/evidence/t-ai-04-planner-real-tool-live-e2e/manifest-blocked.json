@@ -1,0 +1,177 @@
+{
+  "at": "2026-11-11T02:56:12.396Z",
+  "task": "T-AI-04-PLANNER-REAL-TOOL-LIVE-E2E",
+  "status": "NOT_EXECUTABLE_BLOCKED_QUOTA_PREWRITE",
+  "ownerApprovalSha256": "6192b8b4d6a6d5ba66e83c193c5d6f1af5a05300cd3009b54f6dcd4b34f26e7c",
+  "approvedProfile": 2,
+  "fixtureProposalSha256": "4e5ed74418da0c8672faaa00f611a3439e0817b0a08576717ef349e1bf799d38",
+  "sourceProposalSha256": "eb2adc7bc9deed61993fac3cdd5c0159399d447a9a1f6838d546b13629db9ad8",
+  "draftCases": [
+    {
+      "id": "P-START",
+      "viewport": "desktop",
+      "message": "Lập lịch trình; Điểm đến: Đà Nẵng",
+      "action": "start",
+      "native": 0,
+      "expected": "needs_input,server-created ID/revision1; no provider/tool"
+    },
+    {
+      "id": "P-COMPLETE",
+      "viewport": "desktop",
+      "message": "Nơi xuất phát: Huế; Ngày bắt đầu: 2036-04-22; Ngày kết thúc: 2036-04-23; Số người lớn: 2; Ngân sách cả nhóm: 6400000 VND; Phương tiện: car",
+      "action": "continue",
+      "native": 1,
+      "expectedDecision": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Huế",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2036-04-22",
+          "endDate": "2036-04-23",
+          "adults": 2,
+          "totalBudget": 6400000,
+          "transportation": "car"
+        }
+      },
+      "expectedRevision": 2
+    },
+    {
+      "id": "P-BUDGET",
+      "viewport": "desktop",
+      "message": "Đổi ngân sách cả nhóm thành 9000000 VND, giữ thông tin còn lại.",
+      "action": "continue",
+      "native": 1,
+      "expectedDecision": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Huế",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2036-04-22",
+          "endDate": "2036-04-23",
+          "adults": 2,
+          "totalBudget": 9000000,
+          "transportation": "car"
+        }
+      },
+      "expectedRevision": 3
+    },
+    {
+      "id": "P-DATE",
+      "viewport": "desktop",
+      "message": "Ngày bắt đầu: 2036-04-23; Ngày kết thúc: 2036-04-24",
+      "action": "continue",
+      "native": 1,
+      "expectedDecision": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Huế",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2036-04-23",
+          "endDate": "2036-04-24",
+          "adults": 2,
+          "totalBudget": 9000000,
+          "transportation": "car"
+        }
+      },
+      "expectedRevision": 4
+    },
+    {
+      "id": "P-TRANSPORT",
+      "viewport": "desktop",
+      "message": "À đổi sang xe máy, giữ thông tin còn lại.",
+      "action": "continue",
+      "native": 1,
+      "expectedDecision": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Huế",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2036-04-23",
+          "endDate": "2036-04-24",
+          "adults": 2,
+          "totalBudget": 9000000,
+          "transportation": "motorbike"
+        }
+      },
+      "expectedRevision": 5,
+      "rawFailureRule": "Redundant clarify is valid schema but raw semantic FAIL; retain needs_input,no tool,no repair/retry"
+    },
+    {
+      "id": "P-CONFIRM",
+      "viewport": "desktop",
+      "condition": "ONLY if P-TRANSPORT safely clarifies transportation and owner approves this explicit confirmation branch",
+      "message": "Phương tiện: motorbike",
+      "action": "continue",
+      "native": 1,
+      "expectedDecision": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Huế",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2036-04-23",
+          "endDate": "2036-04-24",
+          "adults": 2,
+          "totalBudget": 9000000,
+          "transportation": "motorbike"
+        }
+      },
+      "expectedRevision": 6,
+      "notRetry": "New explicit user click/input with fresh UUID, scored independently; P-TRANSPORT FAIL stays FAIL"
+    },
+    {
+      "id": "P-DESKTOP-END",
+      "viewport": "desktop",
+      "method": "DELETE",
+      "path": "/api/agent/verified-history/$desktop.id",
+      "native": 0,
+      "quota": 1
+    },
+    {
+      "id": "P-MOBILE",
+      "viewport": "mobile",
+      "message": "Lập lịch trình; Nơi xuất phát: Huế; Điểm đến: Đà Nẵng; Ngày bắt đầu: 2036-04-22; Ngày kết thúc: 2036-04-23; Số người lớn: 2; Ngân sách cả nhóm: 6400000 VND; Phương tiện: car",
+      "action": "start",
+      "native": 1,
+      "expectedDecision": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Huế",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2036-04-22",
+          "endDate": "2036-04-23",
+          "adults": 2,
+          "totalBudget": 6400000,
+          "transportation": "car"
+        }
+      },
+      "expectedRevision": 1
+    },
+    {
+      "id": "P-MOBILE-END",
+      "viewport": "mobile",
+      "method": "DELETE",
+      "path": "/api/agent/verified-history/$mobile.id",
+      "native": 0,
+      "quota": 1
+    }
+  ],
+  "budget": {
+    "nativeCap": 7,
+    "operatorCap": 1,
+    "inferenceCap": 6,
+    "retry": 0,
+    "hiddenWarmup": 0,
+    "requiredRollingSlots": 10,
+    "availableAtStop": 8
+  },
+  "nativeBodiesLocked": false,
+  "directServiceOracleLocked": false,
+  "stoppedBeforeWriteIntent": true,
+  "explanation": "Current approval permits profile2 and capped LIVE subject to gates. Quota stop prevents fixture creation/direct Planner/native body capture/LIVE. Draft is not an executed or native-ready manifest."
+}

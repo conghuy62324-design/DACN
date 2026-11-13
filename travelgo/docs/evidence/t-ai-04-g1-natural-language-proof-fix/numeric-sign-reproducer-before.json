@@ -1,0 +1,106 @@
+{
+  "at": "2026-11-10T11:24:09.108Z",
+  "severity": "P1 authorization proof false-positive in new offline implementation",
+  "finding": "NP-FP-01",
+  "liveInference": false,
+  "expected": "NOT ALLOW",
+  "actual": [
+    {
+      "id": "NEGATIVE_ADULTS",
+      "message": "Lập lịch trình từ Vinh đến Quy Nhơn, từ 12/04/2047 đến 14/04/2047, -3 người lớn, ngân sách cả nhóm 7,2 triệu đồng, đi ô tô.",
+      "decision": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Vinh",
+          "destinationCity": "Quy Nhơn",
+          "startDate": "2047-04-12",
+          "endDate": "2047-04-14",
+          "adults": 3,
+          "totalBudget": 7200000,
+          "transportation": "car"
+        }
+      },
+      "gate": {
+        "status": "ALLOW"
+      },
+      "proof": {
+        "toolName": "plan_trip",
+        "dialect": "NATURAL",
+        "values": {
+          "departureCity": "Vinh",
+          "destinationCity": "Quy Nhơn",
+          "startDate": "2047-04-12",
+          "endDate": "2047-04-14",
+          "adults": 3,
+          "totalBudget": 7200000,
+          "transportation": "car"
+        },
+        "states": {
+          "departureCity": "SET",
+          "destinationCity": "SET",
+          "startDate": "SET",
+          "endDate": "SET",
+          "adults": "SET",
+          "totalBudget": "SET",
+          "transportation": "SET"
+        },
+        "optionalValues": {},
+        "optionalStates": {},
+        "accentInsensitiveCities": [
+          "departureCity"
+        ],
+        "valid": true
+      }
+    },
+    {
+      "id": "NEGATIVE_GROUP_BUDGET",
+      "message": "Giúp tôi lập lịch từ Vinh đến Quy Nhơn, 12/4/2047 - 14/4/2047, 3 NL (người lớn), -7.2tr cả nhóm, ô tô.",
+      "decision": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Vinh",
+          "destinationCity": "Quy Nhơn",
+          "startDate": "2047-04-12",
+          "endDate": "2047-04-14",
+          "adults": 3,
+          "totalBudget": 7200000,
+          "transportation": "car"
+        }
+      },
+      "gate": {
+        "status": "ALLOW"
+      },
+      "proof": {
+        "toolName": "plan_trip",
+        "dialect": "NATURAL",
+        "values": {
+          "departureCity": "Vinh",
+          "destinationCity": "Quy Nhơn",
+          "startDate": "2047-04-12",
+          "endDate": "2047-04-14",
+          "adults": 3,
+          "totalBudget": 7200000,
+          "transportation": "car"
+        },
+        "states": {
+          "departureCity": "SET",
+          "destinationCity": "SET",
+          "startDate": "SET",
+          "endDate": "SET",
+          "adults": "SET",
+          "totalBudget": "SET",
+          "transportation": "SET"
+        },
+        "optionalValues": {},
+        "optionalStates": {},
+        "accentInsensitiveCities": [
+          "departureCity"
+        ],
+        "valid": true
+      }
+    }
+  ],
+  "origin": "Independent source audit of regex numeric boundary/residual handling, not V2 tuning"
+}

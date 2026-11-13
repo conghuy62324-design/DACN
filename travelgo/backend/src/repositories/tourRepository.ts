@@ -1,6 +1,8 @@
 import { Op } from 'sequelize';
 import { Business, Tour } from '../models/index.js';
 import { idOrSlug, PageQuery, pageOptions, paged, searchLike } from './query.js';
+import {resolveLocation} from '../geography/vietnam.js';
+import {locationWhere} from '../geography/query.js';
 
 export interface TourListQuery extends PageQuery { city?: string; category?: string; maxPrice?: number; days?: number; }
 export class TourRepository {
@@ -9,7 +11,7 @@ export class TourRepository {
     if (scope.publicOnly) where.status = 'APPROVED';
     if (scope.businessIds) where.businessId = { [Op.in]: scope.businessIds };
     if (query.status) where.status = query.status;
-    if (query.city && query.city !== 'all') where[Op.or] = [{ destinationCity: searchLike(query.city) }, { departureCity: searchLike(query.city) }];
+    if(query.city&&query.city!=='all')where[Op.and]=[resolveLocation(query.city)?locationWhere(query.city,'Tour.destinationCity'):{destinationCity:searchLike(query.city)}];
     if (query.search) where[Op.or] = [{ title: searchLike(query.search) }, { summary: searchLike(query.search) }];
     if (query.category && query.category !== 'all') where.category = query.category;
     if (query.maxPrice) where.priceVND = { [Op.lte]: query.maxPrice };

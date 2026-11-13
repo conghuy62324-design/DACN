@@ -1,0 +1,11 @@
+const c=require('./common.cjs');
+const reports=['HUGO_T_AI_04_PLANNER_REAL_TOOL_LIVE_E2E_RESUME_RUN2_REPORT.md','HUGO_T_AI_04_PLANNER_REAL_TOOL_LIVE_E2E_REPORT.md','HUGO_T_AI_04_PLANNER_TEST_DATA_READINESS_REPORT.md','HUGO_T_AI_04_G2_E2E_HARNESS_FIX_RESUME_REPORT.md'];
+const artifacts=['run-live.cjs','harness-diagnosis.json','harness-correction.PROPOSED.cjs','offline-harness-correction-checks.json','results.json','direct-oracles.json','native-final-audit.json','manifest.json','manifest-lock.json','integrity-after.json','live-evidence-reviewed.json',...['L01','L02','L03','L04'].map(id=>'case-'+id+'.json')];
+const sources=['backend/src/agent/tools.ts','backend/src/controllers/agentController.ts','frontend/src/types/agent.ts','frontend/src/components/agent/AgentResultCard.tsx','frontend/src/pages/AssistantPage.tsx'];
+const files=[...reports.map(f=>'docs/'+f),...artifacts.map(f=>c.old+f),...sources.filter(f=>c.fs.existsSync(c.path.join(c.root,f)))];
+const reviewed=files.map(file=>{const b=c.read(file);if(file.endsWith('.json'))JSON.parse(b);else new TextDecoder('utf-8',{fatal:true}).decode(b);return{file,bytes:b.length,sha256:c.sha(b)};});
+c.write('baseline-review.json',{at:new Date().toISOString(),files:reviewed,scope:'Full local file reads only; no historical runner execution',historical:c.historical()});
+c.write('integrity-before.json',{at:new Date().toISOString(),hashes:c.snapshot()});
+const live=c.json(c.old+'results.json');
+c.write('historical-baseline.json',{at:new Date().toISOString(),classification:'HISTORICAL_NOT_RERUN',directPlanner:'PASS',raw:{passed:3,failed:1},originalFidelity:{passed:0,failed:3},independentSavedJson:{passed:3,failed:0},completedUI:{passed:0,failed:3},globalStop:'FAIL',notRun:['L05','L06'],nativePosts:5,nativeCap:7,retry:0,db:'DB_RESTORED_25_25',trip:27,p1:'OPEN',p2:'OPEN',cases:live.results.map(x=>({id:x.id,status:x.status,raw:x.rawNlu,fidelity:x.fidelity,ui:x.ui})),savedResponses:live.results.filter(x=>['L01','L02','L03'].includes(x.id)).map(x=>({id:x.id,sha256:c.sha(JSON.stringify(x.api.body))}))});
+console.log(JSON.stringify({status:'INITIALIZED_OFFLINE',reviewed:reviewed.length}));

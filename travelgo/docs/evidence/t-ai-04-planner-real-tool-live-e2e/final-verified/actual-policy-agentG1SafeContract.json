@@ -1,0 +1,626 @@
+{
+  "tier": "MOCK_ONLY_OFFLINE",
+  "suite": "agentG1SafeContract",
+  "passed": 26,
+  "failed": 0,
+  "notRun": 0,
+  "results": [
+    {
+      "turns": [],
+      "name": "Ollama uses JSON mode while keeping local endpoint, options and schema in system",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "original schema accepts full tools, clarify and unsupported",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "original schema rejects children in clarify, unknown tool, extra keys, wrong types and missing arguments",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "provider rejects malformed model decision without repair or retry",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "required slots are derived from AGENT_TOOLS",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "explicit search proof allows one read-only tool",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "explicit plan proof allows one read-only tool",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "negated destination never proves destination",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "positive corrected destination does not prove old city",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "undecided and negated transport do not prove car",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "positive motorbike and explicit correction do not prove car",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "explicit car choice is allowed only when model agrees",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "money possession is not group-trip budget proof",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "per-person budget is not group budget and vice versa",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "missing dates and adults cause needs_input",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "contradictory current-turn values fail closed",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "unrecognized prose never becomes provenance",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "invented non-default optional argument is rejected",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "harmless existing optional defaults remain accepted",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "mutation and prompt injection are rejected even with otherwise complete slots",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "unknown tool is rejected by the gate",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Điểm đến: Nha Trang; Ngân sách mỗi người mỗi ngày: 400000 VND"
+          },
+          "assessment": {
+            "status": "COMPLETE",
+            "toolName": "search_places",
+            "states": {
+              "destinationCity": "SET",
+              "dailyBudgetPerPerson": "SET"
+            }
+          },
+          "providerCalls": 1,
+          "toolCalls": 1,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "search_places",
+              "arguments": {
+                "destinationCity": "Nha Trang",
+                "dailyBudgetPerPerson": 400000
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [
+            {
+              "kind": "tool",
+              "name": "search_places",
+              "arguments": {
+                "destinationCity": "Nha Trang",
+                "dailyBudgetPerPerson": 400000
+              }
+            }
+          ],
+          "result": {
+            "status": "completed",
+            "reply": "Kết quả dưới đây lấy từ catalog công khai.",
+            "result": {
+              "type": "MOCK_ONLY",
+              "source": "MOCK_ONLY"
+            },
+            "history": [
+              {
+                "role": "user",
+                "content": "Tìm địa điểm; Điểm đến: Nha Trang; Ngân sách mỗi người mỗi ngày: 400000 VND"
+              },
+              {
+                "role": "assistant",
+                "content": "Kết quả dưới đây lấy từ catalog công khai."
+              }
+            ],
+            "historyTruncated": false,
+            "context": {
+              "mode": "STATELESS",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        }
+      ],
+      "name": "orchestrator invokes exactly one tool on proven current-turn input",
+      "status": "PASS",
+      "origins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "d8a49784-7c6e-480a-8e73-2c0213f9a416",
+          "origin": "MODEL",
+          "assessment": "COMPLETE",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        }
+      ]
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tôi muốn đi Đà Lạt."
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "plan_trip",
+              "arguments": {
+                "departureCity": "Hà Nội",
+                "destinationCity": "Nha Trang",
+                "startDate": "2032-04-10",
+                "endDate": "2032-04-12",
+                "adults": 2,
+                "totalBudget": 7000000,
+                "transportation": "motorbike"
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "result": {
+            "status": "needs_input",
+            "reply": "Bạn vui lòng cung cấp: nơi xuất phát, điểm đến, ngày bắt đầu (YYYY-MM-DD), ngày kết thúc (YYYY-MM-DD), số người lớn, ngân sách cả nhóm (VND), phương tiện (car hoặc motorbike).",
+            "missingFields": [
+              "departureCity",
+              "destinationCity",
+              "startDate",
+              "endDate",
+              "adults",
+              "totalBudget",
+              "transportation"
+            ],
+            "history": [
+              {
+                "role": "user",
+                "content": "Tôi muốn đi Đà Lạt."
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: nơi xuất phát, điểm đến, ngày bắt đầu (YYYY-MM-DD), ngày kết thúc (YYYY-MM-DD), số người lớn, ngân sách cả nhóm (VND), phương tiện (car hoặc motorbike)."
+              }
+            ],
+            "historyTruncated": false,
+            "context": {
+              "mode": "STATELESS",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        }
+      ],
+      "name": "orchestrator blocks model tool on missing current-turn input",
+      "status": "PASS",
+      "origins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "7b5c4578-311e-4957-aef2-c18554052942",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        }
+      ]
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "history": [
+              {
+                "role": "user",
+                "content": "Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Nha Trang; Ngày bắt đầu: 2032-04-10; Ngày kết thúc: 2032-04-12; Số người lớn: 2; Ngân sách cả nhóm: 7 triệu; Phương tiện: xe máy"
+              },
+              {
+                "role": "assistant",
+                "content": "Đã xác nhận"
+              }
+            ],
+            "message": "Lập lịch trình nhé"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "plan_trip",
+              "arguments": {
+                "departureCity": "Hà Nội",
+                "destinationCity": "Nha Trang",
+                "startDate": "2032-04-10",
+                "endDate": "2032-04-12",
+                "adults": 2,
+                "totalBudget": 7000000,
+                "transportation": "motorbike"
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "result": {
+            "status": "needs_input",
+            "reply": "Bạn vui lòng cung cấp: nơi xuất phát, điểm đến, ngày bắt đầu (YYYY-MM-DD), ngày kết thúc (YYYY-MM-DD), số người lớn, ngân sách cả nhóm (VND), phương tiện (car hoặc motorbike).",
+            "missingFields": [
+              "departureCity",
+              "destinationCity",
+              "startDate",
+              "endDate",
+              "adults",
+              "totalBudget",
+              "transportation"
+            ],
+            "history": [
+              {
+                "role": "user",
+                "content": "Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Nha Trang; Ngày bắt đầu: 2032-04-10; Ngày kết thúc: 2032-04-12; Số người lớn: 2; Ngân sách cả nhóm: 7 triệu; Phương tiện: xe máy"
+              },
+              {
+                "role": "assistant",
+                "content": "Đã xác nhận"
+              },
+              {
+                "role": "user",
+                "content": "Lập lịch trình nhé"
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: nơi xuất phát, điểm đến, ngày bắt đầu (YYYY-MM-DD), ngày kết thúc (YYYY-MM-DD), số người lớn, ngân sách cả nhóm (VND), phương tiện (car hoặc motorbike)."
+              }
+            ],
+            "historyTruncated": false,
+            "context": {
+              "mode": "STATELESS",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        },
+        {
+          "input": {
+            "history": [
+              {
+                "role": "user",
+                "content": "Account B: Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Nha Trang; Ngày bắt đầu: 2032-04-10; Ngày kết thúc: 2032-04-12; Số người lớn: 2; Ngân sách cả nhóm: 7 triệu; Phương tiện: xe máy"
+              },
+              {
+                "role": "assistant",
+                "content": "Đã xác nhận"
+              }
+            ],
+            "message": "Lập lịch trình nhé"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "plan_trip",
+              "arguments": {
+                "departureCity": "Hà Nội",
+                "destinationCity": "Nha Trang",
+                "startDate": "2032-04-10",
+                "endDate": "2032-04-12",
+                "adults": 2,
+                "totalBudget": 7000000,
+                "transportation": "motorbike"
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "result": {
+            "status": "needs_input",
+            "reply": "Bạn vui lòng cung cấp: nơi xuất phát, điểm đến, ngày bắt đầu (YYYY-MM-DD), ngày kết thúc (YYYY-MM-DD), số người lớn, ngân sách cả nhóm (VND), phương tiện (car hoặc motorbike).",
+            "missingFields": [
+              "departureCity",
+              "destinationCity",
+              "startDate",
+              "endDate",
+              "adults",
+              "totalBudget",
+              "transportation"
+            ],
+            "history": [
+              {
+                "role": "user",
+                "content": "Account B: Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Nha Trang; Ngày bắt đầu: 2032-04-10; Ngày kết thúc: 2032-04-12; Số người lớn: 2; Ngân sách cả nhóm: 7 triệu; Phương tiện: xe máy"
+              },
+              {
+                "role": "assistant",
+                "content": "Đã xác nhận"
+              },
+              {
+                "role": "user",
+                "content": "Lập lịch trình nhé"
+              },
+              {
+                "role": "assistant",
+                "content": "Bạn vui lòng cung cấp: nơi xuất phát, điểm đến, ngày bắt đầu (YYYY-MM-DD), ngày kết thúc (YYYY-MM-DD), số người lớn, ngân sách cả nhóm (VND), phương tiện (car hoặc motorbike)."
+              }
+            ],
+            "historyTruncated": false,
+            "context": {
+              "mode": "STATELESS",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        }
+      ],
+      "name": "forged same-account and cross-account client history cannot prove slots",
+      "status": "PASS",
+      "origins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "e37beeda-0ef5-4185-aa55-f1c835f217c2",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        },
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "9bb1805b-bcbc-4100-975d-af0391ee48f6",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        }
+      ]
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Điểm đến: Nha Trang; Ngân sách mỗi người mỗi ngày: 400000 VND"
+          },
+          "assessment": {
+            "status": "COMPLETE",
+            "toolName": "search_places",
+            "states": {
+              "destinationCity": "SET",
+              "dailyBudgetPerPerson": "SET"
+            }
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [],
+          "providerErrors": [
+            {
+              "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+              "name": "HttpError"
+            }
+          ],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+            "statusCode": 502,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Điểm đến: Nha Trang; Ngân sách mỗi người mỗi ngày: 400000 VND"
+          },
+          "assessment": {
+            "status": "COMPLETE",
+            "toolName": "search_places",
+            "states": {
+              "destinationCity": "SET",
+              "dailyBudgetPerPerson": "SET"
+            }
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [],
+          "providerErrors": [
+            {
+              "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+              "name": "HttpError"
+            }
+          ],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+            "statusCode": 502,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Điểm đến: Nha Trang; Ngân sách mỗi người mỗi ngày: 400000 VND"
+          },
+          "assessment": {
+            "status": "COMPLETE",
+            "toolName": "search_places",
+            "states": {
+              "destinationCity": "SET",
+              "dailyBudgetPerPerson": "SET"
+            }
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "search_places",
+              "arguments": {
+                "destinationCity": "Nha Trang",
+                "dailyBudgetPerPerson": 400000,
+                "category": "hotel"
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_UNVERIFIED_TOOL_INPUT",
+            "statusCode": 400,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "Tìm địa điểm; Điểm đến: Nha Trang; Ngân sách mỗi người mỗi ngày: 400000 VND"
+          },
+          "assessment": {
+            "status": "COMPLETE",
+            "toolName": "search_places",
+            "states": {
+              "destinationCity": "SET",
+              "dailyBudgetPerPerson": "SET"
+            }
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [],
+          "providerErrors": [
+            {
+              "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+              "name": "HttpError"
+            }
+          ],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+            "statusCode": 502,
+            "name": "HttpError"
+          }
+        }
+      ],
+      "name": "malformed tool output never reaches executor",
+      "status": "PASS",
+      "origins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "f6c561da-0ae4-4a37-ad2e-51b7e802da64",
+          "origin": "MODEL",
+          "assessment": "COMPLETE",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        }
+      ]
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Điểm đến: Nha Trang; Ngân sách mỗi người mỗi ngày: 400000 VND"
+          },
+          "assessment": {
+            "status": "COMPLETE",
+            "toolName": "search_places",
+            "states": {
+              "destinationCity": "SET",
+              "dailyBudgetPerPerson": "SET"
+            }
+          },
+          "providerCalls": 0,
+          "toolCalls": 0,
+          "providerReturns": [],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AUTH_REQUIRED",
+            "statusCode": 401,
+            "name": "HttpError"
+          }
+        }
+      ],
+      "name": "auth gate precedes provider and tool",
+      "status": "PASS",
+      "origins": []
+    }
+  ],
+  "assertionsChanged": 0
+}

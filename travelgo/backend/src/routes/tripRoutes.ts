@@ -11,6 +11,7 @@ router.get('/:id', TripController.getTripById);
 router.put('/:id', TripController.updateTrip);
 router.delete('/:id', TripController.deleteTrip);
 router.post('/:id/checkin', TripController.checkinPlace);
+router.post('/:id/start', TripController.startTrip);
 router.post('/:id/complete', TripController.completeTrip);
 router.post('/:id/convert-to-blog', TripController.convertToBlog);
 

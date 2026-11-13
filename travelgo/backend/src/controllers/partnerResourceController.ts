@@ -20,7 +20,7 @@ const validateCoordinates = (input:any) => {
 };
 const requirePositive = (input:any,fields:string[]) => { for(const field of fields) if(!Number.isFinite(input[field])||input[field]<0) throw new HttpError(400,`${field} không hợp lệ`,'VALIDATION_ERROR'); };
 
-const placeFields = ['name','category','summary','description','city','province','district','address','latitude','longitude','priceFrom','duration','heroImage','galleryImages','highlights','amenities','openingHours','contactInfo'];
+const placeFields = ['name','category','summary','description','city','province','district','address','latitude','longitude','priceFrom','duration','heroImage','galleryImages','highlights','amenities','openingHours','contactInfo','catalogMetadata'];
 const tourFields = ['title','destinationCity','departureCity','durationDays','durationNights','category','summary','description','heroImage','priceVND','meetingPoint','galleryImages','capacity','inclusions','exclusions','highlights','itineraryDays','startDate','endDate','isTemplate'];
 const ticketFields = ['title','type','operator','departureCity','arrivalCity','departureTime','arrivalTime','duration','price','originalPrice','capacity','features','imageUrl','placeId','tourId','validFrom','validUntil','status'];
 const blogFields = ['title','excerpt','content','destinationName','coverImage','placeId','costEstimate','tripDuration','tags'];

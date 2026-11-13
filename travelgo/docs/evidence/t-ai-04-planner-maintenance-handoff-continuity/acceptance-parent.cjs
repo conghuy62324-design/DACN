@@ -1,0 +1,35 @@
+'use strict';
+const c=require('./common.cjs'),assert=c.assert,{spawnSync}=require('node:child_process');c.fs.mkdirSync(c.path.join(__dirname,'cases'));
+const input=c.json(c.prefix+'protocol-input.json'),tables=input.order,first=tables[0],last=tables.at(-1),middle=tables[12];
+// Golden outcomes fixed independently of transition engine/property checker.
+const expected={A_wait_first:[],B_writer_last:[last],C_writer_first_before_B:[],D_writer_after_B_first:[],E_sequential_B:[],F_writer_during_B:[last],G_multiple_writers:[middle,last],H_timeout:[],H_deadlock_abort:[],I_commit_failed_before:[],I_commit_ack_lost:[last],J_commit_not_all_B:[last],K_unknown_guard:[],L_mode:[],L_order:[],L_omitted:[],M_fixture_row_exclusive:[input.fixtureTable],N_cleanup_after_failure:[last],O_A_disconnect:[],O_B_disconnect_committed:[last],advisory_only:[],same_tx_visibility:[],overlap_modes:[]};
+const names=[...Object.keys(expected),'matrix_64','determinism','bounded_enumeration','all25_writer_targets','ownership_unknown','ownership_drift','cleanup_unsafe','cleanup_valid'],results=[];
+for(const name of names){try{
+ const child=spawnSync(process.execPath,[c.path.join(__dirname,'acceptance-child.cjs'),name],{cwd:c.root,encoding:'utf8',timeout:20000,windowsHide:true});c.fs.writeFileSync(c.path.join(__dirname,'cases',name+'.log'),(child.stdout||'')+(child.stderr||''),{flag:'wx'});assert.equal(child.status,0,'CHILD_EXECUTION');const j=c.json(c.prefix+'cases/'+name+'.json'),r=j.result;assert.equal(j.network.postgresConnectAttempts,0);assert.equal(j.network.networkAttempts,0);
+ if(Object.hasOwn(expected,name)){assert.deepEqual(r.proof.counterexamples.map(x=>x.tableId),expected[name],'GOLDEN_COUNTEREXAMPLE_TARGETS');assert.equal(r.proof.universalProof,false);if(expected[name].length)assert.equal(r.proof.status,'NO_GAP_COUNTEREXAMPLE');}
+ if(name==='A_wait_first'){assert.equal(r.facts.aHeld,25);assert.equal(r.facts.bHeld,0);assert.equal(r.facts.requestedRelations,1);assert.equal(r.facts.queuedRelationCount,1);assert.equal(r.facts.bWaiting.tableId,first);}
+ if(name==='B_writer_last'){assert.equal(r.facts.postBHeld,25);assert.equal(r.events.filter(x=>x.type==='OWNERSHIP_GUARD_PASS').length,2);const ce=r.proof.counterexamples[0];assert.equal(ce.fixtureVisible,true);assert.equal(ce.registration,'UNKNOWN');assert.equal(ce.stateAtGrant.transactions.find(x=>x.id==='A').status,'COMMITTED');assert.equal(ce.stateAtGrant.relations.filter(x=>x.held.some(h=>h.tx==='B')).length,1);}
+ if(name==='C_writer_first_before_B'){assert.deepEqual(r.facts.queueBeforeStop.map(x=>x.tx),['W','B']);assert.equal(r.facts.unknownRejected,true);assert.equal(r.facts.aCommitted,false);}
+ if(name==='D_writer_after_B_first'){assert.equal(r.facts.writerStatus,'WAITING');assert.equal(r.facts.bHeld,25);}
+ if(name==='E_sequential_B'){assert.equal(r.facts.immediatelyAfterCommitBHeld,1);assert.deepEqual(r.facts.bGrantOrder,tables);}
+ if(name==='F_writer_during_B'){assert.equal(r.facts.bRequestedLast,false);assert.equal(r.facts.bHeldAtWriterArrival,12);assert.equal(r.facts.postBHeld,25);}
+ if(name==='I_commit_failed_before')assert.equal(r.facts.aHeldAfterFailure,25);
+ if(name==='I_commit_ack_lost'){assert.equal(r.facts.unsafeRollbackRejected,true);assert.equal(r.facts.cleanupEligibility,'BLOCKED_AMBIGUOUS_COMMIT');}
+ if(name==='J_commit_not_all_B'){assert.equal(r.facts.bHeldBeforeWriter,1);assert.equal(r.facts.exposedRelations.length,24);}
+ if(name==='K_unknown_guard'){assert.equal(r.facts.rejected,true);assert.equal(r.facts.adoptedUnknown,false);assert.equal(r.facts.aCommitted,false);}
+ if(name.startsWith('L_')){assert.equal(r.facts.contractRejected,true);assert.equal(r.proof.status,'PROTECTION_INTERVAL_NOT_ESTABLISHED');}
+ if(name==='M_fixture_row_exclusive'){assert.deepEqual(r.facts.aFixtureModes,['SHARE_ROW_EXCLUSIVE','ROW_EXCLUSIVE']);assert.ok(r.facts.operationLocks.some(x=>x.operation==='INSERT'));assert.ok(r.facts.operationLocks.some(x=>x.operation==='DELETE'));assert.ok(r.facts.operationLocks.every(x=>x.mode==='ROW_EXCLUSIVE'&&x.actualSql===false));}
+ if(name==='N_cleanup_after_failure'||name==='O_B_disconnect_committed')assert.equal(r.facts.stopDoesNotEndInterval,true);
+ if(name==='O_A_disconnect'){assert.equal(r.facts.fixtureVisible,false);assert.equal(r.facts.protectionEnded,true);}
+ if(name==='advisory_only'){assert.equal(r.facts.writerGranted,true);assert.equal(r.facts.validProtectionStart,false);}
+ if(name==='same_tx_visibility'){assert.equal(r.facts.readerCanSeeFixtureBeforeACommit,false);assert.equal(r.facts.aPendingFixture,'PRESENT');assert.equal(r.facts.protectedTables,25);}
+ if(name==='overlap_modes'){assert.deepEqual(r.facts.writerBlockingModes,['SHARE','SHARE_ROW_EXCLUSIVE','EXCLUSIVE','ACCESS_EXCLUSIVE']);assert.equal(r.facts.allBlockADmlToo,true);}
+ if(name==='matrix_64')assert.deepEqual(r.rows,['00000001','00000011','00001111','00011111','00110111','00111111','01111111','11111111']);
+ if(name==='determinism'){assert.equal(r.equal,true);assert.equal(r.counterexamples,1);}
+ if(name==='bounded_enumeration'){assert.equal(r.universalProof,false);assert.equal(r.results[0].violatingPrefixes,0);assert.ok(r.results[1].violatingPrefixes>0);assert.ok(r.results[2].violatingPrefixes>0);}
+ if(name==='all25_writer_targets'){assert.deepEqual(r.targets.map(x=>x.target),tables);assert.equal(r.targets.length,25);assert.equal(r.targets[0].counterexamples,0);assert.ok(r.targets.slice(1).every(x=>x.counterexamples===1));assert.equal(r.universalProof,false);}
+ if(name==='ownership_unknown'||name==='ownership_drift'){assert.match(r.error,/UNKNOWN_CONNECTION_FAIL_CLOSED/);assert.equal(r.disposed,1);assert.equal(r.dispatched,0);assert.equal(r.rejected,4);assert.equal(r.registrationPasses,1);assert.equal(r.fence.stopped,true);}
+ if(name==='cleanup_unsafe'||name==='cleanup_valid'){assert.equal(r.harness.firstFailure.error.message,'HANDOFF_COUNTEREXAMPLE_PRIMARY');assert.deepEqual(r.harness.cases.map(x=>x.status),['FAIL','NOT RUN','NOT RUN']);for(const x of Object.values(r.harness.dispatches))assert.deepEqual(x,[]);assert.equal(r.disposeCount,1);assert.equal(r.cleanupActions,name==='cleanup_unsafe'?0:1);assert.equal(r.harness.cleanup.action,name==='cleanup_unsafe'?'BLOCKED':'PASS');assert.equal(r.residualModelRows,name==='cleanup_unsafe'?2:0);}
+ results.push({name,status:'PASS',counterexamples:r.proof?.counterexamples.length||0});
+ }catch(error){results.push({name,status:'FAIL',error:error.message});break;}}
+const failed=results.filter(x=>x.status==='FAIL'),complete=results.length===names.length,status=failed.length||!complete?'FAIL':'PASS';c.write('independent-acceptance.json',{at:new Date().toISOString(),status,planned:names.length,passed:results.filter(x=>x.status==='PASS').length,failed:failed.length,results,expectedFrozenInParent:true,actualPostgres:0,actualEntityWrites:0,actualOllama:0,universalProtocolProven:false});console.log(JSON.stringify({status,passed:results.filter(x=>x.status==='PASS').length,failed}));if(status!=='PASS')process.exitCode=1;

@@ -1,0 +1,389 @@
+{
+  "task": "T-AI-04-G1-SERVER-COMPLETENESS-LIVE-VALIDATION",
+  "status": "LOCKED_UNDER_APPROVED_SCOPE",
+  "lockedAt": "2026-11-10T10:25:19.481Z",
+  "approvalSource": "C:/Users/Danh/.codex/attachments/73f4224f-472c-45ae-a335-484dcee049e8/Pasted text.txt",
+  "maxOllamaPosts": 5,
+  "maxLoadPosts": 1,
+  "maxInferencePosts": 4,
+  "principalHash": "6b982d095bc6bc30c87955cd38c78afa9ef31d3447ef30f62e8684bbe8bce600",
+  "principalSource": "docs/evidence/t-ai-04-e-final/run-20261109T041645807Z-ae626a88/attempt-E04-B.json",
+  "model": "qwen3:4b-instruct-2507-q4_K_M",
+  "digest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+  "operatorEnv": {
+    "LLM_PROVIDER": "ollama",
+    "LLM_LIVE_ENABLED": "true",
+    "LLM_USAGE_APPROVED": "true",
+    "OLLAMA_LOCAL_ONLY_CONFIRMED": "true",
+    "OLLAMA_MODEL": "qwen3:4b-instruct-2507-q4_K_M",
+    "OLLAMA_MODEL_DIGEST": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+    "OLLAMA_BASE_URL": "http://127.0.0.1:11434"
+  },
+  "order": [
+    "D01",
+    "D02",
+    "D03",
+    "D04",
+    "L01",
+    "L02",
+    "L03",
+    "L04"
+  ],
+  "cases": [
+    {
+      "id": "D01",
+      "phase": "DETERMINISTIC",
+      "request": {
+        "history": [],
+        "message": "Lập lịch trình; Nơi xuất phát: Hải Phòng; Điểm đến: Lạng Sơn; Ngày bắt đầu: 2044-02-06; Ngày kết thúc: 2044-02-08; Số người lớn: 3; Ngân sách cả nhóm: 8100000 VND"
+      },
+      "fields": [
+        "transportation"
+      ],
+      "expectedAssessment": "SUPPORTED_INCOMPLETE",
+      "expectedOrigin": "SERVER_COMPLETENESS",
+      "expectedTools": 0,
+      "expectedProviderCalls": 0,
+      "rawNlu": "NOT EVALUATED"
+    },
+    {
+      "id": "D02",
+      "phase": "DETERMINISTIC",
+      "request": {
+        "history": [],
+        "message": "Lên lịch trình; Nơi xuất phát: Ninh Bình; Điểm đến: Vinh; Ngày bắt đầu: 2044-03-04; Ngày kết thúc: 2044-03-06; Phương tiện: ô tô"
+      },
+      "fields": [
+        "adults",
+        "totalBudget"
+      ],
+      "expectedAssessment": "SUPPORTED_INCOMPLETE",
+      "expectedOrigin": "SERVER_COMPLETENESS",
+      "expectedTools": 0,
+      "expectedProviderCalls": 0,
+      "rawNlu": "NOT EVALUATED"
+    },
+    {
+      "id": "D03",
+      "phase": "DETERMINISTIC",
+      "request": {
+        "history": [],
+        "message": "Tìm nơi; Điểm đến: Cao Bằng"
+      },
+      "fields": [
+        "dailyBudgetPerPerson"
+      ],
+      "expectedAssessment": "SUPPORTED_INCOMPLETE",
+      "expectedOrigin": "SERVER_COMPLETENESS",
+      "expectedTools": 0,
+      "expectedProviderCalls": 0,
+      "rawNlu": "NOT EVALUATED"
+    },
+    {
+      "id": "D04",
+      "phase": "DETERMINISTIC",
+      "request": {
+        "history": [],
+        "message": "Tìm khách sạn!"
+      },
+      "fields": [
+        "destinationCity",
+        "dailyBudgetPerPerson"
+      ],
+      "expectedAssessment": "SUPPORTED_INCOMPLETE",
+      "expectedOrigin": "SERVER_COMPLETENESS",
+      "expectedTools": 0,
+      "expectedProviderCalls": 0,
+      "rawNlu": "NOT EVALUATED"
+    },
+    {
+      "id": "L01",
+      "phase": "LIVE_LLM",
+      "request": {
+        "history": [],
+        "message": "Lập lịch trình; Nơi xuất phát: Hải Dương; Điểm đến: Quy Nhơn; Ngày bắt đầu: 2044-05-06; Ngày kết thúc: 2044-05-08; Số người lớn: 3; Ngân sách cả nhóm: 9300000 VND; Tôi muốn đi bằng ô tô, à đổi sang xe máy"
+      },
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hải Dương",
+          "destinationCity": "Quy Nhơn",
+          "startDate": "2044-05-06",
+          "endDate": "2044-05-08",
+          "adults": 3,
+          "totalBudget": 9300000,
+          "transportation": "motorbike"
+        }
+      },
+      "oldArgument": {
+        "transportation": "car"
+      },
+      "expectedAssessment": "COMPLETE",
+      "expectedTools": 1,
+      "expectedServiceStatus": "completed",
+      "expectedGate": "ALLOW only exact current proof",
+      "bodyFile": "L01-request-body.json",
+      "bodySha256": "f6e10c85f0db90314fcb8dc1ff6a86220b9286e1658fab9a1365963da1419110",
+      "promptBytes": 10483,
+      "provenCurrent": {
+        "toolName": "plan_trip",
+        "values": {
+          "departureCity": "Hải Dương",
+          "destinationCity": "Quy Nhơn",
+          "startDate": "2044-05-06",
+          "endDate": "2044-05-08",
+          "adults": 3,
+          "totalBudget": 9300000,
+          "transportation": "motorbike"
+        },
+        "states": {
+          "departureCity": "SET",
+          "destinationCity": "SET",
+          "startDate": "SET",
+          "endDate": "SET",
+          "adults": "SET",
+          "totalBudget": "SET",
+          "transportation": "SET"
+        }
+      }
+    },
+    {
+      "id": "L02",
+      "phase": "LIVE_LLM",
+      "request": {
+        "history": [],
+        "message": "Lập lịch trình; Nơi xuất phát: Bắc Ninh; Điểm đến: Sơn La; Ngày bắt đầu: 2044-06-07; Ngày kết thúc: 2044-06-09; Số người lớn: 2; Ngân sách cả nhóm: 6400000 VND; Tôi muốn đi bằng xe máy, à đổi sang ô tô"
+      },
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Bắc Ninh",
+          "destinationCity": "Sơn La",
+          "startDate": "2044-06-07",
+          "endDate": "2044-06-09",
+          "adults": 2,
+          "totalBudget": 6400000,
+          "transportation": "car"
+        }
+      },
+      "oldArgument": {
+        "transportation": "motorbike"
+      },
+      "expectedAssessment": "COMPLETE",
+      "expectedTools": 1,
+      "expectedServiceStatus": "completed",
+      "expectedGate": "ALLOW only exact current proof",
+      "bodyFile": "L02-request-body.json",
+      "bodySha256": "132a493b2f7ceb6ab22991050b1bb88176fe1f05ef7662f80b1c10939e040e9c",
+      "promptBytes": 10478,
+      "provenCurrent": {
+        "toolName": "plan_trip",
+        "values": {
+          "departureCity": "Bắc Ninh",
+          "destinationCity": "Sơn La",
+          "startDate": "2044-06-07",
+          "endDate": "2044-06-09",
+          "adults": 2,
+          "totalBudget": 6400000,
+          "transportation": "car"
+        },
+        "states": {
+          "departureCity": "SET",
+          "destinationCity": "SET",
+          "startDate": "SET",
+          "endDate": "SET",
+          "adults": "SET",
+          "totalBudget": "SET",
+          "transportation": "SET"
+        }
+      }
+    },
+    {
+      "id": "L03",
+      "phase": "LIVE_LLM",
+      "request": {
+        "history": [],
+        "message": "Lập lịch trình; Nơi xuất phát: Vĩnh Yên; Tôi không đi Buôn Ma Thuột, tôi muốn đi Tuy Hòa; Ngày bắt đầu: 2044-07-12; Ngày kết thúc: 2044-07-14; Số người lớn: 4; Ngân sách cả nhóm: 8700000 VND; Phương tiện: ô tô"
+      },
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Vĩnh Yên",
+          "destinationCity": "Tuy Hòa",
+          "startDate": "2044-07-12",
+          "endDate": "2044-07-14",
+          "adults": 4,
+          "totalBudget": 8700000,
+          "transportation": "car"
+        }
+      },
+      "oldArgument": {
+        "destinationCity": "Buôn Ma Thuột"
+      },
+      "expectedAssessment": "COMPLETE",
+      "expectedTools": 1,
+      "expectedServiceStatus": "completed",
+      "expectedGate": "ALLOW only exact current proof",
+      "bodyFile": "L03-request-body.json",
+      "bodySha256": "0c8b6f88ea7ebd5170df537082f5996daf3e05bca579ca2b106f2d556d1a53d3",
+      "promptBytes": 10483,
+      "provenCurrent": {
+        "toolName": "plan_trip",
+        "values": {
+          "departureCity": "Vĩnh Yên",
+          "destinationCity": "Tuy Hòa",
+          "startDate": "2044-07-12",
+          "endDate": "2044-07-14",
+          "adults": 4,
+          "totalBudget": 8700000,
+          "transportation": "car"
+        },
+        "states": {
+          "departureCity": "SET",
+          "destinationCity": "SET",
+          "startDate": "SET",
+          "endDate": "SET",
+          "adults": "SET",
+          "totalBudget": "SET",
+          "transportation": "SET"
+        }
+      }
+    },
+    {
+      "id": "L04",
+      "phase": "LIVE_LLM",
+      "request": {
+        "history": [],
+        "message": "Lập lịch trình; Nơi xuất phát: Thái Bình; Điểm đến: Gia Nghĩa; Ngày bắt đầu: 2044-08-11; Ngày kết thúc: 2044-08-13; Số người lớn: 2; Ngân sách cả nhóm: 7500000 VND; Phương tiện: ô tô; à đổi sang xe máy"
+      },
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "transportation"
+        ]
+      },
+      "hypotheticalOldTool": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Thái Bình",
+          "destinationCity": "Gia Nghĩa",
+          "startDate": "2044-08-11",
+          "endDate": "2044-08-13",
+          "adults": 2,
+          "totalBudget": 7500000,
+          "transportation": "car"
+        }
+      },
+      "expectedAssessment": "UNDETERMINED",
+      "expectedTools": 0,
+      "expectedServiceStatus": "needs_input",
+      "expectedGate": "NOT_APPLICABLE if clarify; otherwise never ALLOW UNPROVEN transport",
+      "bodyFile": "L04-request-body.json",
+      "bodySha256": "82ba46f98acfd7e0763c505eeb1b167eb88d171ec30aba44124d0ac9a2883037",
+      "promptBytes": 10476,
+      "provenCurrent": {
+        "toolName": "plan_trip",
+        "values": {
+          "departureCity": "Thái Bình",
+          "destinationCity": "Gia Nghĩa",
+          "startDate": "2044-08-11",
+          "endDate": "2044-08-13",
+          "adults": 2,
+          "totalBudget": 7500000,
+          "transportation": "car"
+        },
+        "states": {
+          "departureCity": "SET",
+          "destinationCity": "SET",
+          "startDate": "SET",
+          "endDate": "SET",
+          "adults": "SET",
+          "totalBudget": "SET",
+          "transportation": "UNPROVEN"
+        }
+      }
+    }
+  ],
+  "modelPreparation": {
+    "id": "OP-LOAD",
+    "endpoint": "http://127.0.0.1:11434/api/generate",
+    "conditional": "Only if nonresident, never reload resident wrong context or a second load",
+    "bodyFile": "operator-load-body.json",
+    "bodySha256": "98800239c0f06cbaad695e06407a8c98b7951ceb073b16b6790370a87f556374",
+    "deadlineMs": 60000,
+    "keepAlive": "5m",
+    "expected": {
+      "http": 200,
+      "done": true,
+      "done_reason": "load",
+      "response": "",
+      "resident": true,
+      "context": 16384
+    },
+    "countsAsNlu": false,
+    "outsideAgentLimits": true
+  },
+  "criteria": {
+    "rawNlu": "Exact kind/tool or exact clarify field set. Required args exact numbers/dates/enums; city strings NFC/case/whitespace canonicalization matching G1. Only existing optional harmless defaults children=0,pacing=balanced,preferences=[] may be present; all other optional/extra values fail. No raw => NOT EVALUATED, overall runtime FAIL/BLOCKED, not semantic judgment.",
+    "safety": "Recompute actual gate with actual parsed decision/current message, before executor. Only ALLOW when supplied args have current proof and actual executor count exactly one for valid supported tool; no tool on rejection/clarify/unsupported/schema failure. L04 always zero tool. Never repair raw args. Wrong-old-value ALLOW or unauthorized executor is safety blocker: stop remaining cases.",
+    "deterministic": "SERVER_COMPLETENESS/exact fields, HTTP200 needs_input, provider/GET/POST/tool all zero, raw NOT EVALUATED; mandatory auth/consent/quota precede question.",
+    "scoring": "Report raw semantics, schema enforcement, API UX, execution safety and runtime independently; recovered raw invalid remains FAIL. No retry, no model replacement or config/expected changes.",
+    "runtime": "Production phase deadline15000ms unchanged, context16384,predict2048,temp0,JSON,streamfalse. HTTP test client observation ceiling20000ms only to collect application 504; never mark a timed-out inference PASS. Concurrency1.",
+    "stop": "Preflight failure, eviction, preparation failure, unsafe gate/executor, or unresolved provider settlement stops remaining requests. No second warm/load POST."
+  },
+  "auxiliaryChecks": [
+    "Unauthenticated HTTP request =>401 and zero quota/provider",
+    "Authenticated consent-read failure =>503 before assessor; consumes normal quota once",
+    "Every D turn consumes normal AgentLimits quota; do not exhaust/reset quota for a 429 probe. 429 behavior remains covered offline."
+  ],
+  "systemWireSha256": "5902945e22dfe3b9b3432c669125daf4d7929fbfd5a330ffce0581fc62c4fe1f",
+  "historicalJsonInspected": 1842,
+  "historicalRequestHashes": 100,
+  "checks": [
+    {
+      "id": "D01",
+      "assessment": "SUPPORTED_INCOMPLETE",
+      "novelComparedHistorical": true
+    },
+    {
+      "id": "D02",
+      "assessment": "SUPPORTED_INCOMPLETE",
+      "novelComparedHistorical": true
+    },
+    {
+      "id": "D03",
+      "assessment": "SUPPORTED_INCOMPLETE",
+      "novelComparedHistorical": true
+    },
+    {
+      "id": "D04",
+      "assessment": "SUPPORTED_INCOMPLETE",
+      "novelComparedHistorical": true
+    },
+    {
+      "id": "L01",
+      "assessment": "COMPLETE",
+      "novelComparedHistorical": true
+    },
+    {
+      "id": "L02",
+      "assessment": "COMPLETE",
+      "novelComparedHistorical": true
+    },
+    {
+      "id": "L03",
+      "assessment": "COMPLETE",
+      "novelComparedHistorical": true
+    },
+    {
+      "id": "L04",
+      "assessment": "UNDETERMINED",
+      "novelComparedHistorical": true
+    }
+  ],
+  "livePostsSoFar": 0
+}

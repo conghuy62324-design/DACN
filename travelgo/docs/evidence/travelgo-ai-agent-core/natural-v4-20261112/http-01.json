@@ -1,0 +1,92 @@
+{
+  "at": "2026-11-12T04:09:45.224Z",
+  "tier": "REAL_HTTP_5057_REAL_POSTGRES_15452_NO_MODEL_NO_DB_WRITES",
+  "principal": "b27c3430-62ee-4a2c-ada9-ab5b315d99cf",
+  "turns": 16,
+  "cap": 20,
+  "passed": 5,
+  "failed": 0,
+  "results": [
+    {
+      "name": "H01 natural split turns produce real Planner and preserve transport/budget context",
+      "status": "PASS",
+      "detail": {
+        "verified": {
+          "destinationCity": "Đà Lạt",
+          "adults": 2,
+          "totalBudget": 7000000,
+          "departureCity": "Thành phố Hồ Chí Minh",
+          "transportation": "car",
+          "startDate": "2026-12-20",
+          "endDate": "2026-12-22"
+        },
+        "selected": [
+          "dccd25f9-b9bf-5cb2-a252-2d0d51c43071",
+          "857935d7-bfe6-596a-a2e3-8fdcd9423894",
+          "18b28c0b-a210-58ca-ad8a-ef3901a7649f",
+          "93686425-2721-5e31-abbf-f149e7cc14f2",
+          "5263964d-2b13-5f17-a19d-dceb12ad5c1f",
+          "c75e78a8-6a4b-5d1a-aa09-643693df3008"
+        ],
+        "cost": {
+          "currency": "VND",
+          "basis": "GROUP_VND_V1",
+          "estimated": 3760000,
+          "budget": 7000000,
+          "budgetStatus": "within_budget",
+          "overBudget": 0
+        },
+        "source": "TourPlannerService"
+      }
+    },
+    {
+      "name": "H02 compound budget and hotel cap/local dining reach actual filtered Planner",
+      "status": "PASS",
+      "detail": {
+        "verified": {
+          "destinationCity": "Đà Lạt",
+          "adults": 2,
+          "totalBudget": 7000000,
+          "departureCity": "Thành phố Hồ Chí Minh",
+          "startDate": "2026-12-20",
+          "endDate": "2026-12-22",
+          "transportation": "car"
+        },
+        "ids": [
+          "dccd25f9-b9bf-5cb2-a252-2d0d51c43071",
+          "93686425-2721-5e31-abbf-f149e7cc14f2",
+          "18b28c0b-a210-58ca-ad8a-ef3901a7649f",
+          "5263964d-2b13-5f17-a19d-dceb12ad5c1f"
+        ],
+        "hotelCap": 800000
+      }
+    },
+    {
+      "name": "H03 typo/slang search and outside-ten province use fresh actual catalog",
+      "status": "PASS",
+      "detail": {
+        "emptyProvince": "42",
+        "inventedItems": 0
+      }
+    },
+    {
+      "name": "H04 scoped/ambiguous money, negation and social correction do not mutate verified budget",
+      "status": "PASS",
+      "detail": {
+        "budget": 5000000,
+        "destination": "Đà Lạt"
+      }
+    },
+    {
+      "name": "H05 auth/input gates remain enforced; no mutation implied by language",
+      "status": "PASS",
+      "detail": {
+        "authRequired": 401,
+        "wrongRole": 403,
+        "modelConfigured": false
+      }
+    }
+  ],
+  "nativePosts": 0,
+  "fixtureRowsCreated": 0
+}

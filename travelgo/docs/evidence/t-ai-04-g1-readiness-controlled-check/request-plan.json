@@ -1,0 +1,93 @@
+{
+  "task": "T-AI-04-G1-READINESS-CONTROLLED-CHECK",
+  "status": "APPROVED_SCOPE_LOCKED_BEFORE_POST",
+  "lockedAt": "2026-11-10T07:14:37.946Z",
+  "approvalSource": "C:/Users/Danh/.codex/attachments/b54b89e7-7c54-4ae7-b016-aa30ea56316b/Pasted text.txt",
+  "approvalMaxLocalPosts": 2,
+  "principalHash": "6b982d095bc6bc30c87955cd38c78afa9ef31d3447ef30f62e8684bbe8bce600",
+  "principalSource": "docs/evidence/t-ai-04-e-final/run-20261109T041645807Z-ae626a88/attempt-E04-B.json",
+  "model": "qwen3:4b-instruct-2507-q4_K_M",
+  "digest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+  "operatorEnv": {
+    "LLM_PROVIDER": "ollama",
+    "LLM_LIVE_ENABLED": "true",
+    "LLM_USAGE_APPROVED": "true",
+    "OLLAMA_LOCAL_ONLY_CONFIRMED": "true",
+    "OLLAMA_MODEL": "qwen3:4b-instruct-2507-q4_K_M",
+    "OLLAMA_MODEL_DIGEST": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+    "OLLAMA_BASE_URL": "http://127.0.0.1:11434"
+  },
+  "guardProbe": {
+    "id": "RC00",
+    "postsAllowed": 0,
+    "condition": "Only execute if model nonresident; genuine provider/orchestrator GET path must reject readiness 503; no inference or NLU score."
+  },
+  "preparation": {
+    "id": "RC-LOAD",
+    "endpoint": "http://127.0.0.1:11434/api/generate",
+    "sha256": "98800239c0f06cbaad695e06407a8c98b7951ceb073b16b6790370a87f556374",
+    "bodyFile": "operator-load-request-body.json",
+    "timeoutMs": 60000,
+    "keepAlive": "5m",
+    "conditional": "One direct operator load-only request only if nonresident, never second load attempt",
+    "accounting": "Counts against task two POST cap; bypasses AgentOrchestrator by design, not claimed AgentLimits-controlled; conservative historical rolling ledger still enforced",
+    "expected": {
+      "httpStatus": 200,
+      "done": true,
+      "done_reason": "load",
+      "response": "",
+      "residentAfter": true,
+      "context": 16384,
+      "exactTagDigest": true
+    },
+    "nlu": "NOT EVALUATED",
+    "failurePolicy": "Any error/timeout/nonempty response or failed residency verification stops task before application POST; no retry"
+  },
+  "smoke": {
+    "id": "RC01",
+    "endpoint": "http://127.0.0.1:11434/api/chat",
+    "request": {
+      "history": [],
+      "message": "Kiểm tra kỹ thuật RC01: hãy phân tích cấu trúc tinh thể của muối ăn và viết một bài thơ ngắn về đại số tuyến tính."
+    },
+    "expected": {
+      "kind": "unsupported"
+    },
+    "expectedServiceStatus": "unsupported",
+    "expectedTools": 0,
+    "sha256": "a61b549ddd12a76624a8ad598fcaa8188ec95a540d6ef5cb53d520d11b0158e9",
+    "bodyFile": "application-request-body.json",
+    "timeoutMs": 15000,
+    "parameters": {
+      "temperature": 0,
+      "num_ctx": 16384,
+      "num_predict": 2048,
+      "format": "json",
+      "stream": false
+    },
+    "criteria": "One POST at most through actual createConfiguredProvider+AgentOrchestrator+readiness+original schema/runtime. Exact unsupported object, HTTP200, done stop, valid envelope, provider success, service unsupported, zero tool invocations, no deadline/abort. No retry or response repair. No output => raw NLU NOT EVALUATED; smoke FAIL/BLOCKED as observed.",
+    "requestBudgetBytes": 10376,
+    "requestNovelty": {
+      "historicalJsonFilesInspected": 1714,
+      "exactDuplicates": []
+    },
+    "systemWireSha256": "5902945e22dfe3b9b3432c669125daf4d7929fbfd5a330ffce0581fc62c4fe1f"
+  },
+  "safety": {
+    "noDatabase": true,
+    "noRealTools": true,
+    "noCloud": true,
+    "noBenchmark": true,
+    "concurrency": 1,
+    "rateLimit": 20,
+    "noRetry": true,
+    "noUnloadPost": true,
+    "noGlobalLiveEnable": true,
+    "originalTimeoutMs": 15000
+  },
+  "documentation": [
+    "https://docs.ollama.com/faq#how-can-i-preload-a-model-into-ollama-to-get-faster-response-times",
+    "https://docs.ollama.com/api/generate",
+    "https://docs.ollama.com/api/ps"
+  ]
+}

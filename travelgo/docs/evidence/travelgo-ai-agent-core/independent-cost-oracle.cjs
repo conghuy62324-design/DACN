@@ -1,0 +1,8 @@
+// No production cost helper imported. Fixed observed fixture prices and documented T11-B assumptions.
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const p=JSON.parse(fs.readFileSync(path.join(__dirname,'browser-planner-fixture.json'))).itinerary;
+const prices={'10000000-0000-4000-8000-000000000001':1200000,'10000000-0000-4000-8000-000000000002':800000,'10000000-0000-4000-8000-000000000003':350000,'10000000-0000-4000-8000-000000000004':200000,'10000000-0000-4000-8000-000000000005':100000,'10000000-0000-4000-8000-000000000006':150000};
+const equivalent=2,nights=1;assert.equal(p.adults,2);assert.equal(p.children,0);assert.equal(p.nightsCount,nights);assert.equal(p.days.length,2);
+let total=0;const lines=[];for(const[d,day]of p.days.entries()){let sum=0;for(const a of day.activities){const expected=a.category==='hotel'?0:a.placeId?prices[a.placeId]*equivalent:(a.timeSlot==='dinner'?200000:150000)*equivalent;assert.ok(Number.isFinite(expected));assert.equal(a.estimatedCostVND,expected,a.id);sum+=expected;lines.push({id:a.id,expected,actual:a.estimatedCostVND});}const lodging=d===0?(p.hotelSuggestion?prices[p.hotelSuggestion.id]:400000):0;assert.equal(day.lodgingEstimatedCostVND,lodging);sum+=lodging;assert.equal(day.dayEstimatedCostVND,sum);total+=sum;}
+assert.equal(p.totalEstimatedCostVND,total);assert.equal(p.costDifferenceVND,6400000-total);assert.ok(p.costAssumptions.length>0);
+fs.writeFileSync(path.join(__dirname,'independent-cost-oracle.json'),JSON.stringify({tier:'PRODUCTION_PLANNER_WITH_IN_MEMORY_FIXTURE_NOT_LIVE',status:'PASS',total,budget:6400000,remaining:6400000-total,lines,nights,verifiedProviderPrice:false},null,2),{flag:'wx'});console.log(JSON.stringify({oracle:'PASS',total}));

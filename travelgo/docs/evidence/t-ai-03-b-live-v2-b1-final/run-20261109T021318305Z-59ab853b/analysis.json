@@ -1,0 +1,644 @@
+{
+  "status": "COMPLETE_WITH_NLU_FAIL",
+  "benchmarkSha256": "0f1e0f1e87418bca591c6dfcd06645bd9a534326cac23989d58c7a7fd5e6fe6e",
+  "oldRun": "docs/evidence/t-ai-03-b-live-v2-b1/run-20261108T125101122Z-d593f9b0",
+  "resumeRun": "docs/evidence/t-ai-03-b-live-v2-b1-final/run-20261109T021318305Z-59ab853b",
+  "oldEvidenceIntact": true,
+  "sourceIntegrity": {
+    "referenceFiles": 3960,
+    "changed": []
+  },
+  "counts": {
+    "total": 24,
+    "pass": 3,
+    "fail": 21,
+    "notRun": 0,
+    "ollamaPosts": 24,
+    "http200": 24,
+    "schemaValid": 24,
+    "unsupportedDecision": 24,
+    "toolCalls": 0
+  },
+  "groups": {
+    "tool": {
+      "pass": 0,
+      "total": 13
+    },
+    "clarify": {
+      "pass": 0,
+      "total": 8
+    },
+    "unsupported": {
+      "pass": 3,
+      "total": 3
+    },
+    "multiTurn": {
+      "pass": 0,
+      "total": 5
+    }
+  },
+  "toolFidelity": {
+    "evaluatedCalls": 0,
+    "note": "No tool invocation; Catalog/Planner output fidelity not evaluable"
+  },
+  "tokens": {
+    "prompt": 22907,
+    "output": 144
+  },
+  "latencyMs": {
+    "min": 130,
+    "median": 158,
+    "p95NearestRank": 8082,
+    "max": 10541,
+    "mean": 918,
+    "allSorted": [
+      130,
+      131,
+      132,
+      136,
+      139,
+      144,
+      149,
+      151,
+      155,
+      155,
+      156,
+      156,
+      160,
+      163,
+      163,
+      165,
+      166,
+      170,
+      171,
+      173,
+      174,
+      180,
+      8082,
+      10541
+    ]
+  },
+  "database": {
+    "result": "PASS",
+    "database": "travelgo_ai_m0_test",
+    "tables": 25,
+    "changed": [],
+    "historicalTripSessions": 27,
+    "migrationChecksums": 12,
+    "writes": 0
+  },
+  "cases": [
+    {
+      "id": "VI01",
+      "expected": {
+        "kind": "tool",
+        "name": "search_places",
+        "arguments": {
+          "destinationCity": "Đà Nẵng",
+          "dailyBudgetPerPerson": 500000,
+          "category": "attraction"
+        }
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 8082,
+      "promptTokens": 931,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "B1"
+    },
+    {
+      "id": "VI02",
+      "expected": {
+        "kind": "tool",
+        "name": "search_places",
+        "arguments": {
+          "destinationCity": "Đà Nẵng",
+          "dailyBudgetPerPerson": 500000,
+          "category": "hotel"
+        }
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 166,
+      "promptTokens": 930,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "B1"
+    },
+    {
+      "id": "VI03",
+      "expected": {
+        "kind": "tool",
+        "name": "search_places",
+        "arguments": {
+          "destinationCity": "Đà Nẵng",
+          "dailyBudgetPerPerson": 500000,
+          "category": "restaurant"
+        }
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 139,
+      "promptTokens": 927,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "B1"
+    },
+    {
+      "id": "VI04",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-17",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 149,
+      "promptTokens": 961,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "B1"
+    },
+    {
+      "id": "VI05",
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "departureCity"
+        ]
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 163,
+      "promptTokens": 954,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "B1"
+    },
+    {
+      "id": "VI06",
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "startDate",
+          "endDate"
+        ]
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 156,
+      "promptTokens": 931,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "B1"
+    },
+    {
+      "id": "VI07",
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "totalBudget"
+        ]
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 174,
+      "promptTokens": 949,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "B1"
+    },
+    {
+      "id": "VI08",
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "transportation"
+        ]
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 130,
+      "promptTokens": 952,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "B1"
+    },
+    {
+      "id": "VI09",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-17",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 170,
+      "promptTokens": 982,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "B1"
+    },
+    {
+      "id": "VI10",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-17",
+          "adults": 2,
+          "totalBudget": 7000000,
+          "transportation": "car"
+        }
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 163,
+      "promptTokens": 1003,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "B1"
+    },
+    {
+      "id": "VI11",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-17",
+          "adults": 3,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 151,
+      "promptTokens": 1000,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "B1"
+    },
+    {
+      "id": "VI12",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-18",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 171,
+      "promptTokens": 1010,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "B1"
+    },
+    {
+      "id": "VI13",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Hội An",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-17",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 136,
+      "promptTokens": 1000,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "B1"
+    },
+    {
+      "id": "VI14",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-17",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 155,
+      "promptTokens": 964,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "B1"
+    },
+    {
+      "id": "VI15",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-17",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 144,
+      "promptTokens": 962,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "B1"
+    },
+    {
+      "id": "VI16",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "Đà Nẵng",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-17",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 155,
+      "promptTokens": 958,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "B1"
+    },
+    {
+      "id": "VI17",
+      "expected": {
+        "kind": "unsupported"
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "PASS",
+      "httpStatus": 200,
+      "latencyMs": 160,
+      "promptTokens": 919,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": null,
+      "source": "B1"
+    },
+    {
+      "id": "VI18",
+      "expected": {
+        "kind": "unsupported"
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "PASS",
+      "httpStatus": 200,
+      "latencyMs": 131,
+      "promptTokens": 919,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": null,
+      "source": "B1"
+    },
+    {
+      "id": "VI19",
+      "expected": {
+        "kind": "unsupported"
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "PASS",
+      "httpStatus": 200,
+      "latencyMs": 132,
+      "promptTokens": 931,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": null,
+      "source": "B1"
+    },
+    {
+      "id": "VI20",
+      "expected": {
+        "kind": "tool",
+        "name": "plan_trip",
+        "arguments": {
+          "departureCity": "Hà Nội",
+          "destinationCity": "HUGO_NO_CATALOG_TAI01B",
+          "startDate": "2030-06-15",
+          "endDate": "2030-06-17",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 165,
+      "promptTokens": 965,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "B1"
+    },
+    {
+      "id": "VI21",
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "adults"
+        ]
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 10541,
+      "promptTokens": 949,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "RESUME"
+    },
+    {
+      "id": "VI22",
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "destinationCity"
+        ]
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 180,
+      "promptTokens": 953,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "RESUME"
+    },
+    {
+      "id": "VI23",
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "dailyBudgetPerPerson"
+        ]
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 156,
+      "promptTokens": 915,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "RESUME"
+    },
+    {
+      "id": "VI24",
+      "expected": {
+        "kind": "clarify",
+        "fields": [
+          "startDate",
+          "endDate"
+        ]
+      },
+      "actual": {
+        "kind": "unsupported"
+      },
+      "status": "FAIL",
+      "httpStatus": 200,
+      "latencyMs": 173,
+      "promptTokens": 942,
+      "outputTokens": 6,
+      "toolCalls": 0,
+      "reason": "MODEL_DECISION_MISMATCH",
+      "source": "RESUME"
+    }
+  ]
+}

@@ -1,6 +1,10 @@
+import { PlannerBudgetNotice } from '../components/common/PlannerBudgetNotice';
+import { TripItineraryEditor } from '../components/common/TripItineraryEditor';
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import L from 'leaflet';
+import { GoogleMap } from '../components/maps/GoogleMap';
+import { googleMapsSelected } from '../utils/googleMapsLoader';
 import {
   Compass,
   MapPin,
@@ -23,6 +27,8 @@ import {
 import { TripService } from '../services/tripService';
 import { TripSession, TripCheckin, ItineraryDay, ItineraryActivity } from '../types';
 import { PREFERENCE_OPTIONS } from '../constants/travelPreferences';
+import { tripCostView } from '../utils/tripCosts';
+import { roundMapMarker, tripPopup } from '../utils/mapPopup';
 
 export const TripDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -30,7 +36,9 @@ export const TripDetailPage: React.FC = () => {
   const [trip, setTrip] = useState<TripSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeDay, setActiveDay] = useState(1);
-  const [currentGps, setCurrentGps] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [currentGps, setCurrentGps] = useState<{ latitude: number; longitude: number; accuracyMeters?: number } | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionBusy, setActionBusy] = useState(false);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
   const [checkinNotes, setCheckinNotes] = useState<{ [actId: string]: string }>({});
@@ -38,6 +46,9 @@ export const TripDetailPage: React.FC = () => {
   const [preferenceDraft, setPreferenceDraft] = useState<string[]>([]);
   const [isSavingPreferences, setIsSavingPreferences] = useState(false);
   const [preferenceMessage, setPreferenceMessage] = useState<string | null>(null);
+  const [editingItinerary, setEditingItinerary] = useState(false);
+  const [isSavingItinerary, setIsSavingItinerary] = useState(false);
+  const [itineraryMessage, setItineraryMessage] = useState<string | null>(null);
 
   // Map References
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -46,6 +57,7 @@ export const TripDetailPage: React.FC = () => {
 
   useEffect(() => {
     if (id) {
+      setEditingItinerary(false); setItineraryMessage(null);
       fetchTrip(id);
     }
   }, [id]);
@@ -101,12 +113,14 @@ export const TripDetailPage: React.FC = () => {
 
     setGpsLoading(true);
     setGpsError(null);
+    setCurrentGps(null);
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setCurrentGps({
           latitude: pos.coords.latitude,
           longitude: pos.coords.longitude,
+          accuracyMeters: pos.coords.accuracy,
         });
         setGpsLoading(false);
       },
@@ -121,14 +135,14 @@ export const TripDetailPage: React.FC = () => {
 
   // Perform Check-in
   const handleCheckin = async (act: ItineraryActivity) => {
-    if (!trip) return;
+    if (!trip || actionBusy) return;
     const note = checkinNotes[act.id] || '';
-
+    setActionBusy(true);
+    setActionError(null);
     try {
-      const res = await TripService.checkinPlace(
+      const res = await TripService.checkinActivity(
         trip.id,
-        act.placeId || act.id,
-        act.title,
+        act.id,
         currentGps || undefined,
         note || undefined
       );
@@ -138,29 +152,35 @@ export const TripDetailPage: React.FC = () => {
       }
     } catch (err) {
       console.error('Checkin failed:', err);
-      alert('Không thể hoàn thành check-in. Vui lòng thử lại.');
-    }
+      setActionError('Không thể check-in hoạt động này. Hãy tải lại lịch và kiểm tra trạng thái chuyến đi.');
+    } finally { setActionBusy(false); }
   };
 
   // Status transitions
   const handleStartTrip = async () => {
-    if (!trip) return;
+    if (!trip || actionBusy) return;
+    setActionBusy(true);
+    setActionError(null);
     try {
-      const updated = await TripService.updateTrip(trip.id, { status: 'active' });
+      const updated = await TripService.startTrip(trip.id);
       if (updated) setTrip(updated);
     } catch (err) {
       console.error('Failed to start trip:', err);
-    }
+      setActionError('Không thể bắt đầu chuyến đi ở trạng thái hiện tại. Hãy tải lại lịch.');
+    } finally { setActionBusy(false); }
   };
 
   const handleCompleteTrip = async () => {
-    if (!trip) return;
+    if (!trip || actionBusy) return;
+    setActionBusy(true);
+    setActionError(null);
     try {
       const updated = await TripService.completeTrip(trip.id);
       if (updated) setTrip(updated);
     } catch (err) {
       console.error('Failed to complete trip:', err);
-    }
+      setActionError('Không thể kết thúc chuyến đi ở trạng thái hiện tại. Hãy tải lại lịch.');
+    } finally { setActionBusy(false); }
   };
 
   // Convert Trip to Blog Draft
@@ -184,7 +204,7 @@ export const TripDetailPage: React.FC = () => {
 
   // Map effect
   useEffect(() => {
-    if (!trip || !mapContainerRef.current) return;
+    if (googleMapsSelected() || !trip || !mapContainerRef.current) return;
 
     if (!mapInstanceRef.current) {
       const map = L.map(mapContainerRef.current, {
@@ -217,31 +237,17 @@ export const TripDetailPage: React.FC = () => {
         const pos: [number, number] = [act.latitude, act.longitude];
         allCoords.push(pos);
 
-        const isChecked = trip.checkins.some(
-          (c) => c.placeId === (act.placeId || act.id) || c.placeName === act.title
-        );
+        const isChecked = trip.progress?.checkedActivityIds.includes(act.id) ?? false;
 
         const customIcon = L.divIcon({
           className: 'custom-checkin-marker',
-          html: `
-            <div style="background-color: ${isChecked ? '#10b981' : '#0284c7'}; color: white; width: 30px; height: 30px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);">
-              ${isChecked ? '✓' : `N${day.dayNumber}`}
-            </div>
-          `,
+          html: roundMapMarker(isChecked ? '✓' : `N${day.dayNumber}`, isChecked ? '#10b981' : '#0284c7', 30),
           iconSize: [30, 30],
           iconAnchor: [15, 15],
         });
 
         const marker = L.marker(pos, { icon: customIcon });
-        marker.bindPopup(`
-          <div style="font-size: 12px; font-family: inherit;">
-            <div style="font-weight: bold; color: ${isChecked ? '#10b981' : '#0284c7'};">
-              ${isChecked ? '✓ ĐÃ GHÉ THĂM' : 'ĐIỂM DỰ KIẾN'}
-            </div>
-            <strong>${act.title}</strong>
-            <p style="margin: 4px 0; color: #64748b; font-size: 11px;">${act.description}</p>
-          </div>
-        `);
+        marker.bindPopup(tripPopup(act, isChecked));
 
         markersGroup.addLayer(marker);
       });
@@ -277,6 +283,9 @@ export const TripDetailPage: React.FC = () => {
     );
   }
 
+  const costView = tripCostView(trip);
+  const eligibleIds = trip.progress?.eligibleActivityIds || [];
+  const checkedIds = trip.progress?.checkedActivityIds || [];
   return (
     <div className="min-h-screen bg-slate-50 pt-20 pb-20">
       {/* Breadcrumb */}
@@ -304,7 +313,7 @@ export const TripDetailPage: React.FC = () => {
                   {trip.destinationCity}
                 </span>
                 <span className="text-xs bg-sky-100 text-sky-800 font-semibold px-3 py-1 rounded-full">
-                  {trip.daysCount} Ngày {Math.max(1, trip.daysCount - 1)} Đêm
+                  {trip.daysCount} Ngày • {trip.nightsCount === undefined ? 'Chưa lưu số đêm' : `${trip.nightsCount} Đêm`}
                 </span>
                 <span className="text-xs text-slate-500">
                   {trip.startDate} &rarr; {trip.endDate}
@@ -313,13 +322,29 @@ export const TripDetailPage: React.FC = () => {
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
                 {trip.title}
               </h1>
+              <section className="mt-3 space-y-1 text-xs text-slate-600" data-testid="trip-cost-summary">
+                <p>{costView.label}</p>
+                {costView.isGroup && <PlannerBudgetNotice budget={trip.totalBudgetUserVND} estimate={trip.totalEstimatedCostVND} />}
+                <p>Ngân sách đã lưu: {new Intl.NumberFormat('vi-VN').format(trip.totalBudgetUserVND)}đ • Chi phí ước tính đã lưu: {new Intl.NumberFormat('vi-VN').format(trip.totalEstimatedCostVND)}đ</p>
+                <p>Nhịp độ: {costView.pacing} • Phương tiện: {costView.transportation}</p>
+                {trip.adults !== undefined && <p>Số khách đã lưu: {trip.adults} người lớn, {trip.children ?? 0} trẻ em.</p>}
+                {costView.assumptions.length > 0 && (
+                  <details>
+                    <summary className="cursor-pointer font-semibold">Giả định chi phí đã lưu</summary>
+                    <ul className="mt-1 list-disc pl-4 space-y-1">{costView.assumptions.map((item, index) => <li key={index}>{item}</li>)}</ul>
+                  </details>
+                )}
+              </section>
             </div>
 
             {/* Status & Control Actions */}
             <div className="flex flex-wrap items-center gap-3">
+              {trip.costBasis === 'GROUP_VND_V1' && <button type="button" data-testid="edit-trip-itinerary" disabled={editingItinerary || actionBusy || isSavingPreferences} onClick={() => { setItineraryMessage(null); setEditingItinerary(true); }} className="bg-white border border-sky-300 text-sky-800 font-bold px-4 py-2.5 rounded-xl disabled:opacity-50">Chỉnh sửa lịch trình</button>}
               {trip.status === 'upcoming' && (
                 <button
                   onClick={handleStartTrip}
+                  data-testid="start-trip"
+                  disabled={actionBusy || editingItinerary}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm shadow-md transition-all flex items-center gap-2"
                 >
                   <Flag className="w-4 h-4" />
@@ -330,10 +355,12 @@ export const TripDetailPage: React.FC = () => {
               {trip.status === 'active' && (
                 <button
                   onClick={handleCompleteTrip}
+                  data-testid="complete-trip"
+                  disabled={actionBusy || editingItinerary}
                   className="bg-sky-600 hover:bg-sky-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm shadow-md transition-all flex items-center gap-2"
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Hoàn thành chuyến đi</span>
+                  <span>Kết thúc chuyến đi</span>
                 </button>
               )}
 
@@ -348,6 +375,12 @@ export const TripDetailPage: React.FC = () => {
             </div>
           </div>
 
+          <p data-testid="trip-status" className="mt-3 text-sm font-semibold">
+            Trạng thái: {({ upcoming: 'Chưa bắt đầu', active: 'Đang diễn ra', completed: 'Đã kết thúc', cancelled: 'Đã hủy' })[trip.status]}
+          </p>
+          <p className="text-xs text-slate-500 mt-1">Kết thúc chuyến đi giữ nguyên tỷ lệ check-in các hoạt động.</p>
+          {actionError && <p role="alert" className="text-sm text-red-700 mt-2">{actionError}</p>}
+
           <div data-testid="trip-preferences" className="mt-6 pt-6 border-t border-slate-100">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div>
@@ -361,7 +394,7 @@ export const TripDetailPage: React.FC = () => {
                   type="button"
                   data-testid="save-trip-preferences"
                   onClick={() => savePreferences()}
-                  disabled={isSavingPreferences}
+                  disabled={isSavingPreferences || editingItinerary}
                   className="bg-sky-600 hover:bg-sky-700 disabled:opacity-60 text-white text-xs font-bold px-3 py-2 rounded-xl"
                 >
                   {isSavingPreferences ? 'Đang lưu...' : 'Lưu sở thích'}
@@ -370,7 +403,7 @@ export const TripDetailPage: React.FC = () => {
                   type="button"
                   data-testid="clear-trip-preferences"
                   onClick={clearPreferences}
-                  disabled={isSavingPreferences || preferenceDraft.length === 0}
+                  disabled={isSavingPreferences || editingItinerary || preferenceDraft.length === 0}
                   className="bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-700 border border-slate-200 text-xs font-bold px-3 py-2 rounded-xl"
                 >
                   Xóa tất cả
@@ -408,13 +441,22 @@ export const TripDetailPage: React.FC = () => {
 
           {/* Progress Bar & Geolocation Status */}
           <div className="mt-6 pt-6 border-t border-slate-100 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-            <div className="md:col-span-8">
+            <div className="md:col-span-8" data-testid="trip-progress">
               <div className="flex items-center justify-between text-xs mb-2">
                 <span className="font-semibold text-slate-700">
-                  Tiến độ hoàn thành: {trip.checkins.length} điểm đã check-in
+                  Đã check-in: {checkedIds.length}/{eligibleIds.length} hoạt động
                 </span>
                 <span className="font-extrabold text-emerald-600 text-sm">{trip.progressPercent}%</span>
               </div>
+              <p className="text-xs text-slate-500 mt-2">Tính mọi hoạt động trong lịch, gồm ăn/nghỉ và hoạt động tự tạo. Lịch trống có tiến độ 0%.</p>
+              {!!trip.progress && (trip.progress.unmatchedCheckinCount > 0 || trip.progress.ineligibleActivityCount > 0) && (
+                <p data-testid="trip-history-limit" className="text-xs text-amber-700 mt-2">
+                  Có {trip.progress.unmatchedCheckinCount} bản ghi lịch sử không tính vào tiến độ và {trip.progress.ineligibleActivityCount} hoạt động chưa xác định riêng biệt. Giữ lịch sử; không tự gán check-in khi không xác định được hoạt động.
+                </p>
+              )}
+              {trip.checkins.length > 0 && <details className="text-xs mt-2"><summary>Lịch sử check-in</summary><ul>
+                {trip.checkins.map((entry, index) => <li key={index}>{entry.placeName} — {entry.checkedInAt}{entry.resolvedActivityId ? '' : ' (không tính vào tiến độ hiện tại)'}{entry.hasAttachedLocation ? ' — Có đính kèm vị trí' : ''}{entry.notes ? ` — ${entry.notes}` : ''}</li>)}
+              </ul></details>}
               <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
                 <div
                   className="bg-gradient-to-r from-sky-500 to-emerald-500 h-full rounded-full transition-all duration-500"
@@ -432,6 +474,7 @@ export const TripDetailPage: React.FC = () => {
                 </div>
                 <button
                   onClick={requestCurrentLocation}
+                  data-testid="request-trip-location"
                   disabled={gpsLoading}
                   className="bg-white hover:bg-slate-100 text-sky-700 border border-slate-200 font-semibold text-xs px-2.5 py-1 rounded-lg transition-colors"
                 >
@@ -444,10 +487,13 @@ export const TripDetailPage: React.FC = () => {
                 </div>
               )}
               {gpsError && <div className="text-[10px] text-amber-700 mt-1">{gpsError}</div>}
+              <p className="text-[10px] text-slate-500 mt-1">Vị trí chỉ được đính kèm; không xác minh có mặt thực địa. Không cần GPS để check-in.</p>
             </div>
           </div>
         </div>
 
+        {itineraryMessage && <p role="status" data-testid="trip-itinerary-message" className="mb-4 text-emerald-800 font-semibold">{itineraryMessage}</p>}
+        {editingItinerary && <TripItineraryEditor key={trip.id} trip={trip} onBusyChange={setIsSavingItinerary} onCancel={() => { if (!isSavingItinerary) setEditingItinerary(false); }} onSaved={updated => { setTrip(updated); setEditingItinerary(false); setItineraryMessage('Đã lưu lịch trình.'); }} />}
         {/* 2-Column Tracking: Left Activities Timeline, Right Map */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* LEFT: 7 cols Timeline */}
@@ -478,18 +524,22 @@ export const TripDetailPage: React.FC = () => {
                     <h3 className="font-bold text-slate-900 text-base">{day.themeTitle}</h3>
                     <span className="text-xs text-slate-500">{day.date}</span>
                   </div>
+                  <p className="text-xs text-slate-600">
+                    Ước tính đã lưu của ngày: {new Intl.NumberFormat('vi-VN').format(day.dayEstimatedCostVND)}đ{trip.costBasis === 'GROUP_VND_V1' ? ' / nhóm' : ' (đơn vị bản cũ chưa xác nhận)'}
+                    {day.lodgingCostSource && <span className="block">{day.lodgingCostSource}</span>}
+                    {trip.costBasis === 'GROUP_VND_V1' && ` • Lưu trú ${day.lodgingNights ?? 0} đêm: ${new Intl.NumberFormat('vi-VN').format(day.lodgingEstimatedCostVND ?? 0)}đ / nhóm, đã gồm trong tổng ngày.`}
+                  </p>
 
                   <div className="space-y-4">
                     {day.activities.map((act) => {
-                      const checkin = trip.checkins.find(
-                        (c) => c.placeId === (act.placeId || act.id) || c.placeName === act.title
-                      );
+                      const checkin = trip.checkins.find((c) => c.resolvedActivityId === act.id);
                       const isChecked = !!checkin;
 
                       return (
                         <div
                           key={act.id}
                           data-testid="saved-trip-activity"
+                          data-activity-id={act.id}
                           data-place-id={act.placeId || ''}
                           className={`p-4 rounded-2xl border transition-all ${
                             isChecked
@@ -507,18 +557,22 @@ export const TripDetailPage: React.FC = () => {
                                   <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
                                     <Check className="w-3 h-3" />
                                     <span>Đã check-in</span>
-                                    {checkin.verifiedViaGeo && <span>(GPS)</span>}
+                                    {checkin.hasAttachedLocation && <span>(Có đính kèm vị trí)</span>}
                                   </span>
                                 )}
                               </div>
                               <h4 className="font-bold text-slate-900 text-sm">{act.title}</h4>
                               <p className="text-xs text-slate-500 mt-1 leading-relaxed">{act.description}</p>
+                              {act.costSource && <p className="text-xs text-slate-500">{act.costSource}</p>}
+                              <p className="text-xs text-slate-500 mt-1">Ước tính đã lưu: {new Intl.NumberFormat('vi-VN').format(act.estimatedCostVND)}đ{trip.costBasis === 'GROUP_VND_V1' ? ' / nhóm' : ' (chưa xác nhận đơn vị)'}</p>
                             </div>
 
                             {/* Checkin Action Button */}
                             <div className="flex-shrink-0">
                               <button
                                 onClick={() => handleCheckin(act)}
+                                data-testid="checkin-activity"
+                                disabled={actionBusy || editingItinerary || isChecked || trip.status !== 'active' || !eligibleIds.includes(act.id)}
                                 className={`text-xs font-bold px-3 py-2 rounded-xl transition-all flex items-center gap-1.5 shadow-sm ${
                                   isChecked
                                     ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
@@ -529,7 +583,7 @@ export const TripDetailPage: React.FC = () => {
                                 {isChecked ? (
                                   <>
                                     <CheckCircle2 className="w-3.5 h-3.5" />
-                                    <span>Check-in lại</span>
+                                    <span>Đã ghi nhận</span>
                                   </>
                                 ) : (
                                   <>
@@ -547,10 +601,11 @@ export const TripDetailPage: React.FC = () => {
                               <div className="text-xs text-emerald-800 bg-emerald-100/60 p-2.5 rounded-xl">
                                 <strong>Ghi chú của bạn:</strong> {checkin.notes}
                               </div>
-                            ) : (
+                            ) : !isChecked && trip.status === 'active' && eligibleIds.includes(act.id) ? (
                               <div className="flex items-center gap-2">
                                 <input
                                   type="text"
+                                  maxLength={5000}
                                   placeholder="Ghi chú nhanh (ví dụ: món ngon, view đẹp)..."
                                   value={checkinNotes[act.id] || ''}
                                   onChange={(e) =>
@@ -560,12 +615,13 @@ export const TripDetailPage: React.FC = () => {
                                 />
                                 <button
                                   onClick={() => handleCheckin(act)}
+                                  disabled={actionBusy || editingItinerary}
                                   className="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1.5 rounded-lg font-medium transition-colors"
                                 >
                                   Lưu
                                 </button>
                               </div>
-                            )}
+                            ) : null}
                           </div>
                         </div>
                       );
@@ -587,7 +643,7 @@ export const TripDetailPage: React.FC = () => {
                   ✓ Xanh lá: Đã check-in
                 </span>
               </div>
-              <div ref={mapContainerRef} className="w-full h-[450px] z-10" />
+              {googleMapsSelected() ? <GoogleMap height={450} points={trip.days.flatMap(d=>d.activities.map(a=>({id:a.id,name:a.title,latitude:a.latitude,longitude:a.longitude})))}/> : <div ref={mapContainerRef} className="w-full z-10" style={{ height: 450 }} />}
             </div>
 
             {/* Convert to Blog Card */}

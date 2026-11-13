@@ -1,0 +1,232 @@
+{
+  "id": "D01",
+  "viewport": "desktop",
+  "method": "POST",
+  "path": "/api/agent/chat",
+  "quota": 1,
+  "body": {
+    "message": "Lập lịch trình; Điểm đến: Đà Nẵng",
+    "conversation": {
+      "action": "start",
+      "requestId": "$FRESH_UUID",
+      "consentVersion": "LOCAL_DEMO_SLOTS_V1"
+    }
+  },
+  "expected": {
+    "http": 200,
+    "status": "needs_input",
+    "revision": 1,
+    "missingFields": [
+      "departureCity",
+      "startDate",
+      "endDate",
+      "adults",
+      "totalBudget",
+      "transportation"
+    ],
+    "native": 0,
+    "toolCalls": 0
+  },
+  "bodyTemplateSha256": "82b6abce093bc4f559e2cdecd3b533ab8f7682af4dd680403ced60cc43daafa1",
+  "startedAt": "2026-11-10T19:10:32.521Z",
+  "providerCalls": 0,
+  "traces": [],
+  "transport": [],
+  "origins": [
+    {
+      "source": "agent_decision_origin",
+      "correlationId": "b631f8b2-a360-485b-84cb-2c9482d20d20",
+      "origin": "SERVER_COMPLETENESS",
+      "assessment": "SUPPORTED_INCOMPLETE",
+      "providerInvoked": false,
+      "rawNlu": "NOT_EVALUATED"
+    }
+  ],
+  "gates": [],
+  "executed": [],
+  "quotaBefore": {
+    "main": 0,
+    "secondary": 0
+  },
+  "stateBefore": null,
+  "dispatched": true,
+  "finalRequest": {
+    "method": "POST",
+    "path": "/api/agent/chat",
+    "body": {
+      "message": "Lập lịch trình; Điểm đến: Đà Nẵng",
+      "conversation": {
+        "action": "start",
+        "requestId": "6e219050-b2d3-45ed-91c9-0a48f9e89941",
+        "consentVersion": "LOCAL_DEMO_SLOTS_V1"
+      }
+    },
+    "bodySha256": "1d319d7a363f43892d6aff79d99d81358f5ca4a4f56f04eb3d52cd94fbbb02f5",
+    "actorHash": "6b982d095bc6bc30c87955cd38c78afa9ef31d3447ef30f62e8684bbe8bce600"
+  },
+  "committed": {
+    "id": "e176397d-eca0-48b3-bb0a-59aefadfa03f",
+    "revision": 1,
+    "expiresAt": "2026-11-10T19:25:32.590Z",
+    "intent": "plan_trip",
+    "slots": {
+      "departureCity": {
+        "state": "OMITTED",
+        "revision": 1,
+        "source": "CURRENT_TURN_PROOF"
+      },
+      "destinationCity": {
+        "state": "SET",
+        "value": "Đà Nẵng",
+        "revision": 1,
+        "source": "CURRENT_TURN_PROOF"
+      },
+      "startDate": {
+        "state": "OMITTED",
+        "revision": 1,
+        "source": "CURRENT_TURN_PROOF"
+      },
+      "endDate": {
+        "state": "OMITTED",
+        "revision": 1,
+        "source": "CURRENT_TURN_PROOF"
+      },
+      "adults": {
+        "state": "OMITTED",
+        "revision": 1,
+        "source": "CURRENT_TURN_PROOF"
+      },
+      "totalBudget": {
+        "state": "OMITTED",
+        "revision": 1,
+        "source": "CURRENT_TURN_PROOF"
+      },
+      "transportation": {
+        "state": "OMITTED",
+        "revision": 1,
+        "source": "CURRENT_TURN_PROOF"
+      }
+    },
+    "optional": {}
+  },
+  "verifiedData": {
+    "type": "SERVER_VERIFIED_SLOTS",
+    "intent": "plan_trip",
+    "values": {
+      "destinationCity": "Đà Nẵng"
+    },
+    "states": {
+      "departureCity": "OMITTED",
+      "destinationCity": "SET",
+      "startDate": "OMITTED",
+      "endDate": "OMITTED",
+      "adults": "OMITTED",
+      "totalBudget": "OMITTED",
+      "transportation": "OMITTED"
+    }
+  },
+  "api": {
+    "httpStatus": 200,
+    "body": {
+      "success": true,
+      "data": {
+        "status": "needs_input",
+        "reply": "Bạn vui lòng cung cấp: nơi xuất phát, ngày bắt đầu (YYYY-MM-DD), ngày kết thúc (YYYY-MM-DD), số người lớn, ngân sách cả nhóm (VND), phương tiện (car hoặc motorbike).",
+        "missingFields": [
+          "departureCity",
+          "startDate",
+          "endDate",
+          "adults",
+          "totalBudget",
+          "transportation"
+        ],
+        "history": [
+          {
+            "role": "user",
+            "content": "Lập lịch trình; Điểm đến: Đà Nẵng"
+          },
+          {
+            "role": "assistant",
+            "content": "Bạn vui lòng cung cấp: nơi xuất phát, ngày bắt đầu (YYYY-MM-DD), ngày kết thúc (YYYY-MM-DD), số người lớn, ngân sách cả nhóm (VND), phương tiện (car hoặc motorbike)."
+          }
+        ],
+        "historyTruncated": false,
+        "conversation": {
+          "id": "e176397d-eca0-48b3-bb0a-59aefadfa03f",
+          "revision": 1,
+          "expiresAt": "2026-11-10T19:25:32.590Z",
+          "mode": "LOCAL_DEMO",
+          "persisted": false
+        },
+        "context": {
+          "mode": "LOCAL_DEMO_VERIFIED_HISTORY",
+          "personalizationEnabled": false,
+          "behavioralDataUsed": false,
+          "persisted": false
+        }
+      }
+    },
+    "cacheControl": "no-store"
+  },
+  "metadata": {
+    "id": "e176397d-eca0-48b3-bb0a-59aefadfa03f",
+    "revision": 1,
+    "expiresAt": "2026-11-10T19:25:32.590Z",
+    "mode": "LOCAL_DEMO",
+    "persisted": false
+  },
+  "elapsedMs": 81,
+  "quotaConsumed": 1,
+  "stateAfter": {
+    "id": "e176397d-eca0-48b3-bb0a-59aefadfa03f",
+    "revision": 1,
+    "expiresAt": "2026-11-10T19:25:32.590Z",
+    "intent": "plan_trip",
+    "slots": {
+      "departureCity": {
+        "state": "OMITTED",
+        "revision": 1,
+        "source": "CURRENT_TURN_PROOF"
+      },
+      "destinationCity": {
+        "state": "SET",
+        "value": "Đà Nẵng",
+        "revision": 1,
+        "source": "CURRENT_TURN_PROOF"
+      },
+      "startDate": {
+        "state": "OMITTED",
+        "revision": 1,
+        "source": "CURRENT_TURN_PROOF"
+      },
+      "endDate": {
+        "state": "OMITTED",
+        "revision": 1,
+        "source": "CURRENT_TURN_PROOF"
+      },
+      "adults": {
+        "state": "OMITTED",
+        "revision": 1,
+        "source": "CURRENT_TURN_PROOF"
+      },
+      "totalBudget": {
+        "state": "OMITTED",
+        "revision": 1,
+        "source": "CURRENT_TURN_PROOF"
+      },
+      "transportation": {
+        "state": "OMITTED",
+        "revision": 1,
+        "source": "CURRENT_TURN_PROOF"
+      }
+    },
+    "optional": {}
+  },
+  "safety": "PASS",
+  "history": "PASS",
+  "rawNlu": "NOT EVALUATED",
+  "fidelity": "NOT RUN",
+  "runtime": "PASS",
+  "ui": "PASS",
+  "status": "PASS"
+}

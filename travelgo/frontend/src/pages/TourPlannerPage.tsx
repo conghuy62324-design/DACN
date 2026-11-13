@@ -1,6 +1,10 @@
+import {LocationCombobox} from '../components/common/LocationCombobox';
+import { PlannerBudgetNotice } from '../components/common/PlannerBudgetNotice';
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import L from 'leaflet';
+import { GoogleMap } from '../components/maps/GoogleMap';
+import { googleMapsSelected } from '../utils/googleMapsLoader';
 import {
   Compass,
   MapPin,
@@ -21,8 +25,6 @@ import {
   Utensils,
   Camera,
   Car,
-  Plane,
-  Train,
   Bike,
   Heart,
   Share2,
@@ -33,15 +35,16 @@ import { TourService } from '../services/tourService';
 import { TripService } from '../services/tripService';
 import { PlaceService } from '../services/placeService';
 import { PlannerInput, GeneratedItinerary, ItineraryDay, ItineraryActivity, Place, TourPackage } from '../types';
-import { useBooking } from '../context/BookingContext';
 import { useAuth } from '../context/AuthContext';
 import { PREFERENCE_OPTIONS, preferenceLabel } from '../constants/travelPreferences';
+import { isMandatoryPlannerActivity, movePlannerActivity, removePlannerActivity } from '../utils/plannerCosts';
+import { BALANCED_PACING_DESCRIPTION, PLANNER_TRANSPORT_OPTIONS, initialPlannerModes, validatePlannerModes } from '../utils/plannerModes';
+import { plannerPopup, roundMapMarker } from '../utils/mapPopup';
 
 export const TourPlannerPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { openBooking } = useBooking();
   const { user, loading: authLoading } = useAuth();
   const templateTour = (location.state as any)?.templateTour as TourPackage | undefined;
   const mandatoryPlaceId = searchParams.get('mandatoryPlaceId');
@@ -55,9 +58,10 @@ export const TourPlannerPage: React.FC = () => {
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
   const [totalBudget, setTotalBudget] = useState(templateTour ? templateTour.priceVND * 2 : 6000000);
-  const [transportation, setTransportation] = useState<'flight' | 'car' | 'train' | 'motorbike'>('car');
+  const [transportation, setTransportation] = useState<unknown>(() => initialPlannerModes(templateTour).transportation);
   const [preferences, setPreferences] = useState<string[]>([]);
-  const [pacing, setPacing] = useState<'relaxed' | 'balanced' | 'packed'>('balanced');
+  const [pacing, setPacing] = useState<unknown>(() => initialPlannerModes(templateTour).pacing);
+  const modeSelection = validatePlannerModes(pacing, transportation);
 
   // Generation & Result State
   const [isGenerating, setIsGenerating] = useState(false);
@@ -135,10 +139,15 @@ export const TourPlannerPage: React.FC = () => {
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (modeSelection.valid === false) {
+      setGenerationError(modeSelection.message);
+      return;
+    }
     if (mandatoryPlaceId && !mandatoryPlace) {
       setGenerationError('Địa điểm đã chọn chưa sẵn sàng. Hãy bỏ chọn hoặc chờ tải xong trước khi tạo lịch trình.');
       return;
     }
+    setItinerary(null);
     setIsGenerating(true);
     setSaveSuccessMessage(null);
     setGenerationError(null);
@@ -153,9 +162,9 @@ export const TourPlannerPage: React.FC = () => {
         adults,
         children,
         totalBudget,
-        transportation,
+        transportation: modeSelection.transportation,
         preferences,
-        pacing,
+        pacing: modeSelection.pacing,
         mandatoryPlaceIds: mandatoryPlace ? [mandatoryPlace.id] : [],
       };
 
@@ -164,7 +173,9 @@ export const TourPlannerPage: React.FC = () => {
       setSelectedDayTab('all');
     } catch (err: any) {
       console.error('Failed to generate smart itinerary:', err);
-      setGenerationError(err?.response?.data?.message || 'Không thể tạo lịch trình. Vui lòng kiểm tra lại thông tin đầu vào.');
+      setGenerationError((err?.code ?? err?.response?.data?.code) === 'NO_SIGHTSEEING_FOR_DESTINATION'
+        ? '\u0043h\u01b0a \u0111\u1ee7 d\u1eef li\u1ec7u \u0111\u1ec3 t\u1ea1o l\u1ecbch tr\u00ecnh tham quan t\u1ea1i \u0111i\u1ec3m \u0111\u1ebfn. H\u00e3y s\u1eeda y\u00eau c\u1ea7u ho\u1eb7c ch\u1ecdn \u0111i\u1ec3m \u0111\u1ebfn kh\u00e1c r\u1ed3i t\u1ea1o l\u1ea1i.'
+        : err?.response?.data?.message || err?.message || 'Không thể tạo lịch trình. Vui lòng kiểm tra lại thông tin đầu vào.');
     } finally {
       setIsGenerating(false);
     }
@@ -173,49 +184,13 @@ export const TourPlannerPage: React.FC = () => {
   // Reorder activity up / down
   const moveActivity = (dayNumber: number, actIndex: number, direction: 'up' | 'down') => {
     if (!itinerary) return;
-    const day = itinerary.days.find((d) => d.dayNumber === dayNumber);
-    if (!day) return;
-
-    const newIndex = direction === 'up' ? actIndex - 1 : actIndex + 1;
-    if (newIndex < 0 || newIndex >= day.activities.length) return;
-
-    const updatedActivities = [...day.activities];
-    const temp = updatedActivities[actIndex];
-    updatedActivities[actIndex] = updatedActivities[newIndex];
-    updatedActivities[newIndex] = temp;
-
-    const updatedDays = itinerary.days.map((d) =>
-      d.dayNumber === dayNumber ? { ...d, activities: updatedActivities } : d
-    );
-
-    setItinerary({
-      ...itinerary,
-      days: updatedDays,
-    });
+    setItinerary(movePlannerActivity(itinerary, dayNumber, actIndex, direction));
   };
 
   // Delete activity
   const deleteActivity = (dayNumber: number, actId: string) => {
     if (!itinerary) return;
-    const updatedDays = itinerary.days.map((d) => {
-      if (d.dayNumber === dayNumber) {
-        const remaining = d.activities.filter((a) => a.id !== actId);
-        const dayCost = remaining.reduce((sum, a) => sum + (a.estimatedCostVND || 0), 0);
-        return { ...d, activities: remaining, dayEstimatedCostVND: dayCost };
-      }
-      return d;
-    });
-
-    const totalEst = updatedDays.reduce((sum, d) => sum + d.dayEstimatedCostVND, 0);
-    const diff = itinerary.totalBudgetUserVND - totalEst;
-
-    setItinerary({
-      ...itinerary,
-      days: updatedDays,
-      totalEstimatedCostVND: totalEst,
-      costDifferenceVND: diff,
-      budgetStatus: diff >= 0 ? 'within_budget' : 'over_budget',
-    });
+    setItinerary(removePlannerActivity(itinerary, dayNumber, actId));
   };
 
   // Save to My Trips
@@ -243,7 +218,7 @@ export const TourPlannerPage: React.FC = () => {
 
   // Initialize & Update Leaflet Map when Itinerary changes
   useEffect(() => {
-    if (!itinerary || !mapContainerRef.current) return;
+    if (googleMapsSelected() || !itinerary || !mapContainerRef.current) return;
 
     if (!mapInstanceRef.current) {
       const map = L.map(mapContainerRef.current, {
@@ -293,24 +268,13 @@ export const TourPlannerPage: React.FC = () => {
 
         const customIcon = L.divIcon({
           className: 'custom-itinerary-marker',
-          html: `
-            <div style="background-color: ${dayColor}; color: white; width: 28px; height: 28px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);">
-              ${day.dayNumber}.${actIdx + 1}
-            </div>
-          `,
+          html: roundMapMarker(`${day.dayNumber}.${actIdx + 1}`, dayColor, 28),
           iconSize: [28, 28],
           iconAnchor: [14, 14],
         });
 
         const marker = L.marker(pos, { icon: customIcon });
-        marker.bindPopup(`
-          <div style="font-family: inherit; font-size: 12px; min-width: 180px;">
-            <div style="font-size: 10px; font-weight: bold; color: ${dayColor}; margin-bottom: 2px;">NGÀY ${day.dayNumber} - ${act.timeSlot.toUpperCase()}</div>
-            <strong style="font-size: 13px; color: #0f172a;">${act.title}</strong>
-            <p style="margin: 4px 0; color: #475569; font-size: 11px;">${act.description}</p>
-            <div style="font-size: 11px; font-weight: bold; color: #ea580c; margin-top: 4px;">Chi phí ước tính: ${new Intl.NumberFormat('vi-VN').format(act.estimatedCostVND)}đ</div>
-          </div>
-        `);
+        marker.bindPopup(plannerPopup(day.dayNumber, act, dayColor));
 
         marker.on('click', () => {
           setSelectedActivityId(act.id);
@@ -369,7 +333,7 @@ export const TourPlannerPage: React.FC = () => {
                 className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md"
               >
                 <Bookmark className="w-3.5 h-3.5" />
-                <span>{isSavingTrip ? 'Đang lưu...' : 'Lưu hành trình này'}</span>
+                <span>{isSavingTrip ? 'Đang lưu...' : (itinerary.totalEstimatedCostVND > itinerary.totalBudgetUserVND ? 'Lưu phương án tham khảo' : 'Lưu hành trình này')}</span>
               </button>
             </div>
           )}
@@ -423,7 +387,7 @@ export const TourPlannerPage: React.FC = () => {
                       <p className="text-[11px] font-extrabold uppercase tracking-wider text-orange-700">Địa điểm bắt buộc</p>
                       <h3 className="truncate text-base font-extrabold text-slate-900">{mandatoryPlace.name}</h3>
                       <p className="mt-1 text-xs text-slate-600">
-                        {mandatoryPlace.city || mandatoryPlace.province} · {mandatoryPlace.category} · Giá từ {new Intl.NumberFormat('vi-VN').format(mandatoryPlace.priceFrom)}đ
+                        {mandatoryPlace.city || mandatoryPlace.province} · {mandatoryPlace.category} · Nguồn giá và giả định sẽ ghi trong dự toán.
                       </p>
                     </div>
                     <button
@@ -453,40 +417,14 @@ export const TourPlannerPage: React.FC = () => {
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                     Điểm khởi hành
                   </label>
-                  <select
-                    name="departureCity"
-                    value={departureCity}
-                    onChange={(e) => setDepartureCity(e.target.value)}
-                    className="w-full py-2.5 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium text-slate-800"
-                  >
-                    <option value="Hà Nội">Hà Nội</option>
-                    <option value="TP.HCM">TP. Hồ Chí Minh</option>
-                    <option value="Đà Nẵng">Đà Nẵng</option>
-                    <option value="Hải Phòng">Hải Phòng</option>
-                    <option value="Cần Thơ">Cần Thơ</option>
-                  </select>
+                  <LocationCombobox label="Điểm khởi hành" value={departureCity} onChange={setDepartureCity} allowAll={false}/>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                     Điểm đến khám phá
                   </label>
-                  <select
-                    name="destinationCity"
-                    value={destinationCity}
-                    onChange={(e) => setDestinationCity(e.target.value)}
-                    className="w-full py-2.5 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 font-bold text-sky-800"
-                  >
-                    {mandatoryPlace && !['Đà Nẵng', 'Đà Lạt', 'Phú Quốc', 'Sapa', 'Hà Nội', 'Hội An'].includes(mandatoryPlace.city) && (
-                      <option value={mandatoryPlace.city}>{mandatoryPlace.city}</option>
-                    )}
-                    <option value="Đà Nẵng">Đà Nẵng (Biển Mỹ Khê & Bà Nà)</option>
-                    <option value="Đà Lạt">Đà Lạt (Ngàn hoa & Săn mây)</option>
-                    <option value="Phú Quốc">Phú Quốc (Đảo ngọc & Cano đảo)</option>
-                    <option value="Sapa">Sapa (Fansipan & Thung lũng)</option>
-                    <option value="Hà Nội">Hà Nội (Thủ đô ngàn năm văn hiến)</option>
-                    <option value="Hội An">Hội An (Phố cổ hoa đăng)</option>
-                  </select>
+                  <LocationCombobox label="Điểm đến khám phá" value={destinationCity} onChange={setDestinationCity} allowAll={false}/>
                 </div>
               </div>
 
@@ -558,8 +496,8 @@ export const TourPlannerPage: React.FC = () => {
                   <input
                     name="totalBudget"
                     type="number"
-                    step="500000"
-                    min="1000000"
+                    step="any"
+                    min="0.01"
                     value={totalBudget}
                     onChange={(e) => setTotalBudget(Number(e.target.value))}
                     className="w-full py-2.5 px-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 font-bold text-orange-600"
@@ -571,22 +509,19 @@ export const TourPlannerPage: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                    Phương tiện di chuyển chính
+                    Phương tiện ước lượng giữa các điểm
                   </label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {[
-                      { id: 'car', label: 'Ô tô/Xe', icon: Car },
-                      { id: 'flight', label: 'Máy bay', icon: Plane },
-                      { id: 'train', label: 'Tàu hỏa', icon: Train },
-                      { id: 'motorbike', label: 'Xe máy', icon: Bike },
-                    ].map((item) => {
-                      const Icon = item.icon;
-                      const active = transportation === item.id;
+                  <div className="grid grid-cols-2 gap-2">
+                    {PLANNER_TRANSPORT_OPTIONS.map((item) => {
+                      const Icon = item.value === 'car' ? Car : Bike;
+                      const active = transportation === item.value;
                       return (
                         <button
-                          key={item.id}
+                          key={item.value}
                           type="button"
-                          onClick={() => setTransportation(item.id as any)}
+                          onClick={() => setTransportation(item.value)}
+                          aria-pressed={active}
+                          data-testid={`planner-transport-${item.value}`}
                           className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1 ${
                             active
                               ? 'border-sky-600 bg-sky-50 text-sky-800 font-bold shadow-sm'
@@ -599,24 +534,25 @@ export const TourPlannerPage: React.FC = () => {
                       );
                     })}
                   </div>
+                  <p className="mt-2 text-xs text-slate-500">ETA là ước lượng từ khoảng cách Haversine. Chưa hỗ trợ máy bay/tàu hoặc tính chặng và chi phí liên tỉnh.</p>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                    Nhịp độ di chuyển
+                    Nhịp độ lịch trình mới
                   </label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div>
                     {[
-                      { id: 'relaxed', label: 'Thư giãn', desc: '1-2 điểm/ngày' },
-                      { id: 'balanced', label: 'Cân bằng', desc: '2-3 điểm/ngày' },
-                      { id: 'packed', label: 'Khám phá nhiều', desc: '4+ điểm/ngày' },
+                      { id: 'balanced', label: 'Cân bằng', desc: BALANCED_PACING_DESCRIPTION },
                     ].map((item) => {
                       const active = pacing === item.id;
                       return (
                         <button
                           key={item.id}
                           type="button"
-                          onClick={() => setPacing(item.id as any)}
+                          onClick={() => setPacing(item.id)}
+                          aria-pressed={active}
+                          data-testid="planner-pacing-balanced"
                           className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center ${
                             active
                               ? 'border-orange-500 bg-orange-50 text-orange-800 font-bold shadow-sm'
@@ -631,6 +567,11 @@ export const TourPlannerPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+              {modeSelection.valid === false && (
+                <p role="alert" data-testid="planner-legacy-mode-warning" className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                  {modeSelection.message} Dữ liệu gốc vẫn được giữ nguyên; cần chọn lại trước khi tạo lịch mới.
+                </p>
+              )}
 
               {/* Preferences Multi-Select */}
               <div>
@@ -665,7 +606,7 @@ export const TourPlannerPage: React.FC = () => {
               <div className="pt-4">
                 <button
                   type="submit"
-                  disabled={isGenerating || mandatoryPlaceLoading}
+                  disabled={isGenerating || mandatoryPlaceLoading || modeSelection.valid === false}
                   className="w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-lg transition-all text-sm flex items-center justify-center gap-2 group"
                 >
                   {isGenerating ? (
@@ -692,7 +633,7 @@ export const TourPlannerPage: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <span className="bg-sky-100 text-sky-800 text-xs font-bold px-2.5 py-0.5 rounded-lg">
-                    {itinerary.daysCount} Ngày {Math.max(1, itinerary.daysCount - 1)} Đêm
+                    {itinerary.daysCount} Ngày {itinerary.nightsCount ?? Math.max(0, itinerary.daysCount - 1)} Đêm
                   </span>
                   <span className="text-slate-500 text-xs">
                     Khởi hành: {itinerary.departureCity} &rarr; {itinerary.destinationCity}
@@ -700,6 +641,15 @@ export const TourPlannerPage: React.FC = () => {
                 </div>
                 <h2 className="text-xl font-extrabold text-slate-900">{itinerary.title}</h2>
                 <p className="text-xs text-slate-500 mt-1">{itinerary.summary}</p>
+                <p className="text-xs text-slate-600 mt-2">Chi phí VND cho cả nhóm; lưu trú tính riêng theo số đêm, không phải báo giá.</p>
+                {itinerary.costAssumptions?.length ? (
+                  <details className="mt-2 text-xs text-slate-600">
+                    <summary className="cursor-pointer font-semibold">Giả định chi phí và khoản chưa bao gồm</summary>
+                    <ul className="mt-2 list-disc pl-4 space-y-1">
+                      {itinerary.costAssumptions.map((assumption) => <li key={assumption}>{assumption}</li>)}
+                    </ul>
+                  </details>
+                ) : null}
                 <div data-testid="generated-preferences" className="flex flex-wrap gap-1.5 mt-3">
                   {itinerary.preferences.length > 0 ? itinerary.preferences.map((preference) => (
                     <span key={preference} className="text-[11px] bg-orange-50 text-orange-800 border border-orange-200 px-2.5 py-1 rounded-full font-semibold">
@@ -711,36 +661,8 @@ export const TourPlannerPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Budget Assessment Badge */}
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 min-w-[280px]">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-slate-500">Ngân sách dự kiến:</span>
-                  <span className="font-bold text-slate-800">
-                    {new Intl.NumberFormat('vi-VN').format(itinerary.totalBudgetUserVND)}đ
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-xs mb-2">
-                  <span className="text-slate-500">Tổng chi phí ước tính:</span>
-                  <span className="font-extrabold text-orange-600">
-                    {new Intl.NumberFormat('vi-VN').format(itinerary.totalEstimatedCostVND)}đ
-                  </span>
-                </div>
-
-                <div
-                  className={`text-[11px] p-2 rounded-lg font-medium flex items-start gap-1.5 ${
-                    itinerary.budgetStatus === 'within_budget'
-                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                      : 'bg-amber-50 text-amber-900 border border-amber-200'
-                  }`}
-                >
-                  {itinerary.budgetStatus === 'within_budget' ? (
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                  ) : (
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
-                  )}
-                  <span>{itinerary.budgetAdvice}</span>
-                </div>
-              </div>
+              <PlannerBudgetNotice budget={itinerary.totalBudgetUserVND} estimate={itinerary.totalEstimatedCostVND}
+                onRevise={() => setItinerary(null)} />
             </div>
 
             {/* Split Grid: Left Details & Right Interactive Map */}
@@ -798,12 +720,18 @@ export const TourPlannerPage: React.FC = () => {
                           <h3 className="font-bold text-slate-800 text-sm">{day.themeTitle}</h3>
                         </div>
                         <span className="text-xs font-semibold text-orange-600">
-                          {new Intl.NumberFormat('vi-VN').format(day.dayEstimatedCostVND)}đ
+                          {new Intl.NumberFormat('vi-VN').format(day.dayEstimatedCostVND)}đ / nhóm
                         </span>
                       </div>
 
                       {/* Activities in this day */}
                       <div className="p-4 space-y-3.5">
+                        {(day.lodgingNights ?? 0) > 0 && (
+                          <p className="text-xs text-slate-600" data-testid="day-lodging-cost">
+                            Đã gồm lưu trú {day.lodgingNights} đêm: {new Intl.NumberFormat('vi-VN').format(day.lodgingEstimatedCostVND ?? 0)}đ / nhóm (ước tính 1 phòng).
+                            {day.lodgingCostSource && <span className="block">{day.lodgingCostSource}</span>}
+                          </p>
+                        )}
                         {day.activities.map((act, actIdx) => (
                           <div
                             key={act.id}
@@ -836,13 +764,14 @@ export const TourPlannerPage: React.FC = () => {
                                   </div>
                                   <h4 className="font-bold text-slate-900 text-sm">{act.title}</h4>
                                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">{act.description}</p>
+                                  {act.costSource && <p className="text-xs text-slate-500 mt-1" data-testid="activity-cost-source">{act.costSource}</p>}
 
                                   {/* Transit time & aerial distance note */}
                                   {act.aerialDistanceToNextKm !== undefined && (
                                     <div className="mt-2 text-[11px] text-sky-700 bg-sky-50 px-2 py-1 rounded inline-flex items-center gap-1">
                                       <Navigation className="w-3 h-3 text-sky-500" />
                                       <span>
-                                        Đến điểm kế tiếp: ~{act.aerialDistanceToNextKm.toFixed(1)} km đường chim bay (Haversine) • Thời gian ~{act.estimatedTransitMinutes} phút chỉ là ước lượng, không phải routing thực tế
+                                        Đến điểm kế tiếp: ~{act.aerialDistanceToNextKm.toFixed(1)} km đường chim bay (Haversine) • ETA giữa các điểm ~{act.estimatedTransitMinutes} phút là ước lượng từ khoảng cách Haversine, không phải tuyến đường bộ hoặc thời gian thực.
                                       </span>
                                     </div>
                                   )}
@@ -873,7 +802,7 @@ export const TourPlannerPage: React.FC = () => {
                                   </button>
                                   <button
                                     onClick={() => deleteActivity(day.dayNumber, act.id)}
-                                    disabled={Boolean(mandatoryPlace && act.placeId === mandatoryPlace.id)}
+                                    disabled={isMandatoryPlannerActivity(act) || Boolean(mandatoryPlace && act.placeId === mandatoryPlace.id)}
                                     className="p-1 rounded text-rose-400 hover:text-rose-600"
                                     title={mandatoryPlace && act.placeId === mandatoryPlace.id
                                       ? 'Địa điểm bắt buộc; quay lại cấu hình và bỏ chọn để xóa.'
@@ -914,9 +843,11 @@ export const TourPlannerPage: React.FC = () => {
                         <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
                           {itinerary.hotelSuggestion.address}
                         </p>
-                        <div className="mt-2 flex items-center justify-between">
-                          <span className="text-xs font-bold text-orange-600">
-                            {new Intl.NumberFormat('vi-VN').format(itinerary.hotelSuggestion.priceFrom)}đ / đêm
+                        <div className="mt-2 flex items-center justify-between gap-3">
+                          <span data-testid="hotel-estimate-source" className="text-xs text-slate-600">
+                            {(itinerary.nightsCount ?? Math.max(0, itinerary.daysCount - 1)) > 0
+                              ? itinerary.days.find((day) => (day.lodgingNights ?? 0) > 0)?.lodgingCostSource || 'Ước tính một phòng/nhóm/đêm; xem lưu trú từng ngày, chưa xác minh giá.'
+                              : 'Chuyến đi 0 đêm: khách sạn chỉ để tham khảo, không tính phí lưu trú.'}
                           </span>
                           <span className="text-xs text-emerald-600 font-medium">
                             Bayesian Score: {itinerary.hotelSuggestion.bayesianRating.toFixed(2)}★
@@ -942,7 +873,7 @@ export const TourPlannerPage: React.FC = () => {
                   </div>
 
                   {/* Leaflet Map Div */}
-                  <div ref={mapContainerRef} className="w-full h-[480px] z-10" />
+                  {googleMapsSelected() ? <GoogleMap height={480} points={itinerary.days.filter(d=>selectedDayTab==='all'||d.dayNumber===selectedDayTab).flatMap(d=>d.activities.map(a=>({id:a.id,name:a.title,latitude:a.latitude,longitude:a.longitude})))} selectedId={selectedActivityId || undefined} onSelect={setSelectedActivityId}/> : <div ref={mapContainerRef} className="w-full z-10" style={{ height: 480 }} />}
 
                   {/* Map Legend */}
                   <div className="p-3 bg-white border-t border-slate-100 flex flex-wrap items-center gap-3 text-xs text-slate-600">
@@ -971,20 +902,13 @@ export const TourPlannerPage: React.FC = () => {
                       disabled={isSavingTrip}
                       className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition-all text-center"
                     >
-                      {isSavingTrip ? 'Đang lưu...' : 'Lưu vào Chuyến đi'}
+                      {isSavingTrip ? 'Đang lưu...' : (itinerary.totalEstimatedCostVND > itinerary.totalBudgetUserVND ? 'Lưu phương án tham khảo' : 'Lưu vào Chuyến đi')}
                     </button>
                     <button
-                      onClick={() =>
-                        openBooking({
-                          serviceType: 'tour',
-                          serviceId: itinerary.id,
-                          serviceName: itinerary.title,
-                          unitPrice: itinerary.totalEstimatedCostVND,
-                        })
-                      }
+                      onClick={() => navigate('/tours')}
                       className="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold py-2.5 px-3 rounded-xl text-xs transition-all text-center"
                     >
-                      Đặt các dịch vụ
+                      Chọn tour có thể đặt
                     </button>
                   </div>
                 </div>

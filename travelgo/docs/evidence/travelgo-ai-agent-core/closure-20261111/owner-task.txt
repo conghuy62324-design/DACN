@@ -1,0 +1,218 @@
+# TASK — TRAVELGO AI AGENT CORE: FINAL FUNCTIONAL CLOSURE
+
+Tiếp tục trực tiếp Master Task M1 hiện tại.
+
+**Không khởi tạo lại dự án. Không viết lại Agent Core, Planner, Trip hoặc Booking đã triển khai.**
+
+Mục tiêu là xử lý các blocker thực tế còn lại và tiến tới nghiệm thu Agent Core bằng bằng chứng thực, không chỉ mock PASS.
+
+## 1. ĐỌC VÀ GIỮ BASELINE
+
+Đọc đầy đủ:
+
+- `docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md`
+- `docs/evidence/travelgo-ai-agent-core/`
+- Source hiện tại của Agent Core, tool registry, Planner, catalog, Trip và Booking.
+- Historical P1/P2 và sáu legacy failures.
+
+Giữ nguyên:
+
+- Core42/42 PASS.
+- Browser mock94/94 PASS.
+- Real catalog READ ONLY result.
+- Historical raw Qwen FAIL.
+- PostgreSQL25/25 unchanged, Trip27.
+- Existing uncommitted changes.
+
+Không reset working tree, xóa evidence hoặc sửa historical verdict.
+
+## 2. ƯU TIÊN 1 — FIX P1 TOOL SELECTION
+
+Lỗi đã xác nhận:
+
+Người dùng nói “Đổi sang xe máy, giữ thông tin còn lại”, nhưng raw Qwen chọn `compare_travel_options` thay vì `plan_trip`.
+
+Yêu cầu:
+
+1. Truy nguyên chính xác luồng input → server-verified slots → intent parsing → provider prompt/schema → raw decision → tool gate.
+2. Xác định vì sao model chọn nhầm operation.
+3. Sửa đúng nguyên nhân, không hard-code riêng một câu benchmark.
+4. Đối với yêu cầu chỉnh sửa rõ ràng, ưu tiên deterministic intent parsing được server xác minh.
+5. Dùng LLM cho yêu cầu cần hiểu ngôn ngữ tự nhiên phức tạp, nhưng output phải được backend xác thực.
+6. Không để model ghi đè verified slots hoặc tự chọn tool trái với thao tác đã được xác minh.
+7. Khi có mâu thuẫn giữa raw decision và verified intent, fail closed hoặc xử lý qua nhánh deterministic hợp lệ đã thiết kế; không âm thầm sửa raw verdict thành PASS.
+
+Kiểm thử các trường hợp:
+
+- Đổi xe máy/ô tô.
+- Tăng/giảm ngân sách.
+- Thêm/bớt ngày.
+- Đổi khách sạn.
+- Đổi nhà hàng.
+- Giữ nguyên các trường không sửa.
+- Câu phủ định, câu điều kiện và câu mơ hồ.
+- Stale session/revision/replay.
+
+Không đổi model liên tục hoặc retry inference để lấy kết quả đẹp.
+
+Phân biệt rõ:
+
+- Functional deterministic correction PASS.
+- Raw LLM semantic correctness PASS/FAIL.
+- Full Agent E2E PASS/FAIL.
+
+Chỉ đóng P1 khi có bằng chứng phù hợp với chính lỗi P1, không dùng mock thay thế.
+
+## 3. ƯU TIÊN 2 — CATALOG THẬT
+
+Tích hợp hoàn chỉnh khách sạn, nhà hàng, điểm tham quan từ dữ liệu TravelGo.
+
+Kiểm source thực tế:
+
+- Business registration.
+- Business approval/ACTIVE.
+- Place APPROVED.
+- Listing public visibility.
+- Hotel/restaurant/search filters.
+- Eligible sightseeing.
+- City/province eligibility.
+
+Hiện database được phép đọc chỉ có một hotel và một restaurant hợp lệ tại Đà Nẵng, không có sightseeing eligible.
+
+Hãy:
+
+1. Xác minh nguyên nhân thiếu sightseeing.
+2. Kiểm tra quy trình đăng ký/phê duyệt Place có sẵn.
+3. Xác định cách bổ sung dữ liệu hợp lệ thông qua chức năng quản trị hoặc môi trường staging riêng.
+4. Không dùng Phase35/test markers làm dữ liệu production.
+5. Không tạo fixture trong shared DB.
+6. Không giả định price_from là giá/phòng/đêm hoặc giá/người.
+7. Không tạo inventory/availability giả.
+
+Nếu dữ liệu thực sự chưa có, ghi `CATALOG_DATA_BLOCKED`, không sửa Planner để tự tạo địa điểm.
+
+Hoàn thiện các thành phần code độc lập với dữ liệu còn thiếu.
+
+## 4. ƯU TIÊN 3 — PLANNER VÀ RECOMMENDATIONS
+
+Dùng lại Planner và recommendation services đang có.
+
+Kiểm:
+
+- Hotel/restaurant hard filters.
+- Budget.
+- Amenities.
+- Preferences.
+- Exclusions.
+- Selected IDs.
+- Chi phí nhóm/ngày/đêm.
+- Giá chưa xác minh.
+- Replanning.
+- Warnings.
+- Nguồn dữ liệu.
+
+Các kết quả phải xác định được lấy từ dữ liệu thực hay in-memory test catalog.
+
+Không sửa expected để ép PASS.
+
+Không tuyên bố REAL DATABASE PLANNER PASS khi catalog chưa có sightseeing.
+
+## 5. ƯU TIÊN 4 — TRIP VÀ BOOKING
+
+Hoàn thiện code và test độc lập cho:
+
+- Get saved Trip.
+- Save Trip preview.
+- Explicit confirmation.
+- Update Trip.
+- Reopen Trip.
+- Owner authorization.
+- Optimistic concurrency.
+- Replay prevention.
+- Booking price preview.
+- Booking navigation.
+
+Không tạo Booking hoặc thanh toán tự động.
+
+Không ghi vào travelgo_dev hay travelgo_ai_m0_test.
+
+Nếu chưa có isolated staging được duyệt, giữ mutation LIVE là BLOCKED và xác định chính xác yêu cầu tối thiểu để nghiệm thu.
+
+Không sử dụng lại A/B maintenance handoff đã bị bác bỏ.
+
+## 6. ƯU TIÊN 5 — SÁU LEGACY FAILURES
+
+Kiểm từng suite FAIL:
+
+- Có phải regression thực sự từ thay đổi M1?
+- Có phải test harness chưa đáp ứng current contract?
+- Hay là incompatibility lịch sử đã tồn tại trước M1?
+
+Chỉ sửa production khi chứng minh được lỗi production.
+
+Nếu historical expected đã lỗi thời, đề xuất versioned contract tests phù hợp nhưng phải giữ nguyên original result, old assertions và historical evidence.
+
+Không xóa, skip hoặc chỉnh expected cũ chỉ để báo full GREEN.
+
+## 7. TEST THEO HƯỚNG TIẾT KIỆM CREDIT
+
+Thứ tự:
+
+A. Targeted unit tests.
+
+B. Integration tests.
+
+C. Browser mock desktop/mobile.
+
+D. Real catalog/Planner READ ONLY nếu có đủ dữ liệu.
+
+E. Real model + browser E2E chỉ sau khi có fresh owner approval, quota, manifest và giới hạn native POST rõ ràng.
+
+F. Real Trip mutation chỉ trong isolated staging được phép ghi.
+
+Không tự thực hiện E/F khi chưa có quyền hoặc preconditions.
+
+Không chạy lại full regression nhiều lần vì một lỗi nhỏ.
+
+Không mở rộng thành nghiên cứu PostgreSQL, Docker hoặc Google Maps.
+
+## 8. REPORT VÀ EXIT GATE
+
+Chỉ cập nhật:
+
+`docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md`
+
+Giữ evidence cũ và bổ sung evidence mới theo từng nhóm chức năng.
+
+Phải có bảng nghiệm thu:
+
+- Feature.
+- Code status.
+- Unit/mock.
+- Real DB.
+- Real model.
+- Real browser.
+- PASS/FAIL/BLOCKED.
+- Exact blocker.
+
+Chỉ kết luận:
+
+`TRAVELGO_AI_AGENT_CORE_READY`
+
+khi tất cả luồng bắt buộc có bằng chứng nghiệm thu thực tế.
+
+Nếu chưa đủ điều kiện:
+
+`TRAVELGO_AI_AGENT_CORE_PARTIAL`
+
+và ghi cụ thể những việc đã hoàn thành cùng blocker còn lại.
+
+**Không tạo hàng loạt NEXT TASK hoặc báo cáo mới cho từng bug nhỏ.**
+
+Hoàn thiện tối đa phần code thuộc phạm vi hiện tại, sửa các lỗi đã chứng minh, chạy targeted tests, cập nhật một báo cáo tổng.
+
+DỪNG trước bất kỳ database mutation, native inference chưa được phê duyệt hoặc triển khai public nào.
+
+Không Google Maps, GPS, Gemini paid API, VPS, commit, push hoặc deploy.
+
+**Tập trung hoàn thiện AI Agent và kiểm thử đúng những tính năng đã triển khai.**

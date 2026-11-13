@@ -3,8 +3,8 @@ import { Star, ShieldCheck, Info } from 'lucide-react';
 import { calculateBayesianScore, getBayesianTrustLevel } from '../../utils/bayesian';
 
 interface RatingBadgeProps {
-  rating: number;
-  reviewCount: number;
+  rating: number | null;
+  reviewCount: number | null;
   showBayesianDetail?: boolean;
   size?: 'sm' | 'md' | 'lg';
 }
@@ -15,6 +15,7 @@ export const RatingBadge: React.FC<RatingBadgeProps> = ({
   showBayesianDetail = false,
   size = 'md',
 }) => {
+  if(typeof rating!=='number'||!Number.isFinite(rating)||typeof reviewCount!=='number'||!Number.isInteger(reviewCount)||reviewCount<=0)return <span className="text-xs text-slate-500">Chưa có đánh giá xác minh</span>;
   const bayesianScore = calculateBayesianScore(reviewCount, rating);
   const trust = getBayesianTrustLevel(reviewCount);
 

@@ -1,0 +1,17 @@
+{
+  "at": "2026-11-10T18:21:45.826Z",
+  "stage": "DESIGN_REVIEW_BEFORE_FRONTEND_IMPLEMENTATION",
+  "approvalSha256": "364db33bc331537d72fdba2853c44f4d4cf0f548a43038a8a783a184c3ed7b7c",
+  "defaultMode": "G1; existing AgentConversation controller unchanged",
+  "G2": "Separate opt-in controller, actual existing endpoints, strict typed projection/metadata, no client history or constructed slots",
+  "privacy": "Exact LOCAL_DEMO_SLOTS_V1 notice/version/enabled/900s; separate acknowledgement. Backend text still describes old logout: preserve notice and add explicit current UI best-effort cleanup explanation; report observation, no backend change.",
+  "metadata": "Bind valid shape/id/revision/expiry to exact active request+token/generation. Continue response/error must same id and revision+1; start accepts only server returned revision1. 409 never advances metadata. Reset can return >previous revision due concurrent accepted turn. No guess when network/start error has unknown state.",
+  "lifecycle": "Auth-pinned Agent requests; no old token request overwritten with new account token. Abort/fence pending UI before auth changes; start best-effort revoke-all with captured still-valid JWT then clear local auth synchronously. No JWT revocation claim. Registry tracks opt-in participation only, no persisted IDs/revisions/messages/proof.",
+  "reload": "G1 default and empty transcript; no authenticated restore endpoint, do not restore server proof. Minimal tab participation marker (owner+deadline only) permits best-effort logout cleanup after reload; marker is never request authority.",
+  "fallback": "Neutral needs_input wording + user clicked labeled car/motorbike only; no auto resend/tool/retry; reset/end/Planner escape",
+  "safety": "No backend edits, native Ollama/PG/fixtures, candidateB rollout or global G2 enable. MOCK_ONLY browser uses all intercepted API and fails closed on unhandled network.",
+  "acceptanceSource": "docs/evidence/t-ai-04-g2-natural-correction-enum-investigation/independent-acceptance-plan.json",
+  "acceptanceCount": 18,
+  "tests": "Original10 G1 + new controller/contract/service/lifecycle tests; actual React browser mock API desktop1440x900/mobile390x844; builds/backend68/79/61/42/52 + API/auth; broad181 if runner permits, keep baseline failures",
+  "blockedFeatures": "No backend read/restore API; use explicit reset/new session instead of guessing revision. No production durability/global JWT logout."
+}

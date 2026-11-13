@@ -14,6 +14,10 @@ const PlaceDetailPage=React.lazy(()=>import('../pages/PlaceDetailPage').then(m=>
 const ToursPage=React.lazy(()=>import('../pages/ToursPage').then(m=>({default:m.ToursPage})));
 const TourDetailPage=React.lazy(()=>import('../pages/TourDetailPage').then(m=>({default:m.TourDetailPage})));
 const TourPlannerPage=React.lazy(()=>import('../pages/TourPlannerPage').then(m=>({default:m.TourPlannerPage})));
+const AssistantPage=React.lazy(()=>import('../pages/AssistantPage').then(m=>({default:m.AssistantPage})));
+const GoogleExplorePage=React.lazy(()=>import('../pages/GoogleExplorePage').then(m=>({default:m.GoogleExplorePage})));
+const PublicAssistantPage=React.lazy(()=>import('../pages/PublicAssistantPage').then(m=>({default:m.PublicAssistantPage})));
+const IntegrationPolicyPage=React.lazy(()=>import('../pages/IntegrationPolicyPage').then(m=>({default:m.IntegrationPolicyPage})));
 const MyTripsPage=React.lazy(()=>import('../pages/MyTripsPage').then(m=>({default:m.MyTripsPage})));
 const TripDetailPage=React.lazy(()=>import('../pages/TripDetailPage').then(m=>({default:m.TripDetailPage})));
 const BlogPage=React.lazy(()=>import('../pages/BlogPage').then(m=>({default:m.BlogPage})));
@@ -43,6 +47,8 @@ export const AppRouter:React.FC=()=> <Suspense fallback={<Loading/>}><Routes>
   <Route path="/" element={<CustomerLayout/>}>
     <Route index element={<HomePage/>}/><Route path="explore" element={<ExplorePage/>}/><Route path="tours" element={<ToursPage/>}/><Route path="tours/:id" element={<TourDetailPage/>}/><Route path="tour-planner" element={<TourPlannerPage/>}/><Route path="tickets" element={<TicketsPage/>}/><Route path="hotels" element={<HotelsPage/>}/><Route path="hotels/:id" element={<PlaceDetailPage/>}/><Route path="restaurants" element={<RestaurantsPage/>}/><Route path="restaurants/:id" element={<PlaceDetailPage/>}/><Route path="places/:id" element={<PlaceDetailPage/>}/><Route path="blog" element={<BlogPage/>}/><Route path="blog/create" element={<BlogCreatePage/>}/><Route path="blog/:id" element={<BlogDetailPage/>}/><Route path="login" element={<LoginPage/>}/><Route path="register" element={<RegisterPage/>}/>
     <Route element={<ProtectedRoute roles={['CUSTOMER','PARTNER','SUPER_ADMIN']}/>}><Route path="favorites" element={<FavoritesPage/>}/><Route path="my-trips" element={<MyTripsPage/>}/><Route path="my-trips/:id" element={<TripDetailPage/>}/><Route path="profile" element={<ProfilePage/>}/><Route path="bookings" element={<BookingsPage/>}/><Route path="become-partner" element={<BecomePartnerPage/>}/></Route>
+    <Route element={<ProtectedRoute roles={['CUSTOMER']}/>}><Route path="assistant" element={<AssistantPage/>}/><Route path="google-explore" element={<GoogleExplorePage/>}/><Route path="assistant-public" element={<PublicAssistantPage/>}/></Route>
+    <Route path="privacy" element={<IntegrationPolicyPage/>}/><Route path="terms" element={<IntegrationPolicyPage/>}/>
     <Route path="*" element={<NotFoundPage/>}/>
   </Route>
   <Route element={<ProtectedRoute roles={['SUPER_ADMIN']}/>}><Route path="/admin" element={<AdminLayout/>}><Route index element={<AdminDashboardPage/>}/><Route path="partner-applications" element={<PartnerApplicationsPage/>}/><Route path="places" element={<AdminModerationPage/>}/><Route path="places/:id" element={<AdminModerationPage/>}/><Route path="tours" element={<AdminModerationPage/>}/><Route path="tours/:id" element={<AdminModerationPage/>}/><Route path="blogs" element={<AdminModerationPage/>}/><Route path="blogs/:id" element={<AdminModerationPage/>}/><Route path=":section" element={<AdminSectionPage/>}/></Route></Route>

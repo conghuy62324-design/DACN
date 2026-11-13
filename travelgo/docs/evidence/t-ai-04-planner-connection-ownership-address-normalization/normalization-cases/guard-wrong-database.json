@@ -1,0 +1,270 @@
+{
+  "id": "guard-wrong-database",
+  "tier": "OFFLINE_SENSOR_CHILD",
+  "result": null,
+  "error": {
+    "name": "AssertionError",
+    "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'travelgo_db'\n- 'travelgo_ai_m0_test'\n            ^\n"
+  },
+  "events": [
+    {
+      "sequence": 1,
+      "at": "2026-11-11T09:17:38.913Z",
+      "type": "CREATE",
+      "id": "dc4c484d-85ca-446c-a2b2-6da74d801405",
+      "factory": "norm-sensor",
+      "token": "44de0ae751014ef9a10e8355e9992566",
+      "application_name": "og-norm-sensor-44de0ae751014ef9a10e8355e9992566",
+      "state": "CREATED",
+      "config": {
+        "host": "127.0.0.1",
+        "port": 5432,
+        "database": "travelgo_ai_m0_test",
+        "user": "postgres"
+      },
+      "identity": null,
+      "physical": null
+    },
+    {
+      "sequence": 2,
+      "at": "2026-11-11T09:17:38.913Z",
+      "type": "PHYSICAL_OPEN",
+      "instanceId": "dc4c484d-85ca-446c-a2b2-6da74d801405",
+      "factory": "norm-sensor",
+      "state": "PENDING_REGISTRATION",
+      "physical": {
+        "expectedEndpoint": {
+          "host": "127.0.0.1",
+          "port": 5432
+        },
+        "localAddress": "127.0.0.1",
+        "localPort": 61001,
+        "remoteAddress": "127.0.0.1",
+        "remotePort": 5432
+      },
+      "startup": {
+        "application_name": "og-norm-sensor-44de0ae751014ef9a10e8355e9992566",
+        "options": "-c default_transaction_read_only=on -c statement_timeout=15000 -c idle_in_transaction_session_timeout=30000",
+        "database": "travelgo_ai_m0_test",
+        "user": "postgres"
+      }
+    },
+    {
+      "sequence": 3,
+      "at": "2026-11-11T09:17:38.914Z",
+      "type": "RAW_SELF_IDENTITY",
+      "instanceId": "dc4c484d-85ca-446c-a2b2-6da74d801405",
+      "row": {
+        "database": "travelgo_db",
+        "role": "postgres",
+        "pid": 20001,
+        "pg_backend_pid": 20001,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-norm-sensor-44de0ae751014ef9a10e8355e9992566",
+        "usename": "postgres",
+        "datname": "travelgo_ai_m0_test",
+        "backend_type": "client backend",
+        "client_addr": "172.18.0.1/32",
+        "client_port": 47448,
+        "inet_client_addr": "172.18.0.1/32",
+        "inet_client_port": 47448,
+        "server_addr": "172.18.0.3/32",
+        "server_port": 5432,
+        "default_transaction_read_only": "on",
+        "transaction_read_only": "on",
+        "statement_timeout": "15s",
+        "sentinel": "hugotravel-isolated-test-database-v1"
+      }
+    },
+    {
+      "sequence": 4,
+      "at": "2026-11-11T09:17:38.915Z",
+      "type": "REGISTRATION_FAIL",
+      "instanceId": "dc4c484d-85ca-446c-a2b2-6da74d801405",
+      "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'travelgo_db'\n- 'travelgo_ai_m0_test'\n            ^\n"
+    },
+    {
+      "sequence": 5,
+      "at": "2026-11-11T09:17:38.915Z",
+      "type": "DISPOSE_START",
+      "instanceId": "dc4c484d-85ca-446c-a2b2-6da74d801405"
+    },
+    {
+      "sequence": 6,
+      "at": "2026-11-11T09:17:38.915Z",
+      "type": "DISPOSE_PASS",
+      "instanceId": "dc4c484d-85ca-446c-a2b2-6da74d801405",
+      "identity": null
+    }
+  ],
+  "created": 1,
+  "disposed": 1,
+  "lateRejected": 4,
+  "lateDispatched": 0,
+  "fence": {
+    "stopped": true,
+    "closed": false,
+    "current": "guard-wrong-database",
+    "firstFailure": {
+      "caseId": "guard-wrong-database",
+      "phase": "ownership",
+      "error": {
+        "name": "AssertionError",
+        "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'travelgo_db'\n- 'travelgo_ai_m0_test'\n            ^\n",
+        "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'travelgo_db'\n- 'travelgo_ai_m0_test'\n            ^\n\n    at OwnershipRegistry.register (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\ownership-registry.cjs:18:10)\n    at ManagedClient.connect (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\managed-connections.cjs:10:543)\n    at async guardCase (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:31:2)\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:51:14"
+      }
+    },
+    "secondaryFailures": [
+      {
+        "caseId": "guard-wrong-database",
+        "phase": "physical-connect",
+        "error": {
+          "name": "AssertionError",
+          "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'travelgo_db'\n- 'travelgo_ai_m0_test'\n            ^\n",
+          "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'travelgo_db'\n- 'travelgo_ai_m0_test'\n            ^\n\n    at OwnershipRegistry.register (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\ownership-registry.cjs:18:10)\n    at ManagedClient.connect (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\managed-connections.cjs:10:543)\n    at async guardCase (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:31:2)\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:51:14"
+        }
+      },
+      {
+        "caseId": "guard-wrong-database",
+        "phase": "normalization-acceptance",
+        "error": {
+          "name": "AssertionError",
+          "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'travelgo_db'\n- 'travelgo_ai_m0_test'\n            ^\n",
+          "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'travelgo_db'\n- 'travelgo_ai_m0_test'\n            ^\n\n    at OwnershipRegistry.register (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\ownership-registry.cjs:18:10)\n    at ManagedClient.connect (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\managed-connections.cjs:10:543)\n    at async guardCase (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:31:2)\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:51:14"
+        }
+      },
+      {
+        "caseId": "guard-wrong-database",
+        "phase": "dispatch:agent",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:55:119"
+        }
+      },
+      {
+        "caseId": "guard-wrong-database",
+        "phase": "dispatch:native",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:55:119"
+        }
+      },
+      {
+        "caseId": "guard-wrong-database",
+        "phase": "dispatch:tool",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:55:119"
+        }
+      },
+      {
+        "caseId": "guard-wrong-database",
+        "phase": "dispatch:operator",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:55:119"
+        }
+      }
+    ],
+    "events": [
+      {
+        "sequence": 1,
+        "type": "CASE_START",
+        "caseId": "guard-wrong-database"
+      },
+      {
+        "sequence": 2,
+        "type": "GLOBAL_STOP",
+        "caseId": "guard-wrong-database",
+        "phase": "ownership",
+        "error": {
+          "name": "AssertionError",
+          "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'travelgo_db'\n- 'travelgo_ai_m0_test'\n            ^\n",
+          "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'travelgo_db'\n- 'travelgo_ai_m0_test'\n            ^\n\n    at OwnershipRegistry.register (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\ownership-registry.cjs:18:10)\n    at ManagedClient.connect (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\managed-connections.cjs:10:543)\n    at async guardCase (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:31:2)\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:51:14"
+        }
+      },
+      {
+        "sequence": 3,
+        "type": "GLOBAL_STOP",
+        "caseId": "guard-wrong-database",
+        "phase": "physical-connect",
+        "error": {
+          "name": "AssertionError",
+          "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'travelgo_db'\n- 'travelgo_ai_m0_test'\n            ^\n",
+          "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'travelgo_db'\n- 'travelgo_ai_m0_test'\n            ^\n\n    at OwnershipRegistry.register (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\ownership-registry.cjs:18:10)\n    at ManagedClient.connect (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\managed-connections.cjs:10:543)\n    at async guardCase (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:31:2)\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:51:14"
+        }
+      },
+      {
+        "sequence": 4,
+        "type": "GLOBAL_STOP",
+        "caseId": "guard-wrong-database",
+        "phase": "normalization-acceptance",
+        "error": {
+          "name": "AssertionError",
+          "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'travelgo_db'\n- 'travelgo_ai_m0_test'\n            ^\n",
+          "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'travelgo_db'\n- 'travelgo_ai_m0_test'\n            ^\n\n    at OwnershipRegistry.register (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\ownership-registry.cjs:18:10)\n    at ManagedClient.connect (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\managed-connections.cjs:10:543)\n    at async guardCase (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:31:2)\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:51:14"
+        }
+      },
+      {
+        "sequence": 5,
+        "type": "GLOBAL_STOP",
+        "caseId": "guard-wrong-database",
+        "phase": "dispatch:agent",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:55:119"
+        }
+      },
+      {
+        "sequence": 6,
+        "type": "GLOBAL_STOP",
+        "caseId": "guard-wrong-database",
+        "phase": "dispatch:native",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:55:119"
+        }
+      },
+      {
+        "sequence": 7,
+        "type": "GLOBAL_STOP",
+        "caseId": "guard-wrong-database",
+        "phase": "dispatch:tool",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:55:119"
+        }
+      },
+      {
+        "sequence": 8,
+        "type": "GLOBAL_STOP",
+        "caseId": "guard-wrong-database",
+        "phase": "dispatch:operator",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-address-normalization\\normalization-child.cjs:55:119"
+        }
+      }
+    ],
+    "agentDispatches": [],
+    "nativeDispatches": [],
+    "toolDispatches": [],
+    "operatorDispatches": [],
+    "retry": 0
+  },
+  "network": {
+    "pid": 17988,
+    "mode": "OFFLINE",
+    "sockets": [],
+    "blocked": [],
+    "http": 0
+  }
+}

@@ -1,0 +1,506 @@
+# TASK T-AI-04-G2-FRONTEND-INTEGRATION-AND-LOGOUT
+
+Vai trò: Senior React/TypeScript Engineer, Backend Integration Engineer, UX Designer, Security Engineer và QA Lead của TravelGo.
+
+## MỤC TIÊU
+
+Hoàn thiện giao diện AI Agent TravelGo để hỗ trợ G2 Verified History trong chế độ local/demo.
+
+Người dùng phải có thể:
+- Bật G2 một cách chủ động khi backend demo cho phép.
+- Bắt đầu phiên hội thoại.
+- Bổ sung thông tin qua nhiều lượt chat.
+- Chỉnh sửa ngân sách, địa điểm, ngày và phương tiện.
+- Xác nhận lại khi AI yêu cầu.
+- Reset hoặc kết thúc cuộc hội thoại.
+- Đăng xuất mà không làm lộ phiên của tài khoản trước.
+- Sử dụng thuận tiện trên desktop và mobile.
+
+Đây là task IMPLEMENTATION FRONTEND + OFFLINE ACCEPTANCE.
+
+ĐƯỢC PHÉP sửa frontend và các frontend tests có liên quan.
+
+KHÔNG sửa thuật toán AI, SYSTEM prompt, execution provenance hoặc G2 backend contract.
+
+KHÔNG chạy Ollama inference hoặc truy cập PostgreSQL.
+
+## 1. ĐỌC BASELINE
+
+Đọc kỹ:
+
+1. `docs/HUGO_T_AI_04_G2_NATURAL_CORRECTION_ENUM_INVESTIGATION_REPORT.md`
+2. `docs/HUGO_T_AI_04_G2_VERIFIED_HISTORY_REPORT.md`
+3. `docs/HUGO_T_AI_04_G2_LIVE_MULTI_TURN_VALIDATION_REPORT.md`
+4. `docs/HUGO_T_AI_04_G2_RAW_CLARIFY_CONTROLLED_DIAGNOSTIC_REPORT.md`
+
+Đọc thêm 18 frontend acceptance cases từ investigation report.
+
+Kiểm tra source hiện hành:
+
+- `frontend/src/pages/AssistantPage.tsx`
+- Frontend Agent service/types/conversation/contract utilities.
+- Frontend API service/interceptor.
+- AuthContext/logout.
+- Privacy consent modal.
+- Backend Agent routes.
+- Backend verifiedHistory contract.
+
+Tìm đúng path nếu cấu trúc hiện tại khác.
+
+Baseline:
+
+- G2 offline 68/68 PASS.
+- Natural Proof 79/79 PASS.
+- Compatibility 61/61 PASS.
+- Correction 42/42 PASS.
+- Completeness 52/52 PASS.
+- Original legacy 145 PASS /36 FAIL.
+- P1 raw NLU OPEN.
+- P2 runtime OPEN.
+- G2 local/demo, default OFF.
+- Frontend chưa có G2 envelope.
+- Backend verified state mất khi restart.
+- Session absolute TTL 15 phút.
+- Candidate SYSTEM B chưa production-approved.
+
+## 2. DESIGN REVIEW TRƯỚC IMPLEMENTATION
+
+Kiểm tra frontend hiện có để tái sử dụng:
+
+- Chat layout.
+- Message rendering.
+- Loading/error states.
+- Authentication.
+- API client.
+- Privacy modal.
+- Existing G1 conversation handling.
+
+Không làm lại toàn bộ AssistantPage nếu không cần.
+
+Thiết kế G2 như một mode riêng có opt-in rõ ràng.
+
+G1 vẫn là chế độ mặc định.
+
+Nếu backend G2 disabled, UI không được giả rằng nó hoạt động.
+
+Không dùng client feature flag làm quyền bật G2 server-side.
+
+Nếu phát hiện backend contract không thể hỗ trợ một tính năng cần thiết, ghi BLOCKED và đề xuất task backend riêng thay vì tự sửa backend ngoài scope.
+
+## 3. G2 API INTEGRATION
+
+Tích hợp đúng các endpoint hiện có:
+
+- GET `/api/agent/verified-history/privacy`
+- POST `/api/agent/chat`
+- POST `/api/agent/verified-history/:id/reset`
+- DELETE `/api/agent/verified-history/:id`
+- DELETE `/api/agent/verified-history`
+
+Dùng chính xác request/response schema trong source.
+
+G2 request phải có:
+
+- Server-created conversation ID sau start.
+- Correct action start/continue.
+- Fresh UUID requestId.
+- Exact latest revision.
+- Required consentVersion.
+- Current user message.
+
+Không gửi:
+
+- Client-supplied history để cấp proof.
+- Client-generated conversation owner.
+- User ID tùy ý.
+- Verified slots tự dựng từ frontend.
+- Tool arguments tự thêm.
+- Bypass hoặc skip-completeness flags.
+
+Frontend có thể giữ message history để hiển thị, nhưng không được coi nó là verified server context.
+
+## 4. TYPES VÀ RESPONSE CONTRACT
+
+Mở rộng typed Agent frontend interfaces theo contract backend.
+
+Bắt buộc hỗ trợ:
+
+- G1 STATELESS context.
+- G2 LOCAL_DEMO_VERIFIED_HISTORY context.
+- Conversation metadata.
+- id/revision/expiresAt.
+- needs_input.
+- completed.
+- unsupported.
+- Safe error responses.
+- Session unavailable.
+- Revision conflict.
+- Replay conflict.
+- Consent required.
+- Rate limit.
+- Provider timeout/unavailable.
+
+Không nới validation để chấp nhận response tùy ý.
+
+Đặc biệt: Agent API error interceptor hiện có thể bỏ conversation metadata hợp lệ.
+
+Sửa ở Agent-specific error handling để giữ metadata server trả về khi hợp lệ và thuộc đúng active session.
+
+Không sửa global interceptor theo cách làm ảnh hưởng các API Trip/Booking/Auth.
+
+Không nhận metadata từ error của session khác hoặc từ dữ liệu client không được xác minh.
+
+## 5. GIAO DIỆN G2 LOCAL/DEMO
+
+Trong AssistantPage, thêm lựa chọn sử dụng chế độ hội thoại G2 khi backend cho phép.
+
+Khi user chọn G2:
+
+1. Gọi privacy endpoint.
+2. Hiển thị notice đúng backend contract.
+3. Giải thích dữ liệu verified slots chỉ giữ trong RAM server.
+4. Thông báo TTL 15 phút.
+5. Thông báo state có thể mất khi backend restart.
+6. Yêu cầu người dùng đồng ý trước khi start.
+7. Không tự động bật external AI provider hoặc personalization.
+
+G2 retention acknowledgement phải tách biệt với các consent hiện hành.
+
+Không dùng các thông báo gây hiểu nhầm như:
+- "AI ghi nhớ vĩnh viễn."
+- "Lịch sử đã được lưu vào tài khoản."
+- "Dữ liệu sẽ luôn được khôi phục."
+- "Logout chắc chắn vô hiệu hóa mọi JWT."
+
+Nếu backend G2 disabled, hiển thị chế độ không khả dụng và giữ G1 hoạt động bình thường.
+
+## 6. MULTI-TURN CHAT UX
+
+Hỗ trợ:
+
+- Start một intent.
+- Hiển thị câu hỏi bổ sung.
+- Continue cùng conversation.
+- Hiển thị thông tin đã nhập trong chat.
+- Sửa thông tin bằng tin nhắn mới.
+- Trạng thái loading.
+- Error handling.
+- Expiry.
+- Reset.
+- End session.
+
+Không tự dựng dữ liệu verified slots trên frontend.
+
+Không tự ghép các user message cũ thành một prompt đầy đủ.
+
+Không tự gọi Planner khi frontend nghĩ đã đủ required fields.
+
+Chỉ backend và model theo contract hiện hành được quyết định tool execution.
+
+Nếu người dùng thay đổi thông tin, gửi current user message mới với correct revision.
+
+Nếu backend trả revision mới ngay cả khi provider error, dùng metadata hợp lệ để cập nhật active session; không tự quay lại revision cũ.
+
+## 7. SAFE CONFIRMATION UX
+
+Đây là phần ưu tiên để xử lý giới hạn NLU hiện tại.
+
+Tình huống:
+
+User đã chọn xe máy nhưng Qwen3 vẫn trả needs_input transportation.
+
+UI không được mặc định hiển thị:
+
+"Bạn chưa chọn phương tiện."
+
+Thay bằng câu trung lập, ví dụ:
+
+"Agent đang yêu cầu bạn xác nhận lại phương tiện."
+
+Nếu missingFields có transportation, có thể hiển thị hai lựa chọn:
+
+- Xe máy
+- Ô tô
+
+Chỉ khi người dùng chủ động bấm lựa chọn:
+
+Xe máy → gửi current message mới:
+
+`Phương tiện: motorbike`
+
+Ô tô → gửi:
+
+`Phương tiện: car`
+
+Phải gửi qua G2 request bình thường:
+
+- Fresh requestId.
+- Latest revision.
+- Same owned conversation.
+- Normal quota.
+- Original backend validation.
+
+Không auto-resend khi AI hỏi lại.
+
+Không tự chuyển raw clarify thành tool.
+
+Không tự gọi Planner.
+
+Không dùng bare `motorbike` như một short patch chưa được grammar hỗ trợ.
+
+Nếu người dùng đã xác nhận mà Agent vẫn hỏi lại, phải cho phép:
+- Nhập thông tin bằng tay.
+- Thay đổi lựa chọn.
+- Reset cuộc hội thoại.
+- Hủy phiên.
+
+Không tạo vòng lặp tự động gửi cùng nội dung.
+
+Không quảng cáo explicit confirmation là chắc chắn chữa mọi raw NLU failure.
+
+## 8. REQUEST ID, REVISION VÀ CONCURRENCY
+
+Mỗi logical request mới cần fresh UUID.
+
+Không reuse requestId khi người dùng thử lại sau lỗi.
+
+Không tự retry inference để vượt timeout hoặc quota.
+
+Prevent duplicate submit khi một G2 turn đang active.
+
+Khi backend trả 409:
+- Không ghi đè current session bằng stale revision.
+- Hiển thị trạng thái phù hợp.
+- Cho user refresh/reset/restart theo contract.
+
+Khi người dùng chuyển tài khoản hoặc logout:
+- Hủy/fence các request đang pending khi có thể.
+- Increment local auth/session generation.
+- Không render response cũ vào phiên người dùng mới.
+
+Không dùng last-response-wins.
+
+## 9. RESET, EXPIRY, RELOAD VÀ LOGOUT
+
+### Reset
+
+Gọi endpoint reset với ownership và correct active session.
+
+Clear chat context/pending actions theo response backend.
+
+Không giữ verified fields cũ trong UI như state đang còn hiệu lực.
+
+### Revoke session
+
+Cho phép kết thúc G2 session bằng endpoint revoke one.
+
+Clear active ID/revision ở frontend.
+
+### Expiry/restart
+
+Nếu backend trả session unavailable:
+- Không tự tái tạo verified state từ client messages.
+- Cho user bắt đầu session mới.
+- Giải thích phiên cũ không còn khả dụng.
+
+Trang reload phải có behavior rõ ràng, được test; không khẳng định server state vẫn còn nếu không có cách khôi phục được xác thực.
+
+### Logout
+
+Trong luồng logout:
+
+1. Ngừng/fence Agent requests.
+2. Nếu có authenticated G2 context, thử gọi revoke-all hoặc revoke relevant owned sessions khi token còn hợp lệ.
+3. Clear client Agent state.
+4. Clear auth session theo flow hiện hành.
+
+Revoke là best effort, không được ngăn người dùng đăng xuất chỉ vì mạng lỗi.
+
+Nếu revoke thất bại:
+- Không hiển thị lại dữ liệu của tài khoản cũ.
+- Không nói server đã xóa thành công.
+- Không nói JWT đã bị revoke.
+- Server TTL vẫn là giới hạn retention dự phòng.
+
+Chú ý các race giữa logout, request pending và account switch.
+
+## 10. THIẾT KẾ UI
+
+Giữ phong cách giao diện TravelGo hiện có.
+
+Ưu tiên:
+
+- Giao diện gọn, dễ hiểu.
+- Phân biệt tin nhắn user/assistant.
+- Trạng thái đang xử lý rõ ràng.
+- Missing-field confirmation dễ thao tác.
+- Các hành động Reset/Kết thúc phiên dễ tìm.
+- Thông báo privacy không che mất nội dung chat.
+- Không bị tràn nội dung trên mobile.
+- Không duplicate message sau request conflict.
+- Không làm hỏng G1.
+
+Không thay đổi giao diện những module TravelGo khác.
+
+## 11. FRONTEND ACCEPTANCE TESTS
+
+Dùng 18 cases D01–D18 trong investigation report làm baseline.
+
+Triển khai test mới trên actual frontend components/service/controller.
+
+Bắt buộc bao phủ:
+
+A. Mode và privacy:
+- G2 disabled.
+- G2 enabled.
+- Notice/version acknowledgement.
+- G1 không regression.
+
+B. Chat:
+- Start/continue.
+- Server-created ID.
+- Correct revision.
+- Fresh requestId.
+- Zero client history authority.
+- needs_input/completed/error.
+
+C. Confirmation:
+- Model redundant clarify.
+- User chọn xe máy.
+- User chọn ô tô.
+- Không auto-resend.
+- Repeated clarify escape.
+- Không auto tool execution.
+
+D. Security/lifecycle:
+- Expiry.
+- Backend restart/session unavailable.
+- Reset/revoke.
+- Logout.
+- Account switch.
+- In-flight response after logout.
+- Stale revision/replay.
+- Error metadata đúng session.
+- No cross-user UI leak.
+
+E. Responsive:
+- Desktop 1440×900.
+- Mobile 390×844.
+- Chat messages, modals, confirmations và controls không bị che hoặc tràn.
+
+Không cần live Ollama cho task này.
+
+Dùng mock backend responses để kiểm frontend behavior.
+
+Có thể chạy browser E2E với mocked network, nhưng phải ghi rõ MOCK_ONLY.
+
+Không dùng fake itinerary/price để công bố Planner fidelity.
+
+## 12. REGRESSION
+
+Chạy tối thiểu:
+
+- Frontend Agent conversation tests.
+- New G2 frontend tests.
+- Frontend build.
+- 68 G2 backend tests.
+- 79 Natural Proof.
+- 61 Compatibility Acceptance.
+- 42 Correction.
+- 52 Completeness.
+- Applicable backend API/auth tests.
+- Backend build.
+
+Rà soát original legacy 181 theo khả năng runner và báo kết quả thật, không thay assertions.
+
+Giữ phân biệt:
+- Original legacy.
+- Production-policy acceptance.
+- Mocked frontend integration.
+- Live NLU quality.
+
+Nếu backend source không đổi và broad regression không chạy lại, ghi NOT RUN cùng sealed baseline, không ghi thành PASS mới.
+
+## 13. BẢO VỆ PHẠM VI
+
+Không:
+
+- Sửa G1/G2 SYSTEM prompt.
+- Áp dụng candidate B.
+- Sửa currentTurnProof/verifiedHistory/AgentService algorithm.
+- Sửa execution gate.
+- Thêm tool.
+- Cho AI sửa Trip/Booking.
+- Chạy Ollama inference/load-only.
+- Đổi Qwen3/model/digest/context/timeout.
+- Truy cập PostgreSQL.
+- Migration/reset/seed/truncate.
+- Chạy V2 LIVE benchmark.
+- Deploy production.
+- Commit/push.
+- Bật G2 toàn cục.
+
+Giữ source/benchmark/historical evidence integrity.
+
+Nếu phát hiện bug backend mới, mô tả chính xác và đề xuất task backend riêng.
+
+## 14. ĐIỀU KIỆN NGHIỆM THU
+
+Task chỉ được đánh dấu FRONTEND_DEMO_ACCEPTANCE_PASS khi:
+
+1. G2 UI opt-in hoạt động.
+2. Privacy notice và acknowledgement đúng.
+3. Start/continue/revision/requestId đúng contract.
+4. Không client history cấp proof.
+5. G2 needs_input được hiển thị chính xác.
+6. User có thể chủ động xác nhận transportation.
+7. Không auto-resend hoặc auto-create tool.
+8. Reset/revoke/expiry/logout hoạt động theo giới hạn local/demo.
+9. Không cross-account UI leak hoặc stale response.
+10. G1 không bị regression.
+11. Desktop/mobile usable.
+12. Tests/build PASS và source integrity rõ ràng.
+
+Nếu chỉ đạt mocked-browser acceptance, ghi đúng phạm vi đó.
+
+Không đánh dấu G2 LIVE NLU PASS chỉ nhờ frontend.
+
+P1/P2 vẫn OPEN.
+
+## 15. BÁO CÁO
+
+Tạo:
+
+`docs/HUGO_T_AI_04_G2_FRONTEND_INTEGRATION_LOGOUT_REPORT.md`
+
+Evidence:
+
+`docs/evidence/t-ai-04-g2-frontend-integration-logout/`
+
+Báo cáo gồm:
+
+1. Baseline.
+2. Source diff.
+3. Frontend G1/G2 mode architecture.
+4. API integration.
+5. Session lifecycle.
+6. Confirmation UX.
+7. Logout/revoke/account-switch.
+8. Auth/privacy/security tests.
+9. Desktop/mobile results.
+10. Frontend/backend regression.
+11. Build.
+12. Integrity.
+13. Known limitations.
+14. P1/P2 status.
+15. NEXT TASK PLAN.
+
+NEXT TASK đề xuất:
+
+`T-AI-04-G2-BROWSER-AND-REAL-TOOL-E2E`
+
+Task tiếp theo phải có approval riêng cho LIVE inference hoặc PostgreSQL/service fixture nếu cần.
+
+Dừng sau implementation/report.
+
+Không tự chạy LIVE, V2 hoặc deploy.

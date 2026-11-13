@@ -1,0 +1,264 @@
+{
+  "provider": "MOCK_ONLY",
+  "authentication": "Real token middleware; synthetic in-memory principal, not login E2E",
+  "catalog": "REAL_POSTGRESQL_READ_ONLY",
+  "results": [
+    {
+      "tool": "search_places",
+      "input": {
+        "destinationCity": "Phase35 City 1792068654001-1018",
+        "dailyBudgetPerPerson": 500000,
+        "preferences": []
+      },
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "status": "completed",
+          "reply": "Kết quả dưới đây lấy từ catalog công khai.",
+          "result": {
+            "type": "places",
+            "source": "RecommendationService",
+            "places": [
+              {
+                "id": "a5eb2240-ad66-4972-a82d-8cd542e98a9f",
+                "name": "Phase 35 Landmark 1792068654001-1018",
+                "category": "attraction",
+                "city": "Phase35 City 1792068654001-1018",
+                "province": "Phase35 City 1792068654001-1018",
+                "priceFrom": 125000,
+                "catalogPriceAvailable": true
+              }
+            ],
+            "warnings": [
+              "Giá là dữ liệu catalog, không phải báo giá đặt dịch vụ."
+            ]
+          },
+          "history": [
+            {
+              "role": "user",
+              "content": "MOCK_ONLY provider decision for read-only adapter verification"
+            },
+            {
+              "role": "assistant",
+              "content": "Kết quả dưới đây lấy từ catalog công khai."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    },
+    {
+      "tool": "plan_trip",
+      "input": {
+        "departureCity": "Hà Nội",
+        "destinationCity": "Phase35 City 1792068654001-1018",
+        "startDate": "2030-06-15",
+        "endDate": "2030-06-16",
+        "adults": 2,
+        "children": 0,
+        "totalBudget": 4000000,
+        "transportation": "car",
+        "preferences": []
+      },
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "status": "completed",
+          "reply": "Đã tạo bản ước tính bằng Planner. Hãy xem lịch trình, chi phí và cảnh báo; chưa lưu Trip.",
+          "result": {
+            "type": "itinerary",
+            "source": "TourPlannerService",
+            "itinerary": {
+              "id": "itinerary-1794105587941",
+              "title": "Hành trình 2N1Đ khám phá Phase35 City 1792068654001-1018",
+              "departureCity": "Hà Nội",
+              "destinationCity": "Phase35 City 1792068654001-1018",
+              "startDate": "2030-06-15",
+              "endDate": "2030-06-16",
+              "daysCount": 2,
+              "nightsCount": 1,
+              "costBasis": "GROUP_VND_V1",
+              "transportation": "car",
+              "costAssumptions": [
+                "Mọi khoản activity, tổng ngày và tổng chuyến là VND cho cả nhóm, làm tròn từng khoản đến 1 VND; ngân sách cũng cho cả nhóm.",
+                "Ước tính hoạt động/ăn uống quy đổi mỗi người lớn = 1, trẻ em = 0,7; đây là giả định lập kế hoạch, không phải chính sách giá của nhà cung cấp.",
+                "priceFrom chưa có đơn vị và sức chứa đáng tin cậy. Tạm ước tính một phòng cho cả nhóm mỗi đêm; không bảo đảm đủ chỗ hoặc đúng giá phòng/đêm.",
+                "Lưu trú dùng priceFrom khách sạn, thiếu giá dùng 400.000đ/nhóm/đêm; chỉ tính N−1 đêm. Phí này tách khỏi activity khách sạn có giá 0đ.",
+                "Tham quan dùng priceFrom, thiếu giá tạm tính 300.000đ/người lớn quy đổi/lượt. Bữa trưa dùng priceFrom nhà hàng, thiếu giá tạm tính 150.000đ; bữa tối tạm tính 200.000đ/người lớn quy đổi. Nguồn giả định: định mức planner T11-B trong source, chưa khảo sát giá thị trường; xem nhãn từng khoản. Giá 0 được giữ nguyên; không cắt giá theo ngân sách.",
+                "Chưa bao gồm vé máy bay/tàu, chi phí chặng khởi hành hoặc giá vận chuyển thực tế; tổng này không phải giá trọn gói hay bảo đảm đủ ngân sách."
+              ],
+              "adults": 2,
+              "children": 0,
+              "pacing": "balanced",
+              "preferences": [],
+              "totalBudgetUserVND": 4000000,
+              "totalEstimatedCostVND": 2050000,
+              "costDifferenceVND": 1950000,
+              "overBudgetVND": 0,
+              "budgetStatus": "within_budget",
+              "constraintViolations": [],
+              "budgetAdvice": "Tổng chi phí ước tính nằm trong ngân sách đã nhập. Bạn còn khoảng 1.950.000đ cho chi tiêu phát sinh hoặc mua sắm quà lưu niệm.",
+              "days": [
+                {
+                  "dayNumber": 1,
+                  "date": "2030-06-15",
+                  "themeTitle": "Ngày 1: Khám phá văn hóa & danh thắng Phase35 City 1792068654001-1018",
+                  "activities": [
+                    {
+                      "id": "act-1-morning",
+                      "placeId": "a5eb2240-ad66-4972-a82d-8cd542e98a9f",
+                      "timeSlot": "morning",
+                      "title": "Khám phá Phase 35 Landmark 1792068654001-1018",
+                      "description": "Integration landmark",
+                      "category": "sightseeing",
+                      "durationMinutes": 180,
+                      "estimatedCostVND": 250000,
+                      "costSource": "Catalog priceFrom (Phase 35 Landmark 1792068654001-1018): 125000 VND; giả định người lớn quy đổi/lượt tham quan, chưa xác minh đơn vị/giá dịch vụ.",
+                      "latitude": 16.06,
+                      "longitude": 108.21,
+                      "imageUrl": "https://example.test/place.jpg",
+                      "recommendationReason": "Điểm tham quan được xếp hạng theo sở thích và tiêu chí hành trình của bạn.",
+                      "aerialDistanceToNextKm": 0.77,
+                      "estimatedTransitMinutes": 5
+                    },
+                    {
+                      "id": "act-1-lunch",
+                      "timeSlot": "lunch",
+                      "title": "Nghỉ ngơi và dùng bữa trưa đặc sản địa phương",
+                      "description": "Thưởng thức các món ngon truyền thống nổi tiếng chuẩn vị bản địa.",
+                      "category": "food",
+                      "durationMinutes": 90,
+                      "estimatedCostVND": 300000,
+                      "costSource": "Giả định planner T11-B: 150000 VND/người lớn quy đổi/bữa trưa; chưa chọn dịch vụ thiếu giá catalog hợp lệ, chưa xác minh.",
+                      "latitude": 16.064999999999998,
+                      "longitude": 108.21499999999999,
+                      "imageUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
+                      "recommendationReason": "Gợi ý ẩm thực phù hợp với điểm đến và ngân sách ước tính.",
+                      "aerialDistanceToNextKm": 1.93,
+                      "estimatedTransitMinutes": 6
+                    },
+                    {
+                      "id": "act-1-dinner",
+                      "timeSlot": "dinner",
+                      "title": "Ăn tối, dạo chợ đêm & Thưởng ngoạn phố lên đèn",
+                      "description": "Tận hưởng không khí đêm náo nhiệt, thưởng thức đồ ăn vặt và mua sắm đặc sản.",
+                      "category": "food",
+                      "durationMinutes": 120,
+                      "estimatedCostVND": 400000,
+                      "costSource": "Giả định planner T11-B: 200000 VND/người lớn quy đổi/bữa tối; chưa chọn dịch vụ, chưa xác minh giá.",
+                      "latitude": 16.0504,
+                      "longitude": 108.2052,
+                      "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+                      "recommendationReason": "Hoạt động trải nghiệm không gian về đêm đặc trưng của điểm đến."
+                    }
+                  ],
+                  "dayEstimatedCostVND": 1350000,
+                  "lodgingNights": 1,
+                  "lodgingEstimatedCostVND": 400000,
+                  "lodgingCostSource": "Giả định planner T11-B: 400000 VND/nhóm/đêm (1 phòng giả định); chưa chọn dịch vụ thiếu giá catalog hợp lệ, chưa xác minh.",
+                  "centroid": {
+                    "latitude": 16.058467,
+                    "longitude": 108.210067
+                  }
+                },
+                {
+                  "dayNumber": 2,
+                  "date": "2030-06-16",
+                  "themeTitle": "Ngày 2: Khám phá văn hóa & danh thắng Phase35 City 1792068654001-1018",
+                  "activities": [
+                    {
+                      "id": "act-2-lunch",
+                      "timeSlot": "lunch",
+                      "title": "Nghỉ ngơi và dùng bữa trưa đặc sản địa phương",
+                      "description": "Thưởng thức các món ngon truyền thống nổi tiếng chuẩn vị bản địa.",
+                      "category": "food",
+                      "durationMinutes": 90,
+                      "estimatedCostVND": 300000,
+                      "costSource": "Giả định planner T11-B: 150000 VND/người lớn quy đổi/bữa trưa; chưa chọn dịch vụ thiếu giá catalog hợp lệ, chưa xác minh.",
+                      "latitude": 16.0594,
+                      "longitude": 108.2072,
+                      "imageUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
+                      "recommendationReason": "Gợi ý ẩm thực phù hợp với điểm đến và ngân sách ước tính.",
+                      "aerialDistanceToNextKm": 1.02,
+                      "estimatedTransitMinutes": 5
+                    },
+                    {
+                      "id": "act-2-dinner",
+                      "timeSlot": "dinner",
+                      "title": "Ăn tối, dạo chợ đêm & Thưởng ngoạn phố lên đèn",
+                      "description": "Tận hưởng không khí đêm náo nhiệt, thưởng thức đồ ăn vặt và mua sắm đặc sản.",
+                      "category": "food",
+                      "durationMinutes": 120,
+                      "estimatedCostVND": 400000,
+                      "costSource": "Giả định planner T11-B: 200000 VND/người lớn quy đổi/bữa tối; chưa chọn dịch vụ, chưa xác minh giá.",
+                      "latitude": 16.0504,
+                      "longitude": 108.2052,
+                      "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+                      "recommendationReason": "Hoạt động trải nghiệm không gian về đêm đặc trưng của điểm đến."
+                    }
+                  ],
+                  "dayEstimatedCostVND": 700000,
+                  "lodgingNights": 0,
+                  "lodgingEstimatedCostVND": 0,
+                  "lodgingCostSource": "0 đêm: không tính phí lưu trú.",
+                  "centroid": {
+                    "latitude": 16.0549,
+                    "longitude": 108.2062
+                  }
+                }
+              ],
+              "summary": "Hành trình 2 ngày theo tiêu chí đã chọn. Nhịp cân bằng: tối đa 2 điểm tham quan/ngày, không tính bữa ăn. ETA giữa các điểm bằng ô tô là ước lượng từ khoảng cách Haversine, không phải tuyến đường bộ hoặc thời gian thực; chưa tính chặng và chi phí liên tỉnh.",
+              "selectedPlaceIds": [
+                "a5eb2240-ad66-4972-a82d-8cd542e98a9f"
+              ],
+              "createdAt": "2026-11-08T02:39:47.941Z"
+            },
+            "cost": {
+              "currency": "VND",
+              "basis": "GROUP_VND_V1",
+              "estimated": 2050000,
+              "budget": 4000000,
+              "budgetStatus": "within_budget",
+              "overBudget": 0
+            },
+            "warnings": [
+              "Đây là ước tính của Planner, chưa lưu Trip và chưa đặt dịch vụ.",
+              "Mọi khoản activity, tổng ngày và tổng chuyến là VND cho cả nhóm, làm tròn từng khoản đến 1 VND; ngân sách cũng cho cả nhóm.",
+              "Ước tính hoạt động/ăn uống quy đổi mỗi người lớn = 1, trẻ em = 0,7; đây là giả định lập kế hoạch, không phải chính sách giá của nhà cung cấp.",
+              "priceFrom chưa có đơn vị và sức chứa đáng tin cậy. Tạm ước tính một phòng cho cả nhóm mỗi đêm; không bảo đảm đủ chỗ hoặc đúng giá phòng/đêm.",
+              "Lưu trú dùng priceFrom khách sạn, thiếu giá dùng 400.000đ/nhóm/đêm; chỉ tính N−1 đêm. Phí này tách khỏi activity khách sạn có giá 0đ.",
+              "Tham quan dùng priceFrom, thiếu giá tạm tính 300.000đ/người lớn quy đổi/lượt. Bữa trưa dùng priceFrom nhà hàng, thiếu giá tạm tính 150.000đ; bữa tối tạm tính 200.000đ/người lớn quy đổi. Nguồn giả định: định mức planner T11-B trong source, chưa khảo sát giá thị trường; xem nhãn từng khoản. Giá 0 được giữ nguyên; không cắt giá theo ngân sách.",
+              "Chưa bao gồm vé máy bay/tàu, chi phí chặng khởi hành hoặc giá vận chuyển thực tế; tổng này không phải giá trọn gói hay bảo đảm đủ ngân sách.",
+              "Tổng chi phí ước tính nằm trong ngân sách đã nhập. Bạn còn khoảng 1.950.000đ cho chi tiêu phát sinh hoặc mua sắm quà lưu niệm."
+            ]
+          },
+          "history": [
+            {
+              "role": "user",
+              "content": "MOCK_ONLY provider decision for read-only adapter verification"
+            },
+            {
+              "role": "assistant",
+              "content": "Đã tạo bản ước tính bằng Planner. Hãy xem lịch trình, chi phí và cảnh báo; chưa lưu Trip."
+            }
+          ],
+          "historyTruncated": false,
+          "context": {
+            "mode": "STATELESS",
+            "personalizationEnabled": false,
+            "behavioralDataUsed": false,
+            "persisted": false
+          }
+        }
+      }
+    }
+  ]
+}

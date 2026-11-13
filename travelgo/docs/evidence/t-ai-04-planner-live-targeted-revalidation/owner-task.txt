@@ -1,0 +1,424 @@
+# TASK T-AI-04-PLANNER-LIVE-TARGETED-REVALIDATION
+
+Vai trò: Senior Full-stack Engineer, AI Evaluation Engineer, Database QA Engineer và E2E Automation Lead của TravelGo.
+
+## MỤC TIÊU
+
+Nghiệm thu lại chức năng `plan_trip` trên website TravelGo bằng corrected harness H02/H03/H04.
+
+Chỉ tập trung vào:
+
+1. Real runtime adapters và global fail-fast.
+2. G2 manual confirmation → Planner LIVE desktop.
+3. Budget correction → Planner LIVE desktop.
+4. Fresh Planner LIVE mobile.
+5. Exact fixture cleanup và DB restoration.
+
+Không tiếp tục prompt tuning hay tái chạy historical L04 để thay đổi verdict cũ.
+
+## 1. BASELINE
+
+Đọc:
+
+- `docs/HUGO_T_AI_04_PLANNER_LIVE_HARNESS_RELIABILITY_FIX_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_REAL_TOOL_LIVE_E2E_RESUME_RUN2_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_TEST_DATA_READINESS_REPORT.md`
+- `docs/HUGO_T_AI_04_G2_E2E_HARNESS_FIX_RESUME_REPORT.md`
+
+Đọc đầy đủ evidence, corrected orchestrator, adapter contract, test cases và independent cost oracle.
+
+Giữ baseline:
+
+- H02/H03/H04 offline PASS.
+- 68 independent checks PASS.
+- Mocked browser4/4 PASS.
+- Frontend49/49 PASS.
+- Mocked browser regression74/74 PASS.
+- Backend302/302 PASS.
+- Historical raw Planner3 PASS/1 FAIL.
+- Historical H04 FAIL giữ nguyên.
+- Historical DB restored25/25, Trip27/27.
+- P1 NLU/P2 runtime OPEN.
+
+Không sửa historical report hoặc verdict.
+
+## 2. QUYỀN ĐƯỢC PHÊ DUYỆT CÓ ĐIỀU KIỆN
+
+Cho phép:
+
+- Tạo và cleanup đúng 2 approved Place fixture.
+- Chỉ trên `travelgo_ai_m0_test`.
+- Tối đa 1 conditional Ollama load-only POST.
+- Tối đa 3 genuine inference POST.
+- Tổng tối đa 4 native POST.
+- 0 retry/hidden warm-up.
+- Direct Planner read-only verification.
+- Desktop/mobile browser LIVE.
+- Offline regression sau cleanup.
+
+Không cho phép:
+
+- Production source changes.
+- Thay SYSTEM/schema/gate.
+- Sửa Planner algorithm.
+- Thay model/options/timeout.
+- Tạo hoặc sửa Trip/Booking/User.
+- Global G2 enable.
+- V2 LIVE.
+- Commit/push/deploy.
+
+Nếu guard không đạt, STOP.
+
+## 3. PHASE A — REVIEW REAL RUNTIME ADAPTERS
+
+Đây là bước bắt buộc trước bất kỳ DB write hoặc inference nào.
+
+Đọc corrected harness:
+
+`docs/evidence/t-ai-04-planner-live-harness-reliability-fix/`
+
+Sử dụng:
+
+- Corrected orchestrator.
+- JSON fidelity comparator.
+- UTF-8 UI strings.
+- Shared fail-fast dispatch fence.
+- Exact manifest/body validation.
+
+Bind các real adapters:
+
+- Real browser/Vite.
+- Real Express/auth.
+- Real G2 Agent service.
+- Real session/revision/ownership.
+- Real AgentLimits.
+- Real Ollama provider.
+- Real execution gate.
+- Real Planner/Catalog.
+- Guarded PostgreSQL test DB.
+- Real maintenance/cleanup implementation.
+
+Không đưa mock ports hoặc `async () => true` vào LIVE.
+
+Kiểm độc lập:
+
+- Mỗi guard có actual implementation.
+- Tất cả dispatch đi qua fail-fast fence.
+- Assertion FAIL ngăn case kế tiếp.
+- Cleanup không bị bỏ qua.
+- Missing adapter → FAIL CLOSED.
+- Không catch-and-continue.
+
+Chạy offline adapter-binding acceptance.
+
+Nếu FAIL, dừng trước DB write/inference.
+
+## 4. PHASE B — FRESH QUOTA VÀ DB PREFLIGHT
+
+Sử dụng cùng approved principal.
+
+Quota:
+
+- Default20 turns/hour.
+- Scan cả `at`/`createdAt`.
+- Tính toàn bộ historical attempts còn hiệu lực.
+- Tính chính xác tất cả Agent turns trong manifest mới, bao gồm start/continue/revoke.
+- Reserve conservative operator entry.
+- Không reset limiter hoặc đổi principal.
+
+Nếu không đủ quota cho toàn bộ chuỗi, STOP.
+
+Database:
+
+`travelgo_ai_m0_test`
+
+Xác minh:
+
+- Exact identity/host/port.
+- Sentinel.
+- 12 migration checksums.
+- Schema fingerprint.
+- 25-table baseline.
+- 27 Trip hashes.
+- Exact fixture IDs/slugs absent.
+- FK/Trip JSON references.
+- Maintenance isolation thực sự có hiệu lực.
+
+Role postgres vẫn là superuser, không phải least privilege.
+
+Không xem snapshot không có writer là enforced isolation PASS.
+
+Nếu isolation không đạt, STOP trước INSERT.
+
+## 5. PHASE C — APPROVED PROFILE 2 FIXTURES
+
+Chỉ tạo hai bản ghi:
+
+A01:
+`f7433d4a-5f49-4991-8add-b55435b02eb0`
+
+A02:
+`5a1e8835-770c-41a2-8699-74deba239a86`
+
+Lấy full attributes từ approved fixture proposal.
+
+- A01 price100000.
+- A02 price150000.
+- Category attraction.
+- City/province Đà Nẵng.
+- Status APPROVED.
+- business_id NULL.
+- Tên/description có TEST FIXTURE.
+
+Tạo committed ownership ledger:
+
+- Exact IDs.
+- Slugs.
+- Row hashes.
+- Timestamps.
+- Affected count2.
+- Original database fingerprint.
+
+Không UPSERT, UPDATE existing rows, seed hoặc tạo Business/Trip/Booking.
+
+Agent runtime luôn PostgreSQL READ ONLY.
+
+## 6. PHASE D — DIRECT PLANNER ORACLE
+
+Chạy actual Planner service, không Ollama.
+
+Baseline:
+
+- Huế → Đà Nẵng.
+- Start2036-04-22.
+- End2036-04-23.
+- Adults2.
+- TotalBudget6400000.
+- Transportation car hoặc motorbike theo từng expected case.
+
+Expected:
+
+- 2 ngày/1 đêm.
+- Một sightseeing mỗi ngày.
+- A01/A02 đúng một lần.
+- Tổng chi phí 3500000 VND theo approved oracle nếu catalog không drift.
+- Budget remaining2900000.
+- Correct hotel/meals.
+- Correct ETA theo từng transport mode.
+- Correct selectedPlaceIds.
+- Correct warnings/provenance.
+
+Kiểm thêm budget9000000, expected remaining5500000 nếu chi phí không đổi.
+
+Khóa independent public JSON oracle trước inference.
+
+Chỉ normalize itinerary.id và itinerary.createdAt.
+
+Nếu Direct Planner hoặc oracle FAIL, không gọi model; cleanup an toàn và báo kết quả.
+
+## 7. PHASE E — LIVE MANIFEST MỚI
+
+Khóa manifest trước native POST.
+
+Tập trung tối đa ba inference:
+
+### R01 — Desktop manual confirmation → completed plan
+
+Bắt đầu G2 bằng một yêu cầu lập lịch trình đủ các trường ngoại trừ transportation.
+
+Server phải trả needs_input transportation mà không inference.
+
+Người dùng chủ động bấm nút **Xe máy**.
+
+Frontend gửi:
+
+`Phương tiện: motorbike`
+
+Kiểm:
+
+- Fresh UUID.
+- Latest server revision.
+- Raw plan_trip đúng.
+- Execution gate ALLOW.
+- Một real Planner tool.
+- Public JSON fidelity PASS.
+- Desktop completed-plan UI.
+- Exact giá, ngày, địa điểm, labels và warnings.
+
+Đây là xác nhận chủ động của người dùng sau khi còn thiếu trường, không phải phép đo FIX cho historical redundant clarification.
+
+### R02 — Desktop budget correction
+
+Trong cùng G2 session:
+
+`Ngân sách cả nhóm: 9000000 VND`
+
+Kiểm:
+
+- Verified budget mới.
+- Các slot khác giữ đúng.
+- Raw model/tool arguments.
+- Real Planner result.
+- Cost/budget warning.
+- UI render đúng 3.500.000 ₫ và ngân sách9.000.000 ₫ nếu actual oracle khớp.
+
+### R03 — Mobile fresh completed plan
+
+Tạo fresh owned G2 session trên mobile giả lập390×844.
+
+Gửi original complete Planner scenario với phương tiện car.
+
+Kiểm:
+
+- Native raw model decision.
+- One real read-only plan_trip.
+- Correct args.
+- Real DB result.
+- Public JSON fidelity.
+- Completed itinerary UI.
+- Text/labels/cost/days.
+- Không horizontal overflow.
+
+Desktop1440×900, mobile390×844.
+
+Không Playwright route mocking trong LIVE.
+
+Nếu R01 FAIL, R02/R03 phải NOT RUN.
+
+Nếu R02 FAIL, R03 phải NOT RUN.
+
+Nếu R03 FAIL, STOP LIVE.
+
+Không sử dụng inference slot chưa dùng cho probe khác.
+
+## 8. OLLAMA BOUNDARY
+
+Giữ:
+
+Model:
+`qwen3:4b-instruct-2507-q4_K_M`
+
+Digest:
+`0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0`
+
+Endpoint:
+`127.0.0.1:11434`
+
+Config:
+
+- JSON.
+- stream false.
+- temperature0.
+- num_ctx16384.
+- num_predict2048.
+- application timeout15000ms.
+- concurrency1.
+
+Model nonresident thì tối đa một approved load-only POST.
+
+Không second load, retry hoặc model switch.
+
+Native cap tổng4 POST.
+
+## 9. GLOBAL FAIL-FAST
+
+Phải sử dụng corrected orchestration của H04.
+
+Mọi failure bắt buộc:
+
+1. Đóng global stop latch.
+2. Ghi original error.
+3. Mark current FAIL.
+4. Mark all later cases NOT RUN.
+5. Không dispatch thêm HTTP/Agent/native POST.
+6. Không retry.
+7. Tiến hành cleanup nếu đủ safety preconditions.
+8. Nonzero exit code.
+
+Đặc biệt:
+
+R01 fidelity/UI FAIL → R02 và R03 không được dispatch.
+
+Không catch rồi tiếp tục để lấy thêm kết quả.
+
+Không dùng reviewed JSON để sửa historical raw verdict.
+
+## 10. GUARDED CLEANUP
+
+Sau success hoặc STOP:
+
+- Dừng inference/Agent activity.
+- Revoke/dispose owned sessions.
+- Verify maintenance isolation.
+- Verify committed fixture ownership ledger.
+- Verify exact row hashes/IDs/slugs.
+- Verify incoming FK và Trip JSON references.
+- DELETE đúng hai fixture task đã tạo.
+- Không CASCADE/SET NULL vào dữ liệu khác.
+- affectedRows đúng2.
+- Verify residual fixtures0.
+- Verify places22/22.
+- Verify all25-table fingerprints.
+- Verify27 Trip exact hashes.
+
+Nếu cleanup precondition FAIL, không force delete.
+
+Báo `CLEANUP_BLOCKED_OWNER_REVIEW` với residual records.
+
+Không sửa dữ liệu khác để ép DB fingerprint PASS.
+
+## 11. REGRESSION
+
+Sau cleanup chạy:
+
+- Frontend49.
+- Mocked browser74.
+- Backend68/79/61/42/52.
+- Original legacy181.
+- Relevant readiness/diagnostics.
+- Backend/frontend build.
+
+Giữ original assertions/expected.
+
+Offline regressions không được tạo thêm native POST hoặc DB mutations.
+
+## 12. REPORT
+
+Tạo:
+
+`docs/HUGO_T_AI_04_PLANNER_LIVE_TARGETED_REVALIDATION_REPORT.md`
+
+Evidence:
+
+`docs/evidence/t-ai-04-planner-live-targeted-revalidation/`
+
+Báo cáo gồm:
+
+1. Approval/scope.
+2. Real adapter review.
+3. Offline fail-fast integration.
+4. Fresh quota.
+5. DB/isolation.
+6. Fixture ledger.
+7. Direct Planner oracle.
+8. Locked manifest.
+9. Native POST ledger.
+10. R01–R03 raw results.
+11. G2 history/safety.
+12. Public JSON fidelity.
+13. Desktop/mobile browser results.
+14. Runtime/P2.
+15. Cleanup/fingerprint.
+16. Regression/build.
+17. Source/benchmark integrity.
+18. P1/P2 status.
+19. Remaining limitations.
+20. NEXT TASK PLAN.
+
+Không công bố full NLU PASS chỉ vì ba case targeted đạt.
+
+Historical L04 raw FAIL giữ nguyên.
+
+P1/P2 chỉ đóng khi có acceptance evidence riêng.
+
+**DỪNG SAU BÁO CÁO. Không tự V2 LIVE hoặc deploy.**

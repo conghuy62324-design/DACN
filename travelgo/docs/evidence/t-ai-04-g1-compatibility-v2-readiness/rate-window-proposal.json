@@ -1,0 +1,298 @@
+{
+  "status": "OFFLINE_SCHEDULE_PROPOSAL_NOT_AUTHORIZED",
+  "at": "2026-11-10T10:51:35.022Z",
+  "historicalLedger": {
+    "checkedAt": "2026-11-10T10:51:35.022Z",
+    "principalHash": "6b982d095bc6bc30c87955cd38c78afa9ef31d3447ef30f62e8684bbe8bce600",
+    "principalSource": "docs/evidence/t-ai-04-e-final/run-20261109T041645807Z-ae626a88/attempt-E04-B.json",
+    "known": 54,
+    "recent": [
+      {
+        "id": "AUX-CONSENT",
+        "at": "2026-11-10T10:27:56.979Z",
+        "timestampField": "at",
+        "path": "docs/evidence/t-ai-04-g1-server-completeness-live-validation/attempt-AUX-CONSENT.json",
+        "kind": "NORMAL_AGENT_TURN_CONSENT_FAILURE"
+      },
+      {
+        "id": "D01",
+        "at": "2026-11-10T10:27:57.134Z",
+        "timestampField": "at",
+        "path": "docs/evidence/t-ai-04-g1-server-completeness-live-validation/attempt-D01.json",
+        "kind": "NORMAL_AGENT_TURN"
+      },
+      {
+        "id": "D02",
+        "at": "2026-11-10T10:27:57.340Z",
+        "timestampField": "at",
+        "path": "docs/evidence/t-ai-04-g1-server-completeness-live-validation/attempt-D02.json",
+        "kind": "NORMAL_AGENT_TURN"
+      },
+      {
+        "id": "D03",
+        "at": "2026-11-10T10:27:57.529Z",
+        "timestampField": "at",
+        "path": "docs/evidence/t-ai-04-g1-server-completeness-live-validation/attempt-D03.json",
+        "kind": "NORMAL_AGENT_TURN"
+      },
+      {
+        "id": "D04",
+        "at": "2026-11-10T10:27:57.710Z",
+        "timestampField": "at",
+        "path": "docs/evidence/t-ai-04-g1-server-completeness-live-validation/attempt-D04.json",
+        "kind": "NORMAL_AGENT_TURN"
+      },
+      {
+        "id": "OP-LOAD",
+        "at": "2026-11-10T10:28:00.400Z",
+        "timestampField": "at",
+        "path": "docs/evidence/t-ai-04-g1-server-completeness-live-validation/attempt-OP-LOAD.json",
+        "kind": "OPERATOR_LOAD_OUTSIDE_AGENT_LIMITS"
+      },
+      {
+        "id": "L01",
+        "at": "2026-11-10T10:28:18.671Z",
+        "timestampField": "at",
+        "path": "docs/evidence/t-ai-04-g1-server-completeness-live-validation/attempt-L01.json",
+        "kind": "NORMAL_AGENT_TURN"
+      },
+      {
+        "id": "L02",
+        "at": "2026-11-10T10:28:26.018Z",
+        "timestampField": "at",
+        "path": "docs/evidence/t-ai-04-g1-server-completeness-live-validation/attempt-L02.json",
+        "kind": "NORMAL_AGENT_TURN"
+      },
+      {
+        "id": "L03",
+        "at": "2026-11-10T10:28:32.851Z",
+        "timestampField": "at",
+        "path": "docs/evidence/t-ai-04-g1-server-completeness-live-validation/attempt-L03.json",
+        "kind": "NORMAL_AGENT_TURN"
+      },
+      {
+        "id": "L04",
+        "at": "2026-11-10T10:28:39.735Z",
+        "timestampField": "at",
+        "path": "docs/evidence/t-ai-04-g1-server-completeness-live-validation/attempt-L04.json",
+        "kind": "NORMAL_AGENT_TURN"
+      }
+    ],
+    "remainingConservativeSlots": 10,
+    "futureDatedEntries": []
+  },
+  "defaultAgentLimits": {
+    "perHour": 20,
+    "concurrency": 2
+  },
+  "runConcurrency": 1,
+  "currentRemaining": 10,
+  "naiveImmediateMaximum": {
+    "ifResident": 10,
+    "ifOneOperatorConservativelyReserved": 9
+  },
+  "strategy": "Defer first POST until all current historical entries expire; max one conditional operator load; reserve a minute for load/preflight. Then schedule genuine benchmark turns every210s (3m30), dynamically recheck rolling ledger AND real AgentLimits before each. No reset/identity switch. No fake keepalive requests.",
+  "conditionalOperatorAt": "2026-11-10T11:28:40.735Z",
+  "firstInferenceAt": "2026-11-10T11:29:40.735Z",
+  "lastInferenceAt": "2026-11-10T12:50:10.735Z",
+  "spacingMs": 210000,
+  "benchmarkDurationMinutes": 80.5,
+  "maximumConservativeEntriesPerRollingHour": 18,
+  "keepAlive": "Prior approved procedure5m; 210s spacing gives nominal90s slack, not residency guarantee. Production request unchanged and refreshes its own normal keepalive. Any eviction/slow operator/interruption => STOP remaining NOT RUN; no second warm-up even if cap inference remains.",
+  "batchAlternative": "Burst available slots then long wait is unsafe under5m keepalive and single-load cap. Only propose separate approval for additional preparation/contract change if owner prefers burst batches; not authorized here.",
+  "noQuotaApproval": "This task grants zero inference or preload; previous task approvals not reused. Proposed scope needs new explicit owner approval.",
+  "schedule": [
+    {
+      "id": "VI01",
+      "targetAt": "2026-11-10T11:29:40.735Z",
+      "rollingBefore": 1,
+      "slotsBefore": 19,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI02",
+      "targetAt": "2026-11-10T11:33:10.735Z",
+      "rollingBefore": 2,
+      "slotsBefore": 18,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI03",
+      "targetAt": "2026-11-10T11:36:40.735Z",
+      "rollingBefore": 3,
+      "slotsBefore": 17,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI04",
+      "targetAt": "2026-11-10T11:40:10.735Z",
+      "rollingBefore": 4,
+      "slotsBefore": 16,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI05",
+      "targetAt": "2026-11-10T11:43:40.735Z",
+      "rollingBefore": 5,
+      "slotsBefore": 15,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI06",
+      "targetAt": "2026-11-10T11:47:10.735Z",
+      "rollingBefore": 6,
+      "slotsBefore": 14,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI07",
+      "targetAt": "2026-11-10T11:50:40.735Z",
+      "rollingBefore": 7,
+      "slotsBefore": 13,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI08",
+      "targetAt": "2026-11-10T11:54:10.735Z",
+      "rollingBefore": 8,
+      "slotsBefore": 12,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI09",
+      "targetAt": "2026-11-10T11:57:40.735Z",
+      "rollingBefore": 9,
+      "slotsBefore": 11,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI10",
+      "targetAt": "2026-11-10T12:01:10.735Z",
+      "rollingBefore": 10,
+      "slotsBefore": 10,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI11",
+      "targetAt": "2026-11-10T12:04:40.735Z",
+      "rollingBefore": 11,
+      "slotsBefore": 9,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI12",
+      "targetAt": "2026-11-10T12:08:10.735Z",
+      "rollingBefore": 12,
+      "slotsBefore": 8,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI13",
+      "targetAt": "2026-11-10T12:11:40.735Z",
+      "rollingBefore": 13,
+      "slotsBefore": 7,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI14",
+      "targetAt": "2026-11-10T12:15:10.735Z",
+      "rollingBefore": 14,
+      "slotsBefore": 6,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI15",
+      "targetAt": "2026-11-10T12:18:40.735Z",
+      "rollingBefore": 15,
+      "slotsBefore": 5,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI16",
+      "targetAt": "2026-11-10T12:22:10.735Z",
+      "rollingBefore": 16,
+      "slotsBefore": 4,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI17",
+      "targetAt": "2026-11-10T12:25:40.735Z",
+      "rollingBefore": 17,
+      "slotsBefore": 3,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI18",
+      "targetAt": "2026-11-10T12:29:10.735Z",
+      "rollingBefore": 17,
+      "slotsBefore": 3,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI19",
+      "targetAt": "2026-11-10T12:32:40.735Z",
+      "rollingBefore": 17,
+      "slotsBefore": 3,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI20",
+      "targetAt": "2026-11-10T12:36:10.735Z",
+      "rollingBefore": 17,
+      "slotsBefore": 3,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI21",
+      "targetAt": "2026-11-10T12:39:40.735Z",
+      "rollingBefore": 17,
+      "slotsBefore": 3,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI22",
+      "targetAt": "2026-11-10T12:43:10.735Z",
+      "rollingBefore": 17,
+      "slotsBefore": 3,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI23",
+      "targetAt": "2026-11-10T12:46:40.735Z",
+      "rollingBefore": 17,
+      "slotsBefore": 3,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    },
+    {
+      "id": "VI24",
+      "targetAt": "2026-11-10T12:50:10.735Z",
+      "rollingBefore": 17,
+      "slotsBefore": 3,
+      "earliestLedgerGate": "Recompute at execution, no time forecast grants permission",
+      "minimumResidencyCheck": "GET readiness before each POST, context16384 and approved digest; stop on eviction, never second preload"
+    }
+  ]
+}

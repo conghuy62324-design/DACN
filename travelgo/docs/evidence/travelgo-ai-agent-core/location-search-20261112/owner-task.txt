@@ -1,0 +1,124 @@
+# TASK — TRAVELGO: SỬA BỘ LỌC ĐỊA ĐIỂM TOÀN WEBSITE VÀ HIỂN THỊ DANH SÁCH DỊCH VỤ
+
+Tiếp tục từ `docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md`, mục 18.
+
+Chỉ tập trung sửa 2 vấn đề giao diện/nghiệp vụ sau. Triển khai và kiểm thử thực tế, không chỉ lập kế hoạch.
+
+## 1. BỘ LỌC ĐỊA ĐIỂM THÔNG MINH TRÊN TOÀN WEBSITE
+
+Hiện các dropdown điểm đến chỉ hiển thị 10 điểm đến DEMO và không thể tìm kiếm bằng cách gõ.
+
+Yêu cầu:
+
+- Có đầy đủ 34 tỉnh/thành phố theo danh mục hành chính Việt Nam hiện hành, dùng mã hành chính chính thức làm định danh.
+- Có thể tìm theo các địa danh du lịch: Đà Lạt, Hội An, Sa Pa, Phú Quốc, Hạ Long, Nha Trang...
+- Dùng một component searchable combobox dùng chung, thay thế các dropdown địa điểm cũ tại Explore, Hotels, Restaurants, Planner, tìm kiếm và những giao diện phù hợp khác.
+- Click mở danh sách có ô nhập tìm kiếm.
+- Gõ `H` thì lọc các địa điểm có tên chứa H.
+- Gõ `Ho` thì thu hẹp theo chuỗi Ho, ví dụ Hội An, TP. Hồ Chí Minh, nếu tên chuẩn hóa phù hợp.
+- Gõ `Da` tìm được Đà Nẵng, Đà Lạt.
+- Gõ `Ha` tìm được Hà Nội, Hạ Long, Hà Tĩnh...
+- Không phân biệt chữ hoa/thường, dấu tiếng Việt, khoảng trắng thừa.
+- Hỗ trợ tìm bằng tên viết tắt/alias có kiểm soát: HCM, SG, DN, ĐL...
+- Có nút xóa từ khóa, chọn bằng chuột hoặc bàn phím, hỗ trợ mobile.
+- Khi chọn địa điểm, bộ lọc thực sự cập nhật danh sách từ backend.
+- Không có dữ liệu thì hiện “Chưa có khách sạn/nhà hàng tại địa điểm này”, không ẩn tỉnh khỏi danh mục.
+
+Quan trọng: Phân biệt địa danh du lịch với tỉnh/thành hành chính. Ví dụ Đà Lạt thuộc Lâm Đồng, Sa Pa thuộc Lào Cai, Phú Quốc thuộc An Giang, Hội An thuộc Đà Nẵng theo địa giới hiện hành. Khi chọn tỉnh cần lọc được các địa điểm du lịch liên quan; khi chọn Đà Lạt chỉ lọc đúng khu vực Đà Lạt.
+
+Không hard-code 10 địa điểm DEMO thành toàn bộ danh sách tỉnh/thành. Phải dùng chung dữ liệu địa lý và chuẩn hóa backend/frontend để tránh sai lệch.
+
+Giữ nguyên dữ liệu lịch sử, chỉ sửa mapping/alias và query khi cần. Không cập nhật hàng loạt địa chỉ cũ mà chưa kiểm tra.
+
+## 2. SỬA HIỂN THỊ KHÁCH SẠN/NHÀ HÀNG TRÊN EXPLORE
+
+Trong ảnh hiện tại, trang Explore chỉ thấy panel “Khám phá catalog DEMO”, còn danh sách khách sạn/nhà hàng không hiển thị rõ trong vùng nội dung.
+
+Database staging đã có:
+
+- 50 khách sạn/cơ sở lưu trú.
+- 50 nhà hàng.
+- 30 điểm tham quan.
+- 10 điểm đến.
+
+Hãy kiểm tra từ đầu đến cuối:
+
+1. Frontend gọi đúng API staging `127.0.0.1:5057`.
+2. API GET `/api/places` trả đúng dữ liệu PostgreSQL staging.
+3. Bộ lọc mặc định không vô tình loại toàn bộ kết quả.
+4. Có lỗi pagination, category, city mapping, auth, Axios hoặc response parsing không.
+5. Cards có bị ẩn phía dưới màn hình, sai layout, conditional rendering hoặc CSS không.
+6. Xác minh khi chọn Khách sạn/Nhà hàng thì danh sách render đúng loại.
+7. Không nhầm trang giới thiệu catalog với danh sách dịch vụ.
+
+Yêu cầu giao diện:
+
+- Hiển thị danh sách khách sạn/nhà hàng ngay bên dưới khu vực tìm kiếm và bộ lọc, dễ nhìn, không buộc khách cuộn qua một panel giới thiệu lớn.
+- Có thể giữ panel minh họa DEMO nhưng phải thu nhỏ hoặc chuyển vị trí, không chiếm vùng chính thay danh sách.
+- Có card ảnh, tên, địa điểm, loại hình, mức giá có đơn vị/nhãn, đánh giá nếu có, nút xem chi tiết và tư vấn AI.
+- Có lưới responsive desktop/mobile.
+- Có loading, empty state, error state và retry.
+- Có tổng số kết quả thực.
+- Có phân trang hoặc “Xem thêm” hoạt động.
+- Khách sạn và nhà hàng được lọc theo đúng nơi người dùng chọn.
+- Không dùng các cards hard-code hoặc dữ liệu giả ngoài catalog staging.
+
+Các trang `/explore`, `/hotels`, `/restaurants` phải có trải nghiệm lọc nhất quán.
+
+## 3. AI AGENT ĐỒNG BỘ VỚI BỘ LỌC
+
+- Khi khách chọn tỉnh/thành hoặc địa điểm du lịch, Agent sử dụng cùng geographic ID/mapping với catalog backend.
+- AI vẫn đọc danh sách đối tác APPROVED và Business ACTIVE mới nhất.
+- Không cần chỉnh code hoặc khởi động lại Agent khi có listing mới được duyệt.
+- Không dùng danh sách 10 điểm đến cũ làm giới hạn tìm kiếm.
+- Không bịa khách sạn tại những tỉnh chưa có dữ liệu.
+
+Không sửa model Qwen hay thuật toán Planner nếu không liên quan.
+
+## 4. KIỂM THỬ BẮT BUỘC
+
+Dùng staging local đang có:
+
+Frontend `http://127.0.0.1:5177`
+Backend `http://127.0.0.1:5057`
+
+Kiểm tra:
+
+1. Dropdown có đủ 34 tỉnh/thành.
+2. Gõ H, Ho, Da, Ha lọc đúng, có dấu/không dấu.
+3. Tìm theo địa danh du lịch và alias.
+4. Chọn Đà Nẵng → thấy 5 khách sạn DEMO và 5 nhà hàng DEMO ở các tab tương ứng.
+5. Chọn Đà Lạt → hiện đúng dữ liệu Đà Lạt.
+6. Chọn tỉnh không có dữ liệu → empty state đúng.
+7. Chọn Tất cả → không mất dữ liệu.
+8. Search + category + price + destination kết hợp đúng.
+9. Partner được duyệt mới → listing xuất hiện trong website và Agent.
+10. Desktop/mobile đều hiển thị cards rõ, không tràn hoặc bị che.
+
+Dùng browser thật + API thật + PostgreSQL staging. Lưu screenshot trước/sau để đối chiếu.
+
+Không ghi dữ liệu vào database gốc; giữ nguyên 25/25 bảng và 27 Trip.
+
+## 5. KẾT QUẢ
+
+Cập nhật `docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md` thêm mục 19:
+
+“LOCATION SEARCH + EXPLORE LISTING DISPLAY FIX”.
+
+Báo cáo:
+
+- Những component/API đã sửa.
+- Tổng danh mục tỉnh/thành.
+- Cách tìm kiếm và ánh xạ địa danh.
+- Nguyên nhân danh sách không hiển thị trong ảnh.
+- Screenshots giao diện mới.
+- Kết quả browser/API/PostgreSQL thực.
+- Những lỗi còn lại.
+
+Giữ nguyên source/evidence cũ, không tạo lại staging hoặc 130 DEMO records.
+
+Không gọi Qwen, Google Maps, API trả phí.
+Không commit/push/deploy.
+Không mở rộng sang VPS hoặc các nhiệm vụ khác.
+
+**Mục tiêu cuối cùng: khách có thể gõ tìm mọi tỉnh/thành Việt Nam và xem, lọc khách sạn/nhà hàng dễ dàng ngay trên giao diện TravelGo.**

@@ -1,0 +1,44 @@
+{
+  "id": "T_AI_04_C_DIAGNOSTIC_AB_V1",
+  "tier": "LOCAL_LLM_DIAGNOSTIC",
+  "approvedMaxInference": 8,
+  "model": "qwen3:4b-instruct-2507-q4_K_M",
+  "endpoint": "http://127.0.0.1:11434/api/chat",
+  "variants": {
+    "A": { "format": "DECISION_SCHEMA", "description": "Unchanged production Ollama request body" },
+    "B": { "format": "json", "description": "Byte-equivalent request body except top-level format" }
+  },
+  "criteria": {
+    "json": "Raw message.content must parse as JSON",
+    "schema": "Exactly one DECISION_SCHEMA branch and runtime parseDecision/validateTool must accept it",
+    "semantic": "Kind, tool name, required expected arguments or clarify fields must match the case expected",
+    "transport": "HTTP 200, done=true, done_reason=stop, assistant message, no native tool_calls, finite token counts",
+    "overall": "PASS only when transport, JSON/schema/runtime and semantic criteria all pass; no tool execution"
+  },
+  "cases": [
+    {
+      "id": "D01",
+      "purpose": "complete public-place search",
+      "request": { "history": [], "message": "Hãy tìm các địa điểm công khai ở Phú Yên, với ngân sách 530 nghìn đồng cho mỗi người mỗi ngày." },
+      "expected": { "kind": "tool", "name": "search_places", "arguments": { "destinationCity": "Phú Yên", "dailyBudgetPerPerson": 530000 } }
+    },
+    {
+      "id": "D02",
+      "purpose": "complete itinerary intent",
+      "request": { "history": [], "message": "Lập lịch trình đi ô tô cho 3 người lớn từ Vinh đến Quy Nhơn, từ ngày 20 đến 22 tháng 5 năm 2032, ngân sách cả đoàn 9 triệu đồng." },
+      "expected": { "kind": "tool", "name": "plan_trip", "arguments": { "departureCity": "Vinh", "destinationCity": "Quy Nhơn", "startDate": "2032-05-20", "endDate": "2032-05-22", "adults": 3, "totalBudget": 9000000, "transportation": "car" } }
+    },
+    {
+      "id": "D03",
+      "purpose": "itinerary intent missing exactly adults",
+      "request": { "history": [], "message": "Lập lịch trình đi ô tô từ Vinh đến Quy Nhơn, từ ngày 20 đến 22 tháng 5 năm 2032, ngân sách cả đoàn 9 triệu đồng. Hãy hỏi tôi phần thông tin còn thiếu." },
+      "expected": { "kind": "clarify", "fields": ["adults"] }
+    },
+    {
+      "id": "D04",
+      "purpose": "out-of-scope creative-writing intent",
+      "request": { "history": [], "message": "Hãy viết một bài thơ bốn câu về con mèo đang ngủ trên ghế." },
+      "expected": { "kind": "unsupported" }
+    }
+  ]
+}

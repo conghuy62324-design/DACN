@@ -1,0 +1,28 @@
+{
+  "at": "2026-11-11T03:48:40.889Z",
+  "status": "CONFIRMED_HARNESS_FAILURES_LIVE_NOT_RETRIED",
+  "findings": [
+    {
+      "id": "H02",
+      "rootCause": "In-memory service object contains undefined optional keys; persisted JSON oracle and HTTP wire omit them. assert.deepEqual compared JS representation to JSON representation.",
+      "initialLiveVerdict": "Fidelity FAIL retained",
+      "independentSavedJsonReview": "Exact public wire fields match locked oracle after only itinerary.id/createdAt normalization",
+      "productionFailureProven": false
+    },
+    {
+      "id": "H03",
+      "rootCause": "New UI literals inserted through PowerShell pipeline lost non-ASCII characters. Expected money symbol became?,button Xe máy becameXe m?y; end/reference labels also corrupted.",
+      "initialLiveVerdict": "L01-L03 UI FAIL; L05 locator timeout before click/HTTP; mobile NOT RUN",
+      "productionFailureProven": false
+    },
+    {
+      "id": "H04",
+      "rootCause": "Runner continued locked cases after caught fidelity/UI assertion failures; stop branch handled runtime/session/security failures but did not treat these assertions as global stop.",
+      "impact": "L02-L04 ran after first harness assertion failure. No cap/quota/DML breach, but full acceptance invalid; do not call whole-run PASS."
+    }
+  ],
+  "initialEvidenceAndExpectedUnchanged": true,
+  "postFailureRetries": 0,
+  "proposedHelper": "harness-correction.PROPOSED.cjs",
+  "helperAppliedToLive": false
+}

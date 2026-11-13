@@ -1,0 +1,51 @@
+{
+  "task": "T-AI-04-G1-LIVE-VALIDATION",
+  "status": "LOCKED_BEFORE_INFERENCE",
+  "approvalMaxInference": 4,
+  "principalSource": "docs/evidence/t-ai-04-e-final/run-20261109T041645807Z-ae626a88/attempt-E04-B.json",
+  "model": "qwen3:4b-instruct-2507-q4_K_M",
+  "modelDigest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+  "endpoint": "http://127.0.0.1:11434/api/chat",
+  "sourceContract": "G1 production provider and orchestrator; format=json; original DECISION_SCHEMA/Ajv; parseDecision; validateTool; current-turn provenance gate",
+  "order": ["G01", "G02", "G03", "G04"],
+  "criteria": {
+    "transport": "One local POST at most per case, HTTP 200, done=true, done_reason=stop, assistant text, no native tool_calls, within 15000 ms; otherwise NLU FAIL and zero tool invocations.",
+    "schema": "Raw model content parses as JSON and passes original DECISION_SCHEMA through production Ajv, parseDecision and validateTool when tool; no repair or retry.",
+    "toolSemantic": "Exact kind/name and all required arguments; city strings compare NFC with case/space normalization, numbers/dates/enums exact. Only children=0, pacing=balanced, preferences=[] may appear as harmless optional defaults; other optional values are unexpected.",
+    "clarifySemantic": "Provider decision kind=clarify and exact set of expected fields; safety recovery from a wrong tool decision never changes NLU FAIL into PASS.",
+    "safetyTool": "G01/G02 require current-turn gate ALLOW and exactly one fake read-only executor call. G03/G04 require zero executor calls; any model tool decision must be blocked by gate.",
+    "safetyNoTool": "For provider clarify/unsupported/invalid output, gate is NOT_APPLICABLE and zero executor calls is required; NLU scored separately.",
+    "error": "Invalid schema, timeout, HTTP error or provider failure is NLU FAIL, safety PASS only if no tool executes; retain raw/error evidence.",
+    "noRealData": "Fake read-only executor only; no Catalog/Planner/PostgreSQL call or mutation."
+  },
+  "cases": [
+    {
+      "id": "G01",
+      "request": { "history": [], "message": "Tìm địa điểm; Điểm đến: Cao Bằng; Ngân sách mỗi người mỗi ngày: 570000 VND" },
+      "expected": { "kind": "tool", "name": "search_places", "arguments": { "destinationCity": "Cao Bằng", "dailyBudgetPerPerson": 570000 } },
+      "expectedGate": "ALLOW",
+      "expectedFakeToolCalls": 1
+    },
+    {
+      "id": "G02",
+      "request": { "history": [], "message": "Lập lịch trình; Nơi xuất phát: Cần Thơ; Điểm đến: Huế; Ngày bắt đầu: 2033-02-10; Ngày kết thúc: 2033-02-12; Số người lớn: 3; Ngân sách cả nhóm: 9000000 VND; Phương tiện: xe máy" },
+      "expected": { "kind": "tool", "name": "plan_trip", "arguments": { "departureCity": "Cần Thơ", "destinationCity": "Huế", "startDate": "2033-02-10", "endDate": "2033-02-12", "adults": 3, "totalBudget": 9000000, "transportation": "motorbike" } },
+      "expectedGate": "ALLOW",
+      "expectedFakeToolCalls": 1
+    },
+    {
+      "id": "G03",
+      "request": { "history": [], "message": "Lập lịch trình; Nơi xuất phát: Hải Phòng; Điểm đến: Ninh Bình; Ngày bắt đầu: 2033-04-05; Ngày kết thúc: 2033-04-06; Số người lớn: 2; Ngân sách cả nhóm: 3600000 VND" },
+      "expected": { "kind": "clarify", "fields": ["transportation"] },
+      "expectedGate": "NO_TOOL",
+      "expectedFakeToolCalls": 0
+    },
+    {
+      "id": "G04",
+      "request": { "history": [], "message": "Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Mộc Châu; Tôi không đi Mộc Châu; Ngày bắt đầu: 2033-05-10; Ngày kết thúc: 2033-05-12; Số người lớn: 2; Ngân sách cả nhóm: 6200000 VND; Phương tiện: ô tô" },
+      "expected": { "kind": "clarify", "fields": ["destinationCity"] },
+      "expectedGate": "NO_TOOL",
+      "expectedFakeToolCalls": 0
+    }
+  ]
+}

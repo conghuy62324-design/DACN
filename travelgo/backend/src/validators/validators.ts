@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { normalizeBookingPayload, validateIdempotencyKey } from '../utils/bookingValidation.js';
 
 function validationError(res: Response, errors: string[]): void {
   res.status(400).json({ success: false, message: 'Dữ liệu gửi lên không hợp lệ', errors });
@@ -27,27 +28,7 @@ export function validateRegistration(req: Request, res: Response, next: NextFunc
 }
 
 export function validateBookingRequest(req: Request, res: Response, next: NextFunction): void {
-  const { serviceType, serviceId, customerName, customerEmail, customerPhone, bookingDate } = req.body;
-
-  const errors: string[] = [];
-
-  if (!serviceType) errors.push('Thiếu loại dịch vụ đặt (serviceType)');
-  if (!serviceId) errors.push('Thiếu mã dịch vụ (serviceId)');
-  if (!customerName || customerName.trim().length < 2) errors.push('Họ tên khách hàng không hợp lệ');
-  if (!customerEmail || !customerEmail.includes('@')) errors.push('Email liên hệ không hợp lệ');
-  if (!customerPhone || customerPhone.length < 9) errors.push('Số điện thoại không hợp lệ');
-  if (!bookingDate) errors.push('Ngày sử dụng dịch vụ không được để trống');
-
-  if (errors.length > 0) {
-    res.status(400).json({
-      success: false,
-      message: 'Dữ liệu đặt dịch vụ không hợp lệ',
-      errors,
-    });
-    return;
-  }
-
-  next();
+  validateSecureBookingRequest(req, res, next);
 }
 
 export function validateBlogRequest(req: Request, res: Response, next: NextFunction): void {
@@ -87,16 +68,12 @@ export function validatePartnerApplication(req: Request, res: Response, next: Ne
 }
 
 export function validateSecureBookingRequest(req: Request, res: Response, next: NextFunction): void {
-  const { serviceType, serviceId, customerPhone, bookingDate, adultsCount, childrenCount, quantity } = req.body;
-  const errors: string[] = [];
-  if (!['tour', 'hotel', 'restaurant', 'ticket'].includes(serviceType)) errors.push('Loại dịch vụ không hợp lệ');
-  if (typeof serviceId !== 'string' || !serviceId.trim()) errors.push('Thiếu mã dịch vụ');
-  if (typeof customerPhone !== 'string' || !/^[0-9+ ()-]{9,20}$/.test(customerPhone)) errors.push('Số điện thoại không hợp lệ');
-  if (typeof bookingDate !== 'string' || Number.isNaN(Date.parse(bookingDate))) errors.push('Ngày sử dụng không hợp lệ');
-  if (!Number.isInteger(Number(adultsCount)) || Number(adultsCount) < 0) errors.push('Số người lớn không hợp lệ');
-  if (!Number.isInteger(Number(childrenCount)) || Number(childrenCount) < 0) errors.push('Số trẻ em không hợp lệ');
-  if (quantity !== undefined && (!Number.isInteger(Number(quantity)) || Number(quantity) < 1)) errors.push('Số lượng không hợp lệ');
-  if (quantity === undefined && Number(adultsCount) + Number(childrenCount) < 1) errors.push('Tổng số khách phải lớn hơn 0');
-  if (errors.length) return validationError(res, errors);
-  next();
+  try {
+    req.body = normalizeBookingPayload(req.body);
+    validateIdempotencyKey(req.header('Idempotency-Key'));
+    next();
+  } catch (error) {
+    const e = error as { statusCode?: number; message: string; code?: string };
+    res.status(e.statusCode ?? 400).json({ success: false, message: e.message, code: e.code });
+  }
 }

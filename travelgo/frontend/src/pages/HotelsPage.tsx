@@ -1,3 +1,4 @@
+import {CatalogPageFilters,CatalogPagination,useCatalogPage} from '../components/explore/CatalogPageFilters';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PlaceService } from '../services/placeService';
@@ -9,35 +10,10 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useBooking } from '../context/BookingContext';
 
 export const HotelsPage: React.FC = () => {
-  const [hotels, setHotels] = useState<Place[]>([]);
-  const [city, setCity] = useState('all');
-  const [minRating, setMinRating] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(15000000);
-  const [loading, setLoading] = useState(true);
-
-  const { toggleFavorite, isFavorite } = useFavorites();
-  const { openBooking } = useBooking();
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    const fetchHotels = async () => {
-      setLoading(true);
-      try {
-        const data = await PlaceService.getPlaces({
-          category: 'hotel',
-          city: city !== 'all' ? city : undefined,
-          minRating: minRating > 0 ? minRating : undefined,
-        });
-        setHotels(data.filter((h) => h.priceFrom <= maxPrice));
-      } catch (e) {
-        console.error('Failed to load hotels:', e);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchHotels();
-  }, [city, minRating, maxPrice]);
+  const catalog=useCatalogPage('hotel');
+  const hotels=catalog.items;
+  const {toggleFavorite,isFavorite}=useFavorites();
+  const {openBooking}=useBooking();
 
   return (
     <div className="min-h-screen pt-24 pb-20 bg-slate-50">
@@ -51,56 +27,11 @@ export const HotelsPage: React.FC = () => {
             Nơi nghỉ dưỡng lý tưởng cho chuyến đi của bạn
           </h1>
           <p className="text-indigo-200 text-sm sm:text-base max-w-2xl leading-relaxed">
-            Từ resort ven biển sang trọng đến khách sạn boutique ấm cúng, tận hưởng kỳ nghỉ trọn vẹn với giá tốt nhất và xác nhận tức thì.
+            Tìm nơi lưu trú theo điểm đến, loại hình và tiện ích. Kiểm tra thông tin giá và xác nhận dịch vụ trước khi đặt.
           </p>
         </div>
 
-        {/* Filter Controls */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm mb-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1">Thành phố / Khu vực</label>
-            <select
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none"
-            >
-              <option value="all">Tất cả địa điểm</option>
-              <option value="Đà Nẵng">Đà Nẵng</option>
-              <option value="Sapa">Sapa</option>
-              <option value="Phú Quốc">Phú Quốc</option>
-              <option value="Hạ Long">Hạ Long</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1">Đánh giá tối thiểu</label>
-            <select
-              value={minRating}
-              onChange={(e) => setMinRating(Number(e.target.value))}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold outline-none"
-            >
-              <option value={0}>Tất cả sao</option>
-              <option value={4.5}>Từ 4.5 ★ (Rất tốt)</option>
-              <option value={4.8}>Từ 4.8 ★ (Xuất sắc)</option>
-            </select>
-          </div>
-
-          <div>
-            <div className="flex justify-between items-center mb-1">
-              <label className="text-xs font-bold text-slate-500">Mức giá tối đa</label>
-              <span className="text-xs font-extrabold text-indigo-600">{formatCurrencyVND(maxPrice)}</span>
-            </div>
-            <input
-              type="range"
-              min={1000000}
-              max={20000000}
-              step={500000}
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(Number(e.target.value))}
-              className="w-full accent-indigo-600 cursor-pointer mt-2"
-            />
-          </div>
-        </div>
+        <CatalogPageFilters {...catalog}/>
 
         {/* Hotel Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -110,6 +41,7 @@ export const HotelsPage: React.FC = () => {
             return (
               <div
                 key={h.id}
+                data-testid="service-catalog-card"
                 className="bg-white rounded-3xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 border border-slate-100 flex flex-col justify-between"
               >
                 <div>
@@ -138,6 +70,7 @@ export const HotelsPage: React.FC = () => {
                       </h3>
                     </Link>
 
+                    <Link className="text-sm font-bold text-teal-700 underline" to={'/assistant?listing='+encodeURIComponent(h.id)}>Tư vấn bằng AI</Link>
                     <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
                       {h.summary}
                     </p>
@@ -152,10 +85,10 @@ export const HotelsPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="p-6 pt-0 border-t border-slate-100 flex items-center justify-between mt-4">
+                <div className="p-6 pt-0 border-t border-slate-100 flex flex-wrap gap-3 items-center justify-between mt-4">
                   <div>
-                    <span className="text-[11px] text-slate-400 block">Giá mỗi đêm từ</span>
-                    <span className="text-2xl font-black text-slate-900">{formatCurrencyVND(h.priceFrom)}</span>
+                    <span className="text-[11px] text-slate-400 block">Giá từ catalog, đơn vị chưa xác minh</span>
+                    <span className="text-2xl font-black text-slate-900">{h.priceFrom==null?'Chưa có giá':formatCurrencyVND(h.priceFrom)}</span>
                   </div>
 
                   <div className="flex items-center space-x-2">
@@ -166,6 +99,7 @@ export const HotelsPage: React.FC = () => {
                       Xem chi tiết
                     </Link>
                     <button
+                      disabled={h.isDemo||h.priceFrom==null}
                       onClick={() =>
                         openBooking({
                           serviceType: 'hotel',
@@ -177,7 +111,7 @@ export const HotelsPage: React.FC = () => {
                       }
                       className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow transition-colors"
                     >
-                      Đặt phòng ngay
+                      {h.isDemo?'DEMO · Không nhận đặt':'Đặt dịch vụ'}
                     </button>
                   </div>
                 </div>
@@ -185,6 +119,7 @@ export const HotelsPage: React.FC = () => {
             );
           })}
         </div>
+        <CatalogPagination {...catalog}/>
       </div>
     </div>
   );

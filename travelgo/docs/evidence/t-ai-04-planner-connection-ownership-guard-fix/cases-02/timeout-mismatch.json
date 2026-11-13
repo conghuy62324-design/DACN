@@ -1,0 +1,272 @@
+{
+  "scenario": "timeout-mismatch",
+  "tier": "OFFLINE_SENSOR_CHILD",
+  "error": {
+    "name": "AssertionError",
+    "message": "STATEMENT_TIMEOUT_MISMATCH\n\n'0' !== '15s'\n"
+  },
+  "guardPassed": false,
+  "events": [
+    {
+      "sequence": 1,
+      "at": "2026-11-11T08:54:45.298Z",
+      "type": "CREATE",
+      "id": "54bc5c2a-6450-4e11-aa28-3a7ef162ca5d",
+      "factory": "test-reader",
+      "token": "5462cc08610c4be1b40f16c33bb55124",
+      "application_name": "og-test-reader-5462cc08610c4be1b40f16c33bb55124",
+      "state": "CREATED",
+      "config": {
+        "host": "127.0.0.1",
+        "port": 5432,
+        "database": "travelgo_ai_m0_test",
+        "user": "postgres"
+      },
+      "identity": null,
+      "physical": null
+    },
+    {
+      "sequence": 2,
+      "at": "2026-11-11T08:54:45.298Z",
+      "type": "PHYSICAL_OPEN",
+      "instanceId": "54bc5c2a-6450-4e11-aa28-3a7ef162ca5d",
+      "factory": "test-reader",
+      "state": "PENDING_REGISTRATION",
+      "physical": {
+        "expectedEndpoint": {
+          "host": "127.0.0.1",
+          "port": 5432
+        },
+        "localAddress": "127.0.0.1",
+        "localPort": 61001,
+        "remoteAddress": "127.0.0.1",
+        "remotePort": 5432
+      },
+      "startup": {
+        "application_name": "og-test-reader-5462cc08610c4be1b40f16c33bb55124",
+        "options": "-c default_transaction_read_only=on -c statement_timeout=15000 -c idle_in_transaction_session_timeout=30000",
+        "database": "travelgo_ai_m0_test",
+        "user": "postgres"
+      }
+    },
+    {
+      "sequence": 3,
+      "at": "2026-11-11T08:54:45.299Z",
+      "type": "RAW_SELF_IDENTITY",
+      "instanceId": "54bc5c2a-6450-4e11-aa28-3a7ef162ca5d",
+      "row": {
+        "database": "travelgo_ai_m0_test",
+        "role": "postgres",
+        "pid": 20001,
+        "pg_backend_pid": 20001,
+        "backend_start": "2026-11-11T08:00:00.123456Z",
+        "application_name": "og-test-reader-5462cc08610c4be1b40f16c33bb55124",
+        "usename": "postgres",
+        "datname": "travelgo_ai_m0_test",
+        "backend_type": "client backend",
+        "client_addr": "127.0.0.1",
+        "client_port": 61001,
+        "inet_client_addr": "127.0.0.1",
+        "inet_client_port": 61001,
+        "server_addr": "127.0.0.1",
+        "server_port": 5432,
+        "default_transaction_read_only": "on",
+        "transaction_read_only": "on",
+        "statement_timeout": "0",
+        "sentinel": "hugotravel-isolated-test-database-v1"
+      }
+    },
+    {
+      "sequence": 4,
+      "at": "2026-11-11T08:54:45.300Z",
+      "type": "REGISTRATION_FAIL",
+      "instanceId": "54bc5c2a-6450-4e11-aa28-3a7ef162ca5d",
+      "message": "STATEMENT_TIMEOUT_MISMATCH\n\n'0' !== '15s'\n"
+    },
+    {
+      "sequence": 5,
+      "at": "2026-11-11T08:54:45.300Z",
+      "type": "DISPOSE_START",
+      "instanceId": "54bc5c2a-6450-4e11-aa28-3a7ef162ca5d"
+    },
+    {
+      "sequence": 6,
+      "at": "2026-11-11T08:54:45.300Z",
+      "type": "DISPOSE_PASS",
+      "instanceId": "54bc5c2a-6450-4e11-aa28-3a7ef162ca5d",
+      "identity": null
+    }
+  ],
+  "clientsCreated": 1,
+  "clientsDisposed": 1,
+  "cleanupCount": 0,
+  "lateRejected": 4,
+  "lateDispatched": 0,
+  "fence": {
+    "stopped": true,
+    "closed": false,
+    "current": "OWNERSHIP",
+    "firstFailure": {
+      "caseId": "OWNERSHIP",
+      "phase": "ownership",
+      "error": {
+        "name": "AssertionError",
+        "message": "STATEMENT_TIMEOUT_MISMATCH\n\n'0' !== '15s'\n",
+        "stack": "AssertionError [ERR_ASSERTION]: STATEMENT_TIMEOUT_MISMATCH\n\n'0' !== '15s'\n\n    at OwnershipRegistry.register (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\ownership-registry.cjs:17:333)\n    at ManagedClient.connect (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\managed-connections.cjs:10:543)\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\acceptance-child.cjs:39:26"
+      }
+    },
+    "secondaryFailures": [
+      {
+        "caseId": "OWNERSHIP",
+        "phase": "physical-connect",
+        "error": {
+          "name": "AssertionError",
+          "message": "STATEMENT_TIMEOUT_MISMATCH\n\n'0' !== '15s'\n",
+          "stack": "AssertionError [ERR_ASSERTION]: STATEMENT_TIMEOUT_MISMATCH\n\n'0' !== '15s'\n\n    at OwnershipRegistry.register (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\ownership-registry.cjs:17:333)\n    at ManagedClient.connect (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\managed-connections.cjs:10:543)\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\acceptance-child.cjs:39:26"
+        }
+      },
+      {
+        "caseId": "OWNERSHIP",
+        "phase": "acceptance-scenario",
+        "error": {
+          "name": "AssertionError",
+          "message": "STATEMENT_TIMEOUT_MISMATCH\n\n'0' !== '15s'\n",
+          "stack": "AssertionError [ERR_ASSERTION]: STATEMENT_TIMEOUT_MISMATCH\n\n'0' !== '15s'\n\n    at OwnershipRegistry.register (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\ownership-registry.cjs:17:333)\n    at ManagedClient.connect (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\managed-connections.cjs:10:543)\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\acceptance-child.cjs:39:26"
+        }
+      },
+      {
+        "caseId": "OWNERSHIP",
+        "phase": "dispatch:agent",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\acceptance-child.cjs:60:134"
+        }
+      },
+      {
+        "caseId": "OWNERSHIP",
+        "phase": "dispatch:native",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\acceptance-child.cjs:60:134"
+        }
+      },
+      {
+        "caseId": "OWNERSHIP",
+        "phase": "dispatch:tool",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\acceptance-child.cjs:60:134"
+        }
+      },
+      {
+        "caseId": "OWNERSHIP",
+        "phase": "dispatch:operator",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\acceptance-child.cjs:60:134"
+        }
+      }
+    ],
+    "events": [
+      {
+        "sequence": 1,
+        "type": "CASE_START",
+        "caseId": "OWNERSHIP"
+      },
+      {
+        "sequence": 2,
+        "type": "GLOBAL_STOP",
+        "caseId": "OWNERSHIP",
+        "phase": "ownership",
+        "error": {
+          "name": "AssertionError",
+          "message": "STATEMENT_TIMEOUT_MISMATCH\n\n'0' !== '15s'\n",
+          "stack": "AssertionError [ERR_ASSERTION]: STATEMENT_TIMEOUT_MISMATCH\n\n'0' !== '15s'\n\n    at OwnershipRegistry.register (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\ownership-registry.cjs:17:333)\n    at ManagedClient.connect (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\managed-connections.cjs:10:543)\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\acceptance-child.cjs:39:26"
+        }
+      },
+      {
+        "sequence": 3,
+        "type": "GLOBAL_STOP",
+        "caseId": "OWNERSHIP",
+        "phase": "physical-connect",
+        "error": {
+          "name": "AssertionError",
+          "message": "STATEMENT_TIMEOUT_MISMATCH\n\n'0' !== '15s'\n",
+          "stack": "AssertionError [ERR_ASSERTION]: STATEMENT_TIMEOUT_MISMATCH\n\n'0' !== '15s'\n\n    at OwnershipRegistry.register (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\ownership-registry.cjs:17:333)\n    at ManagedClient.connect (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\managed-connections.cjs:10:543)\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\acceptance-child.cjs:39:26"
+        }
+      },
+      {
+        "sequence": 4,
+        "type": "GLOBAL_STOP",
+        "caseId": "OWNERSHIP",
+        "phase": "acceptance-scenario",
+        "error": {
+          "name": "AssertionError",
+          "message": "STATEMENT_TIMEOUT_MISMATCH\n\n'0' !== '15s'\n",
+          "stack": "AssertionError [ERR_ASSERTION]: STATEMENT_TIMEOUT_MISMATCH\n\n'0' !== '15s'\n\n    at OwnershipRegistry.register (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\ownership-registry.cjs:17:333)\n    at ManagedClient.connect (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\managed-connections.cjs:10:543)\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\acceptance-child.cjs:39:26"
+        }
+      },
+      {
+        "sequence": 5,
+        "type": "GLOBAL_STOP",
+        "caseId": "OWNERSHIP",
+        "phase": "dispatch:agent",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\acceptance-child.cjs:60:134"
+        }
+      },
+      {
+        "sequence": 6,
+        "type": "GLOBAL_STOP",
+        "caseId": "OWNERSHIP",
+        "phase": "dispatch:native",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\acceptance-child.cjs:60:134"
+        }
+      },
+      {
+        "sequence": 7,
+        "type": "GLOBAL_STOP",
+        "caseId": "OWNERSHIP",
+        "phase": "dispatch:tool",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\acceptance-child.cjs:60:134"
+        }
+      },
+      {
+        "sequence": 8,
+        "type": "GLOBAL_STOP",
+        "caseId": "OWNERSHIP",
+        "phase": "dispatch:operator",
+        "error": {
+          "name": "AssertionError",
+          "message": "GLOBAL_STOP_DISPATCH_BLOCKED",
+          "stack": "AssertionError [ERR_ASSERTION]: GLOBAL_STOP_DISPATCH_BLOCKED\n    at active (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\fail-fast.cjs:18:28)\n    at Object.dispatch (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\fail-fast.cjs:24:7)\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-planner-connection-ownership-guard-fix\\acceptance-child.cjs:60:134"
+        }
+      }
+    ],
+    "agentDispatches": [],
+    "nativeDispatches": [],
+    "toolDispatches": [],
+    "operatorDispatches": [],
+    "retry": 0
+  },
+  "network": {
+    "pid": 10816,
+    "mode": "OFFLINE",
+    "sockets": [],
+    "blocked": [],
+    "http": 0
+  },
+  "actualEntityWrites": 0
+}

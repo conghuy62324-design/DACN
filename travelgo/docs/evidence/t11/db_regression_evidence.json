@@ -1,0 +1,28 @@
+{
+  "kind": "T11_T04A_POSTGRES_REGRESSION_OBSERVED_RUN",
+  "database": "travelgo_ai_m0_test",
+  "preflight": {
+    "command": "node dist/scripts/verifyDatabase.js",
+    "exitCode": 0,
+    "result": "PASS",
+    "postgis": "3.4.3",
+    "migrations": 12,
+    "applicationTables": 23,
+    "foreignKeys": 39,
+    "guardAndSentinelVerified": true
+  },
+  "regression": {
+    "command": "node dist/tests/tripSnapshot.postgres.test.js",
+    "exitCode": 0,
+    "result": "PASS",
+    "checks": 11,
+    "fixtureTripIdFromRunLog": "47d9a8a0-39f8-426d-ae7f-269759f7aa5e",
+    "fixturePolicy": "Two registered fixture users and their Trip; test finally block destroys Trip by fixture user ID then fixture users"
+  },
+  "fingerprintBefore": "db_fingerprint_before.json",
+  "fingerprintAfter": "db_fingerprint_after.json",
+  "fingerprintCompareCommand": "node dist/evaluation/t11_db_fingerprint.js compare ../docs/evidence/t11/db_fingerprint_before.json ../docs/evidence/t11/db_fingerprint_after.json",
+  "fingerprintCompareExitCode": 0,
+  "fingerprintCompareResult": "PASS",
+  "dataTier": "POSTGRES_TEST_OWNED_FIXTURE_ONLY"
+}

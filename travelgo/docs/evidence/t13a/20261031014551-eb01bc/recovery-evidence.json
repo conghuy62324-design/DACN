@@ -1,0 +1,19 @@
+{
+  "operation": "Guarded ledger recovery after harness case-normalization bug",
+  "database": "travelgo_ai_m0_test",
+  "scope": "Only canonical lowercase forms of emails preallocated in this run ledger; discovered exact UUIDs, no prefix cleanup or background edits",
+  "originalMismatch": [
+    "user_roles",
+    "user_telemetry_consents",
+    "users"
+  ],
+  "recoveredFingerprint": {
+    "tables": 25,
+    "changed": []
+  },
+  "command": "NODE_ENV=test DB_HOST=127.0.0.1 DB_NAME=travelgo_ai_m0_test TEST_DATABASE_NAME=travelgo_ai_m0_test DB_SSL=false ALLOW_TEST_DB_WRITES=true node scripts/t13a-recover.cjs ../docs/evidence/t13a/20261031014551-eb01bc",
+  "snapshotCommand": "node dist/evaluation/t11_db_fingerprint.js snapshot ../docs/evidence/t13a/20261031014551-eb01bc/fingerprint-recovered.json",
+  "compareCommand": "node dist/evaluation/t11_db_fingerprint.js compare <same-run-before> <same-run-recovered>",
+  "observedExitCode": 0,
+  "observedToolChunk": "ec4466"
+}

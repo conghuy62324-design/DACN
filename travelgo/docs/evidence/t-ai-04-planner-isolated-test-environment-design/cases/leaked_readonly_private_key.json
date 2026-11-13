@@ -1,0 +1,78 @@
+{
+  "name": "leaked_readonly_private_key",
+  "tier": "OFFLINE_SYMBOLIC_SPECIFICATION_NOT_ENFORCEMENT",
+  "decision": "BOUNDARY_BREACH",
+  "recovery": "RETAIN_QUARANTINE_SECURITY_REVIEW",
+  "facts": {
+    "opened": true,
+    "outsideRx": true,
+    "changed": false,
+    "aclDenialNotNoRx": true,
+    "trustAssumptionBroken": true
+  },
+  "phase": "COMMITTED",
+  "intervalActive": true,
+  "fixture": "COMMITTED",
+  "stopped": true,
+  "callbacks": {
+    "live": 0,
+    "cleanup": 0
+  },
+  "lateCallbacks": 0,
+  "events": [
+    {
+      "seq": 1,
+      "type": "INIT",
+      "phase": "BEFORE_READY",
+      "active": false,
+      "fixture": "ABSENT",
+      "stopped": false
+    },
+    {
+      "seq": 2,
+      "type": "ISOLATION_READY",
+      "phase": "READY",
+      "active": true,
+      "fixture": "ABSENT",
+      "stopped": false
+    },
+    {
+      "seq": 3,
+      "type": "INSERT_PENDING",
+      "phase": "INSERT_PENDING",
+      "active": true,
+      "fixture": "UNCOMMITTED",
+      "stopped": false
+    },
+    {
+      "seq": 4,
+      "type": "COMMITTED",
+      "phase": "COMMITTED",
+      "active": true,
+      "fixture": "COMMITTED",
+      "stopped": false
+    },
+    {
+      "seq": 5,
+      "type": "ADMISSION_ATTEMPT",
+      "phase": "COMMITTED",
+      "active": true,
+      "fixture": "COMMITTED",
+      "stopped": false,
+      "decision": "ADMIT",
+      "opened": true,
+      "outsideRx": true
+    },
+    {
+      "seq": 6,
+      "type": "BOUNDARY_BREACH",
+      "phase": "COMMITTED",
+      "active": true,
+      "fixture": "COMMITTED",
+      "stopped": true,
+      "reason": "Unknown authenticated session; ACL is not a zero-RX barrier"
+    }
+  ],
+  "actualPostgres": 0,
+  "actualSql": 0
+}

@@ -1,0 +1,289 @@
+{
+  "at": "2026-11-11T02:35:33.237Z",
+  "constraints": [
+    {
+      "conname": "blog_posts_place_id_fkey",
+      "table_name": "blog_posts",
+      "referenced_table": "places",
+      "contype": "f",
+      "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE SET NULL"
+    },
+    {
+      "conname": "bookings_place_id_fkey",
+      "table_name": "bookings",
+      "referenced_table": "places",
+      "contype": "f",
+      "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE SET NULL"
+    },
+    {
+      "conname": "places_business_id_fkey",
+      "table_name": "places",
+      "referenced_table": "businesses",
+      "contype": "f",
+      "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE SET NULL"
+    },
+    {
+      "conname": "places_category_check",
+      "table_name": "places",
+      "referenced_table": "-",
+      "contype": "c",
+      "definition": "CHECK (((category)::text = ANY ((ARRAY['tour'::character varying, 'attraction'::character varying, 'hotel'::character varying, 'restaurant'::character varying])::text[])))"
+    },
+    {
+      "conname": "places_pkey",
+      "table_name": "places",
+      "referenced_table": "-",
+      "contype": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "conname": "places_slug_key",
+      "table_name": "places",
+      "referenced_table": "-",
+      "contype": "u",
+      "definition": "UNIQUE (slug)"
+    },
+    {
+      "conname": "places_status_check",
+      "table_name": "places",
+      "referenced_table": "-",
+      "contype": "c",
+      "definition": "CHECK (((status)::text = ANY ((ARRAY['DRAFT'::character varying, 'PENDING'::character varying, 'APPROVED'::character varying, 'REJECTED'::character varying, 'SUSPENDED'::character varying])::text[])))"
+    },
+    {
+      "conname": "tickets_place_id_fkey",
+      "table_name": "tickets",
+      "referenced_table": "places",
+      "contype": "f",
+      "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE SET NULL"
+    },
+    {
+      "conname": "tour_places_place_id_fkey",
+      "table_name": "tour_places",
+      "referenced_table": "places",
+      "contype": "f",
+      "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE RESTRICT"
+    },
+    {
+      "conname": "user_favorites_place_id_fkey",
+      "table_name": "user_favorites",
+      "referenced_table": "places",
+      "contype": "f",
+      "definition": "FOREIGN KEY (place_id) REFERENCES places(id) ON DELETE CASCADE"
+    }
+  ],
+  "triggers": [],
+  "placeColumns": [
+    {
+      "table_name": "places",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "places",
+      "column_name": "name",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "slug",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "category",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "summary",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "description",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "city",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "province",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "address",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "latitude",
+      "data_type": "double precision",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "longitude",
+      "data_type": "double precision",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "location",
+      "data_type": "USER-DEFINED",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "price_from",
+      "data_type": "numeric",
+      "is_nullable": "YES",
+      "column_default": "0"
+    },
+    {
+      "table_name": "places",
+      "column_name": "rating",
+      "data_type": "numeric",
+      "is_nullable": "YES",
+      "column_default": "5.00"
+    },
+    {
+      "table_name": "places",
+      "column_name": "review_count",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": "0"
+    },
+    {
+      "table_name": "places",
+      "column_name": "bayesian_rating",
+      "data_type": "numeric",
+      "is_nullable": "YES",
+      "column_default": "5.00"
+    },
+    {
+      "table_name": "places",
+      "column_name": "duration",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "hero_image",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "gallery_images",
+      "data_type": "jsonb",
+      "is_nullable": "YES",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "places",
+      "column_name": "highlights",
+      "data_type": "jsonb",
+      "is_nullable": "YES",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "places",
+      "column_name": "amenities",
+      "data_type": "jsonb",
+      "is_nullable": "YES",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "places",
+      "column_name": "itinerary",
+      "data_type": "jsonb",
+      "is_nullable": "YES",
+      "column_default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "places",
+      "column_name": "is_featured",
+      "data_type": "boolean",
+      "is_nullable": "YES",
+      "column_default": "false"
+    },
+    {
+      "table_name": "places",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "places",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": "CURRENT_TIMESTAMP"
+    },
+    {
+      "table_name": "places",
+      "column_name": "business_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "district",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "places",
+      "column_name": "opening_hours",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'{}'::jsonb"
+    },
+    {
+      "table_name": "places",
+      "column_name": "contact_info",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'{}'::jsonb"
+    },
+    {
+      "table_name": "places",
+      "column_name": "status",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "column_default": "'APPROVED'::character varying"
+    }
+  ],
+  "sourceOfTruth": "Current pg_catalog/information_schema, checked against12 approved migrations"
+}

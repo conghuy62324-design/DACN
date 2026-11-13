@@ -1,0 +1,477 @@
+
+diff --git a/C:/Users/Danh/Downloads/HCH/DACN/travelgo/docs/evidence/t-ai-04-g2-frontend-integration-logout/before-context-AuthContext.tsx b/C:/Users/Danh/Downloads/HCH/DACN/travelgo/frontend/src/context/AuthContext.tsx
+index 5e5510d..660db80 100644
+--- a/C:/Users/Danh/Downloads/HCH/DACN/travelgo/docs/evidence/t-ai-04-g2-frontend-integration-logout/before-context-AuthContext.tsx
++++ b/C:/Users/Danh/Downloads/HCH/DACN/travelgo/frontend/src/context/AuthContext.tsx
+@@ -1,6 +1,8 @@
+ import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+ import { User, UserRole } from '../types';
+ import { AuthService } from '../services/authService';
++import { AgentService } from '../services/agentService';
++import { agentSessions } from '../utils/agentSessionLifecycle';
+ 
+ interface AuthContextType {
+   user: User | null;
+@@ -8,6 +10,7 @@ interface AuthContextType {
+   login: (email: string, password: string) => Promise<User>;
+   register: (input: { fullName: string; email: string; password: string; phone?: string }) => Promise<User>;
+   logout: () => void;
++  sessionGeneration: number;
+   hasRole: (...roles: UserRole[]) => boolean;
+   isAdmin: boolean;
+   isPartner: boolean;
+@@ -25,9 +28,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
+   const [user, setUser] = useState<User | null>(null);
+   const [loading, setLoading] = useState(true);
+   const sessionVersion = useRef(0);
++  const [sessionGeneration, setSessionGeneration] = useState(0);
++  const tokenRef = useRef(localStorage.getItem('travelgo_token'));
++  const ownerRef = useRef<string>();
++  const bumpSession = () => { sessionVersion.current++; setSessionGeneration(sessionVersion.current); };
++  const endAgentContext = () => {
++    const token = tokenRef.current;
++    // Erasure uses captured credentials and never blocks clearing local auth.
++    void agentSessions.authExit(token, ownerRef.current, signal => AgentService.forSession(token || undefined).revokeAll(signal));
++  };
+ 
+   const clearSession = () => {
+-    sessionVersion.current++;
++    agentSessions.fence(tokenRef.current);
++    bumpSession();
++    tokenRef.current = null; ownerRef.current = undefined;
+     setUser(null);
+     localStorage.removeItem('travelgo_user');
+     localStorage.removeItem('travelgo_token');
+@@ -48,6 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
+       .then((currentUser) => {
+         if (!isCurrent()) return;
+         const normalized = normalizeUser(currentUser);
++        ownerRef.current = normalized.id;
+         setUser(normalized);
+         localStorage.setItem('travelgo_user', JSON.stringify(normalized));
+       })
+@@ -66,8 +81,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
+   const persistSession = (result: { user: User; token: string }, version: number) => {
+     // A completed logout/401/new login supersedes any outstanding auth response.
+     if (version !== sessionVersion.current) throw new Error('Phiên đăng nhập đã thay đổi. Vui lòng thử lại.');
+-    sessionVersion.current++;
++    endAgentContext();
++    bumpSession();
+     const normalized = normalizeUser(result.user);
++    tokenRef.current = result.token; ownerRef.current = normalized.id;
+     localStorage.setItem('travelgo_token', result.token);
+     localStorage.setItem('travelgo_user', JSON.stringify(normalized));
+     setUser(normalized);
+@@ -84,12 +101,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
+     return persistSession(await AuthService.register(input), version);
+   };
+ 
+-  const logout = clearSession;
++  const logout = () => { endAgentContext(); clearSession(); };
+ 
+   const value = useMemo<AuthContextType>(() => {
+     const hasRole = (...roles: UserRole[]) => !!user && roles.some((role) => user.roles.includes(role));
+-    return { user, loading, login, register, logout, hasRole, isAdmin: hasRole('SUPER_ADMIN'), isPartner: hasRole('PARTNER') };
+-  }, [user, loading]);
++    return { user, loading, login, register, logout, sessionGeneration, hasRole, isAdmin: hasRole('SUPER_ADMIN'), isPartner: hasRole('PARTNER') };
++  }, [user, loading, sessionGeneration]);
+ 
+   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+ };
+
+diff --git a/C:/Users/Danh/Downloads/HCH/DACN/travelgo/docs/evidence/t-ai-04-g2-frontend-integration-logout/before-pages-AssistantPage.tsx b/C:/Users/Danh/Downloads/HCH/DACN/travelgo/frontend/src/pages/AssistantPage.tsx
+index b23d202..c85f394 100644
+--- a/C:/Users/Danh/Downloads/HCH/DACN/travelgo/docs/evidence/t-ai-04-g2-frontend-integration-logout/before-pages-AssistantPage.tsx
++++ b/C:/Users/Danh/Downloads/HCH/DACN/travelgo/frontend/src/pages/AssistantPage.tsx
+@@ -4,16 +4,33 @@ import { MessageCircle, Plus, Send, ShieldCheck } from 'lucide-react';
+ import { useAuth } from '../context/AuthContext';
+ import { AgentService } from '../services/agentService';
+ import { AgentConversation } from '../utils/agentConversation';
++import { AgentG2Conversation } from '../utils/agentG2Conversation';
++import { agentSessions } from '../utils/agentSessionLifecycle';
+ import { agentErrorMessage } from '../utils/agentContract';
+ import { AgentResultCard } from '../components/agent/AgentResultCard';
+ import { PrivacyConsentModal } from '../components/agent/PrivacyConsentModal';
+ 
+-function AssistantSession({ token }: { token: string }) {
+-  const [chat] = useState(() => new AgentConversation(AgentService, () => localStorage.getItem('travelgo_token') === token));
+-  const state = useSyncExternalStore(chat.subscribe, chat.getSnapshot);
++function AssistantSession({ token, owner }: { token: string; owner: string }) {
++  const active = useRef(true);
++  const [mode, setMode] = useState<'G1' | 'G2'>('G1');
++  const [client] = useState(() => AgentService.forSession(token));
++  const isCurrent = () => active.current && localStorage.getItem('travelgo_token') === token;
++  const [g1] = useState(() => new AgentConversation(client, isCurrent));
++  const [g2] = useState(() => new AgentG2Conversation(client, isCurrent, {
++    markContext: () => agentSessions.mark(owner), confirmedAll: () => agentSessions.confirmedAll(owner),
++  }));
++  const g1State = useSyncExternalStore(g1.subscribe, g1.getSnapshot);
++  const g2State = useSyncExternalStore(g2.subscribe, g2.getSnapshot);
++  const chat = mode === 'G2' ? g2 : g1, state = mode === 'G2' ? g2State : g1State;
++  const [priorContext, setPriorContext] = useState(() => agentSessions.mayHaveContext(owner));
+   const panel = useRef<HTMLDivElement>(null), nearBottom = useRef(true);
+   const [unseen, setUnseen] = useState(false);
+-  useEffect(() => () => chat.cancel(), [chat]);
++  useEffect(() => {
++    active.current = true;
++    const unregister = agentSessions.register(token, () => { active.current = false; g1.reset(); g2.fence(); });
++    const timer = setInterval(g2.checkExpiry, 1000);
++    return () => { active.current = false; unregister(); clearInterval(timer); g1.cancel(); g2.fence(); };
++  }, [g1, g2, token]);
+   useLayoutEffect(() => {
+     const el = panel.current;
+     if (el && nearBottom.current) { el.scrollTop = el.scrollHeight; setUnseen(false); }
+@@ -26,9 +43,24 @@ function AssistantSession({ token }: { token: string }) {
+         <div><div className="mb-2 flex items-center gap-2 text-sm font-semibold text-orange-700"><MessageCircle size={18} /> HuGo Travel</div>
+           <h1 className="text-3xl font-extrabold text-slate-900">Trợ lý AI</h1>
+           <p className="mt-2 text-sm text-slate-600">Cùng bạn tìm địa điểm và phác thảo hành trình.</p></div>
+-        <button type="button" onClick={() => { chat.reset(); nearBottom.current = true; }} className="flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700"><Plus size={18} /> Cuộc trò chuyện mới</button>
++        <button type="button" onClick={() => { void chat.reset(); nearBottom.current = true; }} disabled={mode === 'G2' && g2State.phase === 'ended'} className="flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700 disabled:opacity-50"><Plus size={18} />{mode === 'G2' ? 'Đặt lại phiên G2' : 'Cuộc trò chuyện mới'}</button>
+       </header>
+       <p className="mb-4 flex items-start gap-2 text-xs leading-5 text-slate-600"><ShieldCheck size={16} className="mt-0.5 shrink-0" />Hội thoại chỉ giữ trong phiên trang này. Tải lại trang, đăng xuất hoặc đổi tài khoản sẽ bắt đầu hội thoại mới.</p>
++      <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4 text-sm">
++        <p className="font-semibold">Chế độ hiện tại: {mode === 'G1' ? 'G1 · không lưu ngữ cảnh máy chủ' : 'G2 · hội thoại local/demo'}</p>
++        <div className="mt-3 flex flex-wrap gap-3">
++          {mode === 'G1' ? <button type="button" disabled={state.busy || g2State.checking} onClick={() => void g2.requestOptIn()} className="rounded-lg border px-3 py-2 font-semibold disabled:opacity-50">{g2State.checking ? 'Đang kiểm tra G2…' : 'Dùng G2 local/demo'}</button> : <>
++            <button type="button" disabled={g2State.busy && g2State.phase === 'ended'} onClick={() => void g2.end()} className="rounded-lg border px-3 py-2 font-semibold disabled:opacity-50">Kết thúc phiên G2</button>
++            <button type="button" disabled={g2State.busy} onClick={async () => { await g2.end(true); if (isCurrent()) { setMode('G1'); g1.reset(); } }} className="rounded-lg border px-3 py-2 font-semibold disabled:opacity-50">Trở về G1</button>
++            {['expired', 'unavailable', 'ended', 'uncertain', 'conflict'].includes(g2State.phase) && <button type="button" disabled={g2State.busy || g2State.checking} onClick={async () => { await g2.end(true); if (isCurrent()) await g2.requestOptIn(); }} className="rounded-lg border px-3 py-2 font-semibold disabled:opacity-50">Bắt đầu phiên G2 mới</button>}
++          </>}
++          <Link to="/tour-planner" className="px-1 py-2 font-semibold text-sky-800 underline">Dùng Planner</Link>
++        </div>
++        {mode === 'G2' && <p className="mt-3 text-xs leading-5 text-slate-600">Thông tin xác minh chỉ lưu trong RAM máy chủ, tối đa 15 phút; có thể mất khi máy chủ khởi động lại. Tải lại trang về G1, không khôi phục phiên cũ. Đăng xuất thử xóa phiên, không bảo đảm xóa khi mất mạng.</p>}
++        {g2State.message && <p role="status" className="mt-3 text-sm text-slate-700">{g2State.message}</p>}
++        {g2State.noticeError && <p role="alert" className="mt-3 text-sm text-amber-900">{agentErrorMessage(g2State.noticeError)}</p>}
++        {mode === 'G1' && priorContext && <div className="mt-3 text-xs leading-5 text-slate-600"><p>Trang đã bỏ hội thoại cũ. Máy chủ có thể còn dữ liệu tạm đến hết thời hạn 15 phút; trang không khôi phục ngữ cảnh đó.</p><button type="button" disabled={g2State.busy} className="mt-2 font-semibold underline" onClick={async () => { await g2.end(true); if (isCurrent()) setPriorContext(agentSessions.mayHaveContext(owner)); }}>Thử xóa các phiên G2 trước</button></div>}
++      </div>
+       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+         <div ref={panel} role="region" aria-label="Hội thoại" tabIndex={0} onScroll={() => {
+           const el = panel.current!; nearBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+@@ -46,14 +78,19 @@ function AssistantSession({ token }: { token: string }) {
+             </article>
+             {turn.response && <article aria-label="Phản hồi Agent" className="rounded-2xl rounded-tl-sm bg-slate-50 p-4 text-slate-800">
+               <p className="mb-2 text-xs font-bold text-sky-800">HuGo Assistant</p>
+-              <p className="whitespace-pre-wrap text-sm leading-6">{turn.response.reply}</p>
++              <p className="whitespace-pre-wrap text-sm leading-6">{mode === 'G2' && turn.response.status === 'needs_input' && turn.response.missingFields.includes('transportation') ? 'Agent đang yêu cầu bạn xác nhận lại phương tiện.' : turn.response.reply}</p>
++              {mode === 'G2' && turn.response.status === 'needs_input' && turn.response.missingFields.includes('transportation') && index === state.turns.length - 1 && <div className="mt-3 flex flex-wrap gap-3">
++                <button type="button" disabled={!g2.canSend()} onClick={() => g2.confirmTransportation('motorbike')} className="rounded-lg border border-sky-300 px-4 py-3 text-sm font-semibold text-sky-900 disabled:opacity-50">Xe máy</button>
++                <button type="button" disabled={!g2.canSend()} onClick={() => g2.confirmTransportation('car')} className="rounded-lg border border-sky-300 px-4 py-3 text-sm font-semibold text-sky-900 disabled:opacity-50">Ô tô</button>
++                <p className="w-full text-xs leading-5 text-slate-600">Bạn có thể sửa bằng tin nhắn, đổi lựa chọn, đặt lại hoặc kết thúc phiên. Xác nhận không bảo đảm Agent luôn hiểu đúng.</p>
++              </div>}
+               {turn.response.status === 'completed' && <AgentResultCard result={turn.response.result} />}
+               {turn.response.status === 'tool_unavailable' && <Link to="/tour-planner" className="mt-3 inline-block text-sm font-semibold text-sky-800 underline">Mở Planner</Link>}
+               {turn.response.historyTruncated && <p className="mt-3 text-xs text-slate-500">Một phần lịch sử cũ đã được bỏ khỏi ngữ cảnh gửi tiếp. Hãy nhắc lại thông tin còn cần.</p>}
+             </article>}
+             {turn.error && <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+               <p>{agentErrorMessage(turn.error)}</p><div className="mt-3 flex flex-wrap gap-4">
+-                {index === state.turns.length - 1 && <button disabled={state.busy} type="button" onClick={() => chat.retry(turn.id)} className="font-bold underline disabled:opacity-50">Thử lại yêu cầu</button>}
++                {index === state.turns.length - 1 && <button disabled={state.busy || mode === 'G2' && !g2.canRetry()} type="button" onClick={() => chat.retry(turn.id)} className="font-bold underline disabled:opacity-50">Thử lại yêu cầu</button>}
+                 <Link className="font-semibold underline" to="/tour-planner">Dùng Planner thông thường</Link>
+               </div>
+             </div>}
+@@ -66,19 +103,20 @@ function AssistantSession({ token }: { token: string }) {
+           <textarea id="agent-message" rows={3} maxLength={2000} value={state.draft} disabled={state.busy} onChange={e => chat.setDraft(e.target.value)}
+             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send(); } }}
+             placeholder="Nhập yêu cầu bằng tiếng Việt…" className="w-full resize-y rounded-xl border border-slate-300 p-3 text-base outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 disabled:bg-slate-50" />
+-          {state.declined && <p role="status" className="mt-2 text-sm text-slate-600">Bạn đã từ chối gửi hội thoại ra bên ngoài. Nội dung nháp vẫn được giữ. <Link to="/tour-planner" className="font-semibold text-sky-800 underline">Mở Planner</Link></p>}
++          {mode === 'G1' && g1State.declined && <p role="status" className="mt-2 text-sm text-slate-600">Bạn đã từ chối gửi hội thoại ra bên ngoài. Nội dung nháp vẫn được giữ. <Link to="/tour-planner" className="font-semibold text-sky-800 underline">Mở Planner</Link></p>}
+           <div className="mt-3 flex items-center justify-between gap-3"><p className="text-xs text-slate-500">{state.draft.length}/2000 · Shift+Enter xuống dòng</p>
+-            <button type="submit" disabled={state.busy || !state.draft.trim()} className="flex shrink-0 items-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-bold text-white hover:bg-orange-700 disabled:opacity-50"><Send size={16} />{state.busy ? 'Đang gửi…' : 'Gửi yêu cầu'}</button></div>
++            <button type="submit" disabled={state.busy || !state.draft.trim() || mode === 'G2' && !g2.canSend()} className="flex shrink-0 items-center gap-2 rounded-xl bg-orange-600 px-5 py-3 text-sm font-bold text-white hover:bg-orange-700 disabled:opacity-50"><Send size={16} />{state.busy ? 'Đang gửi…' : 'Gửi yêu cầu'}</button></div>
+         </form>
+       </section>
+     </div>
+-    {state.notice && <PrivacyConsentModal notice={state.notice} agree={chat.agree} decline={chat.decline} />}
++    {mode === 'G1' && g1State.notice && <PrivacyConsentModal notice={g1State.notice} agree={g1.agree} decline={g1.decline} />}
++    {g2State.notice && <PrivacyConsentModal retention notice={g2State.notice} agree={() => { if (g2.agree()) { g1.reset(); setPriorContext(false); setMode('G2'); } }} decline={g2.decline} />}
+   </div>;
+ }
+ 
+ export function AssistantPage() {
+-  const { user } = useAuth();
++  const { user, sessionGeneration } = useAuth();
+   const token = localStorage.getItem('travelgo_token');
+   // Keyed session drops old render state immediately, before effects or late responses.
+-  return user && token ? <AssistantSession key={`${user.id}:${token}`} token={token} /> : null;
++  return user && token ? <AssistantSession key={`${user.id}:${token}:${sessionGeneration}`} token={token} owner={user.id} /> : null;
+ }
+
+diff --git a/C:/Users/Danh/Downloads/HCH/DACN/travelgo/docs/evidence/t-ai-04-g2-frontend-integration-logout/before-services-agentService.ts b/C:/Users/Danh/Downloads/HCH/DACN/travelgo/frontend/src/services/agentService.ts
+index b011792..2cdc9e9 100644
+--- a/C:/Users/Danh/Downloads/HCH/DACN/travelgo/docs/evidence/t-ai-04-g2-frontend-integration-logout/before-services-agentService.ts
++++ b/C:/Users/Danh/Downloads/HCH/DACN/travelgo/frontend/src/services/agentService.ts
+@@ -1,15 +1,31 @@
+ import { api } from './api';
+ import type { AgentChatRequest } from '../types/agent';
+-import { parseAgentPrivacy, parseAgentResponse } from '../utils/agentContract';
++import { acceptTurnMetadata, parseAgentPrivacy, parseAgentResponse, parseConversationMetadata, parseG2Privacy, projectAgentRequest } from '../utils/agentContract';
+ 
+-export const AgentService = {
+-  async privacy(signal: AbortSignal) {
+-    return parseAgentPrivacy(await api.get('/agent/privacy', { signal }));
+-  },
+-  async chat(input: AgentChatRequest, signal: AbortSignal) {
+-    // Explicit projection prevents account/profile or incidental UI state entering the prompt.
+-    const body: AgentChatRequest = { message: input.message, history: (input.history || []).map(m => ({ role: m.role, content: m.content })),
+-      ...(input.externalProcessingConsent ? { externalProcessingConsent: input.externalProcessingConsent } : {}) };
+-    return parseAgentResponse(await api.post('/agent/chat', body, { signal, timeout: 60000 }));
+-  },
+-};
++function client(token?: string) {
++  const config = (signal: AbortSignal) => ({ signal, ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {}) });
++  const revoked = (value: any) => {
++    if (value?.success !== true || value.data?.revoked !== true || Object.keys(value.data).some(k => k !== 'revoked')) throw { status: 502, code: 'AGENT_INVALID_RESPONSE' };
++  };
++  return {
++    async privacy(signal: AbortSignal) { return parseAgentPrivacy(await api.get('/agent/privacy', config(signal))); },
++    async verifiedPrivacy(signal: AbortSignal) { return parseG2Privacy(await api.get('/agent/verified-history/privacy', config(signal))); },
++    async chat(input: AgentChatRequest, signal: AbortSignal) {
++      const body = projectAgentRequest(input);
++      const response = parseAgentResponse(await api.post('/agent/chat', body, { ...config(signal), timeout: 60000 }));
++      if (body.conversation) {
++        if (response.context.mode !== 'LOCAL_DEMO_VERIFIED_HISTORY') throw { status: 502, code: 'AGENT_INVALID_RESPONSE' };
++        acceptTurnMetadata(response.conversation, body.conversation);
++      } else if (response.context.mode !== 'STATELESS') throw { status: 502, code: 'AGENT_INVALID_RESPONSE' };
++      return response;
++    },
++    async reset(id: string, signal: AbortSignal) {
++      const value: any = await api.post(`/agent/verified-history/${encodeURIComponent(id)}/reset`, {}, { ...config(signal), timeout: 5000 });
++      if (value?.success !== true) throw { status: 502, code: 'AGENT_INVALID_RESPONSE' };
++      return parseConversationMetadata(value.data);
++    },
++    async revoke(id: string, signal: AbortSignal) { revoked(await api.delete(`/agent/verified-history/${encodeURIComponent(id)}`, { ...config(signal), timeout: 5000 })); },
++    async revokeAll(signal: AbortSignal) { revoked(await api.delete('/agent/verified-history', { ...config(signal), timeout: 5000 })); },
++  };
++}
++export const AgentService = { ...client(), forSession: client };
+
+diff --git a/C:/Users/Danh/Downloads/HCH/DACN/travelgo/docs/evidence/t-ai-04-g2-frontend-integration-logout/before-services-api.ts b/C:/Users/Danh/Downloads/HCH/DACN/travelgo/frontend/src/services/api.ts
+index 274abd9..48f3a14 100644
+--- a/C:/Users/Danh/Downloads/HCH/DACN/travelgo/docs/evidence/t-ai-04-g2-frontend-integration-logout/before-services-api.ts
++++ b/C:/Users/Danh/Downloads/HCH/DACN/travelgo/frontend/src/services/api.ts
+@@ -1,4 +1,5 @@
+ import axios from 'axios';
++import { normalizeAgentError } from '../utils/agentContract';
+ 
+ export const api = axios.create({
+   baseURL: (import.meta as any).env?.VITE_API_URL || '/api',
+@@ -11,7 +12,14 @@ export const api = axios.create({
+ // Request interceptor for auth token
+ api.interceptors.request.use((config) => {
+   const token = localStorage.getItem('travelgo_token');
+-  if (token) {
++  const agentRequest = /^\/agent\//.test(config.url || '');
++  const pinned = config.headers.Authorization;
++  // Agent-only captured credentials prevent old-account work from being sent
++  // under a new login. DELETE may finish best-effort erasure with the old JWT.
++  if (agentRequest && pinned && config.method?.toLowerCase() !== 'delete' && pinned !== `Bearer ${token}`) {
++    throw new axios.CanceledError('Agent authentication changed', config);
++  }
++  if (token && (!agentRequest || !pinned)) {
+     config.headers.Authorization = `Bearer ${token}`;
+   }
+   return config;
+@@ -30,9 +38,9 @@ api.interceptors.response.use(
+       localStorage.removeItem('travelgo_user');
+       window.dispatchEvent(new Event('travelgo:unauthorized'));
+     }
+-    if (agentRequest) return Promise.reject({ status: error.response?.status || (error.code === 'ECONNABORTED' ? 504 : 0),
+-      code: typeof error.response?.data?.code === 'string' ? error.response.data.code : undefined,
+-      canceled: axios.isCancel(error) });
++    if (agentRequest) return Promise.reject(normalizeAgentError(error.response?.data,
++      error.response?.status || (error.code === 'ECONNABORTED' ? 504 : 0),
++      error.config?.url === '/agent/chat' ? error.config?.data : undefined, axios.isCancel(error)));
+     return Promise.reject(error.response?.data || error);
+   }
+ );
+
+diff --git a/C:/Users/Danh/Downloads/HCH/DACN/travelgo/docs/evidence/t-ai-04-g2-frontend-integration-logout/before-types-agent.ts b/C:/Users/Danh/Downloads/HCH/DACN/travelgo/frontend/src/types/agent.ts
+index faff512..799bb91 100644
+--- a/C:/Users/Danh/Downloads/HCH/DACN/travelgo/docs/evidence/t-ai-04-g2-frontend-integration-logout/before-types-agent.ts
++++ b/C:/Users/Danh/Downloads/HCH/DACN/travelgo/frontend/src/types/agent.ts
+@@ -1,9 +1,13 @@
+ import type { GeneratedItinerary } from './index';
+ 
+ export interface AgentMessage { role: 'user' | 'assistant'; content: string }
+-export interface AgentChatRequest { message: string; history?: AgentMessage[]; externalProcessingConsent?: string }
++export interface AgentConversationMetadata { id: string; revision: number; expiresAt: string; mode: 'LOCAL_DEMO'; persisted: false }
++export type AgentG2Request = { action: 'start'; requestId: string; consentVersion: 'LOCAL_DEMO_SLOTS_V1' } |
++  { action: 'continue'; requestId: string; consentVersion: 'LOCAL_DEMO_SLOTS_V1'; id: string; revision: number };
++export interface AgentChatRequest { message: string; history?: AgentMessage[]; externalProcessingConsent?: string; conversation?: AgentG2Request }
+ export interface AgentPrivacy { version: string; text: string }
+-export interface AgentError { status: number; code?: string; canceled?: boolean }
++export interface AgentG2Privacy extends AgentPrivacy { version: 'LOCAL_DEMO_SLOTS_V1'; enabled: boolean; mode: 'LOCAL_DEMO'; ttlSeconds: 900 }
++export interface AgentError { status: number; code?: string; canceled?: boolean; conversation?: AgentConversationMetadata }
+ export interface AgentPlace {
+   id: string; name: string; category?: string; city?: string; province?: string;
+   priceFrom: number | null; catalogPriceAvailable: boolean;
+@@ -18,9 +22,14 @@ export type AgentResult = {
+ };
+ interface AgentBase {
+   reply: string; history: AgentMessage[]; historyTruncated: boolean;
+-  context: { mode: 'STATELESS'; personalizationEnabled: boolean; behavioralDataUsed: false; persisted: false };
+ }
+-export type AgentResponse = AgentBase & (
++type AgentModeResponse = {
++  context: { mode: 'STATELESS'; personalizationEnabled: boolean; behavioralDataUsed: false; persisted: false }; conversation?: never;
++} | {
++  context: { mode: 'LOCAL_DEMO_VERIFIED_HISTORY'; personalizationEnabled: boolean; behavioralDataUsed: false; persisted: false };
++  conversation: AgentConversationMetadata;
++};
++export type AgentResponse = AgentBase & AgentModeResponse & (
+   { status: 'completed'; result: AgentResult } |
+   { status: 'needs_input'; missingFields: string[] } |
+   { status: 'unsupported' } |
+
+diff --git a/C:/Users/Danh/Downloads/HCH/DACN/travelgo/docs/evidence/t-ai-04-g2-frontend-integration-logout/before-utils-agentContract.ts b/C:/Users/Danh/Downloads/HCH/DACN/travelgo/frontend/src/utils/agentContract.ts
+index 1d2da6d..1684674 100644
+--- a/C:/Users/Danh/Downloads/HCH/DACN/travelgo/docs/evidence/t-ai-04-g2-frontend-integration-logout/before-utils-agentContract.ts
++++ b/C:/Users/Danh/Downloads/HCH/DACN/travelgo/frontend/src/utils/agentContract.ts
+@@ -1,10 +1,65 @@
+-import type { AgentResponse, AgentPrivacy } from '../types/agent';
++import type { AgentResponse, AgentPrivacy, AgentG2Privacy, AgentG2Request, AgentConversationMetadata, AgentError, AgentChatRequest } from '../types/agent';
+ 
+ const invalid = () => { throw { status: 502, code: 'AGENT_INVALID_RESPONSE' }; };
+ const strings = (value: unknown): value is string[] => Array.isArray(value) && value.every(v => typeof v === 'string');
+ const money = (v: unknown) => typeof v === 'number' && Number.isFinite(v) && v >= 0;
+ const place = (p: any) => p && typeof p.id === 'string' && typeof p.name === 'string' &&
+   typeof p.catalogPriceAvailable === 'boolean' && (p.priceFrom === null || money(p.priceFrom));
++export const G2_CONSENT_VERSION = 'LOCAL_DEMO_SLOTS_V1' as const;
++export const AGENT_MISSING_FIELDS = ['departureCity', 'destinationCity', 'startDate', 'endDate', 'adults', 'totalBudget', 'transportation', 'dailyBudgetPerPerson'] as const;
++const uuid = (value: unknown): value is string => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
++const keys = (value: any, allowed: string[]) => value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).every(k => allowed.includes(k));
++
++export function parseConversationMetadata(value: any): AgentConversationMetadata {
++  if (!keys(value, ['id', 'revision', 'expiresAt', 'mode', 'persisted']) || !uuid(value.id) || !Number.isSafeInteger(value.revision) || value.revision < 1 ||
++    typeof value.expiresAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T/.test(value.expiresAt) || !Number.isFinite(Date.parse(value.expiresAt)) ||
++    value.mode !== 'LOCAL_DEMO' || value.persisted !== false) return invalid();
++  return { id: value.id.toLowerCase(), revision: value.revision, expiresAt: value.expiresAt, mode: 'LOCAL_DEMO', persisted: false };
++}
++export function acceptTurnMetadata(value: unknown, request: AgentG2Request, previous?: AgentConversationMetadata): AgentConversationMetadata {
++  const next = parseConversationMetadata(value);
++  if (request.action === 'start' ? next.revision !== 1 : next.id !== request.id.toLowerCase() || next.revision !== request.revision + 1) return invalid();
++  if (previous && (next.id !== previous.id || next.expiresAt !== previous.expiresAt)) return invalid();
++  return next;
++}
++export function projectAgentRequest(input: AgentChatRequest): AgentChatRequest {
++  if (typeof input?.message !== 'string' || !input.message.trim() || input.message.length > 2000) throw { status: 400, code: 'AGENT_INVALID_INPUT' };
++  if (input.conversation !== undefined) {
++    const v = input.conversation;
++    if (!keys(v, ['action', 'requestId', 'consentVersion', 'id', 'revision']) || !uuid(v.requestId) || v.consentVersion !== G2_CONSENT_VERSION ||
++      !['start', 'continue'].includes(v.action) || (v.action === 'start' ? 'id' in v || 'revision' in v : !uuid(v.id) || !Number.isSafeInteger(v.revision) || v.revision < 0)) {
++      throw { status: 400, code: 'AGENT_G2_INVALID_INPUT' };
++    }
++    return { message: input.message, conversation: v.action === 'start'
++      ? { action: 'start', requestId: v.requestId, consentVersion: G2_CONSENT_VERSION }
++      : { action: 'continue', requestId: v.requestId, consentVersion: G2_CONSENT_VERSION, id: v.id, revision: v.revision } };
++  }
++  return { message: input.message, history: (input.history || []).map(m => ({ role: m.role, content: m.content })),
++    ...(input.externalProcessingConsent ? { externalProcessingConsent: input.externalProcessingConsent } : {}) };
++}
++
++/** Metadata is still request-bound at the controller's token/generation boundary.
++ * An unknown start ID is trusted only as this authenticated server's revision1;
++ * UUID shape alone is never an ownership assertion. */
++export function normalizeAgentError(raw: any, status: number, requestData?: unknown, canceled = false): AgentError {
++  const result: AgentError = { status: Number.isInteger(status) && status >= 0 && status <= 599 ? status : 0,
++    code: typeof raw?.code === 'string' && /^(?:AGENT_[A-Z0-9_]{1,64}|AUTH_REQUIRED|INVALID_TOKEN|TOKEN_EXPIRED)$/.test(raw.code) ? raw.code : undefined, canceled };
++  try {
++    const request = typeof requestData === 'string' ? JSON.parse(requestData) : requestData as any;
++    if (result.status !== 409 && result.status !== 401 && result.status >= 400 && result.code?.startsWith('AGENT_') && request?.conversation) {
++      const projected = projectAgentRequest(request);
++      result.conversation = acceptTurnMetadata(raw?.conversation, projected.conversation!);
++    }
++  } catch { /* Drop malformed/foreign/stale metadata; never surface raw exception. */ }
++  return result;
++}
++
++export function parseG2Privacy(envelope: any): AgentG2Privacy {
++  const value = envelope?.data;
++  if (envelope?.success !== true || !keys(value, ['version', 'mode', 'ttlSeconds', 'text', 'enabled']) || value.version !== G2_CONSENT_VERSION ||
++    value.mode !== 'LOCAL_DEMO' || value.ttlSeconds !== 900 || typeof value.enabled !== 'boolean' || typeof value.text !== 'string' || !value.text.trim()) return invalid();
++  return { version: G2_CONSENT_VERSION, mode: 'LOCAL_DEMO', ttlSeconds: 900, text: value.text, enabled: value.enabled };
++}
+ 
+ /** Inspect envelope, union and rendered fields before trusting API data. Never synthesize success. */
+ export function parseAgentResponse(envelope: any): AgentResponse {
+@@ -12,8 +67,12 @@ export function parseAgentResponse(envelope: any): AgentResponse {
+   if (envelope?.success !== true || !d || typeof d.reply !== 'string' || typeof d.historyTruncated !== 'boolean' ||
+     !Array.isArray(d.history) || d.history.length > 20 || d.history.length % 2 ||
+     !d.history.every((m: any, i: number) => m?.role === (i % 2 ? 'assistant' : 'user') && typeof m.content === 'string' && m.content.length <= 2000) ||
+-    d.context?.mode !== 'STATELESS' || d.context?.persisted !== false || d.context?.behavioralDataUsed !== false) return invalid();
+-  if (d.status === 'needs_input' && !strings(d.missingFields)) return invalid();
++    !['STATELESS', 'LOCAL_DEMO_VERIFIED_HISTORY'].includes(d.context?.mode) || typeof d.context?.personalizationEnabled !== 'boolean' ||
++    d.context?.persisted !== false || d.context?.behavioralDataUsed !== false) return invalid();
++  if (d.context.mode === 'STATELESS' ? d.conversation !== undefined : !d.conversation) return invalid();
++  const conversation = d.context.mode === 'LOCAL_DEMO_VERIFIED_HISTORY' ? parseConversationMetadata(d.conversation) : undefined;
++  if (d.status === 'needs_input' && (!strings(d.missingFields) || d.missingFields.length > 8 ||
++    d.missingFields.some(f => !(AGENT_MISSING_FIELDS as readonly string[]).includes(f)))) return invalid();
+   if (d.status === 'tool_unavailable' && d.warningCode !== 'AGENT_CATALOG_INSUFFICIENT') return invalid();
+   if (!['completed', 'needs_input', 'unsupported', 'tool_unavailable'].includes(d.status)) return invalid();
+   if (d.status === 'completed') {
+@@ -32,7 +91,7 @@ export function parseAgentResponse(envelope: any): AgentResponse {
+         (p.hotelSuggestion && !place(p.hotelSuggestion))) return invalid();
+     } else return invalid();
+   }
+-  return { ...d, history: d.history.map((m: any) => ({ role: m.role, content: m.content })) } as AgentResponse;
++  return { ...d, ...(conversation ? { conversation } : {}), history: d.history.map((m: any) => ({ role: m.role, content: m.content })) } as AgentResponse;
+ }
+ export function parseAgentPrivacy(envelope: any): AgentPrivacy {
+   if (envelope?.success !== true || typeof envelope.data?.version !== 'string' || !envelope.data.version ||
+@@ -40,6 +99,14 @@ export function parseAgentPrivacy(envelope: any): AgentPrivacy {
+   return { version: envelope.data.version, text: envelope.data.text };
+ }
+ export function agentErrorMessage(error: { status?: number; code?: string }) {
++  switch (error.code) {
++    case 'AGENT_G2_SESSION_UNAVAILABLE': return 'Phiên G2 không còn khả dụng hoặc đã hết hạn. Hãy bắt đầu phiên mới; không khôi phục từ lịch sử trên trình duyệt.';
++    case 'AGENT_G2_REVISION_CONFLICT': case 'AGENT_G2_REPLAY': case 'AGENT_G2_BUSY': case 'AGENT_G2_STALE_TURN':
++      return 'Phiên đã thay đổi hoặc yêu cầu không còn hợp lệ. Hãy đặt lại hoặc kết thúc phiên trước khi gửi tiếp.';
++    case 'AGENT_G2_DISABLED': return 'G2 demo chưa được bật trên máy chủ. Bạn vẫn có thể dùng chế độ G1.';
++    case 'AGENT_G2_CONSENT_REQUIRED': return 'Cần đọc và đồng ý thông báo lưu slots tạm của G2 trước khi bắt đầu.';
++    case 'AGENT_CLIENT_UUID_UNAVAILABLE': return 'Trình duyệt chưa hỗ trợ tạo mã yêu cầu an toàn. Hãy dùng chế độ G1.';
++  }
+   switch (error.status) {
+     case 400: return 'Yêu cầu chưa hợp lệ. Hãy kiểm tra nội dung hoặc bắt đầu hội thoại mới nếu lịch sử quá dài.';
+     case 401: return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+
+diff --git a/C:/Users/Danh/Downloads/HCH/DACN/travelgo/docs/evidence/t-ai-04-g2-frontend-integration-logout/before-components-agent-PrivacyConsentModal.tsx b/C:/Users/Danh/Downloads/HCH/DACN/travelgo/frontend/src/components/agent/PrivacyConsentModal.tsx
+index 67df723..06374f6 100644
+--- a/C:/Users/Danh/Downloads/HCH/DACN/travelgo/docs/evidence/t-ai-04-g2-frontend-integration-logout/before-components-agent-PrivacyConsentModal.tsx
++++ b/C:/Users/Danh/Downloads/HCH/DACN/travelgo/frontend/src/components/agent/PrivacyConsentModal.tsx
+@@ -1,17 +1,21 @@
+ import React, { useEffect, useRef } from 'react';
+ import type { AgentPrivacy } from '../../types/agent';
+ 
+-export function PrivacyConsentModal({ notice, agree, decline }: { notice: AgentPrivacy; agree: () => void; decline: () => void }) {
++export function PrivacyConsentModal({ notice, agree, decline, retention = false }: { notice: AgentPrivacy; agree: () => void; decline: () => void; retention?: boolean }) {
+   const ref = useRef<HTMLDialogElement>(null);
+   useEffect(() => { const dialog = ref.current!; dialog.showModal(); return () => dialog.close(); }, []);
+   return <dialog ref={ref} aria-labelledby="agent-privacy-title" onCancel={e => { e.preventDefault(); decline(); }}
+     className="m-auto max-h-[85dvh] w-[calc(100%-2rem)] max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl backdrop:bg-slate-900/50">
+     <h2 id="agent-privacy-title" className="text-xl font-bold text-slate-900">Quyền riêng tư hội thoại</h2>
+     <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-slate-700 [overflow-wrap:anywhere]">{notice.text}</p>
+-    <p className="mt-3 text-xs text-slate-500">Sự đồng ý chỉ áp dụng cho yêu cầu đang chờ, không áp dụng tự động cho lượt sau.</p>
++    {retention ? <div className="mt-3 space-y-2 text-xs leading-5 text-slate-600">
++      <p>G2 local/demo giữ thông tin đã xác minh trong RAM máy chủ tối đa 15 phút kể từ khi bắt đầu. Khởi động lại máy chủ có thể làm mất phiên. Tải lại trang không khôi phục phiên.</p>
++      <p>Đây là xác nhận lưu tạm cho phiên G2, tách biệt với quyền xử lý AI bên ngoài và cá nhân hóa; không tự bật các quyền đó.</p>
++      <p>Giao diện này sẽ thử xóa các phiên G2 khi đăng xuất hoặc đổi tài khoản. Nếu mạng lỗi, dữ liệu tạm có thể còn đến hết thời hạn; đăng xuất không vô hiệu hóa mọi token đã cấp.</p>
++    </div> : <p className="mt-3 text-xs text-slate-500">Sự đồng ý chỉ áp dụng cho yêu cầu đang chờ, không áp dụng tự động cho lượt sau.</p>}
+     <div className="mt-6 flex flex-wrap gap-3">
+       <button autoFocus type="button" onClick={decline} className="rounded-xl border border-slate-300 px-4 py-3 font-semibold">Từ chối</button>
+-      <button type="button" onClick={agree} className="rounded-xl bg-orange-600 px-4 py-3 font-bold text-white">Đồng ý và gửi yêu cầu</button>
++      <button type="button" onClick={agree} className="rounded-xl bg-orange-600 px-4 py-3 font-bold text-white">{retention ? 'Đồng ý dùng G2 local/demo' : 'Đồng ý và gửi yêu cầu'}</button>
+     </div>
+   </dialog>;
+ }
+
+NEW frontend/src/utils/agentG2Conversation.ts SHA256 cf52e7efb8406e623053cae0fd9f1a271ad4f4a3543f1477d7f1ebd2712ea995
+
+NEW frontend/src/utils/agentSessionLifecycle.ts SHA256 efc914dd57f4441926ca10f70ba7aca87d36406a4e9514fb947f1eee14914d87
+
+NEW frontend/tests/agentG2.loader.cjs SHA256 19834d1f19d8229fbe418bf7a1c4824586807c6d7fa3b393fa861773a7888b65
+
+NEW frontend/tests/agentG2Conversation.test.ts SHA256 e4f0fb2f0241bbd2b2e4d4786e6de701febcb04219de3e6f2dda9bf38069ce00
+
+NEW frontend/e2e/t-ai-04-g2-frontend.spec.ts SHA256 8608efa23f05353d376f81b252784457c5930b5b3d7598bbfe62a2872a90d084
+
+NEW frontend/playwright.t-ai-04-g2.config.ts SHA256 39e3ecde8aa86b0e5c6d455287592b03f54369188b3be22eec62648d82f028f0

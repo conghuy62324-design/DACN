@@ -1,0 +1,94 @@
+{
+  "status": "PROPOSED_NOT_EXECUTED",
+  "allCasesRuntimeStatus": "NOT RUN",
+  "originalExpectationsChanged": 0,
+  "preserveT11B": true,
+  "cases": [
+    {
+      "id": "A",
+      "layer": "Catalog/eligibility",
+      "method": "Current loader + actual DB with chosen approved fixture rows only",
+      "expected": "Exact UUID/slug/attributes; APPROVED and nullable business_id path valid; other candidates with suspended Business remain excluded; no baseline row change",
+      "status": "PLANNED_NOT_RUN"
+    },
+    {
+      "id": "B",
+      "layer": "Days/nights/sightseeing",
+      "method": "Direct production Planner after separate fixture approval",
+      "expected": "Original2036-04-22/23 =>2 days,1 night; >=1 total sightseeing minimum; document sparse day2. Require two-row profile if owner requires each day sightseeing; no four-attraction assumption",
+      "status": "PLANNED_NOT_RUN"
+    },
+    {
+      "id": "C",
+      "layer": "Group costing",
+      "method": "Independent arithmetic oracle then production direct service",
+      "expected": "Minimum profile3,200,000 VND; day2 lunch300,000 fallback; lodging1,200,000 once; no double group multiplier; all exact prices/source labels",
+      "status": "PLANNED_NOT_RUN"
+    },
+    {
+      "id": "D",
+      "layer": "Transport/ETA",
+      "method": "Independent Haversine/ceil oracle against each direct Planner leg",
+      "expected": "car30km/h,motorbike35,detour1.35,min5; distances rounded0.01; costs unchanged; no intercity fares/traffic claim",
+      "status": "PLANNED_NOT_RUN"
+    },
+    {
+      "id": "E",
+      "layer": "Missing attraction negative",
+      "method": "Existing unfixed DB read-only direct service before any future fixture OR independent synthetic-memory boundary suite",
+      "expected": "HTTP422/NO_SIGHTSEEING_FOR_DESTINATION; no itinerary. Never suspend/delete existing or approved fixture rows merely to produce negative",
+      "status": "PLANNED_NOT_RUN"
+    },
+    {
+      "id": "F",
+      "layer": "Low budget invariance",
+      "method": "Independent synthetic-memory or separately locked read-only direct service comparison",
+      "expected": "100000 VND budget => same selected minimum fixture/source costs3,200,000 and3,100,000 over; BUDGET_EXCEEDED; do not cap price",
+      "status": "PLANNED_NOT_RUN"
+    },
+    {
+      "id": "G",
+      "layer": "Empty catalog",
+      "method": "Independent repository fake ONLY for negative offline unit, explicitly MOCK_ONLY",
+      "expected": "Controlled422,0 synthetic success itinerary; never empty/truncate real catalog",
+      "status": "PLANNED_NOT_RUN"
+    },
+    {
+      "id": "H",
+      "layer": "Read-only Agent tool",
+      "method": "Original schema/gate/executor observed during future genuine LIVE",
+      "expected": "At most1 permitted plan_trip per turn; correct owned proof; provider and tool DB READ ONLY; no save/Booking/Trip mutations",
+      "status": "PLANNED_NOT_RUN"
+    },
+    {
+      "id": "I",
+      "layer": "Exact direct-service fidelity",
+      "method": "Fresh direct Planner output/adapter public projection frozen before inference",
+      "expected": "Only itinerary.id and createdAt are volatile normalization fields; compare all dates/days/activities/IDs/costs/coords/ETA/source labels/warnings, hotel public projection, selectedPlaceIds. No using model result as oracle",
+      "status": "PLANNED_NOT_RUN"
+    },
+    {
+      "id": "J",
+      "layer": "Desktop/mobile UX",
+      "method": "Future actual browser1440x900 and390x844 with no API route mocking",
+      "expected": "Dates,costs,assumptions,warnings/over-budget,fixture labels,repeat clarification/error behavior exact; no fake prices or completed on clarify",
+      "status": "PLANNED_NOT_RUN"
+    },
+    {
+      "id": "K",
+      "layer": "Cleanup/baseline",
+      "method": "Future separately authorized exact-ID cleanup",
+      "expected": "All FK/JSON references absent; exact inserted hashes/IDs only;25/25 fingerprint restore;Trip27 unchanged; stop unsafe cleanup",
+      "status": "PLANNED_NOT_RUN"
+    },
+    {
+      "id": "L",
+      "layer": "G2 proof/corrections",
+      "method": "Production owned store/proof and independent raw scoring in future",
+      "expected": "Slots only from authenticated user text; fixture catalog rows never become proof. Fresh UUID/latest revisions/15min absoluteTTL,stale/owner/invalid old values blocked. Manual fallback a new explicit user input,never raw output rewrite",
+      "status": "PLANNED_NOT_RUN"
+    }
+  ],
+  "negativeLaneRule": "MOCK_ONLY negative repository data never counted as real Planner/Catalog/DB/browser fidelity",
+  "fixtureProvenance": "Approved synthetic test DB records passed through real code/DB are still synthetic data, not real-world tourism evidence"
+}

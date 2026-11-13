@@ -1,0 +1,7 @@
+// Process-only offline network/DB guard. Never imported by the application.
+const path=require('node:path'),fs=require('node:fs'),root=path.resolve(__dirname,'../../..');
+const audit={pid:process.pid,postgresConnectAttempts:0,forbiddenNetworkAttempts:0};
+const pg=require(path.join(root,'backend/node_modules/pg'));pg.Client.prototype.connect=function(){audit.postgresConnectAttempts++;throw Error('OFFLINE_POSTGRES_CONNECT_FORBIDDEN');};
+const nativeFetch=globalThis.fetch;globalThis.fetch=async(url,init)=>{const u=new URL(String(url));if(!['127.0.0.1','localhost','[::1]'].includes(u.hostname)||u.port==='11434'){audit.forbiddenNetworkAttempts++;throw Error('OFFLINE_NATIVE_NETWORK_FORBIDDEN');}return nativeFetch(url,init);};
+const net=require('node:net'),connect=net.Socket.prototype.connect;net.Socket.prototype.connect=function(...args){let options=Array.isArray(args[0])?args[0][0]:args[0];const port=typeof options==='object'?Number(options.port):Number(options);const host=typeof options==='object'?options.host:typeof args[1]==='string'?args[1]:'localhost';if([11434,5432].includes(port)||host&&!['localhost','127.0.0.1','::1'].includes(host)){audit.forbiddenNetworkAttempts++;throw Error('OFFLINE_SOCKET_FORBIDDEN');}return connect.apply(this,args);};
+process.on('exit',()=>{if(process.env.OFFLINE_GUARD_AUDIT_DIR){fs.mkdirSync(process.env.OFFLINE_GUARD_AUDIT_DIR,{recursive:true});fs.writeFileSync(path.join(process.env.OFFLINE_GUARD_AUDIT_DIR,`guard-${process.pid}.json`),JSON.stringify(audit,null,2)+'\n',{flag:'wx'});}});

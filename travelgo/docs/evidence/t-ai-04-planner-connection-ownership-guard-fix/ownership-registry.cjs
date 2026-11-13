@@ -1,0 +1,31 @@
+'use strict';
+const assert=require('node:assert/strict'),crypto=require('node:crypto'),{assertRoute}=require('./route-policy.cjs');
+const IDENTITY=['pid','backend_start','application_name','datname','usename','backend_type','client_addr','client_port'];
+const deepFreeze=x=>{if(x&&typeof x==='object'){Object.freeze(x);for(const v of Object.values(x))deepFreeze(v);}return x;};
+class OwnershipRegistry{
+ #records=new Map();#sequence=0;#write;#stop;#route;#role;#snapshots=new WeakSet();#halted=false;
+ constructor({write,stop,route,role}){assert.equal(typeof write,'function');assert.equal(typeof stop,'function');this.#write=write;this.#stop=stop;this.#route=route;this.#role=role;}
+ event(type,data){try{const e={sequence:++this.#sequence,at:new Date().toISOString(),type,...data};this.#write(e);return e;}catch(e){this.fail(e,'evidence-write');throw e;}}
+ fail(error,phase='ownership'){this.#halted=true;this.#stop(error,phase);return error;}
+ assertRunning(){assert.equal(this.#halted,false,'GLOBAL_STOP_CONNECTION_BLOCKED');}
+ create(client,factory,config){assert.ok(client&&typeof client==='object');assert.ok(!this.#records.has(client),'DUPLICATE_CREATION');assert.match(factory,/^[a-z0-9-]{1,20}$/i);const id=crypto.randomUUID(),token=crypto.randomUUID().replaceAll('-',''),application_name='og-'+factory+'-'+token;const record={id,factory,token,application_name,state:'CREATED',config:{host:config.host,port:config.port,database:config.database,user:config.user},identity:null,physical:null};assert.deepEqual({host:config.host,port:config.port,database:config.database},{host:'127.0.0.1',port:5432,database:'travelgo_ai_m0_test'});assert.equal(config.user,this.#role);this.#records.set(client,record);this.event('CREATE',{...record});return{instanceId:id,creationToken:token,application_name};}
+ opened(client,physical,startup){const r=this.#get(client);assert.equal(r.state,'CREATED');r.state='PENDING_REGISTRATION';r.physical=structuredClone(physical);r.startup=structuredClone(startup);this.event('PHYSICAL_OPEN',{instanceId:r.id,factory:r.factory,state:r.state,physical:r.physical,startup:r.startup});}
+ observe(client,row){const r=this.#get(client);const safe=structuredClone(row);const observation=this.event('RAW_SELF_IDENTITY',{instanceId:r.id,row:safe});r.observation=observation;return observation;}
+ register(client){const r=this.#get(client);try{this.assertRunning();
+  assert.equal(r.state,'PENDING_REGISTRATION','REGISTRATION_STATE_INVALID');assert.ok(r.observation,'RAW_OBSERVATION_REQUIRED');const row=r.observation.row;
+  assert.equal(r.startup.application_name,r.application_name,'STARTUP_CREATION_TOKEN_MISMATCH');assert.equal(row.application_name,r.application_name,'SELF_CREATION_TOKEN_MISMATCH');assert.equal(r.startup.database,r.config.database,'WIRE_DATABASE_MISMATCH');assert.equal(r.startup.user,r.config.user,'WIRE_USER_MISMATCH');
+  assert.match(r.startup.options,/(?:^| )-c default_transaction_read_only=on(?: |$)/);assert.match(r.startup.options,/(?:^| )-c statement_timeout=15000(?: |$)/);assert.equal(row.default_transaction_read_only,'on','STARTUP_READONLY_NOT_APPLIED');assert.equal(row.transaction_read_only,'on','TRANSACTION_READONLY_NOT_APPLIED');assert.equal(row.statement_timeout,'15s','STATEMENT_TIMEOUT_MISMATCH');
+  assert.equal(row.database,'travelgo_ai_m0_test');assert.equal(row.datname,row.database);assert.equal(row.role,this.#role);assert.equal(row.usename,row.role);assert.equal(row.sentinel,'hugotravel-isolated-test-database-v1');assert.equal(row.pid,client.processID);assert.equal(row.pid,row.pg_backend_pid);assert.ok(Number.isInteger(row.pid)&&row.pid>0);assert.match(row.backend_start||'',/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{6}Z$/);assert.equal(row.backend_type,'client backend');
+  assertRoute(this.#route,r.physical,row);r.identity=Object.fromEntries(IDENTITY.map(k=>[k,row[k]]));r.state='REGISTERED';this.event('REGISTRATION_PASS',{instanceId:r.id,state:r.state,identity:r.identity});return true;
+ }catch(error){r.state='ERROR';this.fail(error);this.event('REGISTRATION_FAIL',{instanceId:r.id,message:error.message});throw error;}}
+ release(client){const r=this.#get(client);assert.ok(['REGISTERED','RELEASED'].includes(r.state));r.state='RELEASED';this.event('POOL_RELEASE',{instanceId:r.id,state:r.state});}
+ acquire(client){const r=this.#get(client);assert.ok(['REGISTERED','RELEASED'].includes(r.state));r.state='REGISTERED';this.event('POOL_ACQUIRE',{instanceId:r.id,state:r.state});}
+ closing(client){const r=this.#get(client);assert.notEqual(r.state,'CLOSED');r.state='CLOSING';this.event('DISPOSE_START',{instanceId:r.id});}
+ closed(client){const r=this.#get(client);assert.equal(r.state,'CLOSING');r.state='CLOSED';this.event('DISPOSE_PASS',{instanceId:r.id,identity:r.identity});}
+ error(client,error,stage){const r=this.#get(client);r.state='ERROR';this.fail(error,stage);this.event('LIFECYCLE_ERROR',{instanceId:r.id,stage,message:error.message});}
+ snapshot(){const records=[...this.#records.values()].map(r=>({instanceId:r.id,factory:r.factory,state:r.state,identity:r.identity?structuredClone(r.identity):null}));const snap=deepFreeze({sequence:this.#sequence,records});this.#snapshots.add(snap);return snap;}
+ assertActivity(rows,snapshot){try{assert.ok(this.#snapshots.has(snapshot),'UNTRUSTED_OWNERSHIP_SNAPSHOT');assert.equal(snapshot.sequence,this.#sequence,'OWNERSHIP_SNAPSHOT_CHANGED');assert.ok(snapshot.records.every(x=>!['CREATED','PENDING_REGISTRATION','ERROR','CLOSING'].includes(x.state)),'UNKNOWN_CONNECTION_FAIL_CLOSED_PENDING');for(const row of rows)assert.ok(snapshot.records.some(r=>['REGISTERED','RELEASED'].includes(r.state)&&IDENTITY.every(k=>r.identity?.[k]===row[k])),'UNKNOWN_CONNECTION_FAIL_CLOSED');this.event('CLOSING_GUARD_PASS',{snapshotSequence:snapshot.sequence,observed:rows.length});return true;}catch(error){this.fail(error,'closing-ownership');this.event('CLOSING_GUARD_FAIL',{message:error.message});throw error;}}
+ view(client){const r=this.#get(client);return deepFreeze(structuredClone({instanceId:r.id,factory:r.factory,state:r.state,identity:r.identity,physical:r.physical}));}
+ #get(client){const r=this.#records.get(client);assert.ok(r,'UNOWNED_PHYSICAL_CLIENT');return r;}
+}
+module.exports={OwnershipRegistry,IDENTITY};

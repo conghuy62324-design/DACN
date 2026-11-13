@@ -1,0 +1,133 @@
+{
+  "tier": "MOCK_ONLY_OFFLINE",
+  "passed": 8,
+  "failed": 5,
+  "results": [
+    {
+      "name": "outer 15000ms deadline propagates abort to cooperative fetch; no response, recovery or tool",
+      "status": "FAIL",
+      "message": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== 1\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-live-validation\\final-verified\\actual-policy-diagnostics\\offline-diagnostics.cjs:68:25\n    at async withClock (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-live-validation\\final-verified\\actual-policy-diagnostics\\offline-diagnostics.cjs:48:9)\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-live-validation\\final-verified\\actual-policy-diagnostics\\offline-diagnostics.cjs:228:13)"
+    },
+    {
+      "name": "standalone provider keeps its own 15000ms timeout with a never-aborted caller signal",
+      "status": "PASS"
+    },
+    {
+      "name": "already-aborted request never reaches fake fetch",
+      "status": "PASS"
+    },
+    {
+      "name": "body-read abort also produces timeout without fallback execution",
+      "status": "FAIL",
+      "message": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\ntrue !== false\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-live-validation\\final-verified\\actual-policy-diagnostics\\offline-diagnostics.cjs:103:10\n    at async withClock (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-live-validation\\final-verified\\actual-policy-diagnostics\\offline-diagnostics.cjs:48:9)\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-live-validation\\final-verified\\actual-policy-diagnostics\\offline-diagnostics.cjs:228:13)"
+    },
+    {
+      "name": "uncooperative fetch cannot cause late tool execution; concurrency slot remains held until actual settlement",
+      "status": "PASS"
+    },
+    {
+      "name": "network failures keep their safe error and never become needs_input",
+      "status": "FAIL",
+      "message": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-live-validation\\final-verified\\actual-policy-diagnostics\\offline-diagnostics.cjs:132:28\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-live-validation\\final-verified\\actual-policy-diagnostics\\offline-diagnostics.cjs:228:13)"
+    },
+    {
+      "name": "one/multiple missing-only raw tool outputs retain model failure while recovery asks exact fields",
+      "status": "FAIL",
+      "message": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-live-validation\\final-verified\\actual-policy-diagnostics\\offline-diagnostics.cjs:145:61\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-live-validation\\final-verified\\actual-policy-diagnostics\\offline-diagnostics.cjs:228:13)"
+    },
+    {
+      "name": "complete tool arguments/provenance still allow exactly one fake read tool",
+      "status": "PASS"
+    },
+    {
+      "name": "unknown/malformed model output cannot opt into recovery",
+      "status": "FAIL",
+      "message": "AssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-live-validation\\final-verified\\actual-policy-diagnostics\\offline-diagnostics.cjs:162:30\n    at async main (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\docs\\evidence\\t-ai-04-g1-server-completeness-live-validation\\final-verified\\actual-policy-diagnostics\\offline-diagnostics.cjs:228:13)"
+    },
+    {
+      "name": "negation/unset stay outside deterministic recovery; no grammar expansion",
+      "status": "PASS"
+    },
+    {
+      "name": "client history is not trusted current-turn provenance, including another account",
+      "status": "PASS"
+    },
+    {
+      "name": "auth/consent/rate gates keep normal ordering and no bypass",
+      "status": "PASS"
+    },
+    {
+      "name": "grammar coverage probe makes no general Vietnamese NLU claim",
+      "status": "PASS"
+    }
+  ],
+  "observations": [
+    {
+      "kind": "DIAGNOSTIC_NOT_ACCEPTANCE",
+      "condition": "Injected fetch ignores abort then returns a valid response",
+      "providerReturnedDecisionAfterAbort": false,
+      "sourceGap": "No success-path signal check after await fetch/body; outer service still prevents late tool execution.",
+      "actualOllamaClaim": "Not proof of native fetch/server behavior. Historical server cancellation is analyzed separately."
+    },
+    {
+      "kind": "GRAMMAR_COVERAGE",
+      "rows": [
+        {
+          "label": "structured incomplete",
+          "input": "Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Quy Nhơn; Ngày bắt đầu: 2038-03-10; Ngày kết thúc: 2038-03-12; Số người lớn: 2; Ngân sách cả nhóm: 7000000 VND",
+          "recognized": true,
+          "missingObservedFieldsOnly": [
+            "transportation"
+          ],
+          "note": "Observation coverage only, not a production pre-decision policy or LLM score"
+        },
+        {
+          "label": "structured complete",
+          "input": "Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Quy Nhơn; Ngày bắt đầu: 2038-03-10; Ngày kết thúc: 2038-03-12; Số người lớn: 2; Ngân sách cả nhóm: 7000000 VND; Phương tiện: xe máy",
+          "recognized": true,
+          "missingObservedFieldsOnly": [],
+          "note": "Observation coverage only, not a production pre-decision policy or LLM score"
+        },
+        {
+          "label": "natural prose",
+          "input": "Tôi muốn đi Quy Nhơn ba ngày với hai người, ngân sách bảy triệu.",
+          "recognized": false,
+          "missingObservedFieldsOnly": null,
+          "note": "Observation coverage only, not a production pre-decision policy or LLM score"
+        },
+        {
+          "label": "short follow-up",
+          "input": "Xe máy nhé.",
+          "recognized": false,
+          "missingObservedFieldsOnly": null,
+          "note": "Observation coverage only, not a production pre-decision policy or LLM score"
+        },
+        {
+          "label": "explicit unset",
+          "input": "Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Quy Nhơn; Ngày bắt đầu: 2038-03-10; Ngày kết thúc: 2038-03-12; Số người lớn: 2; Ngân sách cả nhóm: 7000000 VND; Phương tiện: chưa chọn",
+          "recognized": false,
+          "missingObservedFieldsOnly": null,
+          "note": "Observation coverage only, not a production pre-decision policy or LLM score"
+        },
+        {
+          "label": "mixed intents",
+          "input": "Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Quy Nhơn; Ngày bắt đầu: 2038-03-10; Ngày kết thúc: 2038-03-12; Số người lớn: 2; Ngân sách cả nhóm: 7000000 VND; Tìm địa điểm",
+          "recognized": false,
+          "missingObservedFieldsOnly": null,
+          "note": "Observation coverage only, not a production pre-decision policy or LLM score"
+        },
+        {
+          "label": "mutation",
+          "input": "Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Quy Nhơn; Ngày bắt đầu: 2038-03-10; Ngày kết thúc: 2038-03-12; Số người lớn: 2; Ngân sách cả nhóm: 7000000 VND; lưu Trip",
+          "recognized": false,
+          "missingObservedFieldsOnly": null,
+          "note": "Observation coverage only, not a production pre-decision policy or LLM score"
+        }
+      ]
+    }
+  ],
+  "traces": [],
+  "inferencePosts": 0,
+  "databaseAccess": "NONE",
+  "actualOllamaInference": "NOT RUN"
+}

@@ -1,0 +1,43 @@
+﻿{
+    "at":  "2026-11-12T00:43:30.5036082Z",
+    "name":  "/travelgo_catalog_staging_20261112_db",
+    "imageId":  "sha256:d96be3a9c16d44e22d34d5c7b6e85be8875addf672672c6cd38171ea6055a94a",
+    "state":  "running",
+    "health":  "healthy",
+    "memoryLimit":  536870912,
+    "pidsLimit":  128,
+    "ports":  {
+                  "5432/tcp":  [
+                                   {
+                                       "HostIp":  "127.0.0.1",
+                                       "HostPort":  "15452"
+                                   }
+                               ]
+              },
+    "mounts":  [
+                   {
+                       "Type":  "bind",
+                       "Source":  "/run/desktop/mnt/host/c/Users/Danh/Downloads/HCH/DACN/travelgo/.local/catalog-staging/init.sql",
+                       "Destination":  "/docker-entrypoint-initdb.d/10-catalog.sql",
+                       "Mode":  "ro",
+                       "RW":  false,
+                       "Propagation":  "rprivate"
+                   },
+                   {
+                       "Type":  "volume",
+                       "Name":  "travelgo_catalog_staging_20261112_data",
+                       "Source":  "/var/lib/docker/volumes/travelgo_catalog_staging_20261112_data/_data",
+                       "Destination":  "/var/lib/postgresql/data",
+                       "Driver":  "local",
+                       "Mode":  "rw",
+                       "RW":  true,
+                       "Propagation":  ""
+                   }
+               ],
+    "networks":  [
+                     "travelgo_catalog_staging_20261112_default"
+                 ],
+    "volumeName":  "travelgo_catalog_staging_20261112_data",
+    "freeDiskBytes":  191957102592,
+    "freeRamKiB":  3299932
+}

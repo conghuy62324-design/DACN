@@ -9,6 +9,7 @@ import { useTelemetry } from '../../context/TelemetryContext';
 import { useRecommendationVisibility } from '../../hooks/useRecommendationVisibility';
 import { RecommendedPlace } from '../../services/recommendationService';
 import { recommendationReasonLabels } from '../../utils/exploreRecommendation';
+import {accommodationLabels,cuisineLabels} from './ServiceFilters';
 
 type DisplayPlace = Place & Partial<Pick<RecommendedPlace, 'rank' | 'reasonCodes' | 'why' | 'scoreBreakdown'>>;
 
@@ -21,6 +22,7 @@ interface PlaceSidebarProps {
   loading?: boolean;
   emptyMessage?: string;
   publicExplanation?: string;
+  grid?:boolean;
 }
 
 interface PlaceCardProps {
@@ -31,6 +33,7 @@ interface PlaceCardProps {
   trackingEnabled: boolean;
   publicExplanation?: string;
   onSelectPlace: (place: Place) => void;
+  grid?:boolean;
 }
 
 const PlaceCard: React.FC<PlaceCardProps> = ({
@@ -41,6 +44,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
   trackingEnabled,
   publicExplanation,
   onSelectPlace,
+  grid=false,
 }) => {
   const { toggleFavorite, isFavorite, isPending } = useFavorites();
   const { track } = useTelemetry();
@@ -72,8 +76,8 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
         selected ? 'border-orange-500 bg-orange-50/20 shadow-sm ring-2 ring-orange-500/20' : 'border-slate-200 hover:border-slate-300'
       }`}
     >
-      <div className="flex gap-3.5">
-        <div className="relative h-28 w-28 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
+      <div className={grid?'flex h-full flex-col gap-3':'flex gap-3.5'}>
+        <div className={grid?'relative h-28 w-full sm:h-44 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100':'relative h-28 w-28 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100'}>
           <img src={item.heroImage} alt={item.name} className="h-full w-full object-cover" />
           {item.rank ? (
             <span className="absolute left-1.5 top-1.5 rounded-md bg-slate-950/85 px-1.5 py-1 text-[10px] font-extrabold text-white backdrop-blur-sm">
@@ -99,15 +103,17 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
           <div>
             <div className="mb-0.5 flex items-center gap-1 text-[11px] text-slate-500">
               <MapPin className="h-3 w-3 flex-shrink-0 text-orange-500" />
-              <span className="truncate">{item.city}</span>
+              <span className="truncate">{item.city}{item.geography?.provinceName&&item.geography.provinceName!==item.city?' · '+item.geography.provinceName:''}</span>
             </div>
             <h3 className="line-clamp-2 text-sm font-bold leading-snug text-slate-900 transition-colors hover:text-orange-600">{item.name}</h3>
+            <p className="mt-1 text-xs text-slate-500">{item.category==='hotel'?accommodationLabels[item.catalogMetadata?.accommodationType||'']||'Lưu trú':item.category==='restaurant'?(item.catalogMetadata?.cuisines||[]).map(k=>cuisineLabels[k]).filter(Boolean).join(' · ')||'Nhà hàng':'Điểm tham quan'}</p>
+            {item.isDemo&&<p className="text-xs font-bold text-amber-800">DEMO · Không phải đối tác thật</p>}
             <div className="mt-1"><RatingBadge rating={item.rating} reviewCount={item.reviewCount} showBayesianDetail size="sm" /></div>
           </div>
           <div className="mt-2 flex items-end justify-between border-t border-slate-100 pt-2">
             <div>
               <span className="block text-[10px] text-slate-400">Giá tham khảo từ</span>
-              <span className="text-sm font-extrabold text-slate-900">{formatCurrencyVND(item.priceFrom)}</span>
+              <span className="text-sm font-extrabold text-slate-900">{item.priceFrom==null?'Chưa có giá':formatCurrencyVND(item.priceFrom)}</span><span className="block text-[10px] text-slate-500">{item.isDemo?'Giả định DEMO · ':'VND · '}đơn vị chưa xác minh</span>
             </div>
             <Link
               to={detailUrl}
@@ -121,6 +127,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
       </div>
 
       <div className="mt-3 border-t border-slate-100 pt-3">
+        <Link onClick={e=>e.stopPropagation()} to={'/assistant?listing='+encodeURIComponent(item.id)} className="mb-2 inline-block text-xs font-bold text-teal-700 underline">Tư vấn bằng AI</Link>
         <div data-testid={`recommendation-why-${item.id}`} className="flex items-start gap-2 text-[11px] leading-4 text-slate-600">
           {item.why ? <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" /> : <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-teal-500" />}
           <span>{item.why || publicExplanation || 'Địa điểm công khai đủ điều kiện hiển thị; chưa cá nhân hóa.'}</span>
@@ -148,8 +155,9 @@ export const PlaceSidebar: React.FC<PlaceSidebarProps> = ({
   loading = false,
   emptyMessage = 'Không tìm thấy địa điểm nào phù hợp với bộ lọc.',
   publicExplanation,
+  grid=false,
 }) => (
-  <div className="max-h-[720px] space-y-3 overflow-y-auto pr-1" aria-busy={loading}>
+  <div className={grid?'grid items-start gap-4 sm:grid-cols-2 xl:grid-cols-3':'max-h-[720px] space-y-3 overflow-y-auto pr-1'} aria-busy={loading}>
     {!loading && places.length === 0 ? (
       <div data-testid="explore-empty" className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
         <p className="text-sm text-slate-500">{emptyMessage}</p>
@@ -164,6 +172,7 @@ export const PlaceSidebar: React.FC<PlaceSidebarProps> = ({
           requestId={recommendationRequestId}
           trackingEnabled={trackingEnabled}
           publicExplanation={publicExplanation}
+          grid={grid}
           onSelectPlace={onSelectPlace}
         />
       ))

@@ -1,0 +1,19 @@
+const c=require('./common.cjs');
+const analysis=c.json(c.prefix+'analysis.json'),plan=c.json(c.prefix+'manifest-execution.json'),lock=c.json(c.prefix+'manifest-execution-lock.json'),marker=c.json(c.prefix+'run-marker.json');
+c.assert.equal(c.sha(c.read(c.prefix+'manifest-execution.json')),lock.manifestSha256);
+c.assert.equal(c.sha(c.read(c.prefix+'manifest.json')),lock.previousManifestSha256);
+c.assert.equal(c.sha(c.read(c.prefix+'run-live.cjs')),marker.harnessSha256);
+c.assert.equal(c.sha(c.read(c.prefix+'owner-approval.txt')),c.json(c.prefix+'approval.json').approvalSha256);
+const integrity=c.integrity();c.assert.deepEqual(c.snapshot(),c.json(c.prefix+'integrity-before.json').hashes);
+for(const[file,hash]of Object.entries(lock.compiled))c.assert.equal(c.sha(c.read(file)),hash,file);
+for(const item of plan.cases.filter(x=>x.bodyFile)){c.assert.equal(c.sha(c.read(c.prefix+item.bodyFile)),item.bodySha256);c.assert.equal(c.json(c.prefix+'ollama-attempt-'+item.id+'.json').bodySha256,item.bodySha256);}
+for(const file of ['run-regression.cjs','offline-guard.cjs','downstream-control.cjs','observe-legacy.cjs','run-foundation-compat.cjs'])c.assert.equal(c.sha(c.read(c.prefix+file)),c.sha(c.read(c.previous+file)),file);
+c.assert.equal(analysis.totals.posts.total,5);c.assert.equal(analysis.totals.live.pass,3);c.assert.equal(analysis.totals.live.fail,1);c.assert.equal(analysis.guards.databaseAttempts,0);c.assert.equal(analysis.guards.productionChanges,0);
+const reportBytes=c.read(c.report),reportText=new TextDecoder('utf-8',{fatal:true}).decode(reportBytes);c.assert.equal(reportText,reportText.normalize('NFC'));c.assert.equal(reportText.includes('\ufffd'),false);
+for(const hash of [...Object.values(lock.sourceHashes),lock.manifestSha256,analysis.integrity.benchmarkSha256,analysis.integrity.benchmarkLockSha256,plan.g2WireSystemSha256])c.assert.ok(reportText.includes(hash),'Missing report hash '+hash);
+let checkedLinks=0;for(const match of reportText.matchAll(/\]\(([^)]+)\)/g)){const link=match[1];if(/^(https?:|#|mailto:)/.test(link))continue;const target=c.path.resolve(c.root,c.path.dirname(c.report),link.split('#')[0]);if(target===c.path.join(c.evidence,'artifact-checksums.json'))continue;c.assert.ok(c.fs.existsSync(target),'Missing report link '+link);checkedLinks++;}
+const start=c.json(c.prefix+'native-log-start.json').byteOffset,log=c.fs.readFileSync(c.path.join(process.env.LOCALAPPDATA||'','Ollama/server.log')).subarray(start).toString('utf8');c.assert.equal(log.split(/\r?\n/).filter(x=>/\[GIN\].*POST/.test(x)).length,5);
+const hashes={};for(const rel of c.fs.readdirSync(c.evidence,{recursive:true}).sort()){const file=rel.replaceAll('\\','/');if(file==='artifact-checksums.json')continue;const full=c.path.join(c.evidence,rel);if(c.fs.statSync(full).isFile())hashes[file]=c.sha(c.fs.readFileSync(full));}
+const record={at:new Date().toISOString(),status:'FINAL_INTEGRITY_PASS_LIVE_PROBE_RAW_FAIL_PRESERVED',report:c.report,reportSha256:c.sha(reportBytes),manifestSha256:lock.manifestSha256,sourceHashes:lock.sourceHashes,protectedFiles:analysis.integrity.protectedFiles,sourceChanges:0,historicalIntegrity:integrity,results:analysis.totals,regression:{g2:68,natural:79,compatibility:61,correction:42,completeness:52,legacy:analysis.regression.legacy},nativePostCap:5,nativePosts:5,additionalNativePosts:0,databaseAttempts:0,remainingSessions:0,checkedReportLinks:checkedLinks,hashes};
+c.write('artifact-checksums.json',record);const saved=c.json(c.prefix+'artifact-checksums.json');for(const[file,hash]of Object.entries(saved.hashes))c.assert.equal(c.sha(c.read(c.prefix+file)),hash,file);c.assert.equal(c.sha(c.read(saved.report)),saved.reportSha256);
+console.log(JSON.stringify({status:saved.status,reportSha256:saved.reportSha256,artifacts:Object.keys(hashes).length,protectedFiles:saved.protectedFiles,checkedLinks,nativePosts:5,sourceChanges:0,databaseAttempts:0,rawLive:{pass:3,fail:1}}));

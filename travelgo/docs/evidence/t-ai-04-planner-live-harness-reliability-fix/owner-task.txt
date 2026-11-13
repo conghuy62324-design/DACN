@@ -1,0 +1,317 @@
+# TASK T-AI-04-PLANNER-LIVE-HARNESS-RELIABILITY-FIX
+
+Vai trò: Senior E2E Automation Engineer, TypeScript/JavaScript Engineer, QA Lead và Security Engineer của TravelGo.
+
+## MỤC TIÊU
+
+Khắc phục triệt để ba lỗi H02/H03/H04 trong harness kiểm thử Planner LIVE.
+
+Đây là nhiệm vụ **OFFLINE HARNESS FIX + INDEPENDENT ACCEPTANCE**.
+
+Không chạy lại Planner LIVE trong task này.
+
+Không gọi Ollama, không truy cập PostgreSQL, không tạo fixture và không sửa source production.
+
+Ưu tiên số một: chứng minh harness sẽ dừng ngay khi bất kỳ assertion/guard bắt buộc nào thất bại, trước khi dispatch case kế tiếp.
+
+## 1. BASELINE
+
+Đọc đầy đủ:
+
+- `docs/HUGO_T_AI_04_PLANNER_REAL_TOOL_LIVE_E2E_RESUME_RUN2_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_REAL_TOOL_LIVE_E2E_REPORT.md`
+- `docs/HUGO_T_AI_04_PLANNER_TEST_DATA_READINESS_REPORT.md`
+- `docs/HUGO_T_AI_04_G2_E2E_HARNESS_FIX_RESUME_REPORT.md`
+
+Đọc nguyên bản:
+
+- Harness đã thực thi run2.
+- `harness-diagnosis.json`.
+- `harness-correction.PROPOSED.cjs`.
+- `offline-harness-correction-checks.json`.
+- Raw LIVE results.
+- Saved public HTTP responses.
+- Independent direct Planner oracles.
+- Native POST ledger.
+- Manifest và source hashes.
+
+Baseline cần giữ:
+
+- Direct Planner PASS.
+- Original raw NLU 3 PASS/1 FAIL.
+- L01–L03 original fidelity assertion FAIL.
+- Independent saved JSON comparison 3 PASS.
+- Desktop completed UI assertions 0 PASS/3 FAIL.
+- L05/L06 NOT RUN.
+- Global stop harness FAIL.
+- Native POST5/7, không retry.
+- DB restored25/25, Trip27/27.
+- P1 NLU/P2 runtime OPEN.
+
+Không sửa hoặc ghi đè bất kỳ evidence/expected lịch sử nào.
+
+## 2. H02 — Sửa fidelity assertion
+
+Nguyên nhân:
+
+Harness so sánh JavaScript object có optional property `placeId: undefined` với JSON response đã serialize, trong đó property đó không còn.
+
+Yêu cầu:
+
+1. Đọc production public response contract.
+2. Xác định chính xác representation mà browser/API phải nhận.
+3. So sánh public JSON projection với independent JSON oracle cùng representation.
+4. Chỉ normalize hai volatile fields đã được phê duyệt:
+   - `itinerary.id`
+   - `itinerary.createdAt`
+5. Không bỏ qua price, dates, place IDs, ETA, warnings, selectedPlaceIds hoặc bất kỳ business field nào.
+6. Không tự biến mismatch thật thành PASS.
+7. Không thay original expected.
+
+Test cả positive và negative:
+
+- Saved L01/L02/L03 public JSON khớp oracle.
+- Sai total phải FAIL.
+- Sai place ID phải FAIL.
+- Sai ngày phải FAIL.
+- Sai transport/ETA phải FAIL.
+- Thiếu hoặc thừa required field phải FAIL.
+- Source/provenance sai phải FAIL.
+
+Không sửa Planner hoặc serializer production.
+
+## 3. H03 — Sửa Unicode/UTF-8
+
+Nguyên nhân:
+
+PowerShell encoding khiến một số literal UI tiếng Việt và ký hiệu tiền tệ bị biến thành `?`.
+
+Yêu cầu:
+
+1. Kiểm tra actual source encoding.
+2. Bảo toàn UTF-8 khi tạo và chạy Node harness.
+3. Không phụ thuộc vào PowerShell `us-ascii` để ghi literal tiếng Việt.
+4. Kiểm exact UI strings:
+   - `Xe máy`
+   - `Ô tô`
+   - `₫`
+5. Kiểm locator confirmation button.
+6. Kiểm format tiền trong completed itinerary.
+7. Kiểm screenshot/DOM thực tế trong mocked browser.
+
+Không thay production UI chỉ để locator PASS.
+
+Không thay expected từ Unicode chuẩn thành chuỗi lỗi encoding.
+
+Test phải chứng minh nếu literal bị corrupt thì harness FAIL rõ ràng, không timeout 30 giây rồi mới phát hiện.
+
+## 4. H04 — Global fail-fast
+
+Đây là yêu cầu quan trọng nhất.
+
+Sửa orchestration để mọi FAIL thuộc các lớp sau đều kích hoạt global stop:
+
+- Manifest/hash mismatch.
+- Request/response assertion.
+- Fidelity assertion.
+- Browser UI assertion.
+- Session/revision mismatch.
+- Auth/ownership error.
+- Unauthorized tool execution.
+- Native POST cap.
+- Quota/TTL.
+- Unexpected DB mutation.
+- Runtime/security guard.
+- Unexpected error/timeout.
+
+Khi gặp FAIL:
+
+1. Ghi failure evidence.
+2. Đánh dấu case hiện tại FAIL.
+3. Chặn mọi case kế tiếp.
+4. Không dispatch HTTP Agent request mới.
+5. Không gửi Ollama POST.
+6. Không retry.
+7. Chạy `finally`/cleanup an toàn theo contract nếu có tài nguyên cần giải phóng.
+8. Ghi các case chưa chạy là NOT RUN.
+9. Trả nonzero exit code.
+
+Không được catch assertion error rồi chỉ log và tiếp tục.
+
+Không dùng skip/continue để che lỗi.
+
+Cleanup không được bị bỏ qua vì assertion thất bại, nhưng cũng không được vượt guard cleanup.
+
+## 5. INDEPENDENT OFFLINE ACCEPTANCE
+
+Tạo một harness test suite mới, độc lập với implementation đã sửa.
+
+Bắt buộc kiểm:
+
+### Fidelity
+
+- Saved public JSON L01–L03.
+- Wrong cost/ID/date/transport.
+- Missing required fields.
+- Unexpected result source.
+
+### Unicode
+
+- UTF-8 source parsing.
+- Exact text `Xe máy`, `Ô tô`, `₫`.
+- Corrupted literal rejection.
+- Desktop/mobile mocked DOM.
+- Manual confirmation locator.
+
+### Global stop
+
+Inject failures vào:
+
+- Fidelity tại L01.
+- UI tại L01.
+- Raw expected mismatch.
+- Manifest guard.
+- Session revision.
+- Tool safety.
+- Simulated provider timeout.
+- Cleanup precondition.
+
+Với mỗi injected FAIL, assert:
+
+- Global stop activated.
+- Later cases NOT RUN.
+- No later inference dispatch.
+- No retry.
+- Proper cleanup/finally invocation.
+- Nonzero process exit.
+- Original failure preserved.
+
+Đặc biệt phải chứng minh tình huống run2:
+
+**L01 fidelity FAIL → L02/L03/L04 tuyệt đối không chạy.**
+
+Đồng thời phải chứng minh success path có thể chạy tiếp các case khi tất cả guards PASS.
+
+## 6. MOCKED BROWSER
+
+Chạy trên:
+
+- Desktop 1440×900.
+- Mobile 390×844.
+
+Dùng actual frontend components/controllers với mocked network responses đã khóa.
+
+Kiểm completed itinerary:
+
+- Dates.
+- 2 ngày/1 đêm.
+- Two synthetic sightseeing records.
+- Item/day/group totals.
+- 3.500.000 VND.
+- Budget warning/status.
+- Format tiền.
+- Transportation.
+- Confirmation controls.
+- Không horizontal overflow.
+
+Kết quả phải ghi `MOCK_ONLY_BROWSER`, không LIVE.
+
+Không gọi PostgreSQL/Planner/Ollama thật.
+
+## 7. SECURITY VÀ INTEGRITY
+
+Không sửa:
+
+- AgentService production.
+- G1/G2 SYSTEM.
+- CurrentTurnProof.
+- VerifiedHistory.
+- Tool schemas.
+- Execution gate.
+- Planner algorithm.
+- Catalog/Repository.
+- Database schema.
+- Auth/consent/limits.
+- Approved V2 benchmark.
+- Historical reports/evidence.
+
+Chỉ sửa hoặc tạo harness/test files thuộc nhiệm vụ hiện tại.
+
+Không INSERT/DELETE/UPDATE database.
+
+Không Ollama GET/POST, load-only hoặc inference.
+
+Không deploy/commit/push.
+
+Kiểm source/benchmark hashes và audit network.
+
+## 8. REGRESSION
+
+Chạy các kiểm tra offline liên quan và frontend/browser regression khi phù hợp.
+
+Báo rõ:
+
+- New harness tests PASS/FAIL.
+- Existing frontend unit.
+- Mocked browser desktop/mobile.
+- Applicable backend regression.
+- Build, nếu có chạy.
+- Original legacy baseline riêng.
+
+Không nhận historical PASS như newly executed PASS.
+
+Không đổi assertions của legacy suite.
+
+## 9. EXIT GATE
+
+Chỉ được kết luận:
+
+`HARNESS_RELIABILITY_FIX_PASS_OFFLINE`
+
+khi đồng thời:
+
+- H02 fixed và negative fidelity controls PASS.
+- H03 UTF-8/Unicode controls PASS.
+- H04 global stop chứng minh bằng independent failure injection.
+- Desktop/mobile mock checks PASS.
+- Không unauthorized network/DB/native POST.
+- Production source và historical evidence nguyên vẹn.
+
+Nếu không đạt, ghi `HARNESS_FIX_INCOMPLETE`.
+
+Không tự chạy LIVE để kiểm chứng bằng cách tiêu thêm POST.
+
+## 10. BÁO CÁO
+
+Tạo:
+
+`docs/HUGO_T_AI_04_PLANNER_LIVE_HARNESS_RELIABILITY_FIX_REPORT.md`
+
+Evidence:
+
+`docs/evidence/t-ai-04-planner-live-harness-reliability-fix/`
+
+Nội dung:
+
+1. Baseline.
+2. H02 diagnosis/fix.
+3. H03 Unicode fix.
+4. H04 fail-fast fix.
+5. Source diff.
+6. Independent negative tests.
+7. Global-stop injection results.
+8. Desktop/mobile mocked browser.
+9. Regression/build.
+10. Source/benchmark integrity.
+11. Historical LIVE results preserved.
+12. P1/P2 status.
+13. Remaining limitations.
+14. NEXT TASK PLAN.
+
+Sau khi offline PASS, chỉ đề xuất một task **Planner LIVE targeted revalidation** mới.
+
+Task LIVE phải có manifest/POST budget/quota/DB fixture approval được xác nhận tại thời điểm chạy. Không sử dụng lại hai POST chưa dùng của run2 như quyền mới.
+
+Không tự retry historical L04 hoặc thay verdict cũ.
+
+**Dừng sau báo cáo.**

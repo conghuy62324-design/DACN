@@ -1,5 +1,7 @@
 # HuGo Intelligence 2.0 — M1 Task 4 Execution Report
 
+> **Đính chính thuật ngữ auth 30/10/2026 (T07):** “JWT” trong báo cáo lịch sử này cần hiểu là access token HMAC hai phần của dự án, không phải JWT chuẩn ba phần. Chưa có refresh-token endpoint/server-side revocation; logout local không thu hồi token. Xem [contract hiện hành](HUGO_AUTH_CONTRACT.md). Kết quả kiểm thử lịch sử bên dưới giữ nguyên, không được coi là test T07 chạy lại.
+
 Ngày thực hiện: 2026-10-12  
 Phạm vi: Server-side Favorites/SAVE Source of Truth  
 Kết luận: **COMPLETE**

@@ -39,7 +39,10 @@ export class PartnerService {
   }
 
   static async getBookings(userId: string, businessId: string, page = 1, limit = 20) {
-    await this.getBusiness(userId, businessId);
+    const membership = await this.getBusiness(userId, businessId);
+    if (!membership.permissions.includes('MANAGE_BOOKINGS')) {
+      throw new HttpError(403, 'Yêu cầu quyền MANAGE_BOOKINGS', 'MISSING_MANAGE_BOOKINGS');
+    }
     const safePage = Math.max(1, page);
     const safeLimit = Math.min(100, Math.max(1, limit));
     const result = await Booking.findAndCountAll({

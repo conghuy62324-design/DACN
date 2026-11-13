@@ -1,0 +1,1292 @@
+{
+  "id": "A03",
+  "project": "desktop",
+  "channel": "U2+A1 desktop probes",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "browser": "156.0.4314.58",
+  "mobileEmulation": false,
+  "status": "PASS",
+  "errors": [],
+  "checkpoints": [
+    {
+      "id": "ENV_IDENTITY",
+      "expected": "Proxy reaches this run exact guarded test database",
+      "startedAt": "2026-11-07T02:21:24.924Z",
+      "status": "PASS",
+      "actual": {
+        "runId": "20261107022055-84970f",
+        "pid": 15584,
+        "port": 5314,
+        "database": "travelgo_ai_m0_test",
+        "username": "postgres",
+        "server_address": "172.18.0.3/32",
+        "server_port": 5432,
+        "nodeEnv": "test",
+        "host": "127.0.0.1",
+        "sentinel": "PASS",
+        "writeOptIn": true,
+        "migrations": [
+          {
+            "filename": "20261010_01_init_travelgo_schema.sql",
+            "checksum": "fe7defe5c3c47c9230fe7c43fc301255a6bc0e998da71aba0fe2f747f9e52d50"
+          },
+          {
+            "filename": "20261011_02_rbac_partner_foundation.sql",
+            "checksum": "df7fd60cccf17d3f8a73f711825bb1e82a4606a17c42fce4c7fa214548c2cecd"
+          },
+          {
+            "filename": "20261011_03_persistent_travel_resources.sql",
+            "checksum": "1c4464625e57e27cadc560077fad83837b56c5385d8021e0592fdcb9039fabf7"
+          },
+          {
+            "filename": "20261011_04_hugo_intelligence_foundation.sql",
+            "checksum": "4f2519e0541bed02a5fd7811c1ef5f84be49e37dd0dc81d16c033c22a805b69d"
+          },
+          {
+            "filename": "20261012_05_user_behavior_telemetry.sql",
+            "checksum": "477200cecf2f7e8135c4473b901ae11237222083cb7fd4b9af900d2cb2bbbece"
+          },
+          {
+            "filename": "20261012_06_recommendation_exposure.sql",
+            "checksum": "9f90d12a55a57799977115b4b8922b70cba3d02649f48e4e08d54b2913a536cb"
+          },
+          {
+            "filename": "20261012_07_recommendation_booking_retention.sql",
+            "checksum": "bf885a9161b6420e096c10a3cc37de6a45715ffc2b375e38a8ec8104998cc3de"
+          },
+          {
+            "filename": "20261012_08_server_side_favorites.sql",
+            "checksum": "87980fcdf39c7fbf7e6641bb0219f64c727605ea8f8127f2ad6f62d4107d75f8"
+          },
+          {
+            "filename": "20261012_09_verified_reviews.sql",
+            "checksum": "8842947ab9cd52890cc371bf75877e191f801fd12bedb19c5c06d46080c1670e"
+          },
+          {
+            "filename": "20261012_10_review_account_deletion_privacy.sql",
+            "checksum": "4219afac618257e7970f878b83b30c72eb2fe0fe106af04e81c5083e8bc48c52"
+          },
+          {
+            "filename": "20261028_11_trip_planner_metadata.sql",
+            "checksum": "90c42676606d4d5e7458edde139b9c5b945dd3ca0d574490a581ad6bcd98a034"
+          },
+          {
+            "filename": "20261030_12_booking_request_fingerprint.sql",
+            "checksum": "09465ec9a3d3c3de1215ad6eaa1d1cf4e8d18aed43423ce6c7b4feea817e9bc5"
+          }
+        ],
+        "indexes": [
+          {
+            "indexname": "business_members_business_id_user_id_key",
+            "indexdef": "CREATE UNIQUE INDEX business_members_business_id_user_id_key ON public.business_members USING btree (business_id, user_id)"
+          },
+          {
+            "indexname": "business_members_pkey",
+            "indexdef": "CREATE UNIQUE INDEX business_members_pkey ON public.business_members USING btree (id)"
+          },
+          {
+            "indexname": "idx_business_members_user",
+            "indexdef": "CREATE INDEX idx_business_members_user ON public.business_members USING btree (user_id)"
+          },
+          {
+            "indexname": "idx_partner_applications_one_active",
+            "indexdef": "CREATE UNIQUE INDEX idx_partner_applications_one_active ON public.partner_applications USING btree (user_id) WHERE ((status)::text = ANY ((ARRAY['PENDING'::character varying, 'NEEDS_MORE_INFO'::character varying])::text[]))"
+          },
+          {
+            "indexname": "idx_partner_applications_status_created",
+            "indexdef": "CREATE INDEX idx_partner_applications_status_created ON public.partner_applications USING btree (status, created_at DESC)"
+          },
+          {
+            "indexname": "partner_applications_pkey",
+            "indexdef": "CREATE UNIQUE INDEX partner_applications_pkey ON public.partner_applications USING btree (id)"
+          },
+          {
+            "indexname": "user_roles_pkey",
+            "indexdef": "CREATE UNIQUE INDEX user_roles_pkey ON public.user_roles USING btree (id)"
+          },
+          {
+            "indexname": "user_roles_user_id_role_key",
+            "indexdef": "CREATE UNIQUE INDEX user_roles_user_id_role_key ON public.user_roles USING btree (user_id, role)"
+          }
+        ],
+        "constraints": [
+          {
+            "conname": "business_members_business_id_fkey",
+            "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE"
+          },
+          {
+            "conname": "business_members_business_id_user_id_key",
+            "definition": "UNIQUE (business_id, user_id)"
+          },
+          {
+            "conname": "business_members_pkey",
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "conname": "business_members_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "conname": "partner_applications_business_type_check",
+            "definition": "CHECK (((business_type)::text = ANY ((ARRAY['HOTEL'::character varying, 'HOMESTAY'::character varying, 'RESORT'::character varying, 'RESTAURANT'::character varying, 'TOUR_OPERATOR'::character varying])::text[])))"
+          },
+          {
+            "conname": "partner_applications_pkey",
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "conname": "partner_applications_reviewed_by_fkey",
+            "definition": "FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "conname": "partner_applications_status_check",
+            "definition": "CHECK (((status)::text = ANY ((ARRAY['PENDING'::character varying, 'APPROVED'::character varying, 'REJECTED'::character varying, 'NEEDS_MORE_INFO'::character varying, 'SUSPENDED'::character varying])::text[])))"
+          },
+          {
+            "conname": "partner_applications_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "conname": "user_roles_granted_by_fkey",
+            "definition": "FOREIGN KEY (granted_by) REFERENCES users(id) ON DELETE SET NULL"
+          },
+          {
+            "conname": "user_roles_pkey",
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "conname": "user_roles_role_check",
+            "definition": "CHECK (((role)::text = ANY ((ARRAY['CUSTOMER'::character varying, 'PARTNER'::character varying, 'SUPER_ADMIN'::character varying])::text[])))"
+          },
+          {
+            "conname": "user_roles_user_id_fkey",
+            "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+          },
+          {
+            "conname": "user_roles_user_id_role_key",
+            "definition": "UNIQUE (user_id, role)"
+          }
+        ]
+      },
+      "finishedAt": "2026-11-07T02:21:24.957Z"
+    },
+    {
+      "id": "APPROVE_UI_DB",
+      "expected": "UI approval atomically creates one Business/member/PARTNER grant/audit",
+      "startedAt": "2026-11-07T02:21:25.205Z",
+      "status": "PASS",
+      "actual": {
+        "application": {
+          "id": "30e375b2-8fb6-442a-8179-df484ebd95d4",
+          "userId": "e6a9cfc4-fe8f-4d57-a35e-ae7bb33a0a64",
+          "representativeName": "T13B01 desktop A03-C",
+          "businessName": "T13B01 SYNTHETIC desktop A03 392f12ba",
+          "businessType": "HOTEL",
+          "email": "t13b01.84970f.desktop.a03-c.56ab892c@example.test",
+          "phone": "0901234567",
+          "address": "SYNTHETIC TEST ONLY - no real business",
+          "city": "T13B01-20261107022055-84970f-desktop",
+          "latitude": "16.0500000",
+          "longitude": "108.2000000",
+          "imageUrls": [],
+          "verificationDetails": {
+            "taxCode": "SYNTHETIC TEST ONLY"
+          },
+          "status": "APPROVED",
+          "decisionReason": null,
+          "reviewedBy": "02cb7a65-a5de-4ddb-a952-7adc70e6ea00",
+          "reviewedAt": {},
+          "createdAt": {},
+          "updatedAt": {}
+        },
+        "grants": [
+          {
+            "id": "17b315fc-e90f-476d-9edf-e5dacadc242b",
+            "userId": "e6a9cfc4-fe8f-4d57-a35e-ae7bb33a0a64",
+            "role": "PARTNER",
+            "grantedBy": "02cb7a65-a5de-4ddb-a952-7adc70e6ea00",
+            "createdAt": {}
+          }
+        ],
+        "members": [
+          {
+            "id": "1f5ef872-52db-48dd-9662-8910c22cc994",
+            "businessId": "91d55cfa-8832-4642-9184-5c21aad4cf3c",
+            "userId": "e6a9cfc4-fe8f-4d57-a35e-ae7bb33a0a64",
+            "permissions": [
+              "MANAGE_BUSINESS",
+              "MANAGE_BOOKINGS"
+            ],
+            "createdAt": {},
+            "updatedAt": {}
+          }
+        ],
+        "audit": [
+          {
+            "id": "7e9f18c0-b1bd-4211-9f34-d5973312642d",
+            "actorUserId": "02cb7a65-a5de-4ddb-a952-7adc70e6ea00",
+            "action": "PARTNER_APPLICATION_APPROVED",
+            "entityType": "PartnerApplication",
+            "entityId": "30e375b2-8fb6-442a-8179-df484ebd95d4",
+            "previousData": {
+              "status": "PENDING"
+            },
+            "newData": {
+              "status": "APPROVED",
+              "businessId": "91d55cfa-8832-4642-9184-5c21aad4cf3c"
+            },
+            "reason": null,
+            "ipAddress": "127.0.0.1",
+            "createdAt": {}
+          }
+        ]
+      },
+      "finishedAt": "2026-11-07T02:21:33.042Z"
+    },
+    {
+      "id": "LAYOUT_admin-approved",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 1440,
+        "scrollWidth": 1440
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "LAYOUT_customer-approved",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 1440,
+        "scrollWidth": 1440
+      },
+      "status": "PASS"
+    },
+    {
+      "id": "TERMINAL_AND_CONCURRENT_APPROVAL",
+      "expected": "Terminal retry409; concurrent approval exactly one200/one409 and one graph",
+      "startedAt": "2026-11-07T02:21:33.042Z",
+      "status": "PASS",
+      "actual": {
+        "statuses": [
+          200,
+          409
+        ],
+        "state": {
+          "application": {
+            "id": "5848aa45-5e9f-4ff7-a6c7-91efc3eb0778",
+            "userId": "8a38630a-f06b-49a6-8714-737bf9dcfa2e",
+            "representativeName": "T13B01 desktop A03-RACE",
+            "businessName": "T13B01 SYNTHETIC desktop A03-RACE f81d9f69",
+            "businessType": "HOTEL",
+            "email": "t13b01.84970f.desktop.a03-race.8fa70a92@example.test",
+            "phone": "0901234567",
+            "address": "SYNTHETIC TEST ONLY - no real business",
+            "city": "T13B01-20261107022055-84970f-desktop",
+            "latitude": "16.0500000",
+            "longitude": "108.2000000",
+            "imageUrls": [],
+            "verificationDetails": {
+              "taxCode": "SYNTHETIC TEST ONLY"
+            },
+            "status": "APPROVED",
+            "decisionReason": null,
+            "reviewedBy": "02cb7a65-a5de-4ddb-a952-7adc70e6ea00",
+            "reviewedAt": {},
+            "createdAt": {},
+            "updatedAt": {}
+          },
+          "grants": [
+            {
+              "id": "6588b7f9-0a95-4096-9e72-42ac44b97b92",
+              "userId": "8a38630a-f06b-49a6-8714-737bf9dcfa2e",
+              "role": "PARTNER",
+              "grantedBy": "02cb7a65-a5de-4ddb-a952-7adc70e6ea00",
+              "createdAt": {}
+            }
+          ],
+          "members": [
+            {
+              "id": "00d420dd-7c98-4932-b816-aff5fd88987c",
+              "businessId": "177d9a0b-a875-4882-849c-caf12d7f24ba",
+              "userId": "8a38630a-f06b-49a6-8714-737bf9dcfa2e",
+              "permissions": [
+                "MANAGE_BUSINESS",
+                "MANAGE_BOOKINGS"
+              ],
+              "createdAt": {},
+              "updatedAt": {}
+            }
+          ],
+          "audit": [
+            {
+              "id": "533727ca-a3a0-48ba-ae4d-805aaff3ab35",
+              "actorUserId": "02cb7a65-a5de-4ddb-a952-7adc70e6ea00",
+              "action": "PARTNER_APPLICATION_APPROVED",
+              "entityType": "PartnerApplication",
+              "entityId": "5848aa45-5e9f-4ff7-a6c7-91efc3eb0778",
+              "previousData": {
+                "status": "PENDING"
+              },
+              "newData": {
+                "status": "APPROVED",
+                "businessId": "177d9a0b-a875-4882-849c-caf12d7f24ba"
+              },
+              "reason": null,
+              "ipAddress": "127.0.0.1",
+              "createdAt": {}
+            }
+          ]
+        }
+      },
+      "finishedAt": "2026-11-07T02:21:33.192Z"
+    },
+    {
+      "id": "LAYOUT_final",
+      "expected": "No document horizontal overflow; table may scroll within container",
+      "actual": {
+        "width": 1440,
+        "scrollWidth": 1440
+      },
+      "status": "PASS"
+    }
+  ],
+  "traffic": [
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/__t13b01/identity",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/__t13b01/identity",
+      "response": {
+        "status": 200,
+        "body": {
+          "runId": "20261107022055-84970f",
+          "pid": 15584,
+          "port": 5314,
+          "database": "travelgo_ai_m0_test",
+          "username": "postgres",
+          "server_address": "172.18.0.3/32",
+          "server_port": 5432,
+          "nodeEnv": "test",
+          "host": "127.0.0.1",
+          "sentinel": "PASS",
+          "writeOptIn": true,
+          "migrations": [
+            {
+              "filename": "20261010_01_init_travelgo_schema.sql",
+              "checksum": "fe7defe5c3c47c9230fe7c43fc301255a6bc0e998da71aba0fe2f747f9e52d50"
+            },
+            {
+              "filename": "20261011_02_rbac_partner_foundation.sql",
+              "checksum": "df7fd60cccf17d3f8a73f711825bb1e82a4606a17c42fce4c7fa214548c2cecd"
+            },
+            {
+              "filename": "20261011_03_persistent_travel_resources.sql",
+              "checksum": "1c4464625e57e27cadc560077fad83837b56c5385d8021e0592fdcb9039fabf7"
+            },
+            {
+              "filename": "20261011_04_hugo_intelligence_foundation.sql",
+              "checksum": "4f2519e0541bed02a5fd7811c1ef5f84be49e37dd0dc81d16c033c22a805b69d"
+            },
+            {
+              "filename": "20261012_05_user_behavior_telemetry.sql",
+              "checksum": "477200cecf2f7e8135c4473b901ae11237222083cb7fd4b9af900d2cb2bbbece"
+            },
+            {
+              "filename": "20261012_06_recommendation_exposure.sql",
+              "checksum": "9f90d12a55a57799977115b4b8922b70cba3d02649f48e4e08d54b2913a536cb"
+            },
+            {
+              "filename": "20261012_07_recommendation_booking_retention.sql",
+              "checksum": "bf885a9161b6420e096c10a3cc37de6a45715ffc2b375e38a8ec8104998cc3de"
+            },
+            {
+              "filename": "20261012_08_server_side_favorites.sql",
+              "checksum": "87980fcdf39c7fbf7e6641bb0219f64c727605ea8f8127f2ad6f62d4107d75f8"
+            },
+            {
+              "filename": "20261012_09_verified_reviews.sql",
+              "checksum": "8842947ab9cd52890cc371bf75877e191f801fd12bedb19c5c06d46080c1670e"
+            },
+            {
+              "filename": "20261012_10_review_account_deletion_privacy.sql",
+              "checksum": "4219afac618257e7970f878b83b30c72eb2fe0fe106af04e81c5083e8bc48c52"
+            },
+            {
+              "filename": "20261028_11_trip_planner_metadata.sql",
+              "checksum": "90c42676606d4d5e7458edde139b9c5b945dd3ca0d574490a581ad6bcd98a034"
+            },
+            {
+              "filename": "20261030_12_booking_request_fingerprint.sql",
+              "checksum": "09465ec9a3d3c3de1215ad6eaa1d1cf4e8d18aed43423ce6c7b4feea817e9bc5"
+            }
+          ],
+          "indexes": [
+            {
+              "indexname": "business_members_business_id_user_id_key",
+              "indexdef": "CREATE UNIQUE INDEX business_members_business_id_user_id_key ON public.business_members USING btree (business_id, user_id)"
+            },
+            {
+              "indexname": "business_members_pkey",
+              "indexdef": "CREATE UNIQUE INDEX business_members_pkey ON public.business_members USING btree (id)"
+            },
+            {
+              "indexname": "idx_business_members_user",
+              "indexdef": "CREATE INDEX idx_business_members_user ON public.business_members USING btree (user_id)"
+            },
+            {
+              "indexname": "idx_partner_applications_one_active",
+              "indexdef": "CREATE UNIQUE INDEX idx_partner_applications_one_active ON public.partner_applications USING btree (user_id) WHERE ((status)::text = ANY ((ARRAY['PENDING'::character varying, 'NEEDS_MORE_INFO'::character varying])::text[]))"
+            },
+            {
+              "indexname": "idx_partner_applications_status_created",
+              "indexdef": "CREATE INDEX idx_partner_applications_status_created ON public.partner_applications USING btree (status, created_at DESC)"
+            },
+            {
+              "indexname": "partner_applications_pkey",
+              "indexdef": "CREATE UNIQUE INDEX partner_applications_pkey ON public.partner_applications USING btree (id)"
+            },
+            {
+              "indexname": "user_roles_pkey",
+              "indexdef": "CREATE UNIQUE INDEX user_roles_pkey ON public.user_roles USING btree (id)"
+            },
+            {
+              "indexname": "user_roles_user_id_role_key",
+              "indexdef": "CREATE UNIQUE INDEX user_roles_user_id_role_key ON public.user_roles USING btree (user_id, role)"
+            }
+          ],
+          "constraints": [
+            {
+              "conname": "business_members_business_id_fkey",
+              "definition": "FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE"
+            },
+            {
+              "conname": "business_members_business_id_user_id_key",
+              "definition": "UNIQUE (business_id, user_id)"
+            },
+            {
+              "conname": "business_members_pkey",
+              "definition": "PRIMARY KEY (id)"
+            },
+            {
+              "conname": "business_members_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "conname": "partner_applications_business_type_check",
+              "definition": "CHECK (((business_type)::text = ANY ((ARRAY['HOTEL'::character varying, 'HOMESTAY'::character varying, 'RESORT'::character varying, 'RESTAURANT'::character varying, 'TOUR_OPERATOR'::character varying])::text[])))"
+            },
+            {
+              "conname": "partner_applications_pkey",
+              "definition": "PRIMARY KEY (id)"
+            },
+            {
+              "conname": "partner_applications_reviewed_by_fkey",
+              "definition": "FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL"
+            },
+            {
+              "conname": "partner_applications_status_check",
+              "definition": "CHECK (((status)::text = ANY ((ARRAY['PENDING'::character varying, 'APPROVED'::character varying, 'REJECTED'::character varying, 'NEEDS_MORE_INFO'::character varying, 'SUSPENDED'::character varying])::text[])))"
+            },
+            {
+              "conname": "partner_applications_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "conname": "user_roles_granted_by_fkey",
+              "definition": "FOREIGN KEY (granted_by) REFERENCES users(id) ON DELETE SET NULL"
+            },
+            {
+              "conname": "user_roles_pkey",
+              "definition": "PRIMARY KEY (id)"
+            },
+            {
+              "conname": "user_roles_role_check",
+              "definition": "CHECK (((role)::text = ANY ((ARRAY['CUSTOMER'::character varying, 'PARTNER'::character varying, 'SUPER_ADMIN'::character varying])::text[])))"
+            },
+            {
+              "conname": "user_roles_user_id_fkey",
+              "definition": "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE"
+            },
+            {
+              "conname": "user_roles_user_id_role_key",
+              "definition": "UNIQUE (user_id, role)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/register",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/register",
+      "request": {
+        "fullName": "T13B01 desktop A03-SA",
+        "email": "t13b01.84970f.desktop.a03-sa.280b3197@example.test",
+        "password": "[REDACTED]",
+        "phone": "0901234567"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Đăng ký tài khoản thành công",
+          "data": {
+            "user": {
+              "id": "02cb7a65-a5de-4ddb-a952-7adc70e6ea00",
+              "fullName": "T13B01 desktop A03-SA",
+              "email": "t13b01.84970f.desktop.a03-sa.280b3197@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "CUSTOMER"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/places",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/blogs",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/places",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/blogs",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/login",
+      "request": {
+        "email": "t13b01.84970f.desktop.a03-sa.280b3197@example.test",
+        "password": "[REDACTED]"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "message": "Đăng nhập thành công",
+          "data": {
+            "user": {
+              "id": "02cb7a65-a5de-4ddb-a952-7adc70e6ea00",
+              "fullName": "T13B01 desktop A03-SA",
+              "email": "t13b01.84970f.desktop.a03-sa.280b3197@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "SUPER_ADMIN"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/register",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/register",
+      "request": {
+        "fullName": "T13B01 desktop A03-C",
+        "email": "t13b01.84970f.desktop.a03-c.56ab892c@example.test",
+        "password": "[REDACTED]",
+        "phone": "0901234567"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Đăng ký tài khoản thành công",
+          "data": {
+            "user": {
+              "id": "e6a9cfc4-fe8f-4d57-a35e-ae7bb33a0a64",
+              "fullName": "T13B01 desktop A03-C",
+              "email": "t13b01.84970f.desktop.a03-c.56ab892c@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "CUSTOMER"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner-applications",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner-applications",
+      "request": {
+        "representativeName": "T13B01 desktop A03-C",
+        "businessName": "T13B01 SYNTHETIC desktop A03 392f12ba",
+        "businessType": "HOTEL",
+        "email": "t13b01.84970f.desktop.a03-c.56ab892c@example.test",
+        "phone": "0901234567",
+        "address": "SYNTHETIC TEST ONLY - no real business",
+        "city": "T13B01-20261107022055-84970f-desktop",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "verificationDetails": {
+          "taxCode": "SYNTHETIC TEST ONLY"
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Hồ sơ đã được gửi và đang chờ xét duyệt",
+          "data": {
+            "id": "30e375b2-8fb6-442a-8179-df484ebd95d4",
+            "status": "PENDING",
+            "userId": "e6a9cfc4-fe8f-4d57-a35e-ae7bb33a0a64",
+            "representativeName": "T13B01 desktop A03-C",
+            "businessName": "T13B01 SYNTHETIC desktop A03 392f12ba",
+            "businessType": "HOTEL",
+            "email": "t13b01.84970f.desktop.a03-c.56ab892c@example.test",
+            "phone": "0901234567",
+            "address": "SYNTHETIC TEST ONLY - no real business",
+            "city": "T13B01-20261107022055-84970f-desktop",
+            "latitude": "16.0500000",
+            "longitude": "108.2000000",
+            "imageUrls": [],
+            "verificationDetails": {
+              "taxCode": "SYNTHETIC TEST ONLY"
+            },
+            "updatedAt": "2026-11-07T02:21:25.195Z",
+            "createdAt": "2026-11-07T02:21:25.195Z",
+            "decisionReason": null,
+            "reviewedBy": null,
+            "reviewedAt": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/dashboard",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/partner-applications",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/partner-applications",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/admin/partners/30e375b2-8fb6-442a-8179-df484ebd95d4/approval",
+      "status": 200
+    },
+    {
+      "channel": "UI decision → real API",
+      "method": "PATCH",
+      "endpoint": "/admin/partners/30e375b2-8fb6-442a-8179-df484ebd95d4/approval",
+      "request": {
+        "status": "APPROVED"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "message": "Đã cập nhật hồ sơ đối tác",
+          "data": {
+            "application": {
+              "id": "30e375b2-8fb6-442a-8179-df484ebd95d4",
+              "userId": "e6a9cfc4-fe8f-4d57-a35e-ae7bb33a0a64",
+              "representativeName": "T13B01 desktop A03-C",
+              "businessName": "T13B01 SYNTHETIC desktop A03 392f12ba",
+              "businessType": "HOTEL",
+              "email": "t13b01.84970f.desktop.a03-c.56ab892c@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107022055-84970f-desktop",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "APPROVED",
+              "decisionReason": null,
+              "reviewedBy": "02cb7a65-a5de-4ddb-a952-7adc70e6ea00",
+              "reviewedAt": "2026-11-07T02:21:25.593Z",
+              "createdAt": "2026-11-07T02:21:25.195Z",
+              "updatedAt": "2026-11-07T02:21:25.593Z"
+            },
+            "business": {
+              "id": "91d55cfa-8832-4642-9184-5c21aad4cf3c",
+              "status": "ACTIVE",
+              "name": "T13B01 SYNTHETIC desktop A03 392f12ba",
+              "type": "HOTEL",
+              "email": "t13b01.84970f.desktop.a03-c.56ab892c@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107022055-84970f-desktop",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "updatedAt": "2026-11-07T02:21:25.594Z",
+              "createdAt": "2026-11-07T02:21:25.594Z"
+            }
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/partner-applications",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/partner-applications",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/admin/partner-applications",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner/dashboard",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PUT",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "GET",
+      "endpoint": "/partner-applications/me",
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": [
+            {
+              "id": "30e375b2-8fb6-442a-8179-df484ebd95d4",
+              "userId": "e6a9cfc4-fe8f-4d57-a35e-ae7bb33a0a64",
+              "representativeName": "T13B01 desktop A03-C",
+              "businessName": "T13B01 SYNTHETIC desktop A03 392f12ba",
+              "businessType": "HOTEL",
+              "email": "t13b01.84970f.desktop.a03-c.56ab892c@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107022055-84970f-desktop",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "APPROVED",
+              "decisionReason": null,
+              "reviewedBy": "02cb7a65-a5de-4ddb-a952-7adc70e6ea00",
+              "reviewedAt": "2026-11-07T02:21:25.593Z",
+              "createdAt": "2026-11-07T02:21:25.195Z",
+              "updatedAt": "2026-11-07T02:21:25.593Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/auth/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/intelligence/consent",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/favorites",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "GET",
+      "endpoint": "/api/partner-applications/me",
+      "status": 200
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/admin/partners/30e375b2-8fb6-442a-8179-df484ebd95d4/approval",
+      "status": 409
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/admin/partners/30e375b2-8fb6-442a-8179-df484ebd95d4/approval",
+      "request": {
+        "status": "APPROVED"
+      },
+      "response": {
+        "status": 409,
+        "body": {
+          "success": false,
+          "message": "Hồ sơ này đã được xử lý",
+          "code": "APPLICATION_ALREADY_DECIDED"
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/auth/register",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/auth/register",
+      "request": {
+        "fullName": "T13B01 desktop A03-RACE",
+        "email": "t13b01.84970f.desktop.a03-race.8fa70a92@example.test",
+        "password": "[REDACTED]",
+        "phone": "0901234567"
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Đăng ký tài khoản thành công",
+          "data": {
+            "user": {
+              "id": "8a38630a-f06b-49a6-8714-737bf9dcfa2e",
+              "fullName": "T13B01 desktop A03-RACE",
+              "email": "t13b01.84970f.desktop.a03-race.8fa70a92@example.test",
+              "phone": "0901234567",
+              "avatarUrl": null,
+              "roles": [
+                "CUSTOMER"
+              ]
+            },
+            "token": "[REDACTED]"
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "POST",
+      "endpoint": "/api/partner-applications",
+      "status": 201
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "POST",
+      "endpoint": "/partner-applications",
+      "request": {
+        "representativeName": "T13B01 desktop A03-RACE",
+        "businessName": "T13B01 SYNTHETIC desktop A03-RACE f81d9f69",
+        "businessType": "HOTEL",
+        "email": "t13b01.84970f.desktop.a03-race.8fa70a92@example.test",
+        "phone": "0901234567",
+        "address": "SYNTHETIC TEST ONLY - no real business",
+        "city": "T13B01-20261107022055-84970f-desktop",
+        "latitude": 16.05,
+        "longitude": 108.2,
+        "verificationDetails": {
+          "taxCode": "SYNTHETIC TEST ONLY"
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Hồ sơ đã được gửi và đang chờ xét duyệt",
+          "data": {
+            "id": "5848aa45-5e9f-4ff7-a6c7-91efc3eb0778",
+            "status": "PENDING",
+            "userId": "8a38630a-f06b-49a6-8714-737bf9dcfa2e",
+            "representativeName": "T13B01 desktop A03-RACE",
+            "businessName": "T13B01 SYNTHETIC desktop A03-RACE f81d9f69",
+            "businessType": "HOTEL",
+            "email": "t13b01.84970f.desktop.a03-race.8fa70a92@example.test",
+            "phone": "0901234567",
+            "address": "SYNTHETIC TEST ONLY - no real business",
+            "city": "T13B01-20261107022055-84970f-desktop",
+            "latitude": "16.0500000",
+            "longitude": "108.2000000",
+            "imageUrls": [],
+            "verificationDetails": {
+              "taxCode": "SYNTHETIC TEST ONLY"
+            },
+            "updatedAt": "2026-11-07T02:21:33.125Z",
+            "createdAt": "2026-11-07T02:21:33.125Z",
+            "decisionReason": null,
+            "reviewedBy": null,
+            "reviewedAt": null
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/admin/partners/5848aa45-5e9f-4ff7-a6c7-91efc3eb0778/approval",
+      "status": 200
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/admin/partners/5848aa45-5e9f-4ff7-a6c7-91efc3eb0778/approval",
+      "request": {
+        "status": "APPROVED"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "message": "Đã cập nhật hồ sơ đối tác",
+          "data": {
+            "application": {
+              "id": "5848aa45-5e9f-4ff7-a6c7-91efc3eb0778",
+              "userId": "8a38630a-f06b-49a6-8714-737bf9dcfa2e",
+              "representativeName": "T13B01 desktop A03-RACE",
+              "businessName": "T13B01 SYNTHETIC desktop A03-RACE f81d9f69",
+              "businessType": "HOTEL",
+              "email": "t13b01.84970f.desktop.a03-race.8fa70a92@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107022055-84970f-desktop",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "imageUrls": [],
+              "verificationDetails": {
+                "taxCode": "SYNTHETIC TEST ONLY"
+              },
+              "status": "APPROVED",
+              "decisionReason": null,
+              "reviewedBy": "02cb7a65-a5de-4ddb-a952-7adc70e6ea00",
+              "reviewedAt": "2026-11-07T02:21:33.146Z",
+              "createdAt": "2026-11-07T02:21:33.125Z",
+              "updatedAt": "2026-11-07T02:21:33.146Z"
+            },
+            "business": {
+              "id": "177d9a0b-a875-4882-849c-caf12d7f24ba",
+              "status": "ACTIVE",
+              "name": "T13B01 SYNTHETIC desktop A03-RACE f81d9f69",
+              "type": "HOTEL",
+              "email": "t13b01.84970f.desktop.a03-race.8fa70a92@example.test",
+              "phone": "0901234567",
+              "address": "SYNTHETIC TEST ONLY - no real business",
+              "city": "T13B01-20261107022055-84970f-desktop",
+              "latitude": "16.0500000",
+              "longitude": "108.2000000",
+              "updatedAt": "2026-11-07T02:21:33.147Z",
+              "createdAt": "2026-11-07T02:21:33.147Z"
+            }
+          }
+        }
+      }
+    },
+    {
+      "channel": "browser network metadata",
+      "method": "PATCH",
+      "endpoint": "/api/admin/partners/5848aa45-5e9f-4ff7-a6c7-91efc3eb0778/approval",
+      "status": 409
+    },
+    {
+      "channel": "browser fetch → Vite proxy → real API",
+      "method": "PATCH",
+      "endpoint": "/admin/partners/5848aa45-5e9f-4ff7-a6c7-91efc3eb0778/approval",
+      "request": {
+        "status": "APPROVED"
+      },
+      "response": {
+        "status": 409,
+        "body": {
+          "success": false,
+          "message": "Hồ sơ này đã được xử lý",
+          "code": "APPLICATION_ALREADY_DECIDED"
+        }
+      }
+    }
+  ],
+  "console": [
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition."
+    },
+    {
+      "type": "warning",
+      "message": "⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath."
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    }
+  ],
+  "images": [
+    "A03-admin-approved.png",
+    "A03-admin-approved-full.png",
+    "A03-customer-approved.png",
+    "A03-customer-approved-full.png",
+    "A03-final.png",
+    "A03-final-full.png"
+  ],
+  "dbSnapshot": "A03-db-final.json"
+}

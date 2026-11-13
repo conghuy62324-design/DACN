@@ -189,7 +189,7 @@ export const MyTripsPage: React.FC = () => {
                         />
                       </div>
                       <div className="text-[11px] text-slate-400 mt-1">
-                        Đã check-in: {trip.checkins.length} điểm tham quan
+                        Đã check-in: {trip.progress?.checkedActivityIds.length ?? 0}/{trip.progress?.eligibleActivityIds.length ?? 0} hoạt động
                       </div>
                     </div>
                   </div>

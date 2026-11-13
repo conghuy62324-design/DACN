@@ -1,0 +1,6 @@
+const c=require('./common.cjs');
+c.fs.copyFileSync('C:/Users/Danh/.codex/attachments/78630b06-8222-49b5-953f-3d039c2d2ca5/Pasted text.txt',c.path.join(__dirname,'owner-task.txt'),c.fs.constants.COPYFILE_EXCL);
+c.write('integrity-before.json',{at:new Date().toISOString(),hashes:c.snapshot()});
+const files=['docs/HUGO_T_AI_04_PLANNER_LIVE_TARGETED_REVALIDATION_RESUME_REPORT.md','docs/HUGO_T_AI_04_PLANNER_ADAPTER_BINDING_ACCEPTANCE_FIX_REPORT.md','docs/HUGO_T_AI_04_PLANNER_LIVE_HARNESS_RELIABILITY_FIX_REPORT.md','docs/HUGO_T_AI_04_PLANNER_REAL_TOOL_LIVE_E2E_RESUME_RUN2_REPORT.md',...['maintenance.cjs','readonly-db.cjs','runtime-adapters.cjs','real-guards.cjs','direct-planner.cjs','master-stop.json','master-result.json','cleanup-result.json','fixture-committed-ledger.json','fingerprint-final-compare.json','live-network-audit.json','source-lock.cjs','phase-a-source-lock.json','binding-manifest.json','integrity-after.json','artifact-checksums.json'].map(f=>c.prior+f)];
+c.write('baseline-review.json',{at:new Date().toISOString(),files:files.filter(f=>c.fs.existsSync(c.path.join(c.root,f))).map(file=>({file,sha256:c.sha(c.read(file)),bytes:c.read(file).length})),integrity:c.integrity()});
+console.log(JSON.stringify({initialized:true,integrity:c.integrity()}));

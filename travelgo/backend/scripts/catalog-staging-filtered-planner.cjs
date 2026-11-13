@@ -1,0 +1,14 @@
+const {root,path,fs,assert}=require('./catalog-staging-common.cjs'),{randomUUID}=require('node:crypto');
+const {sequelize,User}=require(path.join(root,'backend/dist/models/index.js')),{AuthService}=require(path.join(root,'backend/dist/services/authService.js')),{AgentCoreService,CORE_CONSENT}=require(path.join(root,'backend/dist/services/agentCoreService.js'));
+const data=require(path.join(root,'database/fixtures/catalog-10.cjs'));let svc;
+(async()=>{const result={at:new Date().toISOString(),status:'FAIL',nativePost:0,tripWrites:0};try{const customer=await User.findOne({where:{email:'catalog-browser@example.invalid'}}),user=await AuthService.getById(customer.id);svc=new AgentCoreService();let meta;
+ const chat=async(message,extra={})=>{const r=await svc.chat(user,{message,...extra,intentVersion:'NATURAL_CHAT_V3',consentVersion:CORE_CONSENT,conversation:meta?{action:'continue',id:meta.id,revision:meta.revision,requestId:randomUUID(),consentVersion:CORE_CONSENT}:{action:'start',requestId:randomUUID(),consentVersion:CORE_CONSENT}});meta=r.conversation;return r;};
+ const full='Lập lịch trình; Nơi xuất phát: Huế; Điểm đến: Đà Lạt; Ngày bắt đầu: 2026-12-10; Ngày kết thúc: 2026-12-12; Số người lớn: 2; Ngân sách cả nhóm: 12000000 VND; Phương tiện: ô tô';
+ const filtered=await chat(full,{filters:{hotelMaxPriceFrom:800000,restaurantCuisine:'local'}});assert.equal(filtered.result.type,'itinerary');assert(filtered.result.itinerary.hotelSuggestion.priceFrom<=800000);
+ const foods=filtered.result.itinerary.selectedPlaceIds.map(id=>data.places.find(p=>p.id===id)).filter(p=>p?.category==='restaurant');assert(foods.length);assert(foods.every(p=>p.catalogMetadata.cuisines.includes('local')));
+ result.filtered={hotel:filtered.result.itinerary.hotelSuggestion,foodIds:foods.map(p=>p.id),cost:filtered.result.cost};
+ svc.revoke(user.id);meta=undefined;await chat(full);
+ const expensive=data.places.find(p=>p.city==='Đà Lạt'&&p.category==='hotel'&&p.priceFrom===1100000);await chat('Chọn khách sạn này',{selection:{kind:'hotel',id:expensive.id}});
+ const cheaper=await chat('Khách sạn này mắc quá, đổi rẻ hơn.');assert.equal(cheaper.result.type,'itinerary');assert.notEqual(cheaper.selected.hotelId,expensive.id);assert(cheaper.result.itinerary.hotelSuggestion.priceFrom<1100000);
+ result.cheaper={oldId:expensive.id,newId:cheaper.selected.hotelId,price:cheaper.result.itinerary.hotelSuggestion.priceFrom};result.status='PASS';
+ }catch(e){result.error=e.stack;process.exitCode=1;}finally{svc?.dispose();fs.writeFileSync(path.join(root,'docs/evidence/travelgo-ai-agent-core/catalog-expansion-20261112/filtered-planner.json'),JSON.stringify(result,null,2),{flag:'wx'});console.log(JSON.stringify(result,null,2));await sequelize.close();}})();

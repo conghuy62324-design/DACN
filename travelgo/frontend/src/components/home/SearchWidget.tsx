@@ -1,3 +1,4 @@
+import {LocationCombobox} from '../common/LocationCombobox';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, MapPin, Calendar, Users, Compass, ChevronDown } from 'lucide-react';
@@ -12,7 +13,7 @@ export const SearchWidget: React.FC = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const query = new URLSearchParams();
-    if (destination) query.set('search', destination);
+    if (destination) query.set('locationId', destination);
     if (category && category !== 'all') query.set('category', category);
     navigate(`/explore?${query.toString()}`);
   };
@@ -65,13 +66,7 @@ export const SearchWidget: React.FC = () => {
             </label>
             <div className="flex items-center">
               <MapPin className="w-4 h-4 text-orange-500 mr-2 flex-shrink-0" />
-              <input
-                type="text"
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-                placeholder="Đà Nẵng, Phú Quốc, Sapa..."
-                className="w-full text-sm font-semibold text-slate-800 placeholder:text-slate-400 outline-none bg-transparent"
-              />
+              <LocationCombobox label="Điểm đến tìm kiếm" value={destination} onChange={setDestination}/>
             </div>
           </div>
 

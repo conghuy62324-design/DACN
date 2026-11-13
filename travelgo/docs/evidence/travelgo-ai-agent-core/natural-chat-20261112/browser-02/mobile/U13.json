@@ -1,0 +1,109 @@
+{
+  "tier": "REAL_BROWSER_HTTP_CORE_PLANNER_IN_MEMORY_CATALOG_MODEL_TRIP_DOUBLES",
+  "status": "passed",
+  "requests": [
+    {
+      "path": "/api/agent/core/privacy",
+      "method": "GET"
+    },
+    {
+      "path": "/api/agent/core/chat",
+      "method": "POST",
+      "body": {
+        "message": "muon kham pha da nangg theo cach rieng",
+        "conversation": {
+          "action": "start",
+          "requestId": "7796f10a-06b9-4cc2-9d5f-3cd3904d8eb4",
+          "consentVersion": "TRAVELGO_CORE_SLOTS_V1"
+        },
+        "consentVersion": "TRAVELGO_CORE_SLOTS_V1",
+        "intentVersion": "NATURAL_CHAT_V3"
+      }
+    },
+    {
+      "path": "/api/agent/core/chat",
+      "method": "POST",
+      "body": {
+        "message": "đúng rồi",
+        "conversation": {
+          "action": "continue",
+          "id": "a591b684-e29b-4d8f-84d7-36507ff3d015",
+          "revision": 1,
+          "requestId": "a3b96c3d-3cc0-481d-b86d-6bd533c17c72",
+          "consentVersion": "TRAVELGO_CORE_SLOTS_V1"
+        },
+        "consentVersion": "TRAVELGO_CORE_SLOTS_V1",
+        "intentVersion": "NATURAL_CHAT_V3"
+      }
+    }
+  ],
+  "responses": [
+    {
+      "success": true,
+      "data": {
+        "version": "TRAVELGO_CORE_SLOTS_V1",
+        "mode": "CORE_VERIFIED",
+        "ttlSeconds": 900,
+        "text": "Giữ slots du lịch, ID lựa chọn và bản Planner trong RAM tối đa 15 phút; không giữ câu chat, GPS, Booking hoặc profile. Dữ liệu lấy từ catalog TravelGo. Nếu bật Qwen local, model nhận yêu cầu hiện tại và slots đã xác minh. Trip đã lưu chỉ nạp các slots du lịch khi bạn đồng ý riêng; không nạp ghi chú/profile. Lưu/sửa Trip cần xem trước và xác nhận riêng; chỉ ghi trên DB test riêng được phê duyệt. Kết thúc phiên để xóa RAM.",
+        "modelConfigured": true,
+        "greeting": "Xin chào Huy! Mình là trợ lý du lịch TravelGo. Mình có thể giúp bạn tìm khách sạn, nhà hàng và lên kế hoạch chuyến đi. Bạn muốn khám phá nơi nào?",
+        "languageStatus": "configured_not_health_checked"
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "status": "needs_input",
+        "reply": "Mình hiểu bạn muốn lên lại kế hoạch chuyến đi. Thông tin đề xuất: Điểm đến: Đà Nẵng. Bạn xác nhận cách hiểu này đúng nhé? Mình chưa thay đổi thông tin hoặc chạy công cụ.",
+        "conversation": {
+          "id": "a591b684-e29b-4d8f-84d7-36507ff3d015",
+          "revision": 1,
+          "expiresAt": "2026-11-11T18:38:21.193Z",
+          "mode": "CORE_VERIFIED",
+          "persisted": false
+        },
+        "model": {
+          "invoked": true,
+          "role": "nlu_proposal",
+          "rawNlu": "REQUIRES_INDEPENDENT_SCORING"
+        },
+        "intent": {
+          "version": "NATURAL_CHAT_V3",
+          "authority": "MODEL_SUGGESTION_ONLY"
+        },
+        "languageStatus": "configured_not_health_checked",
+        "verifiedTravel": {}
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "status": "needs_input",
+        "reply": "Bạn cho mình biết bạn xuất phát từ đâu và có bao nhiêu người lớn nhé? Các thông tin đã ghi nhận vẫn được giữ lại.",
+        "conversation": {
+          "id": "a591b684-e29b-4d8f-84d7-36507ff3d015",
+          "revision": 2,
+          "expiresAt": "2026-11-11T18:38:21.193Z",
+          "mode": "CORE_VERIFIED",
+          "persisted": false
+        },
+        "model": {
+          "invoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        },
+        "intent": {
+          "version": "NATURAL_CHAT_V3",
+          "authority": "SERVER_VERIFIED"
+        },
+        "languageStatus": "configured_not_health_checked",
+        "verifiedTravel": {
+          "destinationCity": "Đà Nẵng"
+        }
+      }
+    }
+  ],
+  "modelCalls": 1,
+  "writes": 0,
+  "actualNative": 0,
+  "actualDB": 0
+}

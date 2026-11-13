@@ -1,0 +1,138 @@
+{
+  "at": "2026-11-11T08:20:26.692Z",
+  "status": "PASS_STATIC_REVIEW_COMPLETE",
+  "network": 0,
+  "inventory": [
+    {
+      "factory": "production-sequelize-constructor",
+      "source": "backend/src/config/database.ts:4",
+      "open": "Lazy; constructor allocates pool, first query/authenticate acquires physical sessions",
+      "tag": "unset; PG defaults can supply value",
+      "pid": "pg.Client.processID available after handshake",
+      "registration": "none in production; historical harness afterConnect Set",
+      "identity": "historical readonly afterConnect current_database/user/RO; sentinel/schema via db.guard",
+      "dispose": "sequelize.close drains/destroys pool; release retains session until idle eviction",
+      "afterDirect": "yes; max10/min0/idle10000"
+    },
+    {
+      "factory": "sequelize-version-bootstrap",
+      "source": "backend/node_modules/sequelize/lib/dialects/abstract/connection-manager.js:getConnection",
+      "open": "First getConnection if databaseVersion=0; _connect outside pool, version check, _disconnect",
+      "tag": "connectionManager.config dialectOptions",
+      "pid": "physical pg.Client.processID",
+      "registration": "afterConnect only after dialect.connect resolves",
+      "identity": "same hook as pool",
+      "dispose": "_disconnect before first pool acquire completes; error before return may leave a connected client",
+      "afterDirect": "normally no initial bootstrap; not enough historical events to exclude lifecycle error"
+    },
+    {
+      "factory": "sequelize-pool-growth",
+      "source": "backend/node_modules/sequelize/lib/dialects/abstract/connection-manager.js:initPools/_connect",
+      "open": "pool acquire demand; asynchronous creation can overlap another guard",
+      "tag": "connectionManager.config dialectOptions",
+      "pid": "Client.processID",
+      "registration": "readerPids.add only AFTER async readonly hook and dialect bootstrap SET/OID setup",
+      "identity": "historical PID only allowlist; no backend_start/socket identity",
+      "dispose": "release is not close; _disconnect on destroy/close",
+      "afterDirect": "yes; Place.findAndCountAll count/find can overlap and cause growth"
+    },
+    {
+      "factory": "direct-catalog-planner",
+      "source": "docs/evidence/t-ai-04-planner-live-targeted-revalidation-resume/direct-planner.cjs; backend/src/repositories/recommendationRepository.ts; backend/src/repositories/placeRepository.ts",
+      "open": "No independent factory; model imports share backend config sequelize, findAndCountAll uses parallel count/find",
+      "tag": "inherited pool configuration",
+      "pid": "same clients",
+      "registration": "same historical afterConnect",
+      "identity": "no separate connection registration in Planner",
+      "dispose": "ORM query finally releases; pool remains",
+      "afterDirect": "pooled or creation-in-flight can remain"
+    },
+    {
+      "factory": "maintenance-A/guard-B/lock-probe",
+      "source": "docs/evidence/t-ai-04-planner-live-targeted-revalidation-resume/maintenance.cjs:client",
+      "open": "prepare AFTER initial readonly identity/schema; three explicit new pg.Client; probe ends in prepare",
+      "tag": "tai04-planner-run2-<label> set at startup",
+      "pid": "client.processID, stored in this.clients after await connect",
+      "registration": "push after connect; foreignConnections includes !closed pids",
+      "identity": "self current_database/user/default RO; maintenance controls separately reviewed",
+      "dispose": "probe.end; finally maintenance.close ROLLBACK/end; no end of unknown PID",
+      "afterDirect": "A/B yes, probe no; actual tags nonempty; historical proof insufficient for arbitrary PID"
+    },
+    {
+      "factory": "fingerprint/read-only-preflight/cleanup",
+      "source": "docs/evidence/t-ai-04-planner-live-targeted-revalidation-resume/readonly-db.cjs; maintenance.cjs",
+      "open": "No new direct Client; uses same singleton ORM pool",
+      "tag": "inherited",
+      "pid": "same clients",
+      "registration": "same hooks",
+      "identity": "sentinel/migrations/schema at db.guard; full business fingerprints historical ONLY",
+      "dispose": "outer master finally closes maintenance then sequelize",
+      "afterDirect": "yes"
+    },
+    {
+      "factory": "runtime-adapters-real-guards",
+      "source": "docs/evidence/t-ai-04-planner-live-targeted-revalidation-resume/runtime-adapters.cjs; real-guards.cjs",
+      "open": "factory only AFTER direct closing guard and manifest; require cached readonly db; guards delegate",
+      "tag": "same pool/maintenance",
+      "pid": "same clients",
+      "registration": "no extra PG factory",
+      "identity": "maintenance.assertFixtures delegate",
+      "dispose": "closeActivity then maintenance.close/sequelize.close",
+      "afterDirect": "NOT INSTANTIATED in historical failing run"
+    },
+    {
+      "factory": "post-regression-final-readonly",
+      "source": "docs/evidence/t-ai-04-planner-live-targeted-revalidation-resume/final-readonly.cjs",
+      "open": "Separate later Node process; imports readonly singleton; new bootstrap+pool",
+      "tag": "unset historically",
+      "pid": "separate process not recorded individually",
+      "registration": "readonly hook audit only",
+      "identity": "sentinel/schema/fingerprint historical",
+      "dispose": "finally sequelize.close",
+      "afterDirect": "not concurrent with original closing guard; later task stage"
+    },
+    {
+      "factory": "independent-client",
+      "source": "outside harness attribution boundary",
+      "open": "unknown",
+      "tag": "can be empty or copied",
+      "pid": "must correlate full identity, not infer ownership",
+      "registration": "none unless proven factory capability",
+      "identity": "metadata observation alone does not prove ownership",
+      "dispose": "never terminate/adopt unknown client",
+      "afterDirect": "possible, unproven historically"
+    }
+  ],
+  "installed": {
+    "sequelize": "6.37.8",
+    "pg": "8.23.1"
+  },
+  "startupOptionsProbe": {
+    "constructorOriginal": {
+      "ssl": false
+    },
+    "mutatedOptions": {
+      "ssl": false,
+      "options": "-c default_transaction_read_only=on -c statement_timeout=15000"
+    },
+    "managerConfig": {
+      "ssl": false
+    },
+    "managerReceivedLateStartupReadonly": false,
+    "productionChanged": false,
+    "classification": "VERIFIED_HARNESS_CONFIG_PROPAGATION_DEFECT_NOT_PID_ATTRIBUTION"
+  },
+  "findings": [
+    "Registration follows async dialect setup and readonly afterConnect; physical backend visible first.",
+    "Guard computes PID array before awaiting pg_stat_activity; late registration cannot change already-bound array.",
+    "readerPids never deletes disconnected clients and cannot distinguish PID reuse without backend_start.",
+    "History lacks self identity / physical client / open/register/dispose correlation for PID9686."
+  ],
+  "integrity": {
+    "status": "PASS",
+    "protectedFiles": 9420,
+    "historicalArtifacts": 529,
+    "historicalReportUnchanged": true,
+    "changed": []
+  }
+}

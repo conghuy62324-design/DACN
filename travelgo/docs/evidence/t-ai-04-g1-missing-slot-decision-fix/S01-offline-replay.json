@@ -1,0 +1,55 @@
+{
+  "id": "S01",
+  "tier": "MOCK_ONLY_HISTORICAL_RESPONSE_REPLAY",
+  "historicalSource": "docs/evidence/t-ai-04-g1-slot-filling-live-revalidation/S01.json",
+  "historicalSourceSha256": "85dc389620cbb5a1a1d557b4639d0988b5290c757bb2302768a4471fe308d8cc",
+  "historicalNluResultNotRemeasured": "FAIL",
+  "rawModelContentReplayed": "{\"kind\":\"tool\",\"name\":\"plan_trip\",\"arguments\":{\"departureCity\":\"Hà Nội\",\"destinationCity\":\"Phú Yên\",\"startDate\":\"2035-06-12\",\"endDate\":\"2035-06-14\",\"adults\":2,\"totalBudget\":5400000}}",
+  "expectedRawDecision": {
+    "kind": "clarify",
+    "fields": [
+      "transportation"
+    ]
+  },
+  "originalSchemaValid": false,
+  "providerReturned": null,
+  "providerError": {
+    "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+    "statusCode": 502,
+    "classifiedMissingSlots": true,
+    "toolName": "plan_trip",
+    "fields": [
+      "transportation"
+    ]
+  },
+  "response": {
+    "status": "needs_input",
+    "reply": "Bạn vui lòng cung cấp: phương tiện (car hoặc motorbike).",
+    "missingFields": [
+      "transportation"
+    ],
+    "history": [
+      {
+        "role": "user",
+        "content": "Lập lịch trình; Nơi xuất phát: Hà Nội; Điểm đến: Phú Yên; Ngày bắt đầu: 2035-06-12; Ngày kết thúc: 2035-06-14; Số người lớn: 2; Ngân sách cả nhóm: 5400000 VND"
+      },
+      {
+        "role": "assistant",
+        "content": "Bạn vui lòng cung cấp: phương tiện (car hoặc motorbike)."
+      }
+    ],
+    "historyTruncated": false,
+    "context": {
+      "mode": "STATELESS",
+      "personalizationEnabled": false,
+      "behavioralDataUsed": false,
+      "persisted": false
+    }
+  },
+  "fakeProviderCalls": 1,
+  "fakeToolCalls": 0,
+  "recoveryApplied": true,
+  "liveNluEvaluation": "NOT RUN",
+  "inferencePosts": 0,
+  "databaseAccess": "NONE"
+}

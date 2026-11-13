@@ -1,0 +1,12 @@
+const fs=require('node:fs'),path=require('node:path'),file=path.join(__dirname,'runtime-adapters.cjs');let s=fs.readFileSync(file,'utf8');
+s=s.replace('function verify(){c.integrity();',"function verify(){require('./source-lock.cjs').verify(lock.adapterSourceHashes);c.integrity();");
+s=s.replace("const raw=JSON.parse(post.envelope.message.content);c.assert.ok(matchesDecisionSchema(raw));", "const raw=JSON.parse(post.envelope.message.content);current.rawText=post.envelope.message.content;current.rawDecision=raw;current.rawNlu='FAIL';c.assert.ok(matchesDecisionSchema(raw));");
+s=s.replace("current.ui='PASS';current.status='PASS';", "current.ui='PASS';current.fidelity=item.oracle?'PASS':'NOT RUN';current.history='PASS';current.rawNlu=current.rawNlu||'NOT EVALUATED';current.status='PASS';");
+const needle="current.renderedText=await page.getByTestId('agent-turn').last().innerText();";
+const screenshots=`current.renderedText=await page.getByTestId('agent-turn').last().innerText();
+const turn=page.getByTestId('agent-turn').last(),panel=page.getByRole('region',{name:'H\\u1ed9i tho\\u1ea1i',exact:true});
+await panel.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
+const total=turn.getByText(ui.money(o.result.cost.estimated),{exact:true}).first();
+await total.evaluate(el=>{const box=el.closest('[role="region"][aria-label="H\\u1ed9i tho\\u1ea1i"]');const r=el.getBoundingClientRect(),p=box.getBoundingClientRect();box.scrollBy({top:r.top-p.top-(box.clientHeight-r.height)/2,behavior:'instant'});});
+await expect(total).toBeInViewport();c.assert.ok((await total.boundingBox()).y>=70);await page.screenshot({path:c.path.join(c.evidence,item.id+'-cost.png')});`;
+if(!s.includes(needle))throw Error('UI_CAPTURE_MARKER');s=s.replace(needle,screenshots);fs.writeFileSync(file,s,'utf8');console.log('CANDIDATE_PREPARED_BEFORE_PHASE_A');

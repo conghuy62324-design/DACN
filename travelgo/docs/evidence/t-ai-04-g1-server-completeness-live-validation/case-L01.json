@@ -1,0 +1,265 @@
+{
+  "id": "L01",
+  "phase": "LIVE_LLM",
+  "request": {
+    "history": [],
+    "message": "Lập lịch trình; Nơi xuất phát: Hải Dương; Điểm đến: Quy Nhơn; Ngày bắt đầu: 2044-05-06; Ngày kết thúc: 2044-05-08; Số người lớn: 3; Ngân sách cả nhóm: 9300000 VND; Tôi muốn đi bằng ô tô, à đổi sang xe máy"
+  },
+  "assessment": {
+    "status": "COMPLETE",
+    "toolName": "plan_trip",
+    "states": {
+      "departureCity": "SET",
+      "destinationCity": "SET",
+      "startDate": "SET",
+      "endDate": "SET",
+      "adults": "SET",
+      "totalBudget": "SET",
+      "transportation": "SET"
+    }
+  },
+  "providerCalls": 1,
+  "consentReads": 1,
+  "traces": [
+    {
+      "source": "agent_provider",
+      "correlationId": "93bd0a86-7c64-440e-96dc-6738fde1f4dd",
+      "provider": "ollama",
+      "at": "2026-11-10T10:28:18.680Z",
+      "elapsedMs": 0,
+      "event": "provider_request_started",
+      "inferenceStarted": false
+    },
+    {
+      "source": "agent_provider",
+      "correlationId": "93bd0a86-7c64-440e-96dc-6738fde1f4dd",
+      "provider": "ollama",
+      "at": "2026-11-10T10:28:18.681Z",
+      "elapsedMs": 0,
+      "event": "readiness_check_started",
+      "inferenceStarted": false
+    },
+    {
+      "source": "agent_provider",
+      "correlationId": "93bd0a86-7c64-440e-96dc-6738fde1f4dd",
+      "provider": "ollama",
+      "at": "2026-11-10T10:28:18.686Z",
+      "elapsedMs": 6,
+      "event": "underlying_fetch_settled",
+      "inferenceStarted": false,
+      "operation": "version"
+    },
+    {
+      "source": "agent_provider",
+      "correlationId": "93bd0a86-7c64-440e-96dc-6738fde1f4dd",
+      "provider": "ollama",
+      "at": "2026-11-10T10:28:18.706Z",
+      "elapsedMs": 26,
+      "event": "underlying_fetch_settled",
+      "inferenceStarted": false,
+      "operation": "tags"
+    },
+    {
+      "source": "agent_provider",
+      "correlationId": "93bd0a86-7c64-440e-96dc-6738fde1f4dd",
+      "provider": "ollama",
+      "at": "2026-11-10T10:28:18.717Z",
+      "elapsedMs": 36,
+      "event": "underlying_fetch_settled",
+      "inferenceStarted": false,
+      "operation": "ps"
+    },
+    {
+      "source": "agent_provider",
+      "correlationId": "93bd0a86-7c64-440e-96dc-6738fde1f4dd",
+      "provider": "ollama",
+      "at": "2026-11-10T10:28:18.717Z",
+      "elapsedMs": 37,
+      "event": "readiness_verified",
+      "inferenceStarted": false
+    },
+    {
+      "source": "agent_provider",
+      "correlationId": "93bd0a86-7c64-440e-96dc-6738fde1f4dd",
+      "provider": "ollama",
+      "at": "2026-11-10T10:28:18.718Z",
+      "elapsedMs": 37,
+      "event": "inference_request_started",
+      "inferenceStarted": true,
+      "operation": "inference"
+    },
+    {
+      "source": "agent_provider",
+      "correlationId": "93bd0a86-7c64-440e-96dc-6738fde1f4dd",
+      "provider": "ollama",
+      "at": "2026-11-10T10:28:23.336Z",
+      "elapsedMs": 4655,
+      "event": "underlying_fetch_settled",
+      "inferenceStarted": true,
+      "operation": "inference"
+    },
+    {
+      "source": "agent_provider",
+      "correlationId": "93bd0a86-7c64-440e-96dc-6738fde1f4dd",
+      "provider": "ollama",
+      "at": "2026-11-10T10:28:23.387Z",
+      "elapsedMs": 4706,
+      "event": "provider_completed",
+      "inferenceStarted": true
+    }
+  ],
+  "origins": [
+    {
+      "source": "agent_decision_origin",
+      "correlationId": "5419c9cc-1e93-40dc-8881-51439856daf1",
+      "origin": "MODEL",
+      "assessment": "COMPLETE",
+      "providerInvoked": true,
+      "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+    }
+  ],
+  "transport": [
+    {
+      "id": "L01",
+      "at": "2026-11-10T10:28:18.681Z",
+      "method": "GET",
+      "path": "/api/version",
+      "httpStatus": 200,
+      "elapsedMs": 5.037500000002183
+    },
+    {
+      "id": "L01",
+      "at": "2026-11-10T10:28:18.689Z",
+      "method": "GET",
+      "path": "/api/tags",
+      "httpStatus": 200,
+      "elapsedMs": 17.073200000002544
+    },
+    {
+      "id": "L01",
+      "at": "2026-11-10T10:28:18.707Z",
+      "method": "GET",
+      "path": "/api/ps",
+      "httpStatus": 200,
+      "elapsedMs": 10.112300000000687
+    },
+    {
+      "id": "L01",
+      "at": "2026-11-10T10:28:18.718Z",
+      "method": "POST",
+      "path": "/api/chat"
+    }
+  ],
+  "executed": [
+    {
+      "kind": "tool",
+      "name": "plan_trip",
+      "arguments": {
+        "departureCity": "Hải Dương",
+        "destinationCity": "Quy Nhơn",
+        "startDate": "2044-05-06",
+        "endDate": "2044-05-08",
+        "adults": 3,
+        "totalBudget": 9300000,
+        "transportation": "motorbike"
+      }
+    }
+  ],
+  "at": "2026-11-10T10:28:18.517Z",
+  "providerBoundary": {
+    "status": "RETURNED",
+    "decision": {
+      "kind": "tool",
+      "name": "plan_trip",
+      "arguments": {
+        "departureCity": "Hải Dương",
+        "destinationCity": "Quy Nhơn",
+        "startDate": "2044-05-06",
+        "endDate": "2044-05-08",
+        "adults": 3,
+        "totalBudget": 9300000,
+        "transportation": "motorbike"
+      }
+    }
+  },
+  "providerSettledAt": "2026-11-10T10:28:23.387Z",
+  "api": {
+    "httpStatus": 200,
+    "elapsedMs": 4721.947500000002,
+    "body": {
+      "success": true,
+      "data": {
+        "status": "completed",
+        "reply": "Đã tạo bản ước tính bằng Planner. Hãy xem lịch trình, chi phí và cảnh báo; chưa lưu Trip.",
+        "result": {
+          "type": "MOCK_ONLY",
+          "source": "READ_ONLY_TEST_EXECUTOR",
+          "toolName": "plan_trip"
+        },
+        "history": [
+          {
+            "role": "user",
+            "content": "Lập lịch trình; Nơi xuất phát: Hải Dương; Điểm đến: Quy Nhơn; Ngày bắt đầu: 2044-05-06; Ngày kết thúc: 2044-05-08; Số người lớn: 3; Ngân sách cả nhóm: 9300000 VND; Tôi muốn đi bằng ô tô, à đổi sang xe máy"
+          },
+          {
+            "role": "assistant",
+            "content": "Đã tạo bản ước tính bằng Planner. Hãy xem lịch trình, chi phí và cảnh báo; chưa lưu Trip."
+          }
+        ],
+        "historyTruncated": false,
+        "context": {
+          "mode": "STATELESS",
+          "personalizationEnabled": false,
+          "behavioralDataUsed": false,
+          "persisted": false
+        }
+      }
+    }
+  },
+  "quotaConsumed": 1,
+  "resourcesAfter": {
+    "at": "2026-11-10T10:28:23.463Z",
+    "ram": {
+      "totalMiB": 16202,
+      "freeMiB": 2840
+    },
+    "gpus": [
+      {
+        "name": "NVIDIA GeForce RTX 4060",
+        "driver": "560.94",
+        "totalMiB": 8188,
+        "freeMiB": 1000,
+        "usedMiB": 6958,
+        "utilizationPercent": 45
+      }
+    ]
+  },
+  "ollamaPostCount": 1,
+  "readinessGetCount": 3,
+  "rawDecisionText": "{\"kind\":\"tool\",\"name\":\"plan_trip\",\"arguments\":{\"departureCity\":\"Hải Dương\",\"destinationCity\":\"Quy Nhơn\",\"startDate\":\"2044-05-06\",\"endDate\":\"2044-05-08\",\"adults\":3,\"totalBudget\":9300000,\"transportation\":\"motorbike\"}}",
+  "jsonValid": true,
+  "schemaValid": true,
+  "runtimeValid": true,
+  "rawNlu": "PASS",
+  "gate": {
+    "status": "ALLOW"
+  },
+  "rawDecision": {
+    "kind": "tool",
+    "name": "plan_trip",
+    "arguments": {
+      "departureCity": "Hải Dương",
+      "destinationCity": "Quy Nhơn",
+      "startDate": "2044-05-06",
+      "endDate": "2044-05-08",
+      "adults": 3,
+      "totalBudget": 9300000,
+      "transportation": "motorbike"
+    }
+  },
+  "safety": "PASS",
+  "runtime": "PASS",
+  "expectedBehavior": "PASS",
+  "status": "PASS",
+  "providerPending": 0
+}

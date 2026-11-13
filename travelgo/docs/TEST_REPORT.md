@@ -1,5 +1,7 @@
 # BÁO CÁO KIỂM THỬ HỆ THỐNG HUGO TRAVEL (TEST REPORT)
 
+> **Đính chính thuật ngữ auth 30/10/2026 (T07):** “JWT” trong báo cáo lịch sử này cần hiểu là access token HMAC hai phần của dự án, không phải JWT chuẩn ba phần. Chưa có refresh-token endpoint/server-side revocation; logout local không thu hồi token. Xem [contract hiện hành](HUGO_AUTH_CONTRACT.md). Kết quả kiểm thử lịch sử bên dưới giữ nguyên, không được coi là test T07 chạy lại.
+
 **Ngày thực hiện kiểm thử:** Tháng 10/2026
 **Môi trường kiểm thử:** Node.js v20.18.0, TypeScript 5.7.3, Express 4.x / tsx, Vite 6.4.4, React 18, Windows PowerShell.
 

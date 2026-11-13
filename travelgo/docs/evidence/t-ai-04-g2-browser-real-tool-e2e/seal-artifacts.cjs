@@ -1,0 +1,13 @@
+const c=require('./common.cjs');c.integrity();
+c.assert.deepEqual(c.snapshot(),c.json(c.prefix+'integrity-after.json').hashes);
+c.assert.equal(c.sha(c.read(c.prefix+'manifest.json')),c.json(c.prefix+'manifest-lock.json').sha256);
+c.assert.equal(c.sha(c.read(c.prefix+'run-live.cjs')),c.json(c.prefix+'run-marker.json').harnessSha256,'Executed harness evidence must remain unchanged');
+const result=c.json(c.prefix+'results.json'),review=c.json(c.prefix+'results-reviewed.json');c.assert.equal(result.nativePosts.length,0);c.assert.equal(result.results.length,7);c.assert.equal(review.applicationChecksPassed,6);c.assert.equal(review.harnessFailures,1);c.assert.equal(c.json(c.prefix+'fingerprint-final-compare.json').status,'PASS');
+c.assert.equal(c.sha(c.read('docs/evidence/t-ai-03-b-v2-lock/nlu-manifest-v2-approved.json')),'0f1e0f1e87418bca591c6dfcd06645bd9a534326cac23989d58c7a7fd5e6fe6e');
+const text=c.read(c.report).toString('utf8');c.assert.equal([...text.matchAll(/^## \d+\./gm)].length,18);const missing=[];
+for(const match of text.matchAll(/\]\(([^)]+)\)/g)){const file=match[1];if(file.startsWith('http')||file.startsWith('#'))continue;if(!c.fs.existsSync(c.path.resolve(c.root,'docs',file))&&!file.endsWith('/artifact-checksums.json'))missing.push(file);}c.assert.deepEqual(missing,[]);
+c.write('report-validation.json',{at:new Date().toISOString(),status:'PASS',sections:18,missingLinks:missing,overall:'BLOCKED_HARNESS_AND_DATA_READINESS',nativePosts:0,rawNlu:'NOT RUN',realAgentToolFidelity:'NOT RUN',mobileLive:'NOT RUN',priorEvidencePreserved:true,productionSourceChanges:0,executedHarnessUnchanged:true,reportErrataExplicit:true});
+const hashes={};for(const rel of c.fs.readdirSync(c.evidence,{recursive:true})){if(rel==='artifact-checksums.json')continue;const full=c.path.join(c.evidence,rel);if(c.fs.statSync(full).isFile())hashes[rel.replaceAll('\\','/')]=c.sha(c.fs.readFileSync(full));}
+c.write('artifact-checksums.json',{at:new Date().toISOString(),status:'FINAL_INTEGRITY_PASS_EXECUTION_BLOCKED',report:c.report,reportSha256:c.sha(c.read(c.report)),manifestSha256:c.sha(c.read(c.prefix+'manifest.json')),sourceHashes:c.json(c.previous+'source-hashes.json').sourceHashes,hashes,nativePosts:0,rawNlu:'NOT EVALUATED',applicationHttpPass:6,harnessFail:1,databaseFingerprint:'25/25 PASS,27 Trips unchanged',productionSourceChanges:0,liveResumedAfterStop:false});
+const seal=c.json(c.prefix+'artifact-checksums.json');for(const[file,hash]of Object.entries(seal.hashes))c.assert.equal(c.sha(c.read(c.prefix+file)),hash,file);
+console.log(JSON.stringify({status:seal.status,reportSha256:seal.reportSha256,sealedArtifacts:Object.keys(seal.hashes).length,nativePosts:0,fingerprint:'25/25 PASS',execution:'BLOCKED_HARNESS_AND_DATA_READINESS'}));

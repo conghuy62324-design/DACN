@@ -1,0 +1,2 @@
+const c=require('./common.cjs'),previous=c.json(c.prefix+'offline-input-lock-07.json');
+c.write('offline-input-lock-08.json',{at:new Date().toISOString(),tier:'OFFLINE_ONLY_NOT_LIVE_APPROVAL',reason:'Ordinary instant outer scroll avoids production CSS smooth animation during screenshots; assert total below fixed header. No style override.',hashes:Object.fromEntries(Object.keys(previous.hashes).map(f=>[f,c.sha(c.read(c.prefix+f))]))});

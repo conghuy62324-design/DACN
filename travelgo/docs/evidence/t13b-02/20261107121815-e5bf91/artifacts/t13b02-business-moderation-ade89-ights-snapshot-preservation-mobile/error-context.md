@@ -1,0 +1,166 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: t13b02-business-moderation.spec.ts >> B03 Tour UI CRUD zero nights snapshot preservation
+- Location: e2e\t13b02-business-moderation.spec.ts:222:1
+
+# Error details
+
+```
+Error: locator.fill: Error: strict mode violation: locator('[name=description]') resolved to 2 elements:
+    1) <meta name="description" content="HuGo Travel - Nền tảng đặt dịch vụ du lịch, khách sạn, nhà hàng, vé tham quan và chia sẻ trải nghiệm hàng đầu Việt Nam"/> aka locator('meta[name="description"]')
+    2) <textarea rows="8" required="" name="description" class="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal">SYNTHETIC TEST ONLY description</textarea> aka getByRole('textbox', { name: 'Mô tả chi tiết' })
+
+Call log:
+  - waiting for locator('[name=description]')
+
+```
+
+# Test source
+
+```ts
+  124 |   const r=await api(page,'POST','/bookings',{serviceType:type,serviceId:row.id,bookingDate:'2030-06-15',adultsCount:1,childrenCount:0,customerPhone:'0901234567',notes:'T13B02 SYNTHETIC prerequisite only'},g.customer.token);expect(r.status).toBe(201);await fixtures.discover();expect(r.body.data.bookingStatus).toBe('PENDING');expect(r.body.data.paymentStatus).toBe('unpaid');return r.body.data;
+  125 | }
+  126 | async function fillForm(page:Page,resource:string,p:any,isNew=true){
+  127 |   const form=page.getByTestId(`partner-${resource}-form`);await expect(form).toBeVisible();
+  128 |   if(isNew)await form.locator('[name=businessId]').selectOption(p.businessId);
+  129 |   for(const [key,value]of Object.entries(p)){const field=form.locator(`[name="${key}"]`);if(key==='businessId'||!(await field.count()))continue;const tag=await field.evaluate(el=>el.tagName);if(tag==='SELECT')await field.selectOption(String(value));else await field.fill(Array.isArray(value)?value.join('\n'):String(value));}
+  130 | }
+  131 | async function saveUI(page:Page,resource:string,id?:string){
+  132 |   const method=id?'PATCH':'POST',endpoint=`/partner/${resource}${id?'/'+id:''}`;
+  133 |   expect(await page.getByTestId(`partner-${resource}-form`).evaluate((el:HTMLFormElement)=>el.checkValidity()),'Existing required fields must remain valid after reload').toBe(true);
+  134 |   const wait=response(page,endpoint,method);await page.getByRole('button',{name:'Lưu nội dung',exact:true}).click();const r=await wait;expect(r.status()).toBe(id?200:201);const body=await r.json();traffic.push({channel:'UI form → real API',method,endpoint,request:redact(r.request().postDataJSON()),response:{status:r.status(),body:redact(body)}});await fixtures.discover();await expect(page).toHaveURL(new RegExp(`/partner/${resource}$`));return body.data;
+  135 | }
+  136 | async function createUI(page:Page,resource:string,p:any){await page.goto(`/partner/${resource}/new`);await fillForm(page,resource,p);return saveUI(page,resource);}
+  137 | async function editUI(page:Page,resource:string,row:any){await page.goto(`/partner/${resource}/${row.id}/edit`);await expect(page.locator(`[name=${resource==='places'?'name':'title'}]`)).toHaveValue(nameOf(row));}
+  138 | function listRow(page:Page,resource:string,row:any){return page.getByTestId(`partner-${resource}-row`).filter({has:page.getByText(nameOf(row),{exact:true})});}
+  139 | async function listUI(page:Page,resource:string,row:any,status?:string){await page.goto(`/partner/${resource}`);await page.getByPlaceholder('Tìm theo tên…').fill(nameOf(row));await page.getByPlaceholder('Tìm theo tên…').press('Enter');if(status)await page.locator('main select').selectOption(status);await expect(listRow(page,resource,row)).toBeVisible();return listRow(page,resource,row);}
+  140 | async function submitUIResource(page:Page,resource:string,row:any){const tr=await listUI(page,resource,row);const wait=response(page,`/partner/${resource}/${row.id}/submit`,'POST');await tr.getByRole('button',{name:'Gửi duyệt',exact:true}).click();const r=await wait;expect(r.status()).toBe(200);await expect(listRow(page,resource,row)).toContainText('PENDING');return (await r.json()).data;}
+  141 | async function archiveUI(page:Page,resource:string,row:any){
+  142 |   const tr=await listUI(page,resource,row);const before=(await resourceModels[resource].findByPk(row.id)).toJSON();page.once('dialog',dialog=>dialog.dismiss());await tr.getByRole('button',{name:`Ngừng hiển thị ${nameOf(row)}`,exact:true}).click();expect((await resourceModels[resource].findByPk(row.id)).toJSON()).toEqual(before);
+  143 |   const wait=response(page,`/partner/${resource}/${row.id}`,'DELETE');page.once('dialog',dialog=>dialog.accept());await tr.getByRole('button',{name:`Ngừng hiển thị ${nameOf(row)}`,exact:true}).click();expect((await wait).status()).toBe(200);await page.reload();await expect(listRow(page,resource,row)).toContainText(resource==='tickets'?'INACTIVE':'SUSPENDED');
+  144 |   const db=await resourceModels[resource].findByPk(row.id);expect(db).toBeTruthy();expect(db.status).toBe(resource==='tickets'?'INACTIVE':'SUSPENDED');
+  145 | }
+  146 | async function publicState(page:Page,resource:string,row:any,status:string){
+  147 |   const visible=resource==='tickets'?status==='ACTIVE':status==='APPROVED';const detail=await api(page,'GET',`/${resource}/${row.id}`,undefined,null);expect(detail.status,`${resource} public detail ${status}`).toBe(visible?200:404);
+  148 |   for(const queryStatus of ['', '&status=DRAFT']){const result=await api(page,'GET',`/${resource}?search=${encodeURIComponent(nameOf(row))}${queryStatus}`,undefined,null);expect(result.status).toBe(200);const items=Array.isArray(result.body.data)?result.body.data:result.body.data.items;expect(items.some((v:any)=>v.id===row.id),`${resource} public list ${status}${queryStatus}`).toBe(visible);}
+  149 | }
+  150 | async function moderateUI(page:Page,g:any,resource:string,row:any,status:string){
+  151 |   await login(page,g.sa);await page.goto(`/admin/${resource}/${row.id}`);await expect(page.getByRole('heading',{name:nameOf(row),exact:true})).toBeVisible();const before=(await resourceModels[resource].findByPk(row.id)).status;
+  152 |   const reason='SYNTHETIC TEST ONLY '+status;
+  153 |   if(status==='REJECTED'){const snapshot=await fixtures.snapshot();await page.getByRole('button',{name:'Từ chối',exact:true}).click();await expect(page.getByText('Vui lòng nhập lý do từ chối.',{exact:true})).toBeVisible();expect(await fixtures.snapshot()).toEqual(snapshot);}
+  154 |   await page.getByPlaceholder('Bắt buộc khi từ chối').fill(reason);const wait=response(page,`/admin/${resource}/${row.id}/status`,'PATCH');await page.getByRole('button',{name:status==='REJECTED'?'Từ chối':status==='APPROVED'?'Phê duyệt':'Tạm ngưng',exact:true}).click();const r=await wait;expect(r.status()).toBe(200);traffic.push({channel:'Admin UI → API',endpoint:`/admin/${resource}/${row.id}/status`,request:{status,reason},response:redact(await r.json())});
+  155 |   await page.reload();await expect(page.getByRole('heading',{name:nameOf(row),exact:true})).toBeVisible();const db=await resourceModels[resource].findByPk(row.id);expect(db.status).toBe(status);
+  156 |   const entity={places:'Place',tours:'Tour',blogs:'BlogPost'}[resource];const audits=await AuditLog.findAll({where:{entityType:entity,entityId:row.id},order:[['createdAt','DESC']]});expect(audits[0].actorUserId).toBe(g.sa.user.id);expect(audits[0].previousData.status).toBe(before);expect(audits[0].newData.status).toBe(status);expect(audits[0].reason).toBe(reason);await photo(page,`${resource}-${status.toLowerCase()}`);
+  157 | }
+  158 | async function denied(page:Page,person:any,method:string,endpoint:string,body?:any,code?:string){
+  159 |   const before=await fixtures.snapshot();const result=await api(page,method,endpoint,body,person.token);const after=await fixtures.snapshot();
+  160 |   if(['POST','PATCH','DELETE'].includes(method)&&JSON.stringify(before)!==JSON.stringify(after)){write(path.join(out(),`${caseId()}-unsafe-mutation.json`),{method,endpoint,before,after,result:redact(result),action:'Stopped this fixture branch; no non-fixture target used'});throw new Error(`SECURITY: unauthorized mutation changed fixture state ${method} ${endpoint}`);}
+  161 |   expect(after).toEqual(before);expect(result.status,`${method} ${endpoint}`).toBe(403);if(code)expect(result.body.code).toBe(code);return result;
+  162 | }
+  163 | 
+  164 | test('R03 cross Business resource and Booking ownership',async({page})=>{
+  165 |   test.skip(!isApi(),'A1 once desktop');const g=await graph(page);const sets:any[]=[];
+  166 |   for(const [person,business]of [[g.a,g.ba],[g.b,g.bb]]){const set:any={person,business,items:{}};for(const resource of ['places','tours','tickets','blogs'])set.items[resource]=await createApi(page,resource,payload(resource,business.id,`R03-${resource}`),person);await moderateApi(page,g,'places',set.items.places.id,'APPROVED');set.booking=await createBooking(page,g,'places',set.items.places);sets.push(set);}
+  167 |   for(const [actorSet,target]of [[sets[0],sets[1]],[sets[1],sets[0]]])await step(`CROSS_${actorSet.person.user.id.slice(0,6)}`,'Foreign existing resources/Booking403, no mutation/leak; list membership and own owner immutable',async()=>{
+  168 |     const person=actorSet.person;
+  169 |     for(const resource of ['places','tours','tickets','blogs']){const targetRow=target.items[resource];await denied(page,person,'GET',`/partner/${resource}/${targetRow.id}`);await denied(page,person,'PATCH',`/partner/${resource}/${targetRow.id}`,resource==='places'?{name:'UNAUTHORIZED SYNTHETIC'}:{title:'UNAUTHORIZED SYNTHETIC'});await denied(page,person,'DELETE',`/partner/${resource}/${targetRow.id}`);if(resource!=='tickets')await denied(page,person,'POST',`/partner/${resource}/${targetRow.id}/submit`,{});await denied(page,person,'POST',`/partner/${resource}`,payload(resource,target.business.id,'R03-FOREIGN'));
+  170 |       const list=await api(page,'GET',`/partner/${resource}?businessId=${target.business.id}&limit=100`,undefined,person.token);expect(list.status).toBe(200);expect(list.body.data.items.every((v:any)=>v.businessId===actorSet.business.id)).toBe(true);expect(list.body.data.items.some((v:any)=>v.id===targetRow.id)).toBe(false);
+  171 |       // Place is APPROVED for Booking setup, so use another own DRAFT for ownership-field spoof.
+  172 |       const own=resource==='places'?await createApi(page,resource,payload(resource,actorSet.business.id,'R03-OWN'),person):actorSet.items[resource];
+  173 |       const patch=await api(page,'PATCH',`/partner/${resource}/${own.id}`,{businessId:target.business.id,...(resource==='places'?{name:nameOf(own)}:{title:nameOf(own)})},person.token);expect(patch.status).toBe(200);expect((await resourceModels[resource].findByPk(own.id)).businessId).toBe(actorSet.business.id);
+  174 |     }
+  175 |     await denied(page,person,'GET',`/partner/businesses/${target.business.id}`);await denied(page,person,'GET',`/partner/dashboard?businessId=${target.business.id}`);
+  176 |     await denied(page,person,'GET',`/partner/bookings?businessId=${target.business.id}`);await denied(page,person,'GET',`/partner/businesses/${target.business.id}/bookings`);await denied(page,person,'GET',`/partner/bookings/${target.booking.id}`);await denied(page,person,'PATCH',`/partner/bookings/${target.booking.id}/status`,{businessId:target.business.id,status:'CONFIRMED'});
+  177 |     await denied(page,person,'PATCH',`/partner/bookings/${actorSet.booking.id}/status`,{businessId:target.business.id,status:'CONFIRMED'},'BOOKING_ACCESS_DENIED');
+  178 |     return {actor:person.user.id,foreignBusiness:target.business.id,foreignBooking:target.booking.id};
+  179 |   });
+  180 | });
+  181 | 
+  182 | test('A05 real resource moderation public visibility and retention',async({page})=>{
+  183 |   const g=await graph(page);
+  184 |   for(const resource of ['places','tours','blogs'])await independentStep(page,`MODERATE_${resource}`,'DRAFT/PENDING/REJECTED/APPROVED/SUSPENDED public contract, real UI decisions/audit and dependency retention',async()=>{
+  185 |     const row=await createApi(page,resource,payload(resource,g.ba.id,`A05-${resource}`),g.a);await publicState(page,resource,row,'DRAFT');
+  186 |     await login(page,g.a);await submitUIResource(page,resource,row);await publicState(page,resource,row,'PENDING');
+  187 |     expect((await api(page,'PATCH',`/partner/${resource}/${row.id}`,resource==='places'?{name:nameOf(row)}:{title:nameOf(row)},g.a.token)).status).toBe(409);
+  188 |     await moderateUI(page,g,resource,row,'REJECTED');await publicState(page,resource,row,'REJECTED');
+  189 |     await login(page,g.a);await editUI(page,resource,row);await page.locator(`[name=${resource==='blogs'?'content':'description'}]`).fill('SYNTHETIC TEST ONLY revised after rejection');await saveUI(page,resource,row.id);await submitUIResource(page,resource,row);
+  190 |     await moderateUI(page,g,resource,row,'APPROVED');await publicState(page,resource,row,'APPROVED');expect((await api(page,'PATCH',`/partner/${resource}/${row.id}`,resource==='places'?{name:nameOf(row)}:{title:nameOf(row)},g.a.token)).status).toBe(409);
+  191 |     let booking:any=null,review:any=null;if(resource!=='blogs'){booking=await createBooking(page,g,resource,row);if(resource==='places')review=await fixtures.review(g.customer.user.id,row.id);}
+  192 |     const dependencyBefore={booking:booking?(await Booking.findByPk(booking.id)).toJSON():null,review:review?(await Review.findByPk(review)).toJSON():null};await moderateUI(page,g,resource,row,'SUSPENDED');await publicState(page,resource,row,'SUSPENDED');expect({booking:booking?(await Booking.findByPk(booking.id)).toJSON():null,review:review?(await Review.findByPk(review)).toJSON():null}).toEqual(dependencyBefore);write(path.join(out(),`A05-${resource}-retention.json`),{before:dependencyBefore,after:{booking:booking?(await Booking.findByPk(booking.id)).toJSON():null,review:review?(await Review.findByPk(review)).toJSON():null},same:true});
+  193 |     if(isApi()){const before=await fixtures.snapshot();for(const body of [{status:'REJECTED'},{status:'INVALID'},{status:'DRAFT'}])expect((await api(page,'PATCH',`/admin/${resource}/${row.id}/status`,body,g.sa.token)).status).toBe(400);expect(await fixtures.snapshot()).toEqual(before);await moderateApi(page,g,resource,row.id,'DRAFT');await publicState(page,resource,row,'DRAFT');}
+  194 |     return {id:row.id,resource,bookingId:booking?.id,reviewId:review};
+  195 |   });
+  196 | });
+  197 | 
+  198 | test('B01 dashboard and lists reflect Business membership',async({page})=>{
+  199 |   const g=await graph(page,true);const empty=await actor(page,'B01-EMPTY','PARTNER');
+  200 |   const hotel=await createApi(page,'places',payload('places',g.ba.id,'B01-A'),g.a);await moderateApi(page,g,'places',hotel.id,'APPROVED');await createBooking(page,g,'places',hotel);
+  201 |   const second=await createApi(page,'places',payload('places',g.a2.id,'B01-A2'),g.a);await moderateApi(page,g,'places',second.id,'APPROVED');await createBooking(page,g,'places',second);await createBooking(page,g,'places',second);
+  202 |   for(const resource of ['places','tours','tickets','blogs']){await createApi(page,resource,payload(resource,g.ba.id,`B01-A-${resource}`),g.a);await createApi(page,resource,payload(resource,g.bb.id,`B01-B-${resource}`),g.b);}
+  203 |   await login(page,g.a);await page.goto('/partner');await expect(page.getByRole('heading',{name:'Tổng quan cơ sở',exact:true})).toBeVisible();
+  204 |   await step('MEMBERSHIP_METRICS','Select both own businesses, metrics match SQL and lists exclude foreign Business',async()=>{
+  205 |     for(const business of [g.ba,g.a2]){await page.locator('main select').selectOption(business.id);await expect(page.getByRole('heading',{name:business.name,exact:true})).toBeVisible();const result=await api(page,'GET',`/partner/dashboard?businessId=${business.id}`);expect(result.status).toBe(200);const data=result.body.data;expect(data.businesses.map((v:any)=>v.id).sort()).toEqual([g.ba.id,g.a2.id].sort());expect(data.selectedBusiness.id).toBe(business.id);expect(data.metrics.source).toBe('DATABASE');for(const [key,model]of Object.entries(resourceModels) as any)expect(data.metrics[key]).toBe(await model.count({where:{businessId:business.id}}));for(const [key,status]of [['totalBookings',null],['pendingBookings','PENDING'],['confirmedBookings','CONFIRMED'],['completedBookings','COMPLETED']] as any)expect(data.metrics[key]).toBe(await Booking.count({where:{businessId:business.id,...(status?{bookingStatus:status}:{})}}));expect(data.metrics.revenue).toBe(Number(await Booking.sum('totalAmount',{where:{businessId:business.id,bookingStatus:'COMPLETED'}})||0));await photo(page,`dashboard-${business.id.slice(0,6)}`);}
+  206 |     await page.reload();await expect.poll(async()=>[g.ba.id,g.a2.id].includes(await page.locator('main select').inputValue())).toBe(true);
+  207 |     for(const resource of ['places','tours','tickets','blogs']){const list=await api(page,'GET',`/partner/${resource}?limit=100`);const expected=await resourceModels[resource].findAll({where:{businessId:[g.ba.id,g.a2.id]},attributes:['id']});expect(list.body.data.items.map((v:any)=>v.id).sort()).toEqual(expected.map((v:any)=>v.id).sort());}
+  208 |     expect((await api(page,'GET',`/partner/dashboard?businessId=${g.bb.id}`)).status).toBe(403);
+  209 |   });
+  210 |   await step('EMPTY_MEMBERSHIP','PARTNER without membership has empty database-backed dashboard and lists',async()=>{await login(page,empty);await page.goto('/partner');await expect(page.getByRole('heading',{name:'Chưa có cơ sở được cấp quyền',exact:true})).toBeVisible();const result=await api(page,'GET','/partner/dashboard');expect(result.body.data).toEqual({businesses:[],selectedBusiness:null,metrics:null});for(const resource of ['places','tours','tickets','blogs'])expect((await api(page,'GET',`/partner/${resource}`)).body.data.items).toEqual([]);await photo(page,'empty-membership');});
+  211 | });
+  212 | 
+  213 | test('B02 Place UI CRUD reload zero price submit archive',async({page})=>{
+  214 |   const g=await graph(page);await login(page,g.a);
+  215 |   for(const category of ['hotel','restaurant','attraction']){
+  216 |     let row:any;await step(`CREATE_EDIT_${category}`,'Real form creates own DRAFT and edits same ID, persists and lists correctly',async()=>{const p=payload('places',g.ba.id,`B02-${category}`,{category,priceFrom:category==='hotel'?0:123456});row=await createUI(page,'places',p);expect(row.businessId).toBe(g.ba.id);expect(row.status).toBe('DRAFT');await editUI(page,'places',row);await page.locator('[name=description]').fill('SYNTHETIC TEST ONLY edited Place content');row=await saveUI(page,'places',row.id);await editUI(page,'places',row);await page.reload();await expect(page.locator('[name=description]')).toHaveValue('SYNTHETIC TEST ONLY edited Place content');const read=await api(page,'GET',`/partner/places/${row.id}`);expect(read.body.data.id).toBe(row.id);expect(Number((await Place.findByPk(row.id)).priceFrom)).toBe(p.priceFrom);await photo(page,`place-${category}-edit`);});
+  217 |     if(category==='hotel')await independentStep(page,'ZERO_PRICE','Reloaded priceFrom=0 displays0 and no-op save persists0',async()=>{const displayed=await page.locator('[name=priceFrom]').inputValue();write(path.join(out(),'B02-zero-input.json'),{id:row.id,expected:'0',actual:displayed,databasePrice:Number((await Place.findByPk(row.id)).priceFrom)});await photo(page,'zero-price');expect(displayed).toBe('0');});
+  218 |     await step(`SAVE_SUBMIT_ARCHIVE_${category}`,'Save/read/list/submit PENDING and archive retain row; cancel does not mutate',async()=>{row=await saveUI(page,'places',row.id);if(category==='hotel')expect(Number((await Place.findByPk(row.id)).priceFrom)).toBe(0);await listUI(page,'places',row,'DRAFT');await submitUIResource(page,'places',row);await page.reload();await expect(listRow(page,'places',row)).toContainText('PENDING');await archiveUI(page,'places',row);await publicState(page,'places',row,'SUSPENDED');await photo(page,`place-${category}-archived`);});
+  219 |   }
+  220 | });
+  221 | 
+  222 | test('B03 Tour UI CRUD zero nights snapshot preservation',async({page})=>{
+  223 |   const g=await graph(page);await login(page,g.a);let row:any;
+> 224 |   await step('TOUR_CREATE_EDIT','Tour DRAFT real form, same ID on edits, counts/prices/capacity persisted',async()=>{row=await createUI(page,'tours',payload('tours',g.ba.id,'B03-TOUR'));await editUI(page,'tours',row);await page.locator('[name=description]').fill('SYNTHETIC TEST ONLY revised Tour');row=await saveUI(page,'tours',row.id);await editUI(page,'tours',row);await page.reload();await expect(page.locator('[name=description]')).toHaveValue('SYNTHETIC TEST ONLY revised Tour');const db=await Tour.findByPk(row.id);expect(db.durationDays).toBe(2);expect(db.durationNights).toBe(1);expect(db.capacity).toBe(30);expect(Number(db.priceVND)).toBe(123456);await photo(page,'tour-edit');});
+      |                                                                                                                                                                                                                                                                   ^ Error: locator.fill: Error: strict mode violation: locator('[name=description]') resolved to 2 elements:
+  225 |   await step('BOOKING_SNAPSHOT_AND_ARCHIVE','Changing fixture catalog price never reprices stored Booking; submit/archive retain FK rows',async()=>{await moderateApi(page,g,'tours',row.id,'APPROVED');const booking=await createBooking(page,g,'tours',row);const before=(await Booking.findByPk(booking.id)).toJSON();await moderateApi(page,g,'tours',row.id,'DRAFT');await editUI(page,'tours',row);await page.locator('[name=priceVND]').fill('222222');row=await saveUI(page,'tours',row.id);expect((await Booking.findByPk(booking.id)).toJSON()).toEqual(before);await submitUIResource(page,'tours',row);await archiveUI(page,'tours',row);expect((await Booking.findByPk(booking.id)).toJSON()).toEqual(before);write(path.join(out(),'B03-booking-preservation.json'),{before,after:(await Booking.findByPk(booking.id)).toJSON(),same:true});await photo(page,'tour-archived');});
+  226 |   let zero:any;await step('ZERO_NIGHTS_CREATE','1 day/0 nights is accepted and stored as0',async()=>{zero=await createUI(page,'tours',payload('tours',g.ba.id,'B03-ZERO',{durationDays:1,durationNights:0}));expect((await Tour.findByPk(zero.id)).durationNights).toBe(0);await editUI(page,'tours',zero);await page.reload();});
+  227 |   await independentStep(page,'ZERO_NIGHTS_RELOAD_SAVE','0 nights remains displayed0 and required field allows a no-op save',async()=>{const field=page.locator('[name=durationNights]');const input=await field.inputValue(),valid=await field.evaluate((el:HTMLInputElement)=>el.checkValidity());write(path.join(out(),'B03-zero-nights-input.json'),{id:zero.id,expectedInput:'0',actualInput:input,valid,databaseNights:(await Tour.findByPk(zero.id)).durationNights});await photo(page,'zero-nights');expect(input).toBe('0');expect(valid).toBe(true);await saveUI(page,'tours',zero.id);expect((await Tour.findByPk(zero.id)).durationNights).toBe(0);});
+  228 |   await step('ZERO_SUBMIT_ARCHIVE','Independent list submit/archive remain executable without editing around zero-field failure',async()=>{await submitUIResource(page,'tours',zero);await archiveUI(page,'tours',zero);expect((await Tour.findByPk(zero.id)).durationNights).toBe(0);await photo(page,'zero-tour-archived');});
+  229 | });
+  230 | 
+  231 | test('B04 Ticket UI ACTIVE edit timestamps and INACTIVE archive',async({page})=>{
+  232 |   const g=await graph(page);await login(page,g.a);let row:any;
+  233 |   await step('TICKET_CREATE','Real Ticket form creates ACTIVE with correct seats/price, not a moderation draft',async()=>{row=await createUI(page,'tickets',payload('tickets',g.ba.id,'B04-TICKET'));const db=await Ticket.findByPk(row.id);expect(db.status).toBe('ACTIVE');expect(db.capacity).toBe(30);expect(db.availableSeats).toBe(30);expect(Number(db.price)).toBe(123456);await publicState(page,'tickets',row,'ACTIVE');});
+  234 |   await independentStep(page,'TIMESTAMP_NOOP_SAVE','Open/reload/save without edits preserves departureTime and arrivalTime instants',async()=>{const before=(await Ticket.findByPk(row.id)).toJSON();const apiBefore=await api(page,'GET',`/partner/tickets/${row.id}`);await editUI(page,'tickets',row);await page.reload();await expect(page.locator('[name=departureTime]')).not.toHaveValue('');const inputs={departureTime:await page.locator('[name=departureTime]').inputValue(),arrivalTime:await page.locator('[name=arrivalTime]').inputValue()};await photo(page,'ticket-noop-before');await saveUI(page,'tickets',row.id);const after=(await Ticket.findByPk(row.id)).toJSON();const apiAfter=await api(page,'GET',`/partner/tickets/${row.id}`);write(path.join(out(),'B04-timestamp-before-after.json'),{browserTimezone:await page.evaluate(()=>Intl.DateTimeFormat().resolvedOptions().timeZone),serverTimezone:process.env.TZ,inputs,before,after,apiBefore:redact(apiBefore),apiAfter:redact(apiAfter),deltaDepartureMs:new Date(after.departureTime).getTime()-new Date(before.departureTime).getTime()});expect(new Date(after.departureTime).toISOString()).toBe(new Date(before.departureTime).toISOString());expect(new Date(after.arrivalTime).toISOString()).toBe(new Date(before.arrivalTime).toISOString());});
+  235 |   await step('TICKET_ARCHIVE','Archive is soft INACTIVE and public detail404; Ticket has no submit moderation API',async()=>{if(isApi()){const diagnostic=await api(page,'POST',`/partner/tickets/${row.id}/submit`,{});expect(diagnostic.status).toBe(404);}await archiveUI(page,'tickets',row);await publicState(page,'tickets',row,'INACTIVE');await photo(page,'ticket-inactive');});
+  236 | });
+  237 | 
+  238 | test('B05 Blog UI CRUD reload submit archive and authorship',async({page})=>{
+  239 |   const g=await graph(page);await login(page,g.a);let row:any;
+  240 |   await step('BLOG_CREATE_EDIT','Business Blog DRAFT, server author/business and same ID survive edit/reload',async()=>{row=await createUI(page,'blogs',payload('blogs',g.ba.id,'B05-BLOG'));expect(row.status).toBe('DRAFT');expect(row.authorId).toBe(g.a.user.id);expect(row.businessId).toBe(g.ba.id);await editUI(page,'blogs',row);await page.locator('[name=content]').fill('SYNTHETIC TEST ONLY new Blog content\nSecond synthetic paragraph');const id=row.id;row=await saveUI(page,'blogs',id);expect(row.id).toBe(id);await editUI(page,'blogs',row);await page.reload();await expect(page.locator('[name=content]')).toHaveValue('SYNTHETIC TEST ONLY new Blog content\nSecond synthetic paragraph');expect((await BlogPost.findByPk(id)).authorId).toBe(g.a.user.id);await photo(page,'blog-edited');});
+  241 |   await step('BLOG_SUBMIT_ARCHIVE','UI submit PENDING then soft archive SUSPENDED; content/author/business remain',async()=>{const before=(await BlogPost.findByPk(row.id)).toJSON();await submitUIResource(page,'blogs',row);await archiveUI(page,'blogs',row);const after=(await BlogPost.findByPk(row.id)).toJSON();for(const key of ['content','authorId','authorName','businessId'])expect(after[key]).toEqual(before[key]);await publicState(page,'blogs',row,'SUSPENDED');await photo(page,'blog-archived');});
+  242 | });
+  243 | 
+  244 | test('B06 permission matrix validation locked states and Booking alias',async({page})=>{
+  245 |   test.skip(!isApi(),'A1 once desktop');const g=await graph(page);const businessOnly=await actor(page,'B06-BUS','PARTNER'),bookingsOnly=await actor(page,'B06-BOOK','PARTNER'),none=await actor(page,'B06-NONE','PARTNER');await fixtures.member(businessOnly.user.id,g.ba.id,['MANAGE_BUSINESS']);await fixtures.member(bookingsOnly.user.id,g.ba.id,['MANAGE_BOOKINGS']);await fixtures.member(none.user.id,g.ba.id,[]);
+  246 |   const items:any={};for(const resource of ['places','tours','tickets','blogs'])items[resource]=await createApi(page,resource,payload(resource,g.ba.id,`B06-${resource}`),g.a);
+  247 |   const hotel=await createApi(page,'places',payload('places',g.ba.id,'B06-BOOKING'),g.a);await moderateApi(page,g,'places',hotel.id,'APPROVED');const booking=await createBooking(page,g,'places',hotel);
+  248 |   await step('MANAGE_BUSINESS_GATES','Create/archive and Place/Tour/Ticket update require MANAGE_BUSINESS',async()=>{for(const member of [bookingsOnly,none])for(const resource of ['places','tours','tickets','blogs']){await denied(page,member,'POST',`/partner/${resource}`,payload(resource,g.ba.id,'B06-DENIED'));await denied(page,member,'DELETE',`/partner/${resource}/${items[resource].id}`);if(resource!=='blogs')await denied(page,member,'PATCH',`/partner/${resource}/${items[resource].id}`,resource==='places'?{priceFrom:123}:{title:nameOf(items[resource])});}
+  249 |     for(const resource of ['places','tours','tickets','blogs']){const created=await createApi(page,resource,payload(resource,g.ba.id,'B06-BUS-POSITIVE'),businessOnly);expect((await api(page,'DELETE',`/partner/${resource}/${created.id}`,undefined,businessOnly.token)).status).toBe(200);}
+  250 |   });
+  251 |   await step('MANAGE_BOOKINGS_GATES','New Booking list/get/status deny missing MANAGE_BOOKINGS and preserve rows',async()=>{for(const member of [businessOnly,none]){await denied(page,member,'GET',`/partner/bookings?businessId=${g.ba.id}`);await denied(page,member,'GET',`/partner/bookings/${booking.id}`);await denied(page,member,'PATCH',`/partner/bookings/${booking.id}/status`,{businessId:g.ba.id,status:'CONFIRMED'});}expect((await api(page,'GET',`/partner/bookings?businessId=${g.ba.id}`,undefined,bookingsOnly.token)).status).toBe(200);expect((await api(page,'GET',`/partner/bookings/${booking.id}`,undefined,bookingsOnly.token)).status).toBe(200);});
+  252 |   await step('VALIDATION_AND_LOCKED','Negative prices/capacity/coordinates/invalid Ticket departure400 and locked updates409 never mutate',async()=>{
+  253 |     const invalids:any[]=[['places',{priceFrom:-1}],['places',{latitude:91}],['places',{longitude:181}],['tours',{priceVND:-1}],['tours',{capacity:-1}],['tours',{durationDays:0}],['tickets',{price:-1}],['tickets',{capacity:-1}],['tickets',{departureTime:'not-a-date'}],['blogs',{title:''}]];
+  254 |     for(const [resource,patch]of invalids){const before=await fixtures.snapshot();const created=await api(page,'POST',`/partner/${resource}`,payload(resource,g.ba.id,'B06-INVALID',patch),g.a.token);expect(created.status).toBe(400);expect(created.body.code).toBe('VALIDATION_ERROR');if(resource!=='blogs'){const updated=await api(page,'PATCH',`/partner/${resource}/${items[resource].id}`,patch,g.a.token);expect(updated.status).toBe(400);expect(updated.body.code).toBe('VALIDATION_ERROR');}expect(await fixtures.snapshot()).toEqual(before);}
+  255 |     for(const resource of ['places','tours','blogs']){expect((await api(page,'POST',`/partner/${resource}/${items[resource].id}/submit`,{},g.a.token)).status).toBe(200);for(const status of ['PENDING','APPROVED']){if(status==='APPROVED')await moderateApi(page,g,resource,items[resource].id,status);const before=await fixtures.snapshot();expect((await api(page,'PATCH',`/partner/${resource}/${items[resource].id}`,resource==='places'?{name:nameOf(items[resource])}:{title:nameOf(items[resource])},g.a.token)).status).toBe(409);expect(await fixtures.snapshot()).toEqual(before);}}
+  256 |   });
+  257 |   await step('GAP03_CHARACTERIZATION','Record membership-only submit and Blog update without imposing a new MANAGE_BUSINESS policy',async()=>{const behavior:any[]=[];for(const resource of ['places','tours','blogs']){const row=await createApi(page,resource,payload(resource,g.ba.id,'B06-CHAR'),g.a);if(resource==='blogs'){const updated=await api(page,'PATCH',`/partner/blogs/${row.id}`,{content:'SYNTHETIC TEST ONLY membership update'},none.token);behavior.push({operation:'Blog update',status:updated.status});expect(updated.status).toBe(200);}const submitted=await api(page,'POST',`/partner/${resource}/${row.id}/submit`,{},none.token);behavior.push({operation:`${resource} submit`,status:submitted.status});expect(submitted.status).toBe(200);}return {classification:'CHARACTERIZATION per approved GAP-03, not a newly invented permission requirement',behavior};});
+  258 |   await independentStep(page,'LEGACY_BOOKING_ALIAS','Legacy alias must require MANAGE_BOOKINGS; MANAGE_BUSINESS alone403 and no returned private Booking',async()=>{const before=await fixtures.snapshot();const result=await api(page,'GET',`/partner/businesses/${g.ba.id}/bookings`,undefined,businessOnly.token);expect(await fixtures.snapshot()).toEqual(before);write(path.join(out(),'B06-alias-permission.json'),{expectedStatus:403,actor:businessOnly.user.id,permissions:['MANAGE_BUSINESS'],businessId:g.ba.id,fixtureBookingId:booking.id,response:redact(result),noMutation:true,safety:'No further alias escalation or mutation after this probe; target contains fixture-only Bookings'});expect(result.status).toBe(403);});
+  259 | });
+  260 | 
+  261 | 
+```

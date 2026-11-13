@@ -1,0 +1,59 @@
+{
+  "at": "2026-11-10T17:19:41.856Z",
+  "reviewOnly": true,
+  "files": [
+    {
+      "file": "frontend/src/pages/AssistantPage.tsx",
+      "sha256": "3d17563a63cf27f5bce2efd3c437b4c021011c229e4467aa8cf83310fb74e5a7"
+    },
+    {
+      "file": "frontend/src/services/agentService.ts",
+      "sha256": "79c1dfb7c5c82c673e57c70e6ca33649bcdbe85b4673f0e9a5259d197afd9fca"
+    },
+    {
+      "file": "frontend/src/types/agent.ts",
+      "sha256": "ee0db48e6119e4c22dc78bd00ed34339ad35e068c3a43e60b8acf85f70c14dcf"
+    },
+    {
+      "file": "frontend/src/utils/agentConversation.ts",
+      "sha256": "218a4361e0e07240fb627848cad4d1e8f02ee72b6ead2f431f8737b833fd3087"
+    },
+    {
+      "file": "frontend/src/utils/agentContract.ts",
+      "sha256": "cc58acabf565e864c437de5f8204890117c49ddac1e2463368ba476c360ac9d6"
+    },
+    {
+      "file": "frontend/src/services/api.ts",
+      "sha256": "c5896cc8634532f4aed30b7fcd8e4ba4b58080ce5d3b7fc71ef0e4875641241b"
+    },
+    {
+      "file": "frontend/src/context/AuthContext.tsx",
+      "sha256": "c8951d4077edf55e5898591b85c21282c9c284114fefb5691e0546d7a4bc5f2c"
+    },
+    {
+      "file": "frontend/src/components/agent/PrivacyConsentModal.tsx",
+      "sha256": "3dc130e9e4225d182bb79623d7891fd6a1b518d15492210b66872c2c7076caeb"
+    }
+  ],
+  "observedGaps": [
+    "AgentChatRequest has no conversation envelope; service explicitly projects history and drops G2 input",
+    "Response parser requires context.mode STATELESS, so unmodified UI cannot accept G2 mode",
+    "API agent error interceptor drops safe owned conversation metadata needed after provider errors",
+    "Controller reset/cancel currently clears client state only; logout=clearSession makes no backend G2 revoke",
+    "AssistantPage renders reply but no missing-field confirmation control; server notice must distinguish G2 retention from external processing"
+  ],
+  "proposedConfirmation": {
+    "display": "Agent đang yêu cầu bạn xác nhận lại phương tiện.",
+    "actions": [
+      "Xe máy → user-confirmed new message Phương tiện: motorbike",
+      "Ô tô → user-confirmed new message Phương tiện: car",
+      "Edit/cancel/new conversation/Planner exit"
+    ],
+    "noAutoResend": true,
+    "noPretendMissingUserInput": true,
+    "noSyntheticCompleted": true,
+    "noClientHistoryAuthority": true
+  },
+  "logout": "Attempt owner revoke/revoke-all while authorized, fence/cancel stale UI work, always clear local auth; network failure disclosed via TTL/local-demo retention. Do not claim JWT/global revocation or guaranteed deletion when server unreachable.",
+  "futureScope": "Needs separately approved frontend integration task, no code changes here"
+}

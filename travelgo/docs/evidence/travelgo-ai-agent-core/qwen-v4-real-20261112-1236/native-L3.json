@@ -1,0 +1,45 @@
+{
+  "at": "2026-11-12T05:43:20.436Z",
+  "case": "L3",
+  "ordinal": 3,
+  "request": {
+    "model": "qwen3:4b-instruct-2507-q4_K_M",
+    "stream": false,
+    "format": "json",
+    "options": {
+      "temperature": 0,
+      "num_ctx": 16384,
+      "num_predict": 2048
+    },
+    "messages": [
+      {
+        "role": "system",
+        "content": "Compose a friendly grounded travel response by selecting and ordering ONLY supplied fact IDs. Do not add facts, prices, availability, bookings or prose claims.\nReturn JSON for schema: {\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"kind\",\"factIds\",\"lead\"],\"properties\":{\"kind\":{\"const\":\"grounded\"},\"factIds\":{\"type\":\"array\",\"maxItems\":3,\"uniqueItems\":true,\"items\":{\"type\":\"string\"}},\"lead\":{\"enum\":[\"suggestion\",\"summary\"]}}}"
+      },
+      {
+        "role": "user",
+        "content": "{\"facts\":{\"option.0\":\"DEMO Đà Lạt — Đồ chay ở Đà Lạt.\",\"reason.0\":\"Đúng khu vực Đà Lạt\",\"price.0\":\"DEMO Đà Lạt — Đồ chay có giá từ catalog 250.000 VND; đơn vị và tình trạng còn chỗ chưa được xác minh.\",\"option.1\":\"DEMO Đà Lạt — Hải sản ở Đà Lạt.\",\"reason.1\":\"Đúng khu vực Đà Lạt\",\"price.1\":\"DEMO Đà Lạt — Hải sản có giá từ catalog 150.000 VND; đơn vị và tình trạng còn chỗ chưa được xác minh.\",\"option.2\":\"DEMO Đà Lạt — BBQ và lẩu ở Đà Lạt.\",\"reason.2\":\"Đúng khu vực Đà Lạt\",\"price.2\":\"DEMO Đà Lạt — BBQ và lẩu có giá từ catalog 350.000 VND; đơn vị và tình trạng còn chỗ chưa được xác minh.\",\"option.3\":\"DEMO Đà Lạt — Đặc sản ở Đà Lạt.\",\"reason.3\":\"Đúng khu vực Đà Lạt\",\"price.3\":\"DEMO Đà Lạt — Đặc sản có giá từ catalog 80.000 VND; đơn vị và tình trạng còn chỗ chưa được xác minh.\",\"option.4\":\"DEMO Đà Lạt — Gia đình ở Đà Lạt.\",\"reason.4\":\"Đúng khu vực Đà Lạt\"}}"
+      }
+    ]
+  },
+  "rawEnvelope": {
+    "model": "qwen3:4b-instruct-2507-q4_K_M",
+    "created_at": "2026-11-12T05:43:21.4376551Z",
+    "message": {
+      "role": "assistant",
+      "content": "{\n  \"kind\": \"grounded\",\n  \"factIds\": [\n    \"option.0\",\n    \"option.1\",\n    \"option.2\"\n  ],\n  \"lead\": \"suggestion\"\n}"
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 987096700,
+    "load_duration": 2065700,
+    "prompt_eval_count": 425,
+    "prompt_eval_cached_count": 3,
+    "prompt_eval_duration": 220311000,
+    "eval_count": 45,
+    "eval_duration": 585852000
+  },
+  "rawOutput": "{\n  \"kind\": \"grounded\",\n  \"factIds\": [\n    \"option.0\",\n    \"option.1\",\n    \"option.2\"\n  ],\n  \"lead\": \"suggestion\"\n}",
+  "status": 200,
+  "latencyMs": 2121.8054
+}

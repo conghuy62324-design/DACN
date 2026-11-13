@@ -1,0 +1,319 @@
+# TASK T-AI-04-PLANNER-MAINTENANCE-HANDOFF-CONTINUITY-ACCEPTANCE
+
+Vai trò: Senior PostgreSQL Concurrency Engineer, Database Security Engineer, E2E Automation Lead và Independent QA Reviewer của TravelGo.
+
+## MỤC TIÊU
+
+Giải quyết blocker:
+
+`ALL25_NO_GAP_NOT_PROVEN`
+
+Từ báo cáo:
+
+`docs/HUGO_T_AI_04_PLANNER_MULTI_CONNECTION_MAINTENANCE_ACCEPTANCE_REPORT.md`
+
+Yêu cầu quan trọng nhất:
+
+**Chứng minh giao thức maintenance không để writer chen vào bất kỳ bảng nào trong 25 bảng khi chuyển quyền kiểm soát từ transaction A sang B.**
+
+Không chỉ chứng minh rằng cuối cùng B nhận đủ 25 locks.
+
+Không sửa assertions để nhận PASS.
+
+Đây là task thiết kế tính đúng đắn, adversarial testing và nghiệm thu có điều kiện.
+
+## 1. BASELINE
+
+Đọc toàn bộ:
+
+- Multi-Connection Maintenance Acceptance Report.
+- Address Normalization Report.
+- Connection Ownership Guard Fix Report.
+- Connection Ownership Diagnosis Report.
+- Targeted Revalidation Resume Report.
+
+Đọc nguyên bản:
+
+- `handoff-reviewed.json`
+- `phase-d-lock-smoke.json`
+- `real-result.json`
+- `attempt-sql-ledger.json`
+- `maintenance.candidate.cjs`
+- PostgreSQL lock acquisition source.
+- Approved 25-table list.
+- Connection ownership registry.
+- Guarded cleanup contract.
+
+Giữ nguyên:
+
+- Historical149/149 offline PASS.
+- Actual8/10 connections.
+- Disposal8/8.
+- DML0.
+- DB_UNCHANGED_25_25.
+- Place22/22.
+- Trip27/27.
+- Reviewed exit gate B.
+- PID9686 UNKNOWN.
+- P1/P2 OPEN.
+
+Không sửa historical evidence.
+
+## 2. PHASE A — FORMAL HANDOFF REVIEW
+
+Phân tích PostgreSQL15 locking semantics thực tế.
+
+Bắt buộc xem xét:
+
+1. LOCK TABLE với nhiều quan hệ được xử lý theo thứ tự nào.
+2. Locks được acquire/queue tại thời điểm nào.
+3. Transaction A giữ những lock mode nào.
+4. Transaction B yêu cầu những lock mode nào.
+5. INSERT/DELETE fixture tạo ROW EXCLUSIVE locks ra sao.
+6. Lock conflict giữa A, B và một external writer.
+7. Khi A COMMIT, writer đang đợi có thể được cấp quyền trước B trong tình huống nào.
+8. B có thể bảo vệ toàn bộ 25 bảng trước A COMMIT không.
+9. Queued lock trên bảng đầu có bảo vệ được bảng cuối không.
+10. Vì sao pre/post snapshots không tự chứng minh no-gap.
+
+Dùng PostgreSQL official documentation/source làm căn cứ.
+
+Không dựa vào cảm giác về thứ tự sự kiện.
+
+## 3. ĐỊNH NGHĨA PROOF OBLIGATION
+
+Xây dựng correctness contract rõ ràng.
+
+Với mỗi bảng trong approved25-table set:
+
+Trong toàn bộ thời gian maintenance protection được yêu cầu, không được tồn tại thời điểm mà một writer ngoài phạm vi có thể acquire quyền ghi trước cơ chế bảo vệ kế tiếp.
+
+Phải phân biệt:
+
+- Lock HELD.
+- Lock WAITING.
+- Writer WAITING.
+- Writer GRANTED.
+- Lock RELEASED.
+- Transaction COMMITTED.
+- Connection REGISTERED.
+- Ownership UNKNOWN.
+
+Một lock đang WAITING không tự động được xem là bảo vệ toàn bảng.
+
+Phải kiểm thứ tự lock queue và khả năng writer đứng trước yêu cầu của B.
+
+Định nghĩa chính xác thời điểm bắt đầu/kết thúc maintenance isolation.
+
+## 4. PHASE B — ADVERSARIAL OFFLINE TESTS
+
+Tạo independent concurrency model và deterministic scheduler.
+
+Không sử dụng PostgreSQL thật trong phase này.
+
+Mô phỏng tối thiểu:
+
+A. A giữ25 locks, B chờ bảng1.
+
+B. Writer đến bảng25 trước khi B yêu cầu khóa bảng25.
+
+C. Writer chờ bảng1 trước B.
+
+D. Writer đến sau khi B đã queue trên bảng1.
+
+E. B acquire bảng1 rồi lần lượt bảng2–25.
+
+F. Writer thử bảng cuối trong quá trình B acquire tuần tự.
+
+G. Multiple writers trên các bảng khác nhau.
+
+H. B timeout hoặc deadlock.
+
+I. A COMMIT thất bại.
+
+J. A COMMIT thành công nhưng B chưa có tất cả locks.
+
+K. Unknown PostgreSQL connection xuất hiện.
+
+L. Lock mode hoặc table ordering khác dự kiến.
+
+M. Fixture INSERT/DELETE có ROW EXCLUSIVE locks.
+
+N. Cleanup xảy ra sau failure.
+
+O. Session disconnect hoặc ownership drift.
+
+Expected phải được tính độc lập với implementation.
+
+Nếu scheduler tìm được counterexample no-gap, lưu:
+
+- Exact event order.
+- Table ID.
+- Lock modes.
+- Transaction states.
+- Writer grant point.
+- Root cause.
+
+Không xóa hoặc coi counterexample là flaky.
+
+## 5. ĐÁNH GIÁ PHƯƠNG ÁN HẠ TẦNG
+
+So sánh ít nhất ba hướng:
+
+### OPTION A — Current A/B handoff
+
+Giữ cơ chế hiện tại.
+
+Chỉ chấp nhận nếu có proof đầy đủ cho all25, bao gồm writer queue ordering.
+
+### OPTION B — Revised PostgreSQL lock protocol
+
+Đề xuất cách chuyển giao đáp ứng PostgreSQL lock compatibility thực tế.
+
+Phải tính cả transaction đã thực hiện fixture DML và visibility sau COMMIT.
+
+Không được giả định các writer-blocking locks của hai transactions luôn có thể overlap.
+
+Nếu cần tăng connection count hoặc thêm coordination, phải ghi rõ yêu cầu mới và rủi ro.
+
+### OPTION C — Stronger test-environment isolation
+
+Đánh giá kiến trúc sử dụng một môi trường test độc lập với các writers khác.
+
+Phân biệt:
+
+- Chỉ quan sát không có external writers.
+- Có khả năng ngăn external writers.
+- Có DB-enforced isolation.
+- Có thể chạy fixture rồi cleanup mà không ảnh hưởng dữ liệu nền.
+
+Không tự tạo database mới, sửa role/grants, reset DB hoặc thay Docker configuration.
+
+Chỉ đề xuất nếu cần owner approval riêng.
+
+## 6. INDEPENDENT DESIGN REVIEW
+
+Một bộ kiểm thử độc lập phải xác minh:
+
+- Không bỏ qua bảng nào.
+- Không nhầm lock queue với granted lock.
+- Không giả định 25 locks acquire atomically.
+- Không nhầm application-level advisory locks với table DML enforcement.
+- Không tuyên bố snapshot không có writer là proof chống writer tương lai.
+- Không sửa expected sau khi tìm thấy counterexample.
+- Unknown connection vẫn FAIL CLOSED.
+- Exact ownership/cleanup guards vẫn giữ.
+
+Phải chỉ rõ protocol được đề xuất có thể chứng minh hay không dưới giới hạn connection và quyền hiện tại.
+
+Nếu không thể chứng minh, kết luận NOT PROVABLE; không tiếp tục chỉ để lấy PASS.
+
+## 7. CONTROLLED REAL DB GATE
+
+Không tự thực hiện PostgreSQL trace mới trong task này.
+
+Chỉ khi tìm được một protocol có lập luận correctness rõ ràng:
+
+1. Thiết kế controlled adversarial lock-only experiment.
+2. Xác định exact connection cap.
+3. Xác định exact locks và tables.
+4. Xác định timeout/deadlock handling.
+5. Xác định cleanup/rollback/final fingerprint.
+6. Xác định các phép đo nào có thể chứng minh và phép đo nào chỉ là quan sát.
+7. Chuẩn bị owner approval riêng cho experiment.
+
+Không INSERT/UPDATE/DELETE hoặc tạo fixture.
+
+Nếu một experiment hữu hạn không thể chứng minh thuộc tính no-gap cho mọi lịch xen kẽ, không tuyên bố nó có thể.
+
+## 8. SOURCE VÀ SAFETY
+
+Không sửa:
+
+- Production Planner/Agent/Catalog/Auth.
+- PostgreSQL schema.
+- Database roles/grants.
+- Docker runtime.
+- Original fixture proposal.
+- SYSTEM/tool schema/gates.
+- Approved benchmarks.
+- Historical reports/results.
+
+Không:
+
+- Truy cập PostgreSQL thật.
+- Tạo fixture.
+- Chạy Direct Planner.
+- Gọi Ollama.
+- Chạy browser LIVE.
+- Terminate PID.
+- Bypass unknown ownership.
+- Commit/push/deploy.
+
+Chỉ tạo task-local analysis, scheduler, tests và evidence.
+
+## 9. EXIT GATE
+
+Kết luận theo bằng chứng:
+
+### A — HANDOFF_PROTOCOL_PROVEN_OFFLINE
+
+Có protocol được chứng minh không có khoảng hở theo defined threat model.
+
+Independent adversarial tests PASS.
+
+Không có unresolved counterexample.
+
+Chỉ được đề xuất controlled real DB validation riêng, chưa nhận full maintenance LIVE-ready.
+
+### B — HANDOFF_COUNTEREXAMPLE_CONFIRMED
+
+Chứng minh current handoff có trường hợp writer có thể chen vào.
+
+Phải giữ gate hiện tại BLOCKED.
+
+Đề xuất alternative protocol.
+
+### C — HANDOFF_PROOF_INCOMPLETE
+
+Không đủ bằng chứng chứng minh hoặc bác bỏ hoàn toàn.
+
+Không chuyển Planner LIVE.
+
+Không hạ correctness requirement.
+
+## 10. REPORT
+
+Tạo:
+
+`docs/HUGO_T_AI_04_PLANNER_MAINTENANCE_HANDOFF_CONTINUITY_REPORT.md`
+
+Evidence:
+
+`docs/evidence/t-ai-04-planner-maintenance-handoff-continuity/`
+
+Báo cáo gồm:
+
+1. Historical baseline.
+2. PostgreSQL15 locking semantics.
+3. Formal safety property.
+4. Current A/B timeline.
+5. Per-table lock analysis.
+6. Adversarial scheduler.
+7. Counterexamples.
+8. Evaluation of options A/B/C.
+9. Independent acceptance.
+10. Proposed safe protocol, nếu có.
+11. Threat model và limitations.
+12. Source/benchmark integrity.
+13. PID9686 status.
+14. P1/P2 status.
+15. NEXT TASK PLAN.
+
+Nếu có protocol đúng, đề xuất task validation thực tế với owner approval mới.
+
+Nếu không có protocol khả thi theo giới hạn hiện tại, báo rõ kiến trúc phải thay đổi ở đâu và cần quyết định gì từ owner.
+
+Không tự chạy Planner LIVE, V2 hoặc deploy.
+
+**DỪNG SAU BÁO CÁO.**

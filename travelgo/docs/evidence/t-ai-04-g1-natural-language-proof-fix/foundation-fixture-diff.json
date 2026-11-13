@@ -1,0 +1,12 @@
+{
+  "source": "backend/dist/tests/agentFoundation.test.js",
+  "originalSha256": "4f8aa2241fb60e0c72d19b13f514d978f7a9400504ef2a86ffc0a626810bfe0f",
+  "derivedSha256": "200f5fd2049a2354a52c6af3c509371e0f5f78f686c42a96e1002f4a020d2fc9",
+  "before": "const service = (decision, overrides = {}) => new agentService_js_1.AgentOrchestrator({ provider: mock(decision), readConsent: consent, ...overrides });",
+  "after": "const service = (decision, overrides = {}) => {\n const instance = new agentService_js_1.AgentOrchestrator({provider:mock(decision),readConsent:consent,...overrides});\n const chatOriginal = instance.chat.bind(instance);\n instance.chat = (user,input) => {\n  if(input===chat && decision?.kind==='tool' && ['plan_trip','search_places'].includes(decision.name)) {\n   const message=input.message.replace(decision.name==='plan_trip'?'Tìm địa điểm; ':'Lập lịch trình; ','');\n   return chatOriginal(user,{...input,message});\n  }\n  return chatOriginal(user,input);\n };\n return instance;\n};",
+  "assertionsChanged": 0,
+  "caseBodiesChanged": 0,
+  "assessorStub": false,
+  "productionGateStub": false,
+  "reason": "Original fixture intentionally names both search and plan. Narrow same-purpose unit requests to the single scripted tool intent; retain all values/model args/expected assertions. Original 17 PASS/5 FAIL retained separately."
+}

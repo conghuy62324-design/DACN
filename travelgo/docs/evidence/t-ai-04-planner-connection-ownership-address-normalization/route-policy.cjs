@@ -1,0 +1,22 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {assertHostEqual}=require('./host-address.cjs');
+function verifyForwarding(raw,{now=Date.now(),maxAgeMs=900000}={}){
+ assert.equal(raw.source,'INDEPENDENT_OS_AND_DOCKER_INSPECTION_NO_PG_CONNECTION','UNKNOWN_FORWARDING_ROUTE');assert.ok(now-Date.parse(raw.at)>=0&&now-Date.parse(raw.at)<=maxAgeMs,'STALE_ROUTE_PROOF');
+ assert.deepEqual(raw.endpoint,{host:'127.0.0.1',port:5432});assert.equal(raw.running,true);assert.match(raw.containerId,/^[a-f0-9]{64}$/);assert.equal(raw.image,'postgis/postgis:15-3.4-alpine');
+ assert.ok(raw.ports['5432/tcp'].some(x=>x.HostPort==='5432'&&['0.0.0.0','127.0.0.1'].includes(x.HostIp)),'MISSING_PUBLISHED_MAPPING');
+ const relay=raw.listeners.find(x=>x.address==='127.0.0.1'&&x.port===5432);assert.ok(relay,'MISSING_TARGET_LISTENER');assert.equal(relay.path.toLowerCase(),'c:\\program files\\wsl\\wslrelay.exe');assert.equal(relay.signatureStatus,'Valid');assert.match(relay.signer,/O=Microsoft Corporation/);assert.match(relay.commandLine,/--mode 1 --vm-id \{[a-f0-9-]+\}/i);
+ assert.ok(raw.listeners.some(x=>x.port===5432&&/\\com\.docker\.backend\.exe$/i.test(x.path)&&x.signatureStatus==='Valid'&&/O=Docker Inc/.test(x.signer)),'MISSING_DOCKER_LISTENER');assert.match(raw.wsl,/docker-desktop\s+Running\s+2/);
+ const network=raw.networks.travelgo_travelgo_net;assert.ok(network&&/^172\.\d+\.\d+\.\d+$/.test(network.IPAddress)&&network.Gateway&&network.Aliases.includes('travelgo_postgres'));assert.equal(raw.databaseConnections,0);
+ return Object.freeze({kind:'VERIFIED_DOCKER_WSL_FORWARD',endpoint:raw.endpoint,serverAddress:network.IPAddress,serverPort:5432,clientAddress:network.Gateway,containerId:raw.containerId,observedAt:raw.at,localListenerPid:relay.pid});
+}
+function assertRoute(route,physical,row){
+ assert.deepEqual(physical.expectedEndpoint,{host:'127.0.0.1',port:5432});assert.equal(physical.remoteAddress,'127.0.0.1');assert.equal(physical.remotePort,5432);assert.ok(Number.isInteger(physical.localPort)&&physical.localPort>0);assert.ok(Number.isInteger(row.client_port)&&row.client_port>0);assert.equal(row.client_port,row.inet_client_port);assertHostEqual(row.client_addr,row.inet_client_addr,'CLIENT_SELF_ENDPOINT_MISMATCH');
+ if(route?.kind==='VERIFIED_DIRECT'){
+  assert.equal(route.host,'127.0.0.1');assert.equal(route.port,5432);assertHostEqual(row.server_addr,'127.0.0.1');assert.equal(row.server_port,5432);assertHostEqual(row.client_addr,'127.0.0.1');assert.equal(row.client_port,physical.localPort,'UNEXPECTED_DIRECT_PORT_MISMATCH');
+ }else{
+  assert.equal(route?.kind,'VERIFIED_DOCKER_WSL_FORWARD','UNKNOWN_FORWARDING_ROUTE');assertHostEqual(row.server_addr,route.serverAddress,'FORWARD_SERVER_IDENTITY_MISMATCH');assert.equal(row.server_port,route.serverPort);assertHostEqual(row.client_addr,route.clientAddress,'FORWARD_CLIENT_PATH_MISMATCH');
+ }
+ return true;
+}
+module.exports={verifyForwarding,assertRoute};

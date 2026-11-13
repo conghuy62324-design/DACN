@@ -44,7 +44,7 @@ export const LoginPage: React.FC = () => {
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900">Đăng nhập HuGo Travel</h1>
           <p className="text-xs text-slate-500">
-            Truy cập để quản lý đơn đặt vé, danh sách yêu thích và điểm thưởng
+            Truy cập để quản lý đơn đặt vé và danh sách yêu thích
           </p>
         </div>
 

@@ -1,0 +1,12 @@
+{
+  "payloadSha256": "7ffa2a95143718e384338ea25c4d7400dcc2f95fc2eca52c0d06dd411be2f62e",
+  "payload": {
+    "at": "2026-11-11T09:56:29.281Z",
+    "type": "SQL_INTENT",
+    "number": 35,
+    "instanceId": "03011ad7-9193-4aa9-a834-c1f8ee3e58df",
+    "kind": "bootstrap",
+    "sql": "WITH ranges AS (  SELECT pg_range.rngtypid, pg_type.typname AS rngtypname,         pg_type.typarray AS rngtyparray, pg_range.rngsubtype    FROM pg_range LEFT OUTER JOIN pg_type ON pg_type.oid = pg_range.rngtypid)SELECT pg_type.typname, pg_type.typtype, pg_type.oid, pg_type.typarray,       ranges.rngtypname, ranges.rngtypid, ranges.rngtyparray  FROM pg_type LEFT OUTER JOIN ranges ON pg_type.oid = ranges.rngsubtype WHERE (pg_type.typtype IN('b', 'e'));",
+    "valuesSha256": null
+  }
+}

@@ -13,6 +13,9 @@ import partnerApplicationRoutes from './partnerApplicationRoutes.js';
 import intelligenceRoutes from './intelligenceRoutes.js';
 import favoriteRoutes from './favoriteRoutes.js';
 import reviewRoutes from './reviewRoutes.js';
+import agentRoutes from './agentRoutes.js';
+import mapsRoutes from './mapsRoutes.js';
+import publicAgentRoutes from './publicAgentRoutes.js';
 import { sequelize } from '../config/database.js';
 
 const router = Router();
@@ -42,6 +45,9 @@ router.use('/partner-applications', partnerApplicationRoutes);
 router.use('/intelligence', intelligenceRoutes);
 router.use('/favorites', favoriteRoutes);
 router.use('/reviews', reviewRoutes);
+router.use('/agent', agentRoutes);
+router.use('/maps', mapsRoutes);
+router.use('/public-agent', publicAgentRoutes);
 
 export default router;
 

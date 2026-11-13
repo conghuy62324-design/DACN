@@ -1,0 +1,242 @@
+{
+  "tier": "MOCK_ONLY_OFFLINE",
+  "suite": "agentDecisionFormatSafety",
+  "passed": 17,
+  "failed": 0,
+  "notRun": 0,
+  "results": [
+    {
+      "turns": [],
+      "name": "diagnostic schema uses valid supported JSON Schema vocabulary and exact contract names",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "valid search accepted by diagnostic and runtime",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "valid plan accepted by diagnostic and runtime",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "valid clarify accepted by diagnostic and runtime",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "valid unsupported accepted by diagnostic and runtime",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "invalid clarifyChildren rejected by diagnostic and runtime",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "invalid unknownTool rejected by diagnostic and runtime",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "invalid wrongType rejected by diagnostic and runtime",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "invalid extraRoot rejected by diagnostic and runtime",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "invalid extraArgument rejected by diagnostic and runtime",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "invalid injectedMutation rejected by diagnostic and runtime",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "missing required tool argument is rejected by runtime despite simplified schema acceptance",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "wrong kind combinations are rejected by runtime despite simplified schema acceptance",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [],
+      "name": "original branch schema remains stricter than diagnostic root schema",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "TEST_ONLY"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 0,
+          "providerReturns": [],
+          "providerErrors": [
+            {
+              "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+              "name": "HttpError"
+            }
+          ],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_INVALID_PROVIDER_OUTPUT",
+            "statusCode": 502,
+            "name": "HttpError"
+          }
+        }
+      ],
+      "name": "malformed tool output cannot execute tool; provider rejects before orchestrator fallback",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "TEST_ONLY"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 0,
+          "toolCalls": 0,
+          "providerReturns": [],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AUTH_REQUIRED",
+            "statusCode": 401,
+            "name": "HttpError"
+          }
+        },
+        {
+          "input": {
+            "message": "TEST_ONLY"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 0,
+          "toolCalls": 0,
+          "providerReturns": [],
+          "providerErrors": [],
+          "toolInputs": [],
+          "error": {
+            "code": "AGENT_EXTERNAL_CONSENT_REQUIRED",
+            "statusCode": 428,
+            "name": "HttpError"
+          }
+        }
+      ],
+      "name": "auth and external processing consent gates run before fake provider and tool",
+      "status": "PASS",
+      "origins": []
+    },
+    {
+      "turns": [
+        {
+          "input": {
+            "message": "Tìm địa điểm; Điểm đến: TEST_ONLY_CITY; Ngân sách mỗi người mỗi ngày: 310000 VND"
+          },
+          "assessment": {
+            "status": "UNDETERMINED",
+            "reason": "OUTSIDE_PROVEN_GRAMMAR"
+          },
+          "providerCalls": 1,
+          "toolCalls": 1,
+          "providerReturns": [
+            {
+              "kind": "tool",
+              "name": "search_places",
+              "arguments": {
+                "destinationCity": "TEST_ONLY_CITY",
+                "dailyBudgetPerPerson": 310000
+              }
+            }
+          ],
+          "providerErrors": [],
+          "toolInputs": [
+            {
+              "kind": "tool",
+              "name": "search_places",
+              "arguments": {
+                "destinationCity": "TEST_ONLY_CITY",
+                "dailyBudgetPerPerson": 310000
+              }
+            }
+          ],
+          "result": {
+            "status": "completed",
+            "reply": "Kết quả dưới đây lấy từ catalog công khai.",
+            "result": {
+              "source": "MOCK_ONLY"
+            },
+            "history": [
+              {
+                "role": "user",
+                "content": "Tìm địa điểm; Điểm đến: TEST_ONLY_CITY; Ngân sách mỗi người mỗi ngày: 310000 VND"
+              },
+              {
+                "role": "assistant",
+                "content": "Kết quả dưới đây lấy từ catalog công khai."
+              }
+            ],
+            "historyTruncated": false,
+            "context": {
+              "mode": "STATELESS",
+              "personalizationEnabled": false,
+              "behavioralDataUsed": false,
+              "persisted": false
+            }
+          }
+        }
+      ],
+      "name": "one provider decision yields at most one allowed read tool call; no mutation tool",
+      "status": "PASS",
+      "origins": [
+        {
+          "source": "agent_decision_origin",
+          "correlationId": "e34a7b55-8c2b-41b9-985d-5d46e6c2e756",
+          "origin": "MODEL",
+          "assessment": "UNDETERMINED",
+          "providerInvoked": true,
+          "rawNlu": "REQUIRES_EXPECTED_COMPARISON"
+        }
+      ]
+    }
+  ],
+  "assertionsChanged": 0
+}

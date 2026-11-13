@@ -1,0 +1,21 @@
+const c=require('./common.cjs');
+const {fs,path,assert,read,json,sha,write,root,evidence,prefix,report}=c;
+const db=json(prefix+'fingerprint-final-compare.json'),native=json(prefix+'native-final-audit.json');
+assert.equal(db.status,'DB_RESTORED_25_25_RECHECKED_AFTER_REGRESSION');
+assert.equal(db.tables,25);assert.deepEqual(db.changed,[]);assert.deepEqual(db.residualFixtures,[]);assert.equal(db.tripSessions.after,27);
+assert.equal(native.totalPosts,5);assert.equal(native.retry,0);
+const reviewed=json(prefix+'live-evidence-reviewed.json');
+assert.equal(reviewed.originalLiveVerdictsPreserved,true);
+const integrity=c.integrity();
+const reportText=read(report).toString('utf8');
+assert.ok(reportText.includes('vi phạm yêu cầu dừng khi guard thất bại'));
+assert.ok(reportText.includes('PARTIAL_LIVE_PLANNER_RESULT_RECORDED / HARNESS_BLOCKED'));
+const relativeLinks=[...reportText.matchAll(/\]\(([^)]+)\)/g)].map(x=>x[1]).filter(x=>!/^https?:/.test(x));
+for(const link of relativeLinks)if(!link.endsWith('/artifact-checksums.json'))assert.ok(fs.existsSync(path.resolve(root,'docs',link)),link);
+write('report-validation.json',{at:new Date().toISOString(),status:'PASS',relativeLinks:relativeLinks.length,linksResolve:true,reportSha256:sha(read(report)),classification:'PARTIAL_LIVE_PLANNER_RESULT_RECORDED_HARNESS_BLOCKED',historical:integrity,fixtureResidual:0,finalTables:25,tripSessions:27,nativePosts:5,originalVerdictsPreserved:true});
+const hashes={};
+for(const name of fs.readdirSync(evidence,{recursive:true})){const file=path.join(evidence,name);if(fs.statSync(file).isFile()&&name!=='artifact-checksums.json')hashes[name.replaceAll('\\','/')]=sha(fs.readFileSync(file));}
+write('artifact-checksums.json',{at:new Date().toISOString(),report,reportSha256:sha(read(report)),hashes,scope:'All current run2 evidence files except this checksum file; report included separately. Historical artifacts checked, never rewritten.'});
+for(const[name,hash]of Object.entries(hashes))assert.equal(sha(fs.readFileSync(path.join(evidence,name))),hash,name);
+for(const link of relativeLinks)assert.ok(fs.existsSync(path.resolve(root,'docs',link)),link);
+console.log(JSON.stringify({status:'SEALED',files:Object.keys(hashes).length,reportSha256:sha(read(report)),relativeLinks:relativeLinks.length,integrity}));

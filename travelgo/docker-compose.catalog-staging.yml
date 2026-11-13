@@ -1,0 +1,26 @@
+name: travelgo_catalog_staging_20261112
+services:
+  catalog-db:
+    image: postgis/postgis:15-3.4-alpine
+    container_name: travelgo_catalog_staging_20261112_db
+    pull_policy: never
+    restart: unless-stopped
+    mem_limit: 512m
+    pids_limit: 128
+    environment:
+      POSTGRES_USER: catalog_bootstrap
+      POSTGRES_PASSWORD: ${CATALOG_BOOTSTRAP_PASSWORD:?Use generated local compose.env}
+      POSTGRES_DB: travelgo_staging_catalog_20261112
+    ports:
+      - "127.0.0.1:15452:5432"
+    volumes:
+      - catalog_data:/var/lib/postgresql/data
+      - ./.local/catalog-staging/init.sql:/docker-entrypoint-initdb.d/10-catalog.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U catalog_bootstrap -d travelgo_staging_catalog_20261112"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+volumes:
+  catalog_data:
+    name: travelgo_catalog_staging_20261112_data

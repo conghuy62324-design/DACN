@@ -1,0 +1,10 @@
+const c=require('./common.cjs'),{spawn}=require('node:child_process');
+const guard=c.path.join(c.evidence,'offline-guard.cjs');
+const jobs=[
+ {name:'g2-68',file:'dist/tests/agentVerifiedHistory.test.js',envName:'G2_OUTPUT',output:'g2-results.json',count:68},
+ {name:'natural-79',file:'dist/tests/agentNaturalLanguageProof.test.js',envName:'NATURAL_PROOF_OUTPUT',output:'natural-results.json',count:79},
+ {name:'compatibility-61',file:'dist/tests/agentCompatibilityAcceptance.test.js',envName:'COMPAT_OUTPUT',output:'compatibility-results.json',count:61},
+ {name:'foundation-single-intent',file:c.path.join(c.evidence,'run-foundation-compat.cjs'),count:22}
+];
+function run(job){return new Promise((resolve,reject)=>{const env={...process.env,LLM_LIVE_ENABLED:'false',LLM_USAGE_APPROVED:'false',AGENT_G2_MODE:'',...(job.envName?{[job.envName]:c.path.join(c.evidence,job.output)}:{})};const child=spawn(process.execPath,['--require',guard,job.file],{cwd:c.path.join(c.root,'backend'),env,stdio:['ignore','pipe','pipe']});let text='';child.stdout.on('data',x=>text+=x);child.stderr.on('data',x=>text+=x);child.on('error',reject);child.on('close',code=>{c.fs.writeFileSync(c.path.join(c.evidence,job.name+'.log'),text,{flag:'wx'});let passed,failed;if(job.output){const data=c.json(c.prefix+job.output);passed=data.passed;failed=data.failed;}else{passed=Number(text.match(/"passed"\s*:\s*(\d+)/)?.[1]||0);failed=0;}resolve({name:job.name,exitCode:code,passed,failed,expected:job.count,mode:'MOCK_ONLY_OFFLINE',status:code===0&&passed===job.count&&failed===0?'PASS':'FAIL'});});});}
+Promise.allSettled(jobs.map(run)).then(results=>{const values=results.map((r,i)=>r.status==='fulfilled'?r.value:{name:jobs[i].name,status:'FAIL',error:String(r.reason)});c.write('additional-offline-results.json',{at:new Date().toISOString(),results:values,nativeInference:0,database:false,integrity:c.integrity()});console.log(JSON.stringify(values));if(values.some(x=>x.status!=='PASS'))process.exitCode=1;}).catch(e=>{console.error(e);process.exitCode=1;});
