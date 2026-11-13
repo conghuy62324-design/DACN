@@ -7,13 +7,13 @@
 
 ## 🛠️ I. CÁC MÔI TRƯỜNG & CÔNG NGHỆ BẮT BUỘC CẦN CÀI ĐẶT
 
-Trước khi chạy dự án, các thành viên trong nhóm cần đảm bảo máy tính đã cài đặt đầy đủ các phần mềm sau:
+Trước khi chạy dự án, các thành viên trong nhóm cần đảm bảo máy tính đã cài đặt đầy đủ 4 công cụ sau:
 
 1. **Git:**  
    - Tải và cài đặt tại: [https://git-scm.com/](https://git-scm.com/)  
    - Kiểm tra trong terminal: `git --version`
 
-2. **Node.js (khuyên dùng Node.js LTS v18.x, v20.x hoặc v22.x):**  
+2. **Node.js (LTS v18.x, v20.x hoặc v22.x):**  
    - Tải tại: [https://nodejs.org/](https://nodejs.org/)  
    - Đi kèm sẵn trình quản lý gói `npm`.  
    - Kiểm tra trong terminal:  
@@ -28,21 +28,45 @@ Trước khi chạy dự án, các thành viên trong nhóm cần đảm bảo m
    - Sau khi cài đặt, hãy mở ứng dụng **Docker Desktop** và đảm bảo Docker Engine đang ở trạng thái **Running** (màu xanh).  
    - Kiểm tra trong terminal: `docker --version` và `docker-compose --version`
 
+4. **Ollama (BẮT BUỘC để chạy & test Chatbot Trợ lý HuGo AI):**  
+   - Dùng để chạy mô hình ngôn ngữ lớn (Local LLM) hoàn toàn cục bộ trên máy tính, bảo mật thông tin và không tốn chi phí API.  
+   - **Tải và cài đặt:** [https://ollama.com/download](https://ollama.com/download) (hoặc qua lệnh `winget install Ollama.Ollama`).  
+   - Sau khi cài, mở Terminal kiểm tra: `ollama --version`  
+   - **Tải Model AI về máy:**  
+     Dự án tối ưu cho họ mô hình Qwen (hỗ trợ tiếng Việt và sinh JSON cấu trúc rất tốt). Chạy một trong các lệnh sau trong terminal:  
+     ```bash
+     # Khuyên dùng cho máy thông thường (RAM >= 8GB, GPU hoặc CPU):
+     ollama pull qwen2.5:3b
+
+     # Hoặc mô hình chất lượng cao hơn (nếu có GPU hoặc RAM >= 16GB):
+     ollama pull qwen2.5:7b
+     ```
+     *(Ghi chú: Nếu nhóm có file model `qwen3:4b-instruct-2507-q4_K_M`, bạn có thể nạp trực tiếp qua lệnh `ollama create`).*  
+   - Kiểm tra model đã có trong máy: `ollama list`  
+   - Đảm bảo service Ollama đang chạy nền tại cổng `http://127.0.0.1:11434`.
+
 ---
 
 ## 🚀 II. HƯỚNG DẪN CÁC BƯỚC KHỞI CHẠY DỰ ÁN (A - Z)
 
-### Bước 1: Clone mã nguồn về máy
-Mở Terminal / PowerShell và chạy:
+### Cách 1: Chạy nhanh bằng script 1-Click (Khuyên dùng trên Windows)
+Chỉ cần mở PowerShell tại thư mục gốc dự án và chạy:
+```powershell
+.\start_project.ps1
+```
+*Script sẽ tự động bật Docker database, kiểm tra Ollama, cài đặt thư viện backend/frontend, migrate cơ sở dữ liệu và mở sẵn 2 cửa sổ server.*
+
+---
+
+### Cách 2: Chạy thủ công từng bước
+
+#### Bước 1: Clone mã nguồn về máy
 ```bash
 git clone https://github.com/conghuy62324-design/DACN.git
 cd DACN
 ```
 
----
-
-### Bước 2: Khởi động Cơ sở dữ liệu (PostgreSQL + PostGIS qua Docker)
-
+#### Bước 2: Khởi động Cơ sở dữ liệu (PostgreSQL + PostGIS qua Docker)
 Di chuyển vào thư mục `travelgo` và khởi chạy Docker Compose:
 ```powershell
 cd travelgo
@@ -50,15 +74,19 @@ docker-compose up -d
 ```
 > Khi hoàn tất, container PostgreSQL sẽ lắng nghe ở cổng `5432` và pgAdmin ở cổng `5050`.
 
----
+#### Bước 3: Đảm bảo Ollama đang chạy
+Mở một terminal kiểm tra:
+```bash
+ollama serve
+```
+*(Nếu Ollama đã chạy sẵn dưới thanh Taskbar của Windows thì không cần mở lại).*
 
-### Bước 3: Cài đặt & Khởi động Backend (Express API)
-
+#### Bước 4: Cài đặt & Khởi động Backend (Express API)
 Mở một cửa sổ Terminal/PowerShell mới:
 ```powershell
 cd DACN/travelgo/backend
 
-# 1. Tạo file cấu hình môi trường .env từ mẫu .env.example (nếu chưa có)
+# 1. Tạo file cấu hình môi trường .env từ mẫu .env.example
 copy .env.example .env
 
 # 2. Cài đặt các thư viện phụ thuộc
@@ -76,10 +104,7 @@ npm run dev
 > **Backend Server sẽ chạy tại:** `http://localhost:5000`  
 > Kiểm tra trạng thái API: `http://localhost:5000/api/health`
 
----
-
-### Bước 4: Cài đặt & Khởi động Frontend (React + Vite)
-
+#### Bước 5: Cài đặt & Khởi động Frontend (React + Vite)
 Mở một cửa sổ Terminal/PowerShell riêng:
 ```powershell
 cd DACN/travelgo/frontend
@@ -99,10 +124,11 @@ npm run dev
 | Dịch vụ | Địa chỉ URL | Ghi chú |
 | :--- | :--- | :--- |
 | **Giao diện người dùng (Frontend)** | [http://localhost:3000](http://localhost:3000) | Giao diện React Vite, bản đồ Leaflet |
-| **Trợ lý HuGo AI (Assistant)** | [http://localhost:3000/assistant](http://localhost:3000/assistant) | Cần đăng nhập tài khoản Khách hàng |
-| **Lập kế hoạch Tour (Planner)** | [http://localhost:3000/tour-planner](http://localhost:3000/tour-planner) | Thuật toán Heuristic & phân cụm địa lý |
+| **Trợ lý HuGo AI (Assistant)** | [http://localhost:3000/assistant](http://localhost:3000/assistant) | Đăng nhập tài khoản Khách hàng để chat với AI |
+| **Lập kế hoạch Tour (Planner)** | [http://localhost:3000/tour-planner](http://localhost:3000/tour-planner) | Thuật toán Heuristic & phân cụm địa lý GIS |
 | **Backend REST API** | [http://localhost:5000](http://localhost:5000) | Express API, Sequelize ORM |
 | **API Health Check** | [http://localhost:5000/api/health](http://localhost:5000/api/health) | Kiểm tra kết nối DB & engine thuật toán |
+| **Dịch vụ Ollama Local LLM** | [http://127.0.0.1:11434](http://127.0.0.1:11434) | Quản lý mô hình Qwen phục vụ Chatbot AI |
 | **Giao diện Quản trị DB (pgAdmin)** | [http://localhost:5050](http://localhost:5050) | Email: `admin@hugotravel.vn`<br>Mật khẩu: `admin123` |
 
 ---
@@ -122,34 +148,32 @@ Hệ thống đã chuẩn bị sẵn các tài khoản demo sau khi chạy lện
 
 ---
 
-## 🧪 V. HƯỚNG DẪN TEST CÁC TÍNH NĂNG CHÍNH
+## 🤖 V. HƯỚNG DẪN TEST CHI TIẾT CHATBOT TRỢ LÝ AI (HUGO ASSISTANT)
 
-1. **Test Trợ lý HuGo AI (`/assistant`):**
-   - Đăng nhập với tài khoản `customer.a@hugotravel.vn` / `travelgo2026seed`.
-   - Vào mục **Trợ lý AI** trên thanh Menu.
-   - Nhập câu hỏi tư vấn (ví dụ: *"Gợi ý lịch trình du lịch Đà Nẵng 3 ngày 2 đêm với ngân sách 5 triệu"*).
-   - Kiểm tra phản hồi thông minh, đề xuất địa điểm thực tế và bóc tách thực thể địa lý.
-
-2. **Test Lập lịch trình thông minh (`/tour-planner`):**
-   - Chọn điểm khởi hành, điểm đến (Đà Nẵng, Phú Quốc, Đà Lạt...), số ngày, ngân sách và sở thích.
-   - Nhấn **Tạo lịch trình** để kiểm tra thuật toán phân cụm không gian GIS Haversine và Bayesian Average tự động sắp xếp điểm tham quan theo khung giờ.
-   - Kéo thả/chỉnh sửa điểm tham quan và lưu vào danh sách chuyến đi cá nhân (`/my-trips`).
-
-3. **Test Khám phá & Đánh giá xếp hạng Bayesian (`/explore`, `/tours`, `/hotels`, `/restaurants`):**
-   - Xem danh sách địa điểm được sắp xếp theo điểm đánh giá Bayesian Rating (loại bỏ thiên vị đánh giá ít).
-   - Xem bản đồ tương tác hiển thị vị trí các địa điểm.
+1. Mở trình duyệt vào **[http://localhost:3000/login](http://localhost:3000/login)**.
+2. Đăng nhập với tài khoản:
+   - **Email:** `customer.a@hugotravel.vn`
+   - **Mật khẩu:** `travelgo2026seed`
+3. Nhấp vào mục **Trợ lý AI** trên thanh Menu (hoặc vào thẳng `http://localhost:3000/assistant`).
+4. **Các tính năng Chatbot AI:**
+   - **Hỏi đáp thông tin điểm đến:** *"Gợi ý cho tôi các địa điểm du lịch đẹp ở Đà Nẵng"* hoặc *"Tìm các khách sạn gần biển ở Đà Nẵng ngân sách 800k/đêm"*.
+   - **Lên kế hoạch & dự trù chi phí:** *"Lên lịch trình 3 ngày 2 đêm đi Hội An - Đà Nẵng cho 2 người lớn, ngân sách 6 triệu"*.
+   - Chatbot sẽ gọi mô hình Ollama cục bộ, phân tích thực thể không gian địa lý GIS, bóc tách ngân sách và tự động hiển thị thẻ kết quả (Result Cards) cho phép bạn lưu chuyến đi hoặc tùy biến trực tiếp vào Tour Planner.
 
 ---
 
 ## ⚙️ VI. CÁC LỖI THƯỜNG GẶP (TROUBLESHOOTING)
 
-1. **Lỗi Docker không khởi động hoặc cổng 5432 bị chiếm dụng:**
+1. **Lỗi `AGENT_PROVIDER_NOT_CONFIGURED` hoặc `Ollama local chưa sẵn sàng`:**
+   - *Nguyên nhân:* Ứng dụng Ollama chưa được bật hoặc chưa kéo model về máy.
+   - *Khắc phục:* Mở terminal chạy `ollama serve` và kiểm tra `ollama list` xem đã có model Qwen chưa (`ollama pull qwen2.5:3b`).
+
+2. **Lỗi Docker không khởi động hoặc cổng 5432 bị chiếm dụng:**
    - *Nguyên nhân:* Máy tính có cài sẵn PostgreSQL local đang chạy nền chiếm cổng 5432.
    - *Khắc phục:* Mở `Services` (services.msc) trên Windows, tìm dịch vụ `postgresql-x64-...`, chuột phải chọn **Stop**. Sau đó chạy lại `docker-compose up -d`.
 
-2. **Lỗi `EPERM: operation not permitted` khi cài đặt trên Windows:**
+3. **Lỗi `EPERM: operation not permitted` khi cài đặt trên Windows:**
    - *Khắc phục:* Đóng toàn bộ các cửa sổ terminal hoặc trình soạn thảo đang mở file trong dự án, sau đó mở lại PowerShell với quyền **Run as Administrator** và chạy lại `npm install`.
 
-3. **Backend báo lỗi không kết nối được Database (`ECONNREFUSED`):**
+4. **Backend báo lỗi không kết nối được Database (`ECONNREFUSED`):**
    - *Khắc phục:* Kiểm tra xem Docker Desktop đã mở chưa và container `travelgo_postgres` có trạng thái Healthy chưa (`docker ps`).
-

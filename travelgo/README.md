@@ -4,7 +4,7 @@
 
 > Contract auth hiện hành (30/10/2026): [HUGO_AUTH_CONTRACT.md](./docs/HUGO_AUTH_CONTRACT.md) — access token HMAC hai phần, reload `/auth/me`, logout local; chưa có refresh/revocation. Profile CORE chỉ hỗ trợ xem.
 
-**HuGo Travel** là nền tảng web du lịch thông minh toàn diện được xây dựng theo kiến trúc **MVC (Model – View – Controller) kết hợp Service Layer & RESTful API**. Dự án tích hợp các thuật toán nghiên cứu chuyên sâu về xếp hạng địa điểm (Bayesian Average Rating), gợi ý dựa trên nội dung (Content-Based Recommendation), hệ thống thông tin địa lý (GIS Haversine & Spatial Clustering) và công cụ quản lý hành trình thực địa theo thời gian thực kết nối cộng đồng Blog du lịch.
+**HuGo Travel** là nền tảng web du lịch thông minh toàn diện được xây dựng theo kiến trúc **MVC (Model – View – Controller) kết hợp Service Layer & RESTful API**. Dự án tích hợp các thuật toán nghiên cứu chuyên sâu về xếp hạng địa điểm (Bayesian Average Rating), gợi ý dựa trên nội dung (Content-Based Recommendation), hệ thống thông tin địa lý (GIS Haversine & Spatial Clustering) và công cụ quản lý hành trình thực địa theo thời gian thực kết nối cộng đồng Blog du lịch cùng Trợ lý AI du lịch (HuGo Assistant chạy qua Local LLM Ollama).
 
 ---
 
@@ -48,6 +48,7 @@ Hệ thống tài liệu kiến trúc và nghiên cứu được lưu trữ đ�
        |  - RecommendationService (Content-Based Multi-criteria)     |
        |  - TourPlannerService (Heuristic Itinerary Scheduler)       |
        |  - TripSessionService (Real-time Tracking & Check-in)       |
+       |  - AgentService / AgentCoreService (HuGo AI Local LLM)      |
        |  - TourService, PlaceService, BookingService, BlogService   |
        +-------------------------------------------------------------+
                                       │
@@ -97,49 +98,29 @@ Mỗi gợi ý đều có lý do minh bạch (Explainability) hiển thị trự
 ## 🚀 III. CÁC TÍNH NĂNG ĐÃ HOÀN THIỆN & CHẠY THỰC TẾ
 
 1. **HuGo AI Assistant (`/assistant`):**
-   - Trợ lý AI du lịch tư vấn hành trình, tìm kiếm địa điểm, tính toán ngân sách và hỏi đáp tự nhiên.
+   - Trợ lý AI du lịch tư vấn hành trình, tìm kiếm địa điểm, tính toán ngân sách và hỏi đáp tự nhiên qua mô hình Ollama Local LLM (họ Qwen).
 2. **HuGo Tour Planner (`/tour-planner`):**
    - Bộ lọc chuyên nghiệp: Điểm khởi hành, Điểm đến, Ngày đi - về, Số khách người lớn/trẻ em, Tổng ngân sách, Phương tiện, 8 nhóm sở thích cá nhân, Nhịp độ di chuyển.
-   - Giao diện 2 cột: Cột trái quản lý timeline từng ngày (cho phép đổi thứ tự, xóa điểm tham quan); Cột phải tích hợp bản đồ Leaflet hiển thị marker phân biệt màu theo từng ngày và đường nối nét đứt.
-   - Lưu hành trình trực tiếp vào tài khoản người dùng.
+   - Giao diện 2 cột: Cột trái quản lý timeline từng ngày; Cột phải tích hợp bản đồ Leaflet hiển thị marker phân biệt màu theo từng ngày.
 3. **Khám phá Tour du lịch (`/tours`, `/tours/:id`):**
-   - Xem các tour du lịch mẫu tại Đà Nẵng, Phú Quốc, Sapa, Đà Lạt.
-   - Hiển thị song song điểm gốc và điểm Bayesian Average.
-   - Nút "Tùy biến lịch trình" sao chép toàn bộ dữ liệu tour mẫu sang Tour Planner để tự do chỉnh sửa.
+   - Xem các tour du lịch mẫu tại Đà Nẵng, Phú Quốc, Sapa, Đà Lạt với điểm xếp hạng Bayesian Average.
 4. **Quản lý & Theo dõi hành trình (`/my-trips`, `/my-trips/:id`):**
-   - Danh sách chuyến đi theo trạng thái: Sắp tới, Đang diễn ra, Đã hoàn thành.
-   - Thanh tiến độ phần trăm (%) hoàn thành chuyến đi.
-   - Chức năng **Check-in thực địa**: Hỗ trợ ghi chú cá nhân và tích hợp Geolocation API định vị GPS (có thể từ chối quyền mà không ảnh hưởng chức năng).
-   - Bản đồ chuyến đi với marker đổi màu xanh lá `✓` khi đã check-in.
-5. **Cộng đồng Blog trải nghiệm (`/blog`, `/blog/:id`, `/blog/create`):**
-   - **Chuyển chuyến đi thành Blog:** 1 click từ chuyến đi đã hoàn thành tự động tổng hợp các điểm check-in, chi phí thực tế và ghi chú thành bài viết bản nháp.
-   - **Sao chép từ Blog:** Độc giả có thể sao chép lịch trình từ bài blog bất kỳ để tùy biến lại thành chuyến đi riêng.
-6. **Hệ thống đặt dịch vụ Demo (Booking):**
-   - Đặt vé, phòng, tour tức thì với tính toán chiết khấu trẻ em, xuất mã Booking ngẫu nhiên và lưu lịch sử tại `/bookings`.
-7. **Xác thực & Quản trị Admin (`/login`, `/register`, `/admin`):**
-   - Phân quyền `Customer`, `Partner`, `Super Admin`.
-   - Dashboard thống kê dữ liệu.
+   - Check-in thực địa với tọa độ GPS, tiến độ hành trình và bản đồ động.
+5. **Cộng đồng Blog du lịch (`/blog`):**
+   - Chuyển hành trình đã đi thành bài viết trải nghiệm.
+6. **Hệ thống đặt chỗ demo (`/bookings`):**
+   - Đặt vé, phòng khách sạn, tour du lịch có mã booking.
+7. **Xác thực & Phân quyền RBAC (`/login`, `/admin`):**
+   - Quản lý các nhóm người dùng: Customer, Partner (Khách sạn/Nhà hàng/Tour), Super Admin.
 
 ---
 
-## 🧪 IV. CHẠY KIỂM THỬ THUẬT TOÁN (UNIT TESTS)
-
-Bộ kiểm thử thuật toán độc lập kiểm tra toàn bộ các trường hợp biên của Bayesian Rating, Haversine GIS và Tour Planner:
-
-```bash
-cd travelgo/backend
-npx tsx src/tests/algorithm.test.ts
-```
-
-**Kết quả: 11/11 Test Cases PASSED (100%)**
-
----
-
-## 🛠️ V. HƯỚNG DẪN KHỞI CHẠY DỰ ÁN CHI TIẾT
+## 🛠️ IV. HƯỚNG DẪN KHỞI CHẠY DỰ ÁN CHI TIẾT
 
 ### 0. Môi trường & Công nghệ cần cài đặt trước (Prerequisites)
 - **Node.js**: Phiên bản LTS khuyến nghị (>= 18.x, 20.x hoặc 22.x) kèm `npm`.
 - **Docker & Docker Desktop**: Chạy PostgreSQL 15 + PostGIS 3.4 và pgAdmin 4.
+- **Ollama**: Tải tại [https://ollama.com/download](https://ollama.com/download) để chạy Chatbot AI Local. Tải model bằng lệnh `ollama pull qwen2.5:3b`.
 - **Git**: Quản lý phiên bản mã nguồn.
 
 ### 1. Khởi động Cơ sở dữ liệu (PostgreSQL + PostGIS)
@@ -149,7 +130,12 @@ docker-compose up -d
 ```
 Container PostgreSQL sẽ chạy ở cổng `5432`, pgAdmin ở cổng `5050`.
 
-### 2. Khởi động Backend (Express API)
+### 2. Khởi động Ollama Local LLM (Nếu chưa chạy)
+```powershell
+ollama serve
+```
+
+### 3. Khởi động Backend (Express API)
 ```powershell
 cd travelgo/backend
 copy .env.example .env
@@ -161,7 +147,7 @@ npm run dev
 # Kiểm tra Health: http://localhost:5000/api/health
 ```
 
-### 3. Khởi động Frontend (React Vite)
+### 4. Khởi động Frontend (React Vite)
 ```powershell
 cd travelgo/frontend
 npm install
@@ -169,7 +155,7 @@ npm run dev
 # Frontend chạy tại: http://localhost:3000
 ```
 
-### 4. Tài khoản kiểm thử có sẵn (Seed Accounts)
+### 5. Tài khoản kiểm thử có sẵn (Seed Accounts)
 Sau khi chạy `npm run seed`, các tài khoản sau đã sẵn sàng với mật khẩu `travelgo2026seed`:
 - **Khách hàng (Customer - Test Trợ lý AI Assistant):** `customer.a@hugotravel.vn` / `travelgo2026seed`
 - **Quản trị viên (Super Admin):** `admin@hugotravel.vn` / `travelgo2026seed`
