@@ -1,0 +1,139 @@
+{
+  "at": "2026-11-16T14:04:40.917Z",
+  "task": "21.29",
+  "status": "PREPARED_REQUIRES_FRESH_OWNER_APPROVAL",
+  "database": {
+    "host": "127.0.0.1",
+    "port": 15452,
+    "name": "travelgo_staging_catalog_20261112",
+    "role": "catalog_runtime",
+    "sentinel": "travelgo-public-staging:catalog-20261112"
+  },
+  "owner": {
+    "id": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+    "principalHash": "856f41c9ad2ffc1e3f467eeb45f0069a943196101062d0e3ab3927bec64b95c5",
+    "classification": "EXISTING_APPROVED_STAGING_TEST_CUSTOMER",
+    "testEmail": true,
+    "syntheticName": false,
+    "existingLanguageBaseline": {
+      "language_learning_settings": 0,
+      "personal_language_mappings": 0,
+      "language_contributions": 0,
+      "language_feedback_events": 0
+    },
+    "noAccountRenameOrNewPrincipal": true,
+    "condition": "Only if test-account provenance remains verified; existing personal rows must remain0 before writes"
+  },
+  "fixture": {
+    "mappingId": "0f53d182-e2b2-4cbe-8317-85bfadb46787",
+    "expression": "vulora",
+    "conceptId": "accommodation_type.homestay",
+    "scope": "PERSONAL",
+    "settingsOwner": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+    "synthetic": true,
+    "retain": false
+  },
+  "allowedWriteTables": [
+    "language_learning_settings",
+    "personal_language_mappings",
+    "language_contributions"
+  ],
+  "intentionalRows": "One task settings row and one exact mapping UUID. Existing settings/mappings/contributions must0. Contribution DELETE is zero-row housekeeping from existing settings API; contribution INSERT/UPDATE forbidden.",
+  "sqlFence": "Existing scoped-knowledge-write launcher, languageOnly branch: exact owner/policy/meaning and one INSERT reservation; binds exact task UUID server-side solely in isolated launcher; no public client-supplied ID, no persistent default/schema changes; all other DML denied.",
+  "maxConservativeAttempts": 10,
+  "plannedNormalChats": 8,
+  "plannedManagement": 2,
+  "requiredInitialRemaining": 20,
+  "capPerHour": 20,
+  "reserve": 10,
+  "noRetry": true,
+  "management": [
+    {
+      "id": "M1",
+      "operation": "Enable explicit PERSONAL language consent, contribution=false"
+    },
+    {
+      "id": "M2",
+      "operation": "Confirm SAVE_PERSONAL ticket from L5 with confirmed=true/policyVersion"
+    }
+  ],
+  "journeys": [
+    {
+      "id": "J1",
+      "viewport": "desktop",
+      "message": "Tìm ks dưới800k và nhà hàng dưới200k ở Đà Lạt, tổng chuyến không vượt6tr",
+      "expected": "hotel primary, restaurant deferred, exact separate caps, group6M; no mutation"
+    },
+    {
+      "id": "J2",
+      "viewport": "desktop",
+      "message": "Đổi điểm đến từ Đà Lạt sang Huế, vẫn khởi hành Hà Nội",
+      "expected": "destinationHuế/departureHàNội, keepbudget6M; no Trip write"
+    },
+    {
+      "id": "J3",
+      "viewport": "desktop",
+      "message": "Không phải2 người, là3 người",
+      "expected": "party3, keepdestination/departure/groupbudget; no Trip write"
+    },
+    {
+      "id": "J4",
+      "viewport": "desktop",
+      "message": "Từ giờ mình gọi homestay là vulora",
+      "expected": "meaning clarification, no search or persistence"
+    },
+    {
+      "id": "J5",
+      "viewport": "desktop",
+      "message": "Ý mình là homestay",
+      "expected": "SESSION meaning-only, separate SAVE_PERSONAL ticket; no unsolicited search"
+    },
+    {
+      "id": "J6",
+      "viewport": "desktop-new-conversation",
+      "message": "Tìm vulora có Wi-Fi ở Đà Lạt",
+      "expected": "fresh-session persisted meaning homestay and correct area; source unchanged/no API restart between learning and reuse"
+    },
+    {
+      "id": "J7",
+      "viewport": "mobile-new-conversation",
+      "message": "Không cần hồ bơi, tìm vulora ở Đà Lạt",
+      "expected": "actual mobile consent/send, read search with persisted meaning; natural grounded source/caveats, no overflow"
+    },
+    {
+      "id": "J8",
+      "viewport": "mobile",
+      "message": "So sánh mấy vulora đó",
+      "expected": "focused referent clarification or grounded current-list comparison, no assumption/automatic selection; no mutation"
+    }
+  ],
+  "runtime": {
+    "frontend": 5177,
+    "api": 5057,
+    "ownedLauncherOnly": true,
+    "activationAndProtectedRestoration": true,
+    "maximumWindowHours": 2,
+    "modelSearchWorker": "OFF"
+  },
+  "forbidden": [
+    "users/user_roles/Owner credentials",
+    "catalog130Place20Business",
+    "Trip/Booking/payment",
+    "customer memory preferences",
+    "shared approvals",
+    "knowledge/source/candidate writes",
+    "model/Internet/Maps/VPS",
+    "schema/migrations",
+    "production env changes"
+  ],
+  "cleanup": {
+    "exactMappingId": "0f53d182-e2b2-4cbe-8317-85bfadb46787",
+    "exactSettingsOwner": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+    "zeroContributions": true,
+    "expectedFinalTables": 40,
+    "requireFreshBaselineMatch": true,
+    "restore": "protected READ ONLY",
+    "deleteTaskCredentials": true
+  },
+  "approvalFromPreviousTasksMayNotBeReused": true
+}

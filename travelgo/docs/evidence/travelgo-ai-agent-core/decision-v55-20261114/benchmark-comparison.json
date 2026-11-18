@@ -1,0 +1,154 @@
+{
+  "at": "2026-11-14T07:03:00.456Z",
+  "sameExpectedHash": true,
+  "sameCatalogHash": true,
+  "baseline": {
+    "cases": 50,
+    "passed": 21,
+    "failed": 29,
+    "meanLatencyMs": 2.4876400000000056
+  },
+  "finalRevalidation": {
+    "cases": 50,
+    "passed": 47,
+    "failed": 3,
+    "meanLatencyMs": 2.438320000000003
+  },
+  "firstIndependentHoldout": {
+    "cases": 22,
+    "passed": 20,
+    "failed": 2,
+    "meanLatencyMs": 1.2493590909090968
+  },
+  "finalHoldoutRevalidation": {
+    "cases": 22,
+    "passed": 20,
+    "failed": 2,
+    "meanLatencyMs": 1.3140454545454594
+  },
+  "byKind": {
+    "baseline": {
+      "GEO": {
+        "passed": 0,
+        "total": 18
+      },
+      "DECISION": {
+        "passed": 16,
+        "total": 24
+      },
+      "WHATIF": {
+        "passed": 5,
+        "total": 8
+      }
+    },
+    "final": {
+      "GEO": {
+        "passed": 15,
+        "total": 18
+      },
+      "DECISION": {
+        "passed": 24,
+        "total": 24
+      },
+      "WHATIF": {
+        "passed": 8,
+        "total": 8
+      }
+    }
+  },
+  "dimensions": {
+    "baseline": {
+      "decisionCorrectness": {
+        "passed": 16,
+        "total": 24
+      },
+      "hypotheticalFullJourney": {
+        "passed": 5,
+        "total": 8
+      },
+      "hypotheticalStateImmutability": {
+        "correct": 8,
+        "labeled": 8
+      },
+      "noUnauthorizedMutation": true,
+      "humanUsefulness": null,
+      "productionUnsupportedClaimRate": null,
+      "queryBenchmarkControlled": null
+    },
+    "final": {
+      "decisionCorrectness": {
+        "passed": 24,
+        "total": 24
+      },
+      "hypotheticalFullJourney": {
+        "passed": 8,
+        "total": 8
+      },
+      "hypotheticalStateImmutability": {
+        "correct": 8,
+        "labeled": 8
+      },
+      "noUnauthorizedMutation": true,
+      "humanUsefulness": null,
+      "productionUnsupportedClaimRate": null,
+      "queryBenchmarkControlled": null
+    }
+  },
+  "knownH13": {
+    "baseline": false,
+    "final": true,
+    "excludedFromIndependentHoldout": true
+  },
+  "failures": [
+    {
+      "id": "GD03",
+      "checks": {
+        "model": true,
+        "mutation": true,
+        "geographic": false
+      },
+      "reply": "Mình đã ghi nhận chuyến đi Đà Lạt, 3 người lớn, ngân sách cả nhóm 7.000.000 VND. Bạn dự định đi và về ngày nào? Nhớ cho mình cả năm để tránh nhầm lịch nhé."
+    },
+    {
+      "id": "GH01",
+      "checks": {
+        "model": true,
+        "mutation": true,
+        "geographic": false
+      },
+      "reply": "AI hiểu ngôn ngữ tự nhiên hiện chưa được bật. Mình vẫn có thể ghi nhận thông tin chuyến đi và tìm dữ liệu TravelGo khi yêu cầu rõ. Bạn muốn đi đâu hoặc cần hỗ trợ phần nào?"
+    },
+    {
+      "id": "GH04",
+      "checks": {
+        "model": true,
+        "mutation": true,
+        "geographic": false
+      },
+      "reply": "Mình đã ghi nhận chuyến đi Phú Quốc, 3 người lớn, ngân sách cả nhóm 7.000.000 VND. Bạn dự định đi và về ngày nào? Nhớ cho mình cả năm để tránh nhầm lịch nhé."
+    }
+  ],
+  "aliasAnalysis": [
+    {
+      "id": "GD03",
+      "expected": "TP. HCM",
+      "actual": "Thành phố Hồ Chí Minh",
+      "sharedIdsEqual": true,
+      "originalLockedVerdictPreserved": "FAIL"
+    },
+    {
+      "id": "GH04",
+      "expected": "TP. HCM",
+      "actual": "Thành phố Hồ Chí Minh",
+      "sharedIdsEqual": true,
+      "originalLockedVerdictPreserved": "FAIL"
+    }
+  ],
+  "unresolvedGeography": {
+    "id": "GH01",
+    "value": "Quy Nhon",
+    "sharedResolverFound": false,
+    "noNewGeographyAdded": true
+  },
+  "limits": "Locked verdicts unchanged. ID-equivalence is supplemental analysis, not regrading FAIL. Post-wire revalidation after concrete browser contract bug fix is not a new independent holdout. Baseline full-context canonical seed was rejected before what-if in WD01-WD03; improvement is full-journey correctness, not isolated identical-state inference."
+}

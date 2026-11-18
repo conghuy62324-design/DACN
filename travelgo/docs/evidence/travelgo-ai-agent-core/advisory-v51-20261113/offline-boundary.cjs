@@ -1,0 +1,6 @@
+const fs=require('node:fs'),path=require('node:path'),net=require('node:net');
+Object.assign(process.env,{LLM_LIVE_ENABLED:'false',LLM_USAGE_APPROVED:'false',AGENT_CORE_LLM_ENABLED:'false',GOOGLE_MAPS_USAGE_APPROVED:'false',PUBLIC_STAGING_WRITES_APPROVED:'false',ALLOW_TEST_DB_WRITES:'false'});
+const audit={pid:process.pid,postgres:0,ollama:0,externalNetwork:0},pg=require(path.resolve(__dirname,'../../../../backend/node_modules/pg'));
+pg.Client.prototype.connect=pg.Pool.prototype.connect=function(){audit.postgres++;throw Error('OFFLINE_POSTGRES_FORBIDDEN');};
+const connect=net.Socket.prototype.connect;net.Socket.prototype.connect=function(...args){const f=Array.isArray(args[0])?args[0][0]:args[0],o=typeof f==='object'?f:{port:f,host:args[1]},port=+o.port,host=o.host||'localhost';if(port===11434){audit.ollama++;throw Error('OFFLINE_OLLAMA_FORBIDDEN');}if(!['127.0.0.1','localhost','::1'].includes(host)||[5432,15432,15452,5057,5177].includes(port)){audit.externalNetwork++;throw Error('OFFLINE_NETWORK_FORBIDDEN');}return connect.apply(this,args);};
+process.on('exit',()=>{const dir=path.join(__dirname,'offline-audit');fs.mkdirSync(dir,{recursive:true});fs.writeFileSync(path.join(dir,process.pid+'-'+Date.now()+'.json'),JSON.stringify(audit),{flag:'wx'});});

@@ -1,0 +1,395 @@
+{
+  "continualMeasurement": {
+    "cases": 12,
+    "intentAccuracy": 1,
+    "precision": 1,
+    "recall": 1,
+    "falsePositiveReadOperations": 0,
+    "unknownExpressionRate": {
+      "numerator": 2,
+      "denominator": 12,
+      "rate": 0.16666666666666666
+    },
+    "clarificationRate": {
+      "numerator": 7,
+      "denominator": 12,
+      "rate": 0.5833333333333334
+    },
+    "userCorrectionRate": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "ambiguousMappingRate": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "confirmedMappingCount": null,
+    "correctReuse": 5,
+    "incorrectReuse": 0,
+    "labeledReuse": 5,
+    "crossAccountLeakageCount": null,
+    "wrongOperationCount": 0,
+    "unauthorizedMutationCount": 0,
+    "meanLatencyMs": 2.5018499999999904,
+    "meanQueries": null,
+    "limits": "Null means not measured. Reuse correctness requires labeled ground truth; feedback clicks and mapping count are not evidence of quality."
+  },
+  "tier": "OFFLINE_SYNTHETIC_STORAGE_DOUBLE_NOT_PG_OR_QWEN",
+  "criteriaHash": "8406cb0d86120c07bde1a20024923a24c27ac76820b4195b3b35d8b45da58de0",
+  "passed": 14,
+  "failed": 1,
+  "results": [
+    {
+      "name": "arbitrary discovery, explicit meaning, separate saving and new-conversation reuse",
+      "status": "FAIL",
+      "error": "TypeError: Cannot read properties of undefined (reading 'filters')\n    at C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\adaptiveLanguageV53.test.js:57:494\n    at async test (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\adaptiveLanguageV53.test.js:47:5)\n    at async C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\adaptiveLanguageV53.test.js:57:9"
+    },
+    {
+      "name": "personal owner isolation and consent off",
+      "status": "PASS"
+    },
+    {
+      "name": "deletion and new session do not resurrect personal mapping",
+      "status": "PASS"
+    },
+    {
+      "name": "inflight revocation rejects result before presentation",
+      "status": "PASS"
+    },
+    {
+      "name": "pending TTL and candidate mismatch are rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "account switch cannot confirm another owner ticket",
+      "status": "PASS"
+    },
+    {
+      "name": "explicit correction changes only session meaning until independent save",
+      "status": "PASS"
+    },
+    {
+      "name": "negative, ambiguous money and conditional phrases cannot create numeric slots",
+      "status": "PASS"
+    },
+    {
+      "name": "conflicting shared meanings ask; personal data does not grant mutation authority",
+      "status": "PASS"
+    },
+    {
+      "name": "PII/control/proper names rejected, numeric units never learned",
+      "status": "PASS"
+    },
+    {
+      "name": "feedback kinds are not corrections, confirmations have separate purpose",
+      "status": "PASS"
+    },
+    {
+      "name": "controlled model mapping context is bounded and contains no owner or private row ID",
+      "status": "PASS"
+    },
+    {
+      "name": "locked holdout: base without mappings versus trained adaptive lookup on new sentences",
+      "status": "PASS"
+    },
+    {
+      "name": "known mapping with incomplete or conflicting geographic/compound context asks instead of fallback",
+      "status": "PASS"
+    },
+    {
+      "name": "feature disabled leaves legacy NLU and metadata contracts unchanged",
+      "status": "PASS"
+    }
+  ],
+  "transcripts": [],
+  "evaluation": [
+    {
+      "input": "Kiếm zyvoro ở Nha Trang giúp tui",
+      "expected": "search_registered_hotels",
+      "base": "CLARIFY",
+      "adaptive": "search_registered_hotels",
+      "baseCorrect": false,
+      "adaptiveCorrect": true,
+      "baseMs": 0.8250000000000455,
+      "adaptiveMs": 5.181299999999965,
+      "baseReply": "Bạn dùng “zyvoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "adaptiveReply": "SYNTHETIC Nha Trang homestay. Giá tham khảo từ nguồn TravelGo: 400.000 VND. Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét.\n\nGiá được ghi từ TravelGo; đơn vị giá và tình trạng còn chỗ chưa được xác minh.",
+      "adaptiveEvidence": {
+        "status": "RESOLVED",
+        "evidence": [
+          {
+            "expression": "zyvoro",
+            "meaning": "homestay",
+            "conceptId": "accommodation_type.homestay",
+            "domain": "travel_accommodation",
+            "evidenceStatus": "USER_CONFIRMED",
+            "currentSpan": {
+              "start": 5,
+              "end": 11
+            },
+            "executionAuthority": false
+          }
+        ]
+      },
+      "baseClarification": true,
+      "adaptiveClarification": false,
+      "unknownBefore": true,
+      "unknownAfter": false
+    },
+    {
+      "input": "Tìm zyvoro tại Hội An cho 2 người",
+      "expected": "search_registered_hotels",
+      "base": "CLARIFY",
+      "adaptive": "search_registered_hotels",
+      "baseCorrect": false,
+      "adaptiveCorrect": true,
+      "baseMs": 1.0856999999999744,
+      "adaptiveMs": 6.878799999999956,
+      "baseReply": "Bạn dùng “zyvoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "adaptiveReply": "SYNTHETIC Hội An homestay. Giá tham khảo từ nguồn TravelGo: 400.000 VND. Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét.\n\nGiá được ghi từ TravelGo; đơn vị giá và tình trạng còn chỗ chưa được xác minh.",
+      "adaptiveEvidence": {
+        "status": "RESOLVED",
+        "evidence": [
+          {
+            "expression": "zyvoro",
+            "meaning": "homestay",
+            "conceptId": "accommodation_type.homestay",
+            "domain": "travel_accommodation",
+            "evidenceStatus": "USER_CONFIRMED",
+            "currentSpan": {
+              "start": 4,
+              "end": 10
+            },
+            "executionAuthority": false
+          }
+        ]
+      },
+      "baseClarification": true,
+      "adaptiveClarification": false,
+      "unknownBefore": true,
+      "unknownAfter": false
+    },
+    {
+      "input": "Kiem zývoro o nha trang",
+      "expected": "search_registered_hotels",
+      "base": "CLARIFY",
+      "adaptive": "search_registered_hotels",
+      "baseCorrect": false,
+      "adaptiveCorrect": true,
+      "baseMs": 1.9563999999999169,
+      "adaptiveMs": 4.296500000000037,
+      "baseReply": "Bạn dùng “zývoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "adaptiveReply": "SYNTHETIC Nha Trang homestay. Giá tham khảo từ nguồn TravelGo: 400.000 VND. Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét.\n\nGiá được ghi từ TravelGo; đơn vị giá và tình trạng còn chỗ chưa được xác minh.",
+      "adaptiveEvidence": {
+        "status": "RESOLVED",
+        "evidence": [
+          {
+            "expression": "zývoro",
+            "meaning": "homestay",
+            "conceptId": "accommodation_type.homestay",
+            "domain": "travel_accommodation",
+            "evidenceStatus": "USER_CONFIRMED",
+            "currentSpan": {
+              "start": 5,
+              "end": 11
+            },
+            "executionAuthority": false
+          }
+        ]
+      },
+      "baseClarification": true,
+      "adaptiveClarification": false,
+      "unknownBefore": true,
+      "unknownAfter": false
+    },
+    {
+      "input": "Tìm zyvoro ở Đà Lạt giùm",
+      "expected": "search_registered_hotels",
+      "base": "CLARIFY",
+      "adaptive": "search_registered_hotels",
+      "baseCorrect": false,
+      "adaptiveCorrect": true,
+      "baseMs": 0.7354000000000269,
+      "adaptiveMs": 4.42369999999994,
+      "baseReply": "Bạn dùng “zyvoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "adaptiveReply": "SYNTHETIC Đà Lạt homestay. Giá tham khảo từ nguồn TravelGo: 400.000 VND. Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét.\n\nGiá được ghi từ TravelGo; đơn vị giá và tình trạng còn chỗ chưa được xác minh.",
+      "adaptiveEvidence": {
+        "status": "RESOLVED",
+        "evidence": [
+          {
+            "expression": "zyvoro",
+            "meaning": "homestay",
+            "conceptId": "accommodation_type.homestay",
+            "domain": "travel_accommodation",
+            "evidenceStatus": "USER_CONFIRMED",
+            "currentSpan": {
+              "start": 4,
+              "end": 10
+            },
+            "executionAuthority": false
+          }
+        ]
+      },
+      "baseClarification": true,
+      "adaptiveClarification": false,
+      "unknownBefore": true,
+      "unknownAfter": false
+    },
+    {
+      "input": "Ko tìm zyvoro ở Đà Lạt",
+      "expected": "CLARIFY",
+      "base": "CLARIFY",
+      "adaptive": "CLARIFY",
+      "baseCorrect": true,
+      "adaptiveCorrect": true,
+      "baseMs": 0.740099999999984,
+      "adaptiveMs": 0.34590000000002874,
+      "baseReply": "Bạn dùng “zyvoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "adaptiveReply": "Bạn muốn tìm dịch vụ hay chỉ đang nêu một khả năng? Mình chưa thay đổi lựa chọn nào.",
+      "baseClarification": true,
+      "adaptiveClarification": true,
+      "unknownBefore": true,
+      "unknownAfter": false
+    },
+    {
+      "input": "Nếu có thể thì kiếm zyvoro ở Đà Lạt",
+      "expected": "CLARIFY",
+      "base": "CLARIFY",
+      "adaptive": "CLARIFY",
+      "baseCorrect": true,
+      "adaptiveCorrect": true,
+      "baseMs": 0.5964000000000169,
+      "adaptiveMs": 0.4028999999999314,
+      "baseReply": "Đây mới là phương án cân nhắc; mình vẫn giữ thông tin hiện tại. Bạn muốn so sánh chi phí phương tiện hay xác nhận một thay đổi cụ thể?",
+      "adaptiveReply": "Bạn muốn tìm dịch vụ hay chỉ đang nêu một khả năng? Mình chưa thay đổi lựa chọn nào.",
+      "baseClarification": true,
+      "adaptiveClarification": true,
+      "unknownBefore": false,
+      "unknownAfter": false
+    },
+    {
+      "input": "zyvoro 2 xị",
+      "expected": "CLARIFY",
+      "base": "CLARIFY",
+      "adaptive": "CLARIFY",
+      "baseCorrect": true,
+      "adaptiveCorrect": true,
+      "baseMs": 1.727800000000002,
+      "adaptiveMs": 0.43219999999996617,
+      "baseReply": "AI hiểu ngôn ngữ tự nhiên hiện chưa được bật. Mình vẫn có thể ghi nhận thông tin chuyến đi và tìm dữ liệu TravelGo khi yêu cầu rõ. Bạn muốn đi đâu hoặc cần hỗ trợ phần nào?",
+      "adaptiveReply": "Mình thấy cách diễn đạt đã nhớ nhưng ngữ cảnh chưa đủ rõ hoặc có nhiều nghĩa. Bạn muốn tìm loại dịch vụ và điểm đến nào?",
+      "baseClarification": true,
+      "adaptiveClarification": true,
+      "unknownBefore": false,
+      "unknownAfter": false
+    },
+    {
+      "input": "Tìm zyvoro ở Đà Lạt nhưng đừng đặt phòng",
+      "expected": "CLARIFY",
+      "base": "CLARIFY",
+      "adaptive": "CLARIFY",
+      "baseCorrect": true,
+      "adaptiveCorrect": true,
+      "baseMs": 0.8039999999999736,
+      "adaptiveMs": 0.4451999999999998,
+      "baseReply": "Bạn dùng “zyvoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "adaptiveReply": "Bạn muốn tìm dịch vụ hay chỉ đang nêu một khả năng? Mình chưa thay đổi lựa chọn nào.",
+      "baseClarification": true,
+      "adaptiveClarification": true,
+      "unknownBefore": true,
+      "unknownAfter": false
+    },
+    {
+      "input": "Tìm vvvzyvoro ở Đà Lạt",
+      "expected": "CLARIFY",
+      "base": "CLARIFY",
+      "adaptive": "CLARIFY",
+      "baseCorrect": true,
+      "adaptiveCorrect": true,
+      "baseMs": 0.5941000000000258,
+      "adaptiveMs": 0.6385999999999967,
+      "baseReply": "Bạn dùng “vvvzyvoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "adaptiveReply": "Bạn dùng “vvvzyvoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "baseClarification": true,
+      "adaptiveClarification": true,
+      "unknownBefore": true,
+      "unknownAfter": true
+    },
+    {
+      "input": "Tìm qerul ở Đà Lạt",
+      "expected": "CLARIFY",
+      "base": "CLARIFY",
+      "adaptive": "CLARIFY",
+      "baseCorrect": true,
+      "adaptiveCorrect": true,
+      "baseMs": 0.5716999999999643,
+      "adaptiveMs": 0.63900000000001,
+      "baseReply": "Bạn dùng “qerul” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "adaptiveReply": "Bạn dùng “qerul” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "baseClarification": true,
+      "adaptiveClarification": true,
+      "unknownBefore": true,
+      "unknownAfter": true
+    },
+    {
+      "input": "ghé zyvoro hôm nào nhỉ",
+      "expected": "CLARIFY",
+      "base": "CLARIFY",
+      "adaptive": "CLARIFY",
+      "baseCorrect": true,
+      "adaptiveCorrect": true,
+      "baseMs": 2.25750000000005,
+      "adaptiveMs": 0.5036000000000058,
+      "baseReply": "AI hiểu ngôn ngữ tự nhiên hiện chưa được bật. Mình vẫn có thể ghi nhận thông tin chuyến đi và tìm dữ liệu TravelGo khi yêu cầu rõ. Bạn muốn đi đâu hoặc cần hỗ trợ phần nào?",
+      "adaptiveReply": "Mình thấy cách diễn đạt đã nhớ nhưng ngữ cảnh chưa đủ rõ hoặc có nhiều nghĩa. Bạn muốn tìm loại dịch vụ và điểm đến nào?",
+      "baseClarification": true,
+      "adaptiveClarification": true,
+      "unknownBefore": false,
+      "unknownAfter": false
+    },
+    {
+      "input": "Kiếm zyvoro ở Phú Quốc cho nhóm bạn",
+      "expected": "search_registered_hotels",
+      "base": "CLARIFY",
+      "adaptive": "search_registered_hotels",
+      "baseCorrect": false,
+      "adaptiveCorrect": true,
+      "baseMs": 0.7241999999999962,
+      "adaptiveMs": 5.834500000000048,
+      "baseReply": "Bạn dùng “zyvoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "adaptiveReply": "SYNTHETIC Phú Quốc homestay. Giá tham khảo từ nguồn TravelGo: 400.000 VND. Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét.\n\nGiá được ghi từ TravelGo; đơn vị giá và tình trạng còn chỗ chưa được xác minh.",
+      "adaptiveEvidence": {
+        "status": "RESOLVED",
+        "evidence": [
+          {
+            "expression": "zyvoro",
+            "meaning": "homestay",
+            "conceptId": "accommodation_type.homestay",
+            "domain": "travel_accommodation",
+            "evidenceStatus": "USER_CONFIRMED",
+            "currentSpan": {
+              "start": 5,
+              "end": 11
+            },
+            "executionAuthority": false
+          }
+        ]
+      },
+      "baseClarification": true,
+      "adaptiveClarification": false,
+      "unknownBefore": true,
+      "unknownAfter": false
+    }
+  ],
+  "metrics": {
+    "cases": 12,
+    "baseCorrect": 7,
+    "adaptiveCorrect": 12,
+    "falsePositiveReadOperations": 0,
+    "baseClarifications": 12,
+    "adaptiveClarifications": 7,
+    "interpretation": "Small locked synthetic reuse holdout; not unseen-word generalization, Qwen accuracy, human helpfulness or production metrics"
+  }
+}

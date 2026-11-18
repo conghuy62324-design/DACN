@@ -1,0 +1,202 @@
+# TASK 21.13 — TRAVELGO QWEN V5.1 REAL REASONING ACCEPTANCE
+
+Tiếp tục dự án TravelGo từ báo cáo Master mới nhất.
+
+Đọc:
+`docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md`
+
+Tập trung các mục 21.10–21.12 và evidence Qwen V5.1.
+
+## MỤC TIÊU
+
+Nghiệm thu khả năng hiểu tiếng Việt, suy luận và tư vấn của Qwen local thật sau các bản sửa V5.1.
+
+Đây là nhiệm vụ kiểm thử model, KHÔNG phải nhiệm vụ viết lại Agent hoặc tiếp tục tối ưu parser.
+
+Tôi cấp quyền riêng cho nhiệm vụ này thực hiện tối đa:
+- 1 operator warm-load local nếu model chưa resident và guard cho phép.
+- 3 inference Qwen thật.
+- Không retry.
+- Không inference thêm để tìm PASS.
+
+## PHASE 1 — FRESH PREFLIGHT
+
+Dùng helper quota/resources/ownership đã có.
+
+Kiểm tra:
+- RAM khả dụng ≥6144 MiB.
+- GPU utilization ≤10% nếu cần cold-load.
+- Nếu cần cold-load: VRAM khả dụng ≥4866+512 MiB theo guard lịch sử.
+- Nếu model resident, xác minh actual residency/headroom theo guard hiện hành.
+- Ollama loopback 127.0.0.1:11434, đúng owner/process, không competing clients.
+- Cả quota model và các quota Agent liên quan, tính theo rolling hour thực tế.
+- Giữ cap20/principal/hour và reserve10.
+- Không chuyển principal hoặc loại bỏ attempts để vượt quota.
+
+Model:
+`qwen3:4b-instruct-2507-q4_K_M`
+
+Digest:
+`0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0`
+
+Giữ:
+- num_ctx16384
+- temperature0
+- num_predict2048
+- deadline15s
+- concurrency1
+
+Nếu một guard FAIL, STOP trước inference. Không thay đổi điều kiện tài nguyên để tiếp tục.
+
+## PHASE 2 — LOCK MANIFEST
+
+Đọc proposed-live-manifest-v2 tại:
+
+`docs/evidence/travelgo-ai-agent-core/advisory-v51-20261113/proposed-live-manifest-v2.json`
+
+Đối chiếu với production source hiện tại và kiểm lại tất cả source hashes.
+
+Nếu manifest không khớp source:
+- Không chạy manifest cũ.
+- Tạo manifest mới trước inference.
+- Khóa inputs, expected, schema, facts và hashes trước POST.
+
+Không sửa expected sau khi nhìn thấy raw Qwen output.
+
+Không dùng parser fallback để chấm Qwen PASS.
+
+## PHASE 3 — KIỂM THỬ 3 NĂNG LỰC
+
+### L1 — Hiểu ý định tư vấn tiếng Việt
+
+Dùng test đã khóa về yêu cầu du lịch tự nhiên, địa danh viết sai và khách chưa biết bắt đầu từ đâu.
+
+Qwen cần:
+- Hiểu đúng mục tiêu tư vấn.
+- Nhận diện địa danh có bằng chứng.
+- Không tự suy thành tìm khách sạn rẻ hơn.
+- Không đề xuất tool/change trái yêu cầu.
+- Hỏi bổ sung khi cần.
+
+Chấm raw schema và semantic riêng.
+
+### L2 — Suy luận trong ngữ cảnh nhiều lượt
+
+Dùng verified context đã khóa.
+
+Kiểm tra Qwen có:
+- Giữ thông tin đã xác minh.
+- Hiểu khách đang nói tới thông tin nào.
+- Không tự thay ngân sách hoặc phương tiện khi câu còn mơ hồ.
+- Biết đề xuất làm rõ thay vì tự quyết định.
+
+Không cho proposal sai đi vào tool.
+
+### L3 — Tư vấn dựa trên Reviews + Memory
+
+Dùng production controlled-context builder hiện tại với fixture SYNTHETIC đã khóa.
+
+Context gồm:
+- Current customer request.
+- Allowed customer preferences.
+- Verified session context.
+- Catalog facts.
+- Review insights có provenance.
+- Những điểm tích cực, tiêu cực, mixed và unknown.
+
+Kiểm tra khả năng Qwen chọn/ưu tiên offered fact IDs phù hợp với yêu cầu.
+
+Yêu cầu:
+- Không bịa rating, giá, tiện ích hoặc review.
+- Không bỏ qua sở thích khách được phép sử dụng.
+- Không biến review opinion thành sự thật đã xác minh.
+- Không chọn khách sạn có evidence trái với ưu tiên mà không nêu giới hạn.
+- Không tự thực hiện mutation.
+
+Phải phân biệt:
+1. Model hiểu và lựa chọn facts đúng hay không.
+2. Server renderer có trình bày đầy đủ hay không.
+3. Chất lượng tư vấn cuối có thực sự hữu ích hay không.
+
+Không lấy khả năng renderer bù nội dung để chấm model semantic PASS.
+
+Vì review/memory thật trên staging hiện đang rỗng, kết quả L3 chỉ là REAL QWEN SEMANTIC ON SYNTHETIC GROUNDED FACTS, không phải REAL REVIEW DATABASE INTEGRATION PASS.
+
+## PHASE 4 — INFERENCE VÀ CHẤM ĐIỂM
+
+Chạy đúng thứ tự L1 → L2 → L3.
+
+Nếu một case FAIL:
+- Giữ raw output.
+- Ghi nguyên nhân.
+- Dừng inference tiếp theo.
+- Không retry.
+
+Mỗi case ghi:
+- Input và verified context.
+- Raw model output.
+- Actual schema validation.
+- Semantic validation.
+- Grounding validation.
+- Operation và updates được đề xuất.
+- Reasoning/selection quality.
+- Rendered response.
+- Latency, prompt/eval tokens.
+- Model digest, context và native POST ordinal.
+
+Không yêu cầu model xuất chain-of-thought nội bộ. Chỉ đánh giá lựa chọn và lời giải thích có căn cứ.
+
+Không tự thay model hoặc prompt giữa các inference.
+
+## PHASE 5 — BẢO VỆ HỆ THỐNG
+
+- Không bật Qwen mặc định trên website.
+- Không Browser→Qwen→Tools E2E trong task này.
+- Không thêm normal chat attempts nếu không cần.
+- Không thay Agent Core, Reviewer, Memory, Planner, Trip hoặc Booking.
+- Không sửa RecommendationService weights.
+- Không ghi staging PostgreSQL.
+- Không truy cập database gốc có27 Trip.
+- Không reseed catalog130 Place/20 Business.
+- Không Google Maps, VPS, API trả phí.
+- Không commit, push hoặc deploy.
+- Không sửa historical evidence, FAIL verdict hoặc old expected.
+
+## PHASE 6 — BÁO CÁO
+
+Cập nhật duy nhất:
+
+`docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md`
+
+Thêm:
+
+**21.13 — QWEN V5.1 REAL REASONING ACCEPTANCE**
+
+Báo cáo:
+
+1. Fresh preflight và quota.
+2. L1 PASS/FAIL/NOT RUN.
+3. L2 PASS/FAIL/NOT RUN.
+4. L3 PASS/FAIL/NOT RUN.
+5. JSON/schema vs semantic vs grounding.
+6. Khả năng suy luận và chất lượng tư vấn thực tế.
+7. Runtime latency/tokens.
+8. Những điểm Qwen còn hiểu sai.
+9. Khả năng Qwen 4B có phù hợp TravelGo hay không, dựa trên evidence thực tế.
+10. Bước tiếp theo được đề xuất, không tự thực thi.
+
+Nếu cả3 PASS, kết luận:
+`QWEN_V51_REAL_REASONING_ACCEPTANCE_PASS`
+trong đúng phạm vi semantic đã kiểm.
+
+Nếu có FAIL:
+`QWEN_V51_REAL_REASONING_ACCEPTANCE_FAIL`
+
+Nếu guard BLOCKED:
+`QWEN_V51_REAL_REASONING_BLOCKED`
+
+Không tuyên bố FULL LIVE READY dù cả3 PASS.
+
+**Mục tiêu cuối: xác minh liệu Qwen thực sự hiểu nhu cầu khách hàng và lựa chọn thông tin tư vấn đúng, thay vì chỉ trả JSON hợp lệ hoặc được backend sửa lỗi.**
+
+Dừng sau nghiệm thu và báo cáo.

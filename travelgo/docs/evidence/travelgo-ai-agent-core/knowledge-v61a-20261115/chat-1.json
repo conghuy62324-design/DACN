@@ -1,0 +1,227 @@
+{
+  "at": "2026-11-15T11:08:00.229Z",
+  "id": "A1",
+  "status": "PASS",
+  "input": "Chi phí lưu trú Đà Lạt mỗi phòng mỗi đêm, thuê 2 phòng trong 2 đêm?",
+  "expected": "SYNTHETIC approved 800000/room/night, server 2 rooms x2 nights=3200000VND; source citation and historical caveats",
+  "native": 0,
+  "posts": 1,
+  "apiMocks": false,
+  "toolMutation": 0,
+  "actualRequest": {
+    "message": "Chi phí lưu trú Đà Lạt mỗi phòng mỗi đêm, thuê 2 phòng trong 2 đêm?",
+    "conversation": {
+      "action": "start",
+      "requestId": "83da940f-ed4b-479d-ba74-24250538dca6",
+      "consentVersion": "TRAVELGO_CORE_SLOTS_V1"
+    },
+    "consentVersion": "TRAVELGO_CORE_SLOTS_V1",
+    "intentVersion": "NATURAL_CHAT_V3"
+  },
+  "quotaBefore": {
+    "checkedAt": "2026-11-15T11:08:01.928Z",
+    "principalHash": "856f41c9ad2ffc1e3f467eeb45f0069a943196101062d0e3ab3927bec64b95c5",
+    "principalSource": ".local/catalog-staging/accounts.json",
+    "known": 212,
+    "recent": [],
+    "remainingConservativeSlots": 20,
+    "futureDatedEntries": [],
+    "timestampPolicy": "Read BOTH at and createdAt; conservative latest if both; operator load counted separately/conservatively"
+  },
+  "latencyMs": 1275.9900000000002,
+  "http": 200,
+  "body": {
+    "success": true,
+    "data": {
+      "status": "completed",
+      "reply": "Đà Lạt: có 1 quan sát; mình giữ từng nguồn riêng vì chưa đủ bằng chứng tạo khoảng chi phí đại diện.\n\nKịch bản lưu trú theo mức phòng/đêm của nguồn lịch sử: 2 phòng × 2 đêm = 3.200.000 VND. Số phòng và đêm do bạn nêu; đây là ước tính theo giả định, không phải giá phòng hiện tại, dự toán Planner hay xác nhận Booking.\n\nGiá catalog chỉ là mức tham khảo riêng; chưa xác nhận đơn vị hoặc còn chỗ.\n\nCòn thiếu: Nơi xuất phát; Phương tiện/chi phí liên tỉnh.\n\nSố bài viết phản ánh đúng thời điểm và phạm vi nguồn, không phải giá hiện tại hoặc giá Booking đã xác nhận.\n\nNguồn SYNTHETIC chỉ để kiểm thử chức năng; không phải tư vấn chi phí ngoài đời.\n\nBạn xuất phát từ đâu để mình xác định phần chi phí di chuyển còn thiếu?",
+      "tool": "search_places",
+      "costIntelligence": {
+        "version": 1,
+        "criteria": {
+          "destinationIds": [
+            "destination:da-lat"
+          ],
+          "mode": "BUDGET",
+          "budgetScope": "UNKNOWN",
+          "category": "ACCOMMODATION",
+          "unit": "PER_ROOM_NIGHT",
+          "rooms": 2,
+          "nights": 2
+        },
+        "destinations": [
+          {
+            "locationId": "destination:da-lat",
+            "name": "Đà Lạt",
+            "aggregate": {
+              "status": "SINGLE_OBSERVATION",
+              "samples": 1,
+              "independentSources": 0,
+              "min": null,
+              "max": null,
+              "medianMin": null,
+              "medianMax": null,
+              "missing": [],
+              "comparisons": [],
+              "periods": [
+                "10/2026"
+              ]
+            },
+            "observations": [
+              {
+                "sourceIndex": 0,
+                "reported": {
+                  "unit": "PER_ROOM_NIGHT",
+                  "basis": "EXTERNAL_REPORTED_OBSERVATION",
+                  "amount": 800000,
+                  "category": "ACCOMMODATION",
+                  "currency": "VND",
+                  "excluded": [],
+                  "included": [],
+                  "sourceId": "05a604a4-a758-4162-afe6-806326e6a441",
+                  "amountMax": 800000,
+                  "amountMin": 800000,
+                  "promotion": false,
+                  "validFrom": null,
+                  "valueKind": "REPORTED",
+                  "priceBound": "EXACT",
+                  "validUntil": null,
+                  "candidateId": "19467884-e7d4-4eec-825e-35d24323350a",
+                  "costCategory": "ACCOMMODATION",
+                  "evidenceHash": "2f583330fb9d364303e28efdccd4e591fb3ab95676e1c4e035d633bafbc51a56",
+                  "pricedObject": "ROOM_STAY",
+                  "unknownItems": [
+                    "INCLUDED_ITEMS",
+                    "EXCLUDED_ITEMS",
+                    "TRAVEL_PERIOD"
+                  ],
+                  "validityKind": "UNKNOWN",
+                  "observationId": "a9e2b2d36192163bdee0cf1ba806012b",
+                  "schemaVersion": 2,
+                  "evidenceLocator": "body:block:2:clause:0",
+                  "inclusionStatus": "UNKNOWN",
+                  "candidateVersion": 2
+                },
+                "normalized": {
+                  "kind": "DERIVED",
+                  "min": 1600000,
+                  "max": 1600000,
+                  "currency": "VND",
+                  "unit": "PER_GROUP",
+                  "formula": "reported_room_night * reported_rooms * reported_nights",
+                  "inputs": {
+                    "reportedRooms": 1,
+                    "reportedNights": 2,
+                    "reportedMin": 800000,
+                    "reportedMax": 800000
+                  },
+                  "assumptions": [
+                    "Làm tròn tới1 VND gần nhất; chỉ từ số nguồn công bố, không phải dự báo hay giá Booking."
+                  ],
+                  "originalObservationId": "a9e2b2d36192163bdee0cf1ba806012b"
+                },
+                "days": 3,
+                "nights": 2,
+                "party": 2,
+                "period": "10/2026"
+              }
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "title": "SYNTHETIC Đà Lạt lodging V61A",
+            "href": "https://example.org/synthetic-v61a-room",
+            "license": "SYNTHETIC_TEST_PERMISSION_NOT_REAL",
+            "publishedAt": null,
+            "retrievedAt": "2026-11-15T11:05:45.762Z",
+            "synthetic": true
+          }
+        ],
+        "missing": [
+          "Nơi xuất phát",
+          "Phương tiện/chi phí liên tỉnh"
+        ],
+        "claims": [
+          "Giá catalog chỉ là mức tham khảo riêng; chưa xác nhận đơn vị hoặc còn chỗ."
+        ],
+        "question": "Bạn xuất phát từ đâu để mình xác định phần chi phí di chuyển còn thiếu?",
+        "executionAuthority": false,
+        "priceBasis": "EXTERNAL_HISTORICAL_REFERENCE_ONLY",
+        "allocations": [
+          {
+            "category": "ACCOMMODATION",
+            "min": 1600000,
+            "max": 1600000,
+            "kind": "SOURCE_DERIVED",
+            "sourceIndex": 0
+          }
+        ],
+        "budgetComparison": {
+          "status": "INSUFFICIENT_DATA",
+          "groupMin": null,
+          "groupMax": null,
+          "difference": null,
+          "sufficientCurrentBudget": false
+        },
+        "accommodationScenario": {
+          "kind": "ESTIMATED",
+          "currency": "VND",
+          "min": 3200000,
+          "max": 3200000,
+          "rooms": 2,
+          "nights": 2,
+          "sourceIndex": 0,
+          "formula": "historical_room_night * customer_rooms * customer_nights"
+        },
+        "preferenceLabels": []
+      },
+      "sourceInfo": {
+        "label": "Quan sát chi phí đã duyệt, tách khỏi catalog/Planner/Booking",
+        "retrievedAt": "2026-11-15T11:08:02.891Z",
+        "externalKnowledgeIntegrated": true
+      },
+      "languageFeedback": {
+        "id": "5b1a5a26-013a-416a-bd9e-f60cfc0e65e7",
+        "revision": 1
+      },
+      "dialogue": {
+        "deferredGoals": [],
+        "activeConstraints": {},
+        "softPreferences": {},
+        "pendingQuestion": "CRITERIA",
+        "mutationAuthority": false
+      },
+      "conversation": {
+        "id": "4557262c-0464-49b5-bc72-62d939862236",
+        "revision": 1,
+        "expiresAt": "2026-11-15T11:23:02.795Z",
+        "mode": "CORE_VERIFIED",
+        "persisted": false
+      },
+      "model": {
+        "invoked": false,
+        "rawNlu": "NOT_EVALUATED"
+      },
+      "intent": {
+        "version": "NATURAL_CHAT_V3",
+        "authority": "SERVER_VERIFIED"
+      },
+      "languageStatus": "disabled",
+      "verifiedTravel": {}
+    }
+  },
+  "render": [
+    {
+      "width": 1440,
+      "replyShown": true,
+      "noOverflow": true
+    },
+    {
+      "width": 390,
+      "replyShown": true,
+      "noOverflow": true
+    }
+  ],
+  "dmlDelta": 0
+}

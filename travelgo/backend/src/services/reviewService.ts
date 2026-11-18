@@ -1,7 +1,8 @@
 import { Transaction, UniqueConstraintError } from 'sequelize';
 import { ENV } from '../config/env.js';
 import { sequelize } from '../config/database.js';
-import { AuditLog, Booking, Place, Review, TelemetryConsent, User } from '../models/index.js';
+import { AuditLog, Booking, Place, Review, TelemetryConsent, User, BusinessMember } from '../models/index.js';
+import {RegisteredCatalogService} from './registeredCatalogService.js';
 import { CriteriaRatings, RatingService } from './ratingService.js';
 import { TELEMETRY_POLICY_VERSION } from './telemetryService.js';
 import { HttpError } from '../utils/httpError.js';
@@ -9,7 +10,7 @@ import { HttpError } from '../utils/httpError.js';
 type ReviewEnvironment = 'production' | 'development' | 'test';
 type ModerationStatus = 'PUBLISHED' | 'HIDDEN' | 'REJECTED';
 
-const REVIEW_FIELDS = new Set(['bookingId', 'rating', 'criteria', 'comment']);
+const REVIEW_FIELDS = new Set(['bookingId', 'rating', 'criteria', 'comment','analysisConsent']);
 const CRITERIA_FIELDS = new Set(['service', 'price', 'location', 'experience']);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -43,6 +44,7 @@ function validateInput(raw: unknown) {
     throw new HttpError(400, 'bookingId không hợp lệ', 'INVALID_REVIEW_BOOKING');
   }
   const rating = validateRating(raw.rating);
+  if(raw.analysisConsent!==undefined&&!['REVIEW_INSIGHTS_V1','DECLINED'].includes(String(raw.analysisConsent)))throw new HttpError(400,'Đồng ý phân tích đánh giá chưa hợp lệ.','INVALID_REVIEW_CONSENT');
   if (typeof raw.comment !== 'string') throw new HttpError(400, 'Nội dung đánh giá là bắt buộc', 'INVALID_REVIEW_COMMENT');
   const comment = raw.comment.trim();
   if (comment.length < 10 || comment.length > 2000 || /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(comment)) {
@@ -55,7 +57,7 @@ function validateInput(raw: unknown) {
     if (invalid.length) throw new HttpError(400, `Tiêu chí không hợp lệ: ${invalid.join(', ')}`, 'INVALID_REVIEW_CRITERIA');
     criteria = Object.fromEntries(Object.entries(raw.criteria).map(([key, value]) => [key, validateRating(value, key)]));
   }
-  return { bookingId: bookingId as string | undefined, rating, criteria, comment };
+  return { bookingId: bookingId as string | undefined, rating, criteria, comment,analysisConsent:raw.analysisConsent };
 }
 
 function criteriaFlags(criteria: CriteriaRatings) {
@@ -127,11 +129,12 @@ async function lockPlace(targetId: string, transaction: Transaction, requireAppr
 
 export class ReviewService {
   static async listPublished(targetId: string) {
+    const place=await new RegisteredCatalogService().details(targetId);
     const reviews = await Review.findAll({
       where: { targetType: 'place', targetId, moderationStatus: 'PUBLISHED' },
       order: [['createdAt', 'DESC']],
     });
-    return reviews.map((review) => serialize(review));
+    return reviews.map((review) => ({...serialize(review),isDemo:place.isDemo}));
   }
 
   static async listMine(userId: string) {
@@ -146,6 +149,8 @@ export class ReviewService {
         const place = await lockPlace(targetId, transaction, true);
         const user = await User.findByPk(userId, { transaction });
         if (!user) throw new HttpError(401, 'Tài khoản không tồn tại', 'ACCOUNT_NOT_FOUND');
+        if(place.businessId&&await BusinessMember.findOne({where:{businessId:place.businessId,userId},transaction}))throw new HttpError(403,'Thành viên cơ sở không được tự đánh giá dịch vụ của cơ sở mình.','REVIEW_SELF_BUSINESS');
+        if(!input.bookingId&&await Review.findOne({where:{targetType:'place',targetId,userId,source:'CUSTOMER_SUBMISSION',bookingId:null},transaction}))throw new HttpError(409,'Bạn đã có đánh giá thông thường cho dịch vụ này; hãy sửa đánh giá đang có.','REVIEW_ALREADY_EXISTS');
 
         let verificationStatus: 'VERIFIED' | 'UNVERIFIED' = 'UNVERIFIED';
         let verifiedAt: Date | undefined;
@@ -168,7 +173,7 @@ export class ReviewService {
         }
 
         const consent = await TelemetryConsent.findByPk(userId, { transaction });
-        const aiUsageAllowed = !!consent?.analyticsEnabled && !!consent?.personalizationEnabled;
+        const aiUsageAllowed = input.analysisConsent!==undefined?input.analysisConsent==='REVIEW_INSIGHTS_V1':!!consent?.analyticsEnabled && !!consent?.personalizationEnabled;
         const flags = criteriaFlags(input.criteria);
         const review = await Review.create({
           targetType: 'place', targetId, userId, userName: user.fullName, userAvatar: user.avatarUrl,
@@ -186,7 +191,7 @@ export class ReviewService {
           source: 'CUSTOMER_SUBMISSION',
           environment: environment(),
           aiUsageAllowed,
-          consentPolicyVersion: aiUsageAllowed ? TELEMETRY_POLICY_VERSION : undefined,
+          consentPolicyVersion: aiUsageAllowed ? input.analysisConsent==='REVIEW_INSIGHTS_V1'?'REVIEW_INSIGHTS_V1':TELEMETRY_POLICY_VERSION : undefined,
         }, { transaction });
         await updatePlaceRating(place, transaction);
         return serialize(review, true);
@@ -211,8 +216,7 @@ export class ReviewService {
       const review = await Review.findByPk(reviewId, { transaction, lock: transaction.LOCK.UPDATE });
       if (!review || review.userId !== userId) throw new HttpError(404, 'Không tìm thấy đánh giá của tài khoản', 'REVIEW_NOT_FOUND');
       const consent = await TelemetryConsent.findByPk(userId, { transaction });
-      const aiUsageAllowed = review.source === 'CUSTOMER_SUBMISSION' &&
-        !!consent?.analyticsEnabled && !!consent?.personalizationEnabled;
+      const aiUsageAllowed = review.source === 'CUSTOMER_SUBMISSION' && (input.analysisConsent!==undefined?input.analysisConsent==='REVIEW_INSIGHTS_V1':review.consentPolicyVersion==='REVIEW_INSIGHTS_V1'?review.aiUsageAllowed:!!consent?.analyticsEnabled && !!consent?.personalizationEnabled);
       await review.update({
         rating: input.rating,
         ratingService: input.criteria.service,
@@ -222,7 +226,7 @@ export class ReviewService {
         criteriaProvided: criteriaFlags(input.criteria),
         comment: input.comment,
         aiUsageAllowed,
-        consentPolicyVersion: aiUsageAllowed ? TELEMETRY_POLICY_VERSION : undefined,
+        consentPolicyVersion: aiUsageAllowed ? input.analysisConsent==='REVIEW_INSIGHTS_V1'||review.consentPolicyVersion==='REVIEW_INSIGHTS_V1'?'REVIEW_INSIGHTS_V1':TELEMETRY_POLICY_VERSION : null,
       }, { transaction });
       await updatePlaceRating(place, transaction);
       return serialize(review, true);

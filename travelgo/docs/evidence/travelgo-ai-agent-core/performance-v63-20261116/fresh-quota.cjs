@@ -1,0 +1,3 @@
+const fs=require('fs'),path=require('path'),c=require('../closure-v57-20261114/staging.cjs'),p=JSON.parse(fs.readFileSync(__dirname+'/staging-authorization-review-packet.json')),quota=c.quota({id:p.owner.id});
+const gate={at:new Date().toISOString(),quota,status:quota.remainingConservativeSlots>=20&&!quota.futureDatedEntries.length?'PASS':'BLOCKED_QUOTA',plannedEntries:10,normalChats:8,management:2,reserve:10,cap:20,spendable:Math.max(0,quota.remainingConservativeSlots-10),noPolling:true,modelQuota:'NOT_CHECKED'};
+fs.writeFileSync(path.join(__dirname,'fresh-agent-quota.json'),JSON.stringify(gate,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify({status:gate.status,remaining:quota.remainingConservativeSlots,reserve:10,plannedEntries:10,checkedAt:quota.checkedAt}));

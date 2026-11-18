@@ -29,6 +29,7 @@ export const PlaceService = {
     bookingId?: string;
     rating: number;
     criteria?: { service?: number; price?: number; location?: number; experience?: number };
+    analysisConsent?:string;
     comment: string;
   }): Promise<Review> {
     const res: any = await api.post(`/places/${id}/reviews`, data);
@@ -43,6 +44,7 @@ export const PlaceService = {
   async updateReview(id: string, data: {
     rating: number;
     criteria?: { service?: number; price?: number; location?: number; experience?: number };
+    analysisConsent?:string;
     comment: string;
   }): Promise<Review> {
     const res: any = await api.patch(`/reviews/${id}`, data);

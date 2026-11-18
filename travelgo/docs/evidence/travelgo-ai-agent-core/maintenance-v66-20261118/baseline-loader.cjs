@@ -1,0 +1,5 @@
+// Exact pre-V6.6 compiled modules, checked against the Phase0 source lock.
+const fs=require('fs'),path=require('path'),assert=require('assert/strict'),crypto=require('crypto'),Module=require('module'),root=path.resolve(__dirname,'../../../..'),before=JSON.parse(fs.readFileSync(__dirname+'/source-before.json')),map=new Map(),sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+for(const r of JSON.parse(fs.readFileSync(__dirname+'/baseline-runtime-proof-final.json')).results){assert(r.allExact!==false&&r.exact);const bytes=fs.readFileSync(path.join(__dirname,'baseline-runtime',r.file));assert.equal(sha(bytes),before.hashes[r.file]);map.set(path.join(root,r.file),bytes.toString('utf8'));}
+for(const[f,h]of Object.entries(before.hashes))if(f.startsWith('backend/dist/')&&!map.has(path.join(root,f)))assert.equal(sha(fs.readFileSync(path.join(root,f))),h,f);
+const original=Module._extensions['.js'];Module._extensions['.js']=function(module,file){return map.has(file)?module._compile(map.get(file),file):original(module,file);};

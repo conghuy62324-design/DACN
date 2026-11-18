@@ -1,0 +1,265 @@
+{
+  "at": "2026-11-18T00:29:59.232Z",
+  "productEditsNotStarted": true,
+  "fixtures": {
+    "base": "<title>Đà Lạt</title><meta property=\"article:published_time\" content=\"2026-11-17T00:00:00Z\"><article><p>Chuyến đi tháng02/2026. Vé vào cổng 120k/người.</p><p>A walking trail winds through the pine forest.</p></article>",
+    "noise": "<title>Đà Lạt</title><meta property=\"article:published_time\" content=\"2026-11-17T00:00:00Z\"><article><p>Chuyến đi tháng02/2026. Vé vào cổng 120k/người.</p><p>A walking trail winds through the pine forest.</p><p>Additional photograph caption.</p></article>",
+    "removed": "<title>Đà Lạt</title><article><p>A walking trail winds through the pine forest.</p></article>",
+    "empty": "<title>Đà Lạt</title><article><p>Năm2026, nhóm2người đi3ngày.</p></article>",
+    "room": "<title>Nha Trang</title><article><p>Chuyến đi tháng03/2026. Tiền phòng 600k/phòng/đêm.</p></article>",
+    "meal": "<title>Huế</title><article><p>Chi phí ăn uống 150k/bữa.</p></article>"
+  },
+  "cases": [
+    {
+      "id": "D01",
+      "kind": "extract",
+      "expected": {
+        "fixture": "base",
+        "amount": 120000,
+        "unit": "PER_PERSON",
+        "locationId": "destination:da-lat",
+        "period": "02/2026"
+      },
+      "cohort": "DEVELOPMENT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "D02",
+      "kind": "extract",
+      "expected": {
+        "html": "<title>Đà Lạt</title><article><p>Đi taxi hết 230k.</p></article>",
+        "amount": 230000,
+        "unit": "UNKNOWN_UNIT"
+      },
+      "cohort": "DEVELOPMENT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "D03",
+      "kind": "no-price",
+      "expected": {
+        "fixture": "empty"
+      },
+      "cohort": "DEVELOPMENT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "D04",
+      "kind": "duplicate",
+      "expected": {},
+      "cohort": "DEVELOPMENT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "D05",
+      "kind": "publisher-family",
+      "expected": {},
+      "cohort": "DEVELOPMENT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "D06",
+      "kind": "denied-source",
+      "expected": {},
+      "cohort": "DEVELOPMENT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "D07",
+      "kind": "injection",
+      "expected": {},
+      "cohort": "DEVELOPMENT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "D08",
+      "kind": "semantic-refresh",
+      "expected": {
+        "fixture": "noise",
+        "expected": "UNCHANGED"
+      },
+      "cohort": "DEVELOPMENT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "D09",
+      "kind": "diff",
+      "expected": {
+        "replace": [
+          "120k",
+          "150k"
+        ],
+        "field": "costs.0.amount"
+      },
+      "cohort": "DEVELOPMENT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "D10",
+      "kind": "diff",
+      "expected": {
+        "fixture": "removed",
+        "removed": true
+      },
+      "cohort": "DEVELOPMENT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "D11",
+      "kind": "coverage-expired",
+      "expected": {},
+      "cohort": "DEVELOPMENT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "D12",
+      "kind": "coverage-authority",
+      "expected": {},
+      "cohort": "DEVELOPMENT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "D13",
+      "kind": "public-proposal",
+      "expected": {},
+      "cohort": "DEVELOPMENT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "D14",
+      "kind": "scoped-worker",
+      "expected": {},
+      "cohort": "DEVELOPMENT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "D15",
+      "kind": "scoped-claim",
+      "expected": {},
+      "cohort": "DEVELOPMENT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "D16",
+      "kind": "refresh-interval",
+      "expected": {},
+      "cohort": "DEVELOPMENT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "D17",
+      "kind": "extract",
+      "expected": {
+        "fixture": "meal",
+        "amount": 150000,
+        "unit": "PER_MEAL"
+      },
+      "cohort": "DEVELOPMENT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "D18",
+      "kind": "publisher-rate",
+      "expected": {},
+      "cohort": "DEVELOPMENT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "H01",
+      "kind": "extract",
+      "expected": {
+        "fixture": "room",
+        "amount": 600000,
+        "unit": "PER_ROOM_NIGHT",
+        "locationId": "destination:nha-trang",
+        "period": "03/2026"
+      },
+      "cohort": "LOCKED_HOLDOUT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "H02",
+      "kind": "extract",
+      "expected": {
+        "html": "<title>Huế</title><article><p>Giá thuê xe 300k/xe.</p></article>",
+        "amount": 300000,
+        "unit": "PER_VEHICLE"
+      },
+      "cohort": "LOCKED_HOLDOUT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "H03",
+      "kind": "same-family-no-range",
+      "expected": {},
+      "cohort": "LOCKED_HOLDOUT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "H04",
+      "kind": "diff",
+      "expected": {
+        "costPatch": {
+          "unit": "PER_VEHICLE"
+        },
+        "field": "costs.0.unit"
+      },
+      "cohort": "LOCKED_HOLDOUT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "H05",
+      "kind": "diff",
+      "expected": {
+        "replace": [
+          "02/2026",
+          "03/2026"
+        ],
+        "field": "travelPeriod"
+      },
+      "cohort": "LOCKED_HOLDOUT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "H06",
+      "kind": "diff",
+      "expected": {
+        "replace": [
+          "Đà Lạt",
+          "Huế"
+        ],
+        "field": "locationId"
+      },
+      "cohort": "LOCKED_HOLDOUT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "H07",
+      "kind": "semantic-store-idempotence",
+      "expected": {},
+      "cohort": "LOCKED_HOLDOUT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "H08",
+      "kind": "coverage-expiring",
+      "expected": {},
+      "cohort": "LOCKED_HOLDOUT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "H09",
+      "kind": "invalid-worker-scope",
+      "expected": {},
+      "cohort": "LOCKED_HOLDOUT",
+      "tier": "SYNTHETIC"
+    },
+    {
+      "id": "H10",
+      "kind": "worker-failure",
+      "expected": {},
+      "cohort": "LOCKED_HOLDOUT",
+      "tier": "SYNTHETIC"
+    }
+  ]
+}

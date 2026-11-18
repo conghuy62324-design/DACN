@@ -15,7 +15,7 @@ export function catalogLanguage(message:string,values:Record<string,any>):CoreIn
  for(const [key,value]of Object.entries(types))if(s.includes(key))filters.accommodationType=value;
  const cuisines:Record<string,string>={'hai san':'seafood','dac san':'local','mon viet':'vietnamese','do chay':'vegetarian','bbq':'bbq_hotpot','lau':'bbq_hotpot','buffet':'buffet','quoc te':'international','gia dinh':'family'};
  const cuisine=Object.entries(cuisines).find(([key])=>s.includes(key))?.[1];
- if(cuisine){if(hotel&&restaurant)filters.restaurantCuisine=cuisine;else filters.cuisine=cuisine;}
+ if(cuisine&&restaurant){if(hotel)filters.restaurantCuisine=cuisine;else filters.cuisine=cuisine;}
  if(/moi dang ky|moi duoc duyet/.test(s))filters.sort='approvedDesc';
  const adults=s.match(/(?:^|[, ]+)(\d+)\s*(?:nguoi|nguoi lon)(?: |[,.;]|$)/);
  return {operation:hotel?'search_registered_hotels':'search_registered_restaurants',canonical:[...(city?['Điểm đến: '+city]:[]),...(adults?['Số người lớn: '+adults[1]]:[])].join('; '),filters};

@@ -23,7 +23,10 @@ export function createAgentCoreRouter(service = new AgentCoreService()) {
     catch (e) {
         next(e);
     } });
+    r.post('/preview/cancel',(req:AuthenticatedRequest,res,next)=>{try{res.json({success:true,data:service.cancelPreview(req.user!,req.body)});}catch(e){next(e);}});
     r.delete('/sessions', (req: AuthenticatedRequest, res) => res.json({ success: true, data: service.revoke(req.user!.id) }));
+    r.post('/language/confirm',async(req:AuthenticatedRequest,res,next)=>{try{res.json({success:true,data:await service.confirmLanguage(req.user!,req.body)});}catch(e){next(e);}});
+    r.post('/language/feedback',async(req:AuthenticatedRequest,res,next)=>{try{res.json({success:true,data:await service.languageFeedback(req.user!,req.body)});}catch(e){next(e);}});
     const safe: ErrorRequestHandler = (e, _req, res, _next) => { const ok = e instanceof HttpError; res.status(ok ? e.statusCode : 500).json({ success: false, code: ok ? e.code : 'AGENT_INTERNAL_ERROR', message: ok ? e.message : 'Chưa xử lý được Agent Core.', ...(ok && (e as any).conversation ? { conversation: (e as any).conversation } : {}) }); };
     r.use(safe);
     return r;

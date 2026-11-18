@@ -1,0 +1,709 @@
+{
+  "task": "21.28",
+  "tier": "OFFLINE_SYNTHETIC_TYPED_PROJECTION",
+  "lockedAt": "2026-11-16T12:42:07.099Z",
+  "productionHumanAccuracy": "NOT_MEASURED",
+  "development": 29,
+  "holdout": 16,
+  "rubric": {
+    "composite": "All structured predicates pass; absent checks, scope, question/operation and original raw spans; no keyword-only scoring",
+    "tool": "Projection operation is proposed, not dispatched. Actual dispatch/security evaluated separately in Core integration tests.",
+    "context": "Every case starts an independent seeded service goal/verified trip; selected cases add two retained result sets or scoped mappings.",
+    "holdout": "Baseline raw results sealed without inspection; final holdout run once after final source lock; no post-holdout tuning"
+  },
+  "cases": [
+    {
+      "id": "D01",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Tìm ks dưới800k và nhà hàng dưới200k, tổng chuyến không vượt6tr ở Đà Lạt"
+      ],
+      "expected": {
+        "equals": {
+          "memory.constraints.hotel.maxPriceFrom": 800000,
+          "memory.constraints.restaurant.maxPriceFrom": 200000,
+          "patch.totalBudget": 6000000,
+          "interpretation.operation": "search_registered_hotels"
+        }
+      }
+    },
+    {
+      "id": "D02",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Tìm khách sạn tầm700k ở Đà Lạt"
+      ],
+      "expected": {
+        "equals": {
+          "memory.constraints.hotel.maxPriceFrom": 700000
+        },
+        "absent": [
+          "patch.totalBudget"
+        ]
+      }
+    },
+    {
+      "id": "D03",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Không phải2 người, là3 người"
+      ],
+      "expected": {
+        "equals": {
+          "patch.adults": 3,
+          "interpretation.operation": "plan_trip"
+        }
+      }
+    },
+    {
+      "id": "D04",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Đổi điểm đến từ Đà Lạt sang Hội An, vẫn xuất phát SG"
+      ],
+      "expected": {
+        "equals": {
+          "patch.destinationCity": "Hội An",
+          "patch.departureCity": "Thành phố Hồ Chí Minh"
+        }
+      }
+    },
+    {
+      "id": "D05",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Điểm đến đổi sang Nha Trang"
+      ],
+      "expected": {
+        "equals": {
+          "patch.destinationCity": "Nha Trang"
+        },
+        "awaiting": "departure",
+        "absent": [
+          "patch.departureCity"
+        ]
+      }
+    },
+    {
+      "id": "D06",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Không đi Đà Lạt nữa, Hội An thử xem"
+      ],
+      "expected": {
+        "equals": {},
+        "question": true,
+        "emptyPatch": true,
+        "noOperation": true
+      }
+    },
+    {
+      "id": "D07",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Chắc đi Đà Lạt hoặc Nha Trang, tầm5tr"
+      ],
+      "expected": {
+        "equals": {},
+        "question": true,
+        "emptyPatch": true,
+        "noOperation": true
+      }
+    },
+    {
+      "id": "D08",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Đi xe máy cũng được nhưng nếu mưa thì tính ô tô"
+      ],
+      "expected": {
+        "equals": {},
+        "question": true,
+        "emptyPatch": true,
+        "noOperation": true
+      }
+    },
+    {
+      "id": "D09",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Khách sạn bữa trước ồn quá, lần này né mấy chỗ vậy nha"
+      ],
+      "expected": {
+        "equals": {},
+        "contains": {
+          "memory.softPreferences.hotel": "quiet"
+        },
+        "absent": [
+          "patch.totalBudget"
+        ]
+      }
+    },
+    {
+      "id": "D10",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Tìm khách sạn dưới800k/đêm ở Đà Lạt"
+      ],
+      "expected": {
+        "equals": {},
+        "question": true,
+        "noOperation": true
+      }
+    },
+    {
+      "id": "D11",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "500k là tiền phòng, không phải tổng chuyến"
+      ],
+      "expected": {
+        "equals": {
+          "memory.constraints.hotel.maxPriceFrom": 500000
+        },
+        "absent": [
+          "patch.totalBudget"
+        ]
+      }
+    },
+    {
+      "id": "D12",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Ý mình là3 người"
+      ],
+      "expected": {
+        "equals": {
+          "patch.adults": 3,
+          "interpretation.operation": "plan_trip"
+        }
+      }
+    },
+    {
+      "id": "D13",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Khách sạn thứ2"
+      ],
+      "expected": {
+        "equals": {
+          "memory.activeReferent.id": "H2"
+        },
+        "lists": true
+      }
+    },
+    {
+      "id": "D14",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Cái đầu tiên lúc nãy"
+      ],
+      "expected": {
+        "equals": {},
+        "lists": true,
+        "question": true,
+        "noOperation": true
+      }
+    },
+    {
+      "id": "D15",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "So sánh mấy bavuli đó"
+      ],
+      "expected": {
+        "equals": {},
+        "mapping": "homestay",
+        "question": true,
+        "noOperation": true
+      }
+    },
+    {
+      "id": "D16",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Tìm bavuli ở Đà Lạt"
+      ],
+      "expected": {
+        "equals": {
+          "interpretation.filters.accommodationType": "homestay"
+        },
+        "mapping": "homestay"
+      }
+    },
+    {
+      "id": "D17",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Không cần hồ bơi, tìm bavuli ở Đà Lạt"
+      ],
+      "expected": {
+        "equals": {
+          "interpretation.filters.accommodationType": "homestay"
+        },
+        "mapping": "homestay"
+      }
+    },
+    {
+      "id": "D18",
+      "split": "development",
+      "mode": "discover",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Muốn ở bavuli cho chuyến này"
+      ],
+      "expected": {
+        "equals": {
+          "expression": "bavuli"
+        }
+      }
+    },
+    {
+      "id": "D19",
+      "split": "development",
+      "mode": "discover",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "So sánh mấy bavuli đó"
+      ],
+      "expected": {
+        "equals": {
+          "expression": "bavuli"
+        }
+      }
+    },
+    {
+      "id": "D20",
+      "split": "development",
+      "mode": "discover",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Từ giờ mình gọi homestay là bavuli"
+      ],
+      "expected": {
+        "equals": {
+          "expression": "bavuli",
+          "purpose": "MEANING_ONLY"
+        }
+      }
+    },
+    {
+      "id": "D21",
+      "split": "development",
+      "mode": "discover",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Giữ chỗ ăn, thử đổi sang bavuli"
+      ],
+      "expected": {
+        "equals": {
+          "expression": "bavuli"
+        }
+      }
+    },
+    {
+      "id": "D22",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Ưu tiên khách sạn yên tĩnh, đắt hơn một chút cũng được nhưng cả chuyến không vượt6tr"
+      ],
+      "expected": {
+        "equals": {
+          "patch.totalBudget": 6000000
+        },
+        "contains": {
+          "memory.softPreferences.hotel": "quiet"
+        }
+      }
+    },
+    {
+      "id": "D23",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Giữ khách sạn, tìm nhà hàng ở Đà Lạt"
+      ],
+      "expected": {
+        "equals": {
+          "interpretation.operation": "search_registered_restaurants"
+        },
+        "absent": [
+          "patch.adults"
+        ]
+      }
+    },
+    {
+      "id": "D24",
+      "split": "development",
+      "mode": "resolve",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Tìm khách sạn ở SG"
+      ],
+      "expected": {
+        "equals": {},
+        "geoConflict": true,
+        "resolutionNotResolved": true
+      }
+    },
+    {
+      "id": "D25",
+      "split": "development",
+      "mode": "resolve",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Tìm bavuli ở Đà Lạt"
+      ],
+      "expected": {
+        "equals": {
+          "status": "NONE"
+        },
+        "mapping": "expired"
+      }
+    },
+    {
+      "id": "D26",
+      "split": "development",
+      "mode": "resolve",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Tìm bavuli trong mã nguồn"
+      ],
+      "expected": {
+        "equals": {
+          "status": "UNSAFE_CONTEXT"
+        },
+        "mapping": "homestay"
+      }
+    },
+    {
+      "id": "D27",
+      "split": "development",
+      "mode": "resolve",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Tìm bavuli ở Đà Lạt"
+      ],
+      "expected": {
+        "equals": {
+          "evidence.0.concept.value": "resort"
+        },
+        "mapping": "sessionOverride"
+      }
+    },
+    {
+      "id": "D28",
+      "split": "development",
+      "mode": "resolve",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Tìm bavuli ở Đà Lạt"
+      ],
+      "expected": {
+        "equals": {
+          "status": "AMBIGUOUS"
+        },
+        "mapping": "conflict"
+      }
+    },
+    {
+      "id": "D29",
+      "split": "development",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Tìm khách sạn có bãi xe, ngày đầu đi nhẹ thôi, tổng chuyến đừng quá6tr ở Đà Lạt"
+      ],
+      "expected": {
+        "equals": {
+          "patch.totalBudget": 6000000
+        },
+        "contains": {
+          "memory.constraints.hotel.amenities": "Bãi đỗ xe"
+        },
+        "frameMeaning": "dayPace"
+      }
+    },
+    {
+      "id": "H01",
+      "split": "holdout",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Kiếm resort tầm900k và chỗ ăn dưới150k ở Nha Trang, cả chuyến tối đa7tr"
+      ],
+      "expected": {
+        "equals": {
+          "memory.constraints.hotel.maxPriceFrom": 900000,
+          "memory.constraints.restaurant.maxPriceFrom": 150000,
+          "patch.totalBudget": 7000000
+        }
+      }
+    },
+    {
+      "id": "H02",
+      "split": "holdout",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Không phải3 người, là4 người"
+      ],
+      "expected": {
+        "equals": {
+          "patch.adults": 4,
+          "interpretation.operation": "plan_trip"
+        }
+      }
+    },
+    {
+      "id": "H03",
+      "split": "holdout",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Đổi điểm đến từ Nha Trang sang Huế, vẫn khởi hành Hà Nội"
+      ],
+      "expected": {
+        "equals": {
+          "patch.destinationCity": "Huế",
+          "patch.departureCity": "Hà Nội"
+        }
+      }
+    },
+    {
+      "id": "H04",
+      "split": "holdout",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Có lẽ Hội An hoặc Phú Quốc, ngân sách8tr"
+      ],
+      "expected": {
+        "equals": {},
+        "question": true,
+        "emptyPatch": true,
+        "noOperation": true
+      }
+    },
+    {
+      "id": "H05",
+      "split": "holdout",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Tìm zupela có Wi-Fi ở Hội An"
+      ],
+      "expected": {
+        "equals": {
+          "interpretation.filters.accommodationType": "homestay"
+        },
+        "mapping": "homestay",
+        "expression": "zupela"
+      }
+    },
+    {
+      "id": "H06",
+      "split": "holdout",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Không cần hồ bơi, kiếm zupela ở Nha Trang"
+      ],
+      "expected": {
+        "equals": {
+          "interpretation.filters.accommodationType": "homestay"
+        },
+        "mapping": "homestay",
+        "expression": "zupela"
+      }
+    },
+    {
+      "id": "H07",
+      "split": "holdout",
+      "mode": "discover",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Mình muốn nghỉ ở zupela"
+      ],
+      "expected": {
+        "equals": {
+          "expression": "zupela"
+        }
+      }
+    },
+    {
+      "id": "H08",
+      "split": "holdout",
+      "mode": "discover",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Từ nay mình gọi nhà hàng là zupela"
+      ],
+      "expected": {
+        "equals": {
+          "expression": "zupela",
+          "purpose": "MEANING_ONLY"
+        }
+      }
+    },
+    {
+      "id": "H09",
+      "split": "holdout",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Giữ nơi ở, kiếm chỗ ăn ở Hội An"
+      ],
+      "expected": {
+        "equals": {
+          "interpretation.operation": "search_registered_restaurants"
+        }
+      }
+    },
+    {
+      "id": "H10",
+      "split": "holdout",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Nhà hàng thứ2"
+      ],
+      "expected": {
+        "equals": {
+          "memory.activeReferent.id": "R2"
+        },
+        "lists": true
+      }
+    },
+    {
+      "id": "H11",
+      "split": "holdout",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Cái thứ2 ban nãy"
+      ],
+      "expected": {
+        "equals": {},
+        "lists": true,
+        "question": true,
+        "noOperation": true
+      }
+    },
+    {
+      "id": "H12",
+      "split": "holdout",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Khách sạn lần trước quá ồn, chuyến này tránh nơi như vậy"
+      ],
+      "expected": {
+        "equals": {},
+        "contains": {
+          "memory.softPreferences.hotel": "quiet"
+        }
+      }
+    },
+    {
+      "id": "H13",
+      "split": "holdout",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "650k là tiền phòng, không phải ngân sách chuyến"
+      ],
+      "expected": {
+        "equals": {
+          "memory.constraints.hotel.maxPriceFrom": 650000
+        },
+        "absent": [
+          "patch.totalBudget"
+        ]
+      }
+    },
+    {
+      "id": "H14",
+      "split": "holdout",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Tìm homestay có bãi đỗ xe ở Hội An, ngày đầu đi thong thả, tổng không vượt7tr"
+      ],
+      "expected": {
+        "equals": {
+          "patch.totalBudget": 7000000
+        },
+        "frameMeaning": "dayPace"
+      }
+    },
+    {
+      "id": "H15",
+      "split": "holdout",
+      "mode": "compose",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Nếu tăng ngân sách thêm700k thì sao?"
+      ],
+      "expected": {
+        "equals": {},
+        "question": true,
+        "emptyPatch": true,
+        "noOperation": true
+      }
+    },
+    {
+      "id": "H16",
+      "split": "holdout",
+      "mode": "resolve",
+      "turns": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Kiếm zupela ở Huế"
+      ],
+      "expected": {
+        "equals": {
+          "status": "AMBIGUOUS"
+        },
+        "mapping": "conflict",
+        "expression": "zupela"
+      }
+    }
+  ]
+}

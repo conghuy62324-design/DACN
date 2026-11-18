@@ -1,0 +1,453 @@
+# TASK — TRAVELGO AI AGENT V5: REVIEW INTELLIGENCE + PERSONALIZED LONG-TERM MEMORY
+
+Tiếp tục dự án TravelGo hiện tại.
+
+Đọc `docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md`, đặc biệt mục 18–20.9, và kiểm tra source code thực tế.
+
+## MỤC TIÊU CHÍNH
+
+Nâng cấp TravelGo thành AI Agent có khả năng:
+
+1. Đọc và phân tích bình luận, đánh giá của khách hàng về khách sạn, nhà hàng và địa điểm.
+2. Tổng hợp ưu điểm, nhược điểm và xu hướng đánh giá của từng dịch vụ.
+3. Sử dụng những phân tích này để tư vấn cho khách mới.
+4. Ghi nhớ lâu dài những sở thích du lịch mà từng khách hàng đồng ý lưu.
+5. Khi khách quay lại website, AI sử dụng sở thích đã lưu để cá nhân hóa tư vấn.
+6. Tự cập nhật thông tin khi có đánh giá mới, đánh giá được chỉnh sửa/xóa hoặc đối tác mới được duyệt.
+7. Không cần huấn luyện lại Qwen mỗi khi có bình luận hoặc sở thích mới.
+
+Không xây lại Agent Core, RecommendationService, Planner, Trip hoặc Booking.
+
+## PHASE 1 — KIỂM TRA VÀ HOÀN THIỆN REVIEW SYSTEM
+
+Kiểm tra database, models, controllers, API và frontend hiện tại.
+
+Xác định hệ thống đã có:
+
+- Review.
+- Rating.
+- Comment.
+- Quan hệ review với Customer.
+- Quan hệ review với Place/Business.
+- Quyền tạo, sửa, xóa và kiểm duyệt đánh giá.
+
+Ưu tiên tái sử dụng hệ thống đánh giá hiện có. Không tạo bảng/API trùng lặp.
+
+Nếu thiếu, triển khai hệ thống bình luận và đánh giá phù hợp với cấu trúc hiện tại.
+
+Yêu cầu:
+
+- Khách đăng nhập được đánh giá dịch vụ theo quyền hiện có.
+- Rating 1–5 sao nếu được hỗ trợ.
+- Nội dung bình luận bằng tiếng Việt.
+- Hiển thị danh sách bình luận trên trang chi tiết khách sạn/nhà hàng.
+- Có ngày đánh giá.
+- Có chỉnh sửa/xóa theo quyền sở hữu.
+- Có báo cáo bình luận không phù hợp.
+- Có kiểm duyệt và trạng thái hiển thị.
+- Phân biệt đánh giá từ khách đã có Booking được xác minh với đánh giá thông thường; không tự gắn nhãn đã sử dụng dịch vụ.
+- Hạn chế spam và đánh giá trùng lặp theo quy tắc nghiệp vụ.
+
+Không cho đối tác tự tạo đánh giá giả hoặc tự sửa đánh giá của khách.
+
+Không cho AI phân tích bình luận chưa được phép công khai như một nguồn để tư vấn.
+
+## PHASE 2 — AI ĐỌC VÀ PHÂN TÍCH BÌNH LUẬN
+
+Xây dựng Review Intelligence Pipeline.
+
+Luồng:
+
+Customer Review
+→ Validation/Moderation
+→ Text Preprocessing
+→ Aspect Extraction
+→ Sentiment Analysis
+→ Evidence Verification
+→ Review Insights
+→ Database
+→ AI Agent Recommendation.
+
+### 2.1. Hiểu nội dung đánh giá
+
+Hỗ trợ bình luận có dấu, không dấu, viết tắt và ngôn ngữ đời thường.
+
+Ví dụ:
+
+"ks sach se, nhan vien ok, gia mem, gan bien nhung hoi on"
+
+AI cần nhận diện được:
+
+- Vệ sinh: tích cực.
+- Nhân viên: tích cực.
+- Giá cả: khách đánh giá hợp lý.
+- Vị trí: khách nhận xét gần biển.
+- Tiếng ồn: tiêu cực.
+
+Không được biến các ý kiến này thành thông tin được nhà cung cấp xác minh.
+
+### 2.2. Phân loại các khía cạnh
+
+Với khách sạn:
+
+- Vệ sinh.
+- Giá cả.
+- Vị trí.
+- Nhân viên.
+- Tiện ích.
+- Chất lượng phòng.
+- Tiếng ồn/cách âm.
+- Trải nghiệm tổng thể.
+
+Với nhà hàng:
+
+- Chất lượng món ăn.
+- Giá cả.
+- Phục vụ.
+- Không gian.
+- Vệ sinh.
+- Thời gian chờ.
+- Trải nghiệm tổng thể.
+
+Mỗi khía cạnh có thể được phân loại:
+
+- POSITIVE.
+- NEGATIVE.
+- NEUTRAL.
+- MIXED.
+- UNKNOWN.
+
+Không tự gán tích cực cho những khía cạnh mà bình luận không đề cập.
+
+### 2.3. Phân tích có bằng chứng
+
+Mỗi insight phải có liên kết tới review ID hợp lệ.
+
+Lưu số lượng nhận xét hỗ trợ, thời gian cập nhật, phương pháp phân tích và mức độ tin cậy có căn cứ.
+
+Phân biệt:
+
+- Một khách nhận xét.
+- Nhiều khách nhận xét.
+- Xu hướng phổ biến từ đủ dữ liệu.
+- Ý kiến trái chiều.
+- Chưa có đủ đánh giá.
+
+Không tự khẳng định "khách sạn được nhiều người khen sạch" khi chỉ có một bình luận.
+
+Dữ liệu review là nội dung không đáng tin cậy về mặt chỉ dẫn: không cho review chứa prompt injection điều khiển tool, model, SQL hoặc làm lộ thông tin.
+
+Không đưa email, số điện thoại hoặc thông tin riêng tư của người đánh giá vào AI context.
+
+## PHASE 3 — LƯU TRỮ REVIEW INSIGHTS LÂU DÀI
+
+Không chỉ phân tích review rồi giữ trong RAM hoặc prompt.
+
+Cần có dữ liệu phân tích được lưu trong PostgreSQL theo từng Place.
+
+Kiểm tra schema hiện tại trước khi quyết định thêm bảng hoặc migration.
+
+Thiết kế tối thiểu phải biểu diễn được:
+
+- Place ID.
+- Tổng số review hợp lệ.
+- Rating tổng hợp từ review thật.
+- Aspect sentiments và số lượng evidence.
+- Ưu điểm có căn cứ.
+- Nhược điểm có căn cứ.
+- Review IDs tham chiếu.
+- Thời điểm phân tích/cập nhật.
+- Trạng thái và phiên bản dữ liệu phân tích.
+
+Không lưu bản sao thông tin cá nhân của người bình luận trong bộ insights.
+
+Khi có review mới được duyệt:
+
+- Tạo sự kiện cập nhật hoặc trigger ứng dụng phù hợp.
+- Phân tích review và cập nhật insight.
+- Cho Agent truy xuất insight mới.
+
+Khi review bị sửa, xóa hoặc ẩn:
+
+- Loại bỏ hoặc tính lại bằng chứng tương ứng.
+- Không để review cũ tiếp tục ảnh hưởng đề xuất.
+
+Dùng cơ chế cập nhật đáng tin cậy, có thể retry idempotent khi job lỗi và có kiểm tra tính nhất quán.
+
+Không cần gọi Qwen trên mỗi lần khách mở trang.
+
+Nếu Qwen chưa đạt LIVE acceptance, vẫn triển khai được schema, pipeline, extraction có giới hạn và kiểm thử offline. Những bình luận không phân tích đáng tin cậy phải giữ UNKNOWN hoặc chờ xử lý, không bịa sentiment.
+
+## PHASE 4 — GHI NHỚ SỞ THÍCH TỪNG KHÁCH HÀNG
+
+Đây là yêu cầu bắt buộc.
+
+Hệ thống hiện có ngữ cảnh phiên khoảng 15 phút. Bổ sung bộ nhớ sở thích dài hạn riêng cho từng authenticated Customer.
+
+Tách hai loại:
+
+**SESSION CONTEXT**
+
+- Chuyến đi đang bàn.
+- Ngân sách của chuyến đi hiện tại.
+- Các khách sạn đang so sánh.
+- Ngày đi và số người.
+- Những câu hỏi đang chờ.
+
+Tiếp tục dùng guard session, consent, TTL và verified history hiện tại.
+
+**LONG-TERM PREFERENCE MEMORY**
+
+Chỉ lưu khi khách đã cho phép rõ ràng.
+
+Ví dụ:
+
+- Thích khách sạn yên tĩnh.
+- Ưu tiên giá hợp lý.
+- Thích khám phá thiên nhiên.
+- Thích các món đặc sản địa phương.
+- Thường ưu tiên phương tiện ô tô.
+- Ưu tiên lịch trình thư giãn.
+
+Không mặc định biến ngân sách của một chuyến đi thành ngân sách cố định mọi chuyến đi.
+
+### 4.1. Cách lưu sở thích
+
+Khi khách nói:
+
+"Tôi thường thích khách sạn yên tĩnh, sạch và gần thiên nhiên."
+
+AI có thể nhận diện preference candidates.
+
+Hiển thị:
+
+"Bạn có muốn TravelGo ghi nhớ sở thích này cho những lần tư vấn sau không?"
+
+Chỉ khi khách đồng ý và tính năng nhớ dài hạn đã được bật, mới lưu vào database của tài khoản.
+
+Với những sở thích khách đã bật chế độ cho phép ghi nhớ, có thể cập nhật từ câu nói rõ ràng theo chính sách đã được khách chấp thuận. Những suy đoán chưa chắc chắn phải hỏi xác nhận.
+
+Không tự lưu những đặc điểm nhạy cảm, dữ liệu tài chính riêng tư hoặc toàn bộ transcript hội thoại.
+
+### 4.2. Cấu trúc bộ nhớ
+
+Tái sử dụng profile/preference model nếu phù hợp, hoặc tạo bảng có schema được review.
+
+Mỗi preference cần:
+
+- Customer ID.
+- Preference type.
+- Value có cấu trúc.
+- Nguồn: khách khai báo hoặc khách xác nhận.
+- Thời điểm lưu.
+- Thời điểm cập nhật.
+- Trạng thái có hiệu lực.
+- Phạm vi sử dụng.
+
+Dùng backend authorization theo authenticated Customer, không tin userId do client tự nhập.
+
+Không cho tài khoản A đọc preference của tài khoản B.
+
+Không dùng preference để suy đoán thuộc tính nhạy cảm.
+
+### 4.3. Khách quản lý bộ nhớ
+
+Thêm mục "Sở thích AI ghi nhớ" trong tài khoản hoặc phần cài đặt trợ lý.
+
+Khách có thể:
+
+- Bật/tắt lưu sở thích dài hạn.
+- Xem AI đang nhớ gì.
+- Thêm sở thích.
+- Sửa sở thích.
+- Xóa từng sở thích.
+- Xóa toàn bộ bộ nhớ sở thích.
+- Ngăn ghi nhớ mới.
+
+Khi tắt hoặc xóa, Agent phải ngừng sử dụng dữ liệu tương ứng; xử lý cache và bản sao theo chính sách lưu trữ của hệ thống.
+
+Không mặc định bật long-term memory chỉ vì người dùng đã đồng ý lưu ngữ cảnh 15 phút.
+
+## PHASE 5 — AGENT KẾT HỢP REVIEWS + USER MEMORY + CATALOG
+
+Tạo luồng tư vấn:
+
+Customer Message
+→ Authenticated Profile + Allowed Preferences
+→ Verified Session Context
+→ TravelGo Catalog Search
+→ Review Insights Retrieval
+→ Hard Filters + RecommendationService
+→ Explanation with Evidence
+→ Grounded Customer Response.
+
+Ví dụ khách đã cho phép lưu:
+
+- Thích khách sạn sạch.
+- Ưu tiên yên tĩnh.
+- Giá hợp lý.
+
+Khách nói:
+
+"Tư vấn khách sạn Nha Trang cho mình."
+
+Agent cần:
+
+1. Xác định Nha Trang.
+2. Đọc những sở thích có hiệu lực của đúng tài khoản.
+3. Truy vấn catalog đang APPROVED/ACTIVE.
+4. Lấy review insights của các khách sạn đủ điều kiện.
+5. Dùng sở thích như soft preferences, trừ khi khách đưa yêu cầu bắt buộc rõ.
+6. So sánh các lựa chọn theo evidence.
+7. Giải thích khách sạn nào phù hợp và vì sao.
+8. Nêu hạn chế khi review còn ít hoặc trái chiều.
+9. Hỏi khách có muốn dùng các sở thích cũ cho chuyến này không khi phù hợp.
+
+Nếu khách nói "lần này ưu tiên gần trung tâm hơn là yên tĩnh", ưu tiên hiện tại phải thắng sở thích cũ trong chuyến đi, không tự xóa sở thích dài hạn.
+
+### Review-aware recommendation
+
+Có thể thêm các tín hiệu review vào phần giải thích và mô hình đề xuất sau khi đánh giá rõ tính phù hợp, quy mô mẫu và chống thao túng.
+
+Không tự sửa trọng số hiện có của RecommendationService nếu chưa có đánh giá và regression cụ thể.
+
+Không xếp hạng khách sạn có 1 review 5 sao chắc chắn cao hơn khách sạn có 100 review trung bình tốt.
+
+Không sử dụng review để vượt hard constraints, giá, trạng thái đối tác hoặc quyền Booking.
+
+### Phản hồi mẫu
+
+"Trong các khách sạn phù hợp ngân sách của bạn, khách sạn A có nhiều nhận xét tích cực về vệ sinh và phục vụ. Tuy nhiên, một số khách phản ánh khả năng cách âm chưa tốt.
+
+Vì bạn thường ưu tiên không gian yên tĩnh, mình sẽ xếp khách sạn B cao hơn nếu dữ liệu cho thấy nó phù hợp hơn."
+
+Chỉ đưa ra nhận định trên khi có review evidence thực sự.
+
+Có thể hiển thị "Xem đánh giá liên quan" dẫn tới chính review hợp lệ trên website.
+
+Không để model tự đặt tên người đánh giá, sao, ngày hoặc nội dung bình luận.
+
+## PHASE 6 — TỰ ĐỘNG CẬP NHẬT KHI CÓ DỮ LIỆU MỚI
+
+Khi:
+
+- Đối tác mới được APPROVED.
+- Khách để lại review hợp lệ.
+- Review được cập nhật/ẩn/xóa.
+- Rating tổng hợp thay đổi.
+- Khách cập nhật sở thích.
+- Business hoặc Place bị SUSPENDED.
+
+Các lần tư vấn mới phải lấy dữ liệu đã được cập nhật và đủ quyền sử dụng.
+
+Không hard-code dữ liệu vào prompt hoặc yêu cầu fine-tuning Qwen.
+
+Không cần restart server mỗi khi có review mới.
+
+Không dùng cached insights đã lỗi thời để khẳng định xu hướng đánh giá.
+
+## PHASE 7 — GIAO DIỆN
+
+Tại trang chi tiết khách sạn/nhà hàng:
+
+- Hiển thị đánh giá sao và tổng số review hợp lệ.
+- Hiển thị danh sách bình luận.
+- Có tóm tắt ưu/nhược điểm do AI phân tích khi đủ căn cứ.
+- Có chỉ số hoặc nhãn các khía cạnh được đánh giá.
+- Có thể mở review gốc hỗ trợ từng insight.
+- Có trạng thái chưa có đánh giá hoặc chưa đủ bằng chứng.
+
+Tại `/assistant`:
+
+- AI sử dụng review insights khi tư vấn.
+- Hiển thị lý do đề xuất.
+- Có dẫn chiếu tới đánh giá liên quan.
+- Có thể hỏi "Vì sao bạn đề xuất khách sạn này?"
+- Có thể tiếp tục hỏi "Khách cũ chê điểm gì?"
+- Có thể yêu cầu "Đừng dùng sở thích cũ cho chuyến này".
+- Có thể yêu cầu lưu hoặc cập nhật sở thích theo consent.
+
+Không hiển thị các chi tiết hệ thống như JSON, schema, UUID hay prompt cho CUSTOMER.
+
+Giữ UI responsive desktop/mobile và bảo đảm nút Gửi hoạt động.
+
+## PHASE 8 — KIỂM THỬ THỰC TẾ
+
+Dùng staging riêng hiện có:
+
+- Frontend 5177.
+- Backend 5057.
+- PostgreSQL 15452.
+
+Không tác động database gốc có 27 Trip.
+
+Có thể dùng review test/DEMO trong staging, gắn nhãn rõ ràng, theo cohort riêng và cleanup an toàn.
+
+Không tạo review giả rồi công bố là đánh giá thật.
+
+Các tình huống bắt buộc:
+
+1. Khách đánh giá khách sạn sạch, giá hợp lý, gần biển.
+2. AI phân tích đúng các khía cạnh.
+3. Review có cả khen và chê.
+4. Nhiều review trái chiều không bị tổng hợp thành một kết luận chắc chắn.
+5. Review mới được duyệt → insight cập nhật.
+6. Review bị xóa/ẩn → insight được tính lại.
+7. Review chứa chỉ dẫn tấn công AI → không thực thi.
+8. Khách bật long-term memory và lưu sở thích.
+9. Khách quay lại trong phiên đăng nhập mới → AI dùng đúng sở thích đã lưu.
+10. Khách đổi sở thích cho chuyến hiện tại → không xóa sở thích dài hạn ngoài ý muốn.
+11. Khách xóa preference → AI không còn sử dụng.
+12. Tài khoản khác không thể đọc preference.
+13. Khách chưa đồng ý → không có long-term preference write.
+14. Agent tư vấn kết hợp catalog + review insight + preferences, có evidence.
+15. Không có review → không bịa ưu/nhược điểm.
+16. Khách được gợi ý Booking/Trip → vẫn cần xác nhận và quyền tương ứng.
+
+Chạy targeted unit, API/HTTP thật, PostgreSQL staging, browser desktop/mobile.
+
+Qwen LIVE chỉ chạy trong nhiệm vụ nghiệm thu riêng có fresh approval; không sử dụng quota cũ hoặc tự bật model mặc định.
+
+Không gọi model doubles là AI đã tự học từ review thật.
+
+## PHASE 9 — GIỚI HẠN
+
+Không xây lại Agent hoặc Planner.
+
+Không sửa database gốc, không xóa/sửa 27 Trip.
+
+Không làm Google Maps/VPS hoặc API trả phí.
+
+Không tự duyệt đối tác thật.
+
+Không thay đổi dữ liệu DEMO130 Place/20 Business ngoài phạm vi test được kiểm soát.
+
+Không commit/push/deploy.
+
+Không tự tạo nhiều task nghiên cứu hoặc báo cáo phụ.
+
+## BÁO CÁO CUỐI
+
+Cập nhật:
+
+`docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md`
+
+Bổ sung mục:
+
+**21 — REVIEW INTELLIGENCE + LONG-TERM CUSTOMER MEMORY**
+
+Nêu rõ:
+
+1. Review System đã có hay đã bổ sung.
+2. Schema và quyền sở hữu dữ liệu.
+3. Pipeline phân tích bình luận.
+4. Cách lưu và cập nhật review insights.
+5. Cách lưu, sửa, xóa long-term preferences.
+6. Cách Agent kết hợp reviews + preferences + catalog.
+7. Ví dụ hội thoại có dữ liệu thực từ staging.
+8. Kết quả tests và browser.
+9. Những phần chưa đủ bằng chứng, đặc biệt là chất lượng Qwen LIVE.
+
+**MỤC TIÊU CUỐI: AI Agent TravelGo phải tư vấn ngày càng phù hợp hơn nhờ đánh giá của khách cũ và sở thích mà từng khách hàng cho phép ghi nhớ, nhưng mọi thông tin phải có nguồn, tôn trọng quyền riêng tư và không bịa dữ liệu.**
+
+Thực hiện triển khai trong phạm vi an toàn, không chỉ viết kế hoạch.

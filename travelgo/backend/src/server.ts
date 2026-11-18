@@ -1,3 +1,4 @@
+import {stopTravelWebWorker} from './services/travelWebWorker.js';
 import app from './app.js';
 import { ENV } from './config/env.js';
 import { sequelize, testDbConnection } from './config/database.js';
@@ -24,6 +25,7 @@ const startServer = async () => {
   });
 
   process.on('SIGTERM', () => {
+    stopTravelWebWorker();
     console.log('Đang dừng server an toàn...');
     server.close(() => {
       console.log('Server đã dừng.');

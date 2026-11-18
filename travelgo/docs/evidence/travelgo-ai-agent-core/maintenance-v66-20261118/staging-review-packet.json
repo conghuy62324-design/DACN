@@ -1,0 +1,93 @@
+{
+  "task": "21.32",
+  "status": "PREPARED_REQUIRES_FRESH_WRITE_APPROVAL",
+  "database": {
+    "host": "127.0.0.1",
+    "port": 15452,
+    "name": "travelgo_staging_catalog_20261112",
+    "role": "catalog_runtime",
+    "sentinel": "travelgo-public-staging:catalog-20261112"
+  },
+  "sources": [
+    {
+      "id": "4d528499-1966-416a-9aa5-62fef936ac56",
+      "domain": "worker-fixture.invalid",
+      "urls": [
+        "https://worker-fixture.invalid/article",
+        "https://worker-fixture.invalid/alias"
+      ],
+      "synthetic": true,
+      "fetchPermission": "SYNTHETIC_TRANSPORT_ONLY_NO_PUBLIC_IO"
+    },
+    {
+      "id": "d7848212-5852-4591-97fe-651523724c05",
+      "domain": "wikitravel.org",
+      "urls": [
+        "https://wikitravel.org/en/Da_Lat",
+        "https://wikitravel.org/en/Hue"
+      ],
+      "synthetic": false,
+      "fetchPermission": "OWNER_CONDITIONAL_TASK_FETCH_POLICY_ONLY_AFTER_LICENSE_ROBOTS_TERMS_VERIFICATION"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "0f463392-db87-4365-b1b4-d79e73d2ace5",
+      "sourceId": "4d528499-1966-416a-9aa5-62fef936ac56",
+      "url": "https://worker-fixture.invalid/article"
+    },
+    {
+      "id": "9b58fb6b-0cc5-4baa-b606-6639e1384924",
+      "sourceId": "4d528499-1966-416a-9aa5-62fef936ac56",
+      "url": "https://worker-fixture.invalid/alias"
+    },
+    {
+      "id": "9f904a69-1255-4400-8310-625b3b1452d2",
+      "sourceId": "d7848212-5852-4591-97fe-651523724c05",
+      "url": "https://wikitravel.org/en/Da_Lat"
+    },
+    {
+      "id": "e1a8c808-d91d-4d89-99b5-275fd150c50d",
+      "sourceId": "d7848212-5852-4591-97fe-651523724c05",
+      "url": "https://wikitravel.org/en/Hue"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "6dd2d7b7-454f-432f-93d4-1725d9cf0b87",
+      "sourceId": "4d528499-1966-416a-9aa5-62fef936ac56"
+    },
+    {
+      "id": "9bfff091-624b-477e-8443-2d50f49842a4",
+      "sourceId": "d7848212-5852-4591-97fe-651523724c05",
+      "url": "https://wikitravel.org/en/Da_Lat"
+    },
+    {
+      "id": "abb70cf8-0f1c-4eda-8ea2-49642c4a1e7f",
+      "sourceId": "d7848212-5852-4591-97fe-651523724c05",
+      "url": "https://wikitravel.org/en/Hue"
+    }
+  ],
+  "allowedTables": [
+    "travel_web_sources",
+    "travel_web_jobs",
+    "travel_web_candidates"
+  ],
+  "maxSourceRows": 2,
+  "maxJobRows": 4,
+  "maxCandidateRows": 3,
+  "maxSqlDmlIncludingCleanup": 40,
+  "maxCycles": 2,
+  "maxJobsPerCycle": 2,
+  "sourceScope": "Exact new IDs only; exclude retained source3c427f07-c1e2-42eb-b380-42e46c28a2ca. Scoped prune/enqueue/claim, exact parameterized SQL fence.",
+  "realSourcePolicy": "Temporary fetch-only source status ALLOWED/APPROVED is authorized by this packet only if fresh permission verified; candidate facts remain DRAFT, reviewed_byNULL, no knowledge rows or Owner impersonation.",
+  "conditionalRealSource": "If metadata fails, no real source row or real worker fetch; report BLOCKED/PARTIAL. Synthetic lifecycle remains separate.",
+  "workerTransport": "One child uses production HTTPS transport under Internet capability; parent PostgreSQL producer remains staging-only. Synthetic host uses explicitly labeled offline transport; no raw article body written to disk.",
+  "secondCycle": "At least source rateSeconds delay (>=5s) before distinct queued alias jobs; no lowering refresh interval or forcing real same-URL due time. Actual source change only if observed; real same-URL refresh mayNOT_RUN due interval.",
+  "retainRows": false,
+  "cleanup": "Delete only exact candidate/job/source IDs after verifying ownership; all40 fingerprints must match fresh baseline. No user/account/Owner/knowledge/audit/catalog/Trip/Booking/schema writes.",
+  "runtime": "Existing API stays protected; standalone producer only, no daemon, no API restart, no Agent chats/login/quota rescan.",
+  "factApproval": false,
+  "model": false,
+  "windowMinutes": 120
+}

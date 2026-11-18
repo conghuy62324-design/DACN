@@ -1,0 +1,52 @@
+{
+  "at": "2026-11-16T13:12:28.942Z",
+  "actualSourceFiles": {
+    "normalizer": "backend/src/agent/vietnameseNormalizer.ts",
+    "semanticFrames": "backend/src/agent/conversationSemantics.ts",
+    "languageStorage": "backend/src/services/languageMemoryService.ts",
+    "customerMemory": "backend/src/services/customerMemoryService.ts",
+    "knowledgeRetrieval": "backend/src/services/travelKnowledgeService.ts + travelWebRetrieval.ts",
+    "advisory": "backend/src/agent/travelConsultant.ts + advisoryReasoning.ts + decisionIntelligence.ts",
+    "grounding": "backend/src/agent/naturalGrounding.ts + personalizedGrounding.ts",
+    "privacy": "backend/src/agent/modelPrivacy.ts",
+    "core": "backend/src/services/agentCoreService.ts",
+    "ui": "frontend/src/components/agent/AgentCorePanel.tsx + frontend/src/pages/AssistantPage.tsx"
+  },
+  "reused": [
+    "One AgentCoreService /assistant and owned session store",
+    "Shared geography/base normalizer",
+    "V5.3 SESSION/PERSONAL/SHARED registry + storage/moderation/CAS/TTL/consent/revocation",
+    "V5.4 semantic frames/deferred goals/category result sets",
+    "V5.5 decision evidence and factual renderer",
+    "V5.6 planning and V6.1 Trip preview/confirmation authority",
+    "Existing permanent model-off launcher/guard"
+  ],
+  "fixed": [
+    "Discovery beyond find-at pattern: contextual stay/comparison/replacement and explicit teach definitions, exact raw spans",
+    "Meaning-only confirmation cannot initiate unsolicited search or persistent save",
+    "Consented mappings reused across fresh sessions/new syntax, with owner isolation and inflight revocation tests",
+    "Clause-local negation no longer blocks a positive search because of unrelated negative amenity/booking clause",
+    "Trip-vs-listing money roles, approximate service cap, price correction and typed party correction",
+    "Current role labels and service-switch search areas; alternative destinations remain candidates",
+    "Reject mapping conflict with base geography, protect numeric/control vocabulary, retain expiry",
+    "Candidate day pace/negative past-noise preference and bounded previous/completed goals",
+    "Explicit correction recovery without Trip rollback; token-bound clarification instead of silent truncation",
+    "Strict labeled metric dimensions with null unmeasured denominators"
+  ],
+  "notNewDefects": [
+    "Historical H13 role/pending failure already fixed in V5.5 and retained as regression",
+    "Grounded name/price/reason bundles already fixed in20.9; reused, not reimplemented",
+    "Customer memory/review/knowledge missing data remain gaps, not NLU facts",
+    "Historical Qwen raw FAIL/BLOCKED not regraded"
+  ],
+  "remaining": [
+    "H03 drops Huế after sang: travelLocations treats folded names <=3 characters like short aliases, and sang is not a role cue in that lexical gate. Shared geography contains Huế; raw final frame records only Hà Nội. No post-holdout fix performed.",
+    "Unknown numeric meanings such as cành remain clarification-only; no numeric registry expansion/migration/arbitrary multiplier",
+    "New preference/pace meanings outside existing canonical registry are not persistently learnable",
+    "Whole-message hypothetical suppression remains conservative; arbitrary clause-level inference/rollback is not implemented",
+    "Candidate dayPace is not proof that Planner executes every subgoal in a compound turn",
+    "Recent lists bounded per category; ambiguous unqualified references ask; no unlimited dialogue or transcript memory",
+    "Actual final-source learning/advisory/browser blocked by fresh quota; existing protected API was not restarted into final source"
+  ],
+  "scope": "Application-level bounded learning and compositional rules, not model weight training or general LLM reasoning"
+}

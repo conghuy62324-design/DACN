@@ -1,10 +1,14 @@
+import {startTravelWebWorker} from './services/travelWebWorker.js';
 import express from 'express';
 import cors from 'cors';
 import apiRouter from './routes/api.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { ENV } from './config/env.js';
+import {startReviewInsightWorker} from './services/reviewInsightService.js';
 
 const app = express();
+startReviewInsightWorker();
+startTravelWebWorker();
 
 // Middlewares
 app.use(cors({

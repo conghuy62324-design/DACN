@@ -1,0 +1,75 @@
+import {reviewedExtraction} from '../agent/webTravelExtraction.js';
+import {COST_UNITS,COST_CATEGORIES,typedCostObservation} from '../agent/costIntelligence.js';
+import {isDeepStrictEqual} from 'node:util';
+import {createHash} from 'node:crypto';
+import {QueryTypes,type Transaction} from 'sequelize';
+import {sequelize} from '../config/database.js';
+import {HttpError} from '../utils/httpError.js';
+import {resolveLocation} from '../geography/vietnam.js';
+import {KNOWLEDGE_TOPICS,safeKnowledgeText,safeKnowledgeUrl,type KnowledgeItem} from '../agent/travelKnowledge.js';
+const enabled=()=>process.env.TRAVEL_KNOWLEDGE_ENABLED==='true';
+const columns=`id,location_id AS "locationId",place_id AS "placeId",topic,title,content,source_type AS "sourceType",source_url AS "sourceUrl",internal_source_id AS "internalSourceId",provenance,status,public_use AS "publicUse",reviewed_at AS "reviewedAt",valid_from AS "validFrom",expires_at AS "expiresAt",version`;
+const bad=()=>new HttpError(400,'Kiến thức hoặc nguồn chưa hợp lệ.','KNOWLEDGE_INVALID');
+export function knowledgeDraft(raw:any){
+ const keys=['locationId','placeId','topic','title','content','sourceType','sourceUrl','internalSourceId','provenance','validFrom','expiresAt'];
+ if(!raw||typeof raw!=='object'||Array.isArray(raw)||Object.keys(raw).some(k=>!keys.includes(k))||!resolveLocation(raw.locationId)||resolveLocation(raw.locationId)?.id!==raw.locationId||raw.locationId==='all'||!KNOWLEDGE_TOPICS.includes(raw.topic)||!safeKnowledgeText(raw.title,160)||!safeKnowledgeText(raw.content))throw bad();
+ if(raw.placeId!==undefined&&raw.placeId!==null&&!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(raw.placeId))throw bad();
+ if(raw.sourceType==='INTERNAL_CATALOG'){if(!raw.placeId||raw.internalSourceId!==raw.placeId||raw.sourceUrl)throw bad();}else if(!['OFFICIAL','PARTNER_VERIFIED','EXTERNAL_REVIEWED'].includes(raw.sourceType)||!safeKnowledgeUrl(raw.sourceUrl)||raw.internalSourceId)throw bad();
+ const p=raw.provenance;const web=p?.method==='WEB_SOURCE_REVIEW';if(raw.sourceType==='EXTERNAL_REVIEWED'&&!web||web&&raw.sourceType!=='EXTERNAL_REVIEWED')throw bad();if(!p||typeof p!=='object'||Array.isArray(p)||Object.keys(p).some(k=>!(web?['method','retrievedAt','evidenceHash','webSourceId','webCandidateId','webCandidateVersion','webSourceVersion','independenceGroup','independenceReviewed','external','license','permissionUrl']:['method','retrievedAt','evidenceHash']).includes(k))||!['MANUAL_OFFICIAL_REVIEW','PARTNER_DOCUMENT_REVIEW','CATALOG_FIELD_REVIEW','WEB_SOURCE_REVIEW'].includes(p.method)||typeof p.evidenceHash!=='string'||!/^[a-f0-9]{64}$/.test(p.evidenceHash)||!Number.isFinite(Date.parse(p.retrievedAt))||Date.parse(p.retrievedAt)>Date.now())throw bad();
+ if(web&&(!/^[0-9a-f-]{36}$/i.test(p.webSourceId)||!/^[0-9a-f-]{36}$/i.test(p.webCandidateId)||!Number.isSafeInteger(p.webSourceVersion)||p.webSourceVersion<1||!p.external||p.external.canonicalUrl!==raw.sourceUrl||p.external.contentHash!==p.evidenceHash||!safeKnowledgeText(p.license,120)||!safeKnowledgeUrl(p.permissionUrl)||Buffer.byteLength(JSON.stringify(p))>100000))throw bad();
+ if(web&&!reviewedExtraction(p.external))throw bad();
+ for(const k of ['validFrom','expiresAt'])if(raw[k]!==undefined&&raw[k]!==null&&(typeof raw[k]!=='string'||!Number.isFinite(Date.parse(raw[k]))))throw bad();
+ if(raw.validFrom&&raw.expiresAt&&Date.parse(raw.expiresAt)<=Date.parse(raw.validFrom))throw bad();
+ return {...raw,placeId:raw.placeId||null,sourceUrl:raw.sourceUrl||null,internalSourceId:raw.internalSourceId||null,validFrom:raw.validFrom||null,expiresAt:raw.expiresAt||null};
+}
+/** No shared cache. Every retrieval sees current approval, expiry and source eligibility. */
+export class TravelKnowledgeService {
+ async approved(locationId:string,transaction?:Transaction):Promise<KnowledgeItem[]>{return this.approvedQuery([locationId],transaction);}
+ async approvedBatch(locationIds:string[],transaction?:Transaction){if(!Array.isArray(locationIds)||!locationIds.length||locationIds.length>3||locationIds.some(id=>resolveLocation(id)?.id!==id||id==='all'))throw bad();return this.approvedQuery(locationIds,transaction);}
+ async costDestinations(){return[...new Set((await this.approvedQuery()).filter(k=>k.topic==='cost'&&Array.isArray((k.provenance.external as any)?.costs)).map(k=>k.locationId))].slice(0,3);}
+ private async approvedQuery(locationIds?:string[],transaction?:Transaction):Promise<KnowledgeItem[]>{
+  if(!enabled())return[];
+  const webFence=process.env.TRAVEL_WEB_ENABLED==='true'?`(k.source_type<>'EXTERNAL_REVIEWED' OR EXISTS(SELECT 1 FROM travel_web_sources ws JOIN travel_web_candidates wc ON wc.source_id=ws.id WHERE ws.id::text=k.provenance->>'webSourceId' AND wc.id::text=k.provenance->>'webCandidateId' AND wc.knowledge_id=k.id AND wc.status='APPROVED' AND wc.source_version=ws.version AND wc.version=(k.provenance->>'webCandidateVersion')::integer+1 AND wc.content_hash=k.provenance->>'evidenceHash' AND ws.enabled AND ws.permission='ALLOWED' AND ws.review_status='APPROVED' AND ws.version::text=k.provenance->>'webSourceVersion' AND (ws.config->>'robotsReviewedAt')::timestamptz>now()-interval '7 days'))`:`k.source_type<>'EXTERNAL_REVIEWED'`;
+  const rows=await sequelize.query<any>(`SELECT ${columns} FROM verified_travel_knowledge k WHERE ${webFence} AND ($1::varchar[] IS NULL OR location_id=ANY($1::varchar[])) AND status='APPROVED' AND public_use AND reviewed_at<=now() AND (valid_from IS NULL OR valid_from<=now()) AND (expires_at IS NULL OR expires_at>now()) AND (place_id IS NULL OR EXISTS(SELECT 1 FROM places p LEFT JOIN businesses b ON b.id=p.business_id WHERE p.id=k.place_id AND p.status='APPROVED' AND (p.business_id IS NULL OR b.status='ACTIVE'))) ORDER BY updated_at DESC,id LIMIT 100`,{bind:[locationIds||null],type:QueryTypes.SELECT,transaction});
+  return rows.flatMap(r=>{if(r.sourceType==='EXTERNAL_REVIEWED'){const selected=reviewedExtraction(r.provenance.external);if(!selected)return[];r={...r,provenance:{...r.provenance,external:selected}};}return[{...r,...Object.fromEntries(['reviewedAt','validFrom','expiresAt'].map(k=>[k,r[k] instanceof Date?r[k].toISOString():r[k]]))}];});
+ }
+ async costObservations(filters:{locationId:string;days?:number;party?:number;origin?:string;travelPeriod?:string;category?:string;unit?:string;currency?:string}){
+  const {observationMatches}=await import('../agent/webTravelPolicy.js');
+  if(!filters||filters.currency!==undefined&&!['VND','USD','EUR','GBP','UNKNOWN'].includes(filters.currency)||filters.category!==undefined&&![...COST_CATEGORIES,'TOTAL','SIGHTSEEING'].includes(filters.category as any)||filters.unit!==undefined&&!COST_UNITS.includes(filters.unit as any)||filters.origin!==undefined&&!resolveLocation(filters.origin)||filters.travelPeriod!==undefined&&(typeof filters.travelPeriod!=='string'||!/^[0-9/\-]{4,12}$/.test(filters.travelPeriod))||Object.keys(filters).some(k=>!['locationId','days','party','origin','travelPeriod','category','unit','currency'].includes(k))||!resolveLocation(filters.locationId)||filters.days!==undefined&&(!Number.isInteger(filters.days)||filters.days<1||filters.days>10)||filters.party!==undefined&&(!Number.isInteger(filters.party)||filters.party<1||filters.party>100))throw bad();
+  return(await this.approved(filters.locationId)).filter(k=>k.sourceType==='EXTERNAL_REVIEWED'&&k.provenance?.method==='WEB_SOURCE_REVIEW'&&observationMatches(k.provenance.external as any,filters)).map(k=>({knowledgeId:k.id,sourceUrl:k.sourceUrl,version:k.version,observation:{...(k.provenance.external as any),costs:(k.provenance.external as any).costs.map(typedCostObservation).filter((o:any)=>o&&(!filters.category||o.costCategory===filters.category||o.category===filters.category)&&(!filters.unit||o.unit===filters.unit)&&(!filters.currency||o.currency===filters.currency))}})).filter(k=>k.observation.costs.length);
+ }
+ static async adminList(){if(!enabled())throw new HttpError(503,'Kho kiến thức chưa được bật.','KNOWLEDGE_DISABLED');return sequelize.query(`SELECT ${columns} FROM verified_travel_knowledge ORDER BY updated_at DESC,id LIMIT 100`,{type:QueryTypes.SELECT});}
+ static async write(actor:{id:string;roles:string[]},raw:any,id?:string,sharedTransaction?:Transaction){
+  if(!actor.roles.includes('SUPER_ADMIN')||process.env.TRAVEL_KNOWLEDGE_SCOPED_REVIEWER_ID&&actor.id!==process.env.TRAVEL_KNOWLEDGE_SCOPED_REVIEWER_ID)throw new HttpError(403,'Chỉ quản trị viên được duyệt kiến thức.','FORBIDDEN');
+  if(!enabled()||process.env.ADVISORY_STAGING_READ_ONLY==='true')throw new HttpError(403,'Kho kiến thức đang chỉ đọc.','KNOWLEDGE_READ_ONLY');
+  if(id&&!/^[0-9a-f-]{36}$/i.test(id))throw bad();
+  const moderation=!!id&&raw&&typeof raw==='object'&&['APPROVED','REVOKED'].includes(raw.status);
+  if(moderation&&(Object.keys(raw).some(k=>!['status','version','publicUse','reason'].includes(k))||!Number.isSafeInteger(raw.version)||raw.version<1||typeof raw.reason!=='string'||!safeKnowledgeText(raw.reason,240)||raw.status==='APPROVED'&&raw.publicUse!==true))throw bad();
+  const draft=moderation?null:knowledgeDraft(raw);
+  const work=async(transaction:Transaction)=>{
+   let previous:any;if(id){const rows=await sequelize.query<any>('SELECT * FROM verified_travel_knowledge WHERE id=$1 FOR UPDATE',{bind:[id],transaction,type:QueryTypes.SELECT});previous=rows[0];if(!previous)throw new HttpError(404,'Không tìm thấy kiến thức.','KNOWLEDGE_NOT_FOUND');}
+   if(moderation&&previous.version!==raw.version)throw new HttpError(409,'Nguồn vừa thay đổi; cần xem lại trước khi duyệt.','KNOWLEDGE_REVISION_CONFLICT');
+   const provenance=moderation?previous?.provenance:draft?.provenance;
+   if(provenance?.method==='WEB_SOURCE_REVIEW'&&provenance.external?.synthetic!==true&&process.env.TRAVEL_KNOWLEDGE_REAL_REVIEW_ALLOWED==='false')throw new HttpError(403,'Kiến thức thật cần reviewer owner và authorization riêng.','WEB_REAL_REVIEW_REQUIRES_OWNER');
+   if(provenance?.method==='WEB_SOURCE_REVIEW'&&(!moderation||raw.status==='APPROVED')){
+    if(process.env.TRAVEL_WEB_ENABLED!=='true')throw bad();
+    const sources=await sequelize.query<any>("SELECT s.*,c.extraction,c.status AS candidate_status,c.source_version FROM travel_web_sources s JOIN travel_web_candidates c ON c.source_id=s.id WHERE s.id=$1 AND c.id=$2 FOR UPDATE OF s,c",{bind:[provenance.webSourceId,provenance.webCandidateId],transaction,type:QueryTypes.SELECT});const src=sources[0];
+    if(provenance.independenceReviewed!==undefined&&(typeof provenance.independenceReviewed!=='boolean'||provenance.independenceReviewed===true&&(!safeKnowledgeText(provenance.independenceGroup,100)||provenance.independenceGroup!==src?.config?.independenceGroup)))throw bad();
+    if(!src||!src.enabled||src.permission!=='ALLOWED'||src.review_status!=='APPROVED'||src.version!==provenance.webSourceVersion||src.source_version!==src.version||!['DRAFT','APPROVED'].includes(src.candidate_status)||!isDeepStrictEqual(src.extraction,provenance.external)||Date.now()-Date.parse(src.config.robotsReviewedAt)>=7*86400000)throw bad();
+   }
+   let result:any;
+   if(moderation){if(raw.status==='APPROVED'){
+    knowledgeDraft({locationId:previous.location_id,placeId:previous.place_id,topic:previous.topic,title:previous.title,content:previous.content,sourceType:previous.source_type,sourceUrl:previous.source_url,internalSourceId:previous.internal_source_id,provenance:previous.provenance,validFrom:previous.valid_from?.toISOString(),expiresAt:previous.expires_at?.toISOString()});
+    if(previous.expires_at&&+previous.expires_at<=Date.now())throw bad();
+   }
+    result=await sequelize.query(`UPDATE verified_travel_knowledge SET status=$2,public_use=$3,reviewed_at=now(),reviewed_by=$4,version=version+1,updated_at=now() WHERE id=$1 RETURNING ${columns}`,{bind:[id,raw.status,raw.status==='APPROVED',actor.id],transaction,type:QueryTypes.SELECT});
+   }else{
+    const d=draft!,values=[d.locationId,d.placeId,d.topic,d.title,d.content,d.sourceType,d.sourceUrl,d.internalSourceId,JSON.stringify(d.provenance),d.validFrom,d.expiresAt];
+    if(id)result=await sequelize.query(`UPDATE verified_travel_knowledge SET location_id=$1,place_id=$2,topic=$3,title=$4,content=$5,source_type=$6,source_url=$7,internal_source_id=$8,provenance=$9::jsonb,valid_from=$10,expires_at=$11,status='DRAFT',public_use=false,reviewed_at=NULL,reviewed_by=NULL,version=version+1,updated_at=now() WHERE id=$12 RETURNING ${columns}`,{bind:[...values,id],transaction,type:QueryTypes.SELECT});
+    else result=await sequelize.query(`INSERT INTO verified_travel_knowledge(location_id,place_id,topic,title,content,source_type,source_url,internal_source_id,provenance,valid_from,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10,$11) RETURNING ${columns}`,{bind:values,transaction,type:QueryTypes.SELECT});
+   }
+   const row=result[0];await sequelize.query("INSERT INTO audit_logs(actor_user_id,action,entity_type,entity_id,previous_data,new_data,reason) VALUES($1,$2,'TravelKnowledge',$3,$4::jsonb,$5::jsonb,$6)",{bind:[actor.id,'KNOWLEDGE_'+row.status,row.id,JSON.stringify(previous?{status:previous.status,version:previous.version}:{}),JSON.stringify({status:row.status,version:row.version,contentHash:createHash('sha256').update(row.content).digest('hex')}),moderation?raw.reason:'Kiến thức mới/sửa luôn cần duyệt lại'],transaction});
+   return row;
+  };return sharedTransaction?work(sharedTransaction):sequelize.transaction(work);
+ }
+}

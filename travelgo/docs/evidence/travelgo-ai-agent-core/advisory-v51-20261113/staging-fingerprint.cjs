@@ -1,0 +1,9 @@
+const {root,path,fs,config,identity,sha,assert}=require('../../../../backend/scripts/catalog-staging-common.cjs'),{Client}=require(path.join(root,'backend/node_modules/pg'));
+(async()=>{const client=new Client({host:config.DB_HOST,port:+config.DB_PORT,user:config.DB_USER,password:config.DB_PASSWORD,database:config.DB_NAME,options:'-c default_transaction_read_only=on'});await client.connect();try{
+const verified=await identity(client);assert.equal((await client.query('SHOW default_transaction_read_only')).rows[0].default_transaction_read_only,'on');const tables={},allTables={};
+for(const name of ['places','businesses']){const r=(await client.query(`SELECT count(*)::int AS n,coalesce(string_agg(md5(to_jsonb(t)::text),',' ORDER BY id),'') AS hashes FROM ${name} t`)).rows[0];tables[name]={rows:r.n,sha256:sha(r.hashes)};}
+assert.deepEqual(tables,JSON.parse(fs.readFileSync(path.join(__dirname,'../qwen-v4-real-20261112-1236/staging-final.json'))).tables);
+for(const {tablename:name}of(await client.query("SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename")).rows){assert(/^[a-z_]+$/.test(name));const r=(await client.query(`SELECT count(*)::int AS n,coalesce(string_agg(md5(to_jsonb(t)::text),',' ORDER BY md5(to_jsonb(t)::text)),'') AS hashes FROM public."${name}" t`)).rows[0];allTables[name]={rows:r.n,sha256:sha(r.hashes)};}
+const phase=process.argv[2];assert(['before','after','final','delivery'].includes(phase));if(phase!=='before')assert.deepEqual(allTables,JSON.parse(fs.readFileSync(path.join(__dirname,'staging-before.json'))).allTables);
+fs.writeFileSync(path.join(__dirname,'staging-'+phase+'.json'),JSON.stringify({at:new Date().toISOString(),identity:verified,readOnly:true,tables,allTables},null,2),{flag:'wx'});console.log(JSON.stringify({phase,tables,allTableCount:Object.keys(allTables).length}));
+}finally{await client.end();}})().catch(e=>{console.error(e.message);process.exitCode=1;});

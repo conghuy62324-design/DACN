@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {readCoreResponse} from '../src/services/agentCoreClient.ts';
+const id='56000000-0000-4000-8000-000000000001',date=new Date().toISOString(),base={success:true,data:{status:'completed',reply:'SYNTHETIC source test',conversation:{id,revision:1,expiresAt:new Date(Date.now()+900000).toISOString(),persisted:false,mode:'CORE_VERIFIED'},knowledge:{sources:[{title:'SYNTHETIC',href:'https://example.org/synthetic',reviewedAt:date,version:1}],mutationAuthority:false},result:{type:'knowledge_options',items:[{id,name:'SYNTHETIC attraction',category:'attraction',href:'/places/'+id,isDemo:true,amenities:[],retrievedAt:date}]}}};
+let passed=0;const check=(fn:()=>unknown)=>{fn();passed++;};
+check(()=>assert.doesNotThrow(()=>readCoreResponse(base,{action:'start'})));
+for(const href of ['javascript:alert(1)','https://user:pass@example.org','https://example.org/?token=secret'])check(()=>{const r=structuredClone(base);r.data.knowledge.sources[0].href=href;assert.throws(()=>readCoreResponse(r,{action:'start'}));});
+for(const patch of [{id:'invalid'},{category:'hotel'},{href:'javascript:alert(1)'},{isDemo:'yes'},{retrievedAt:'invalid'}])check(()=>{const r=structuredClone(base);Object.assign(r.data.result.items[0],patch);assert.throws(()=>readCoreResponse(r,{action:'start'}));});
+check(()=>{const r:any=structuredClone(base);r.data.confirmation={};assert.throws(()=>readCoreResponse(r,{action:'start'}));});
+check(()=>{const r:any=structuredClone(base);r.data.knowledge.mutationAuthority=true;assert.throws(()=>readCoreResponse(r,{action:'start'}));});
+check(()=>{const r:any=structuredClone(base);r.data.result.type='unknown';assert.throws(()=>readCoreResponse(r,{action:'start'}));});
+console.log(JSON.stringify({tier:'OFFLINE_CLIENT_CONTRACT',passed,failed:0,native:0}));

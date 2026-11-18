@@ -1,0 +1,63 @@
+{
+  "status": "PROPOSED_NOT_APPROVED_NOT_RUN",
+  "at": "2026-11-15T01:43:22.546Z",
+  "sourceFreeze": "source-freeze-final.json",
+  "sourceFreezeHash": "edd0d8456f0a3edb5daf777191ca86bf44290cd1f03141cc952ce58ce8589a9b",
+  "model": {
+    "tag": "qwen3:4b-instruct-2507-q4_K_M",
+    "digest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+    "endpoint": "http://127.0.0.1:11434",
+    "context": 16384,
+    "temperature": 0,
+    "num_predict": 2048,
+    "deadlineMs": 15000,
+    "concurrency": 1
+  },
+  "authorization": "NONE: all old live approvals invalid for this proposed source",
+  "proposedCases": [
+    {
+      "id": "B1",
+      "role": "nlu_proposal",
+      "input": "tui mún len da lạc chơi vài bữa, chua chot ngay",
+      "expected": "Unique supported shared-geography destination proposal; quoted current-message evidence, no invented dates/budget/transport; confirmation before updates"
+    },
+    {
+      "id": "B2",
+      "role": "nlu_proposal",
+      "verified": {
+        "destinationCity": "Đà Lạt",
+        "departureCity": "Hồ Chí Minh",
+        "adults": 2,
+        "totalBudget": 5000000
+      },
+      "input": "nhích tiền thêm chút với đi xe nào đỡ mệt thì tính sau nha",
+      "expected": "No budget/transport update; preserve verified context and ask one material clarification"
+    },
+    {
+      "id": "B3",
+      "role": "grounded_response",
+      "input": "Vé vào khu này tính theo người hay theo vé, có cộng thành tiền cả chuyến được không?",
+      "factsLabel": "SYNTHETIC_SCOPED_CONTRACT_FIXTURE_ONLY",
+      "expected": "Select allowed cost fact IDs; distinguish ticket/person/group and missing inclusions. No aggregate trip total or live fare"
+    },
+    {
+      "id": "B4",
+      "role": "grounded_response",
+      "input": "Ưu tiên sạch và yên tĩnh, nên cân nhắc chỗ nào và còn thiếu gì?",
+      "factsLabel": "SYNTHETIC_REVIEW_MEMORY_OR_REAL_APPROVED_AND_VALID_ONLY",
+      "expected": "Bounded allowed option/review/unknownPrice IDs; opposing opinions/sample provenance, missing price, no guaranteed quality/availability"
+    }
+  ],
+  "requiredBeforeExecution": [
+    "New explicit bounded native budget approval",
+    "Fresh resources/ownership/model digest/resident context/quota/reserve preflight under approved policy",
+    "Lock exact native request bodies and expected against then-current source before POST",
+    "Resolve cost-fact-ID bridge gap without widening model authority",
+    "No raw web/review text/private identity or all-history/all-KB prompt",
+    "One model call maximum per turn; schema/semantic/grounding scored separately; no fallback as Qwen PASS",
+    "Verify NLU input privacy projection: raw body.message currently passes through; do not send identity/credentials or claim production privacy closure"
+  ],
+  "nativePosts": 0,
+  "warmLoads": 0,
+  "inferences": 0
+}

@@ -1,0 +1,4 @@
+// Offline benchmark only. Every replacement is byte-identical to the recorded pre-edit compiled runtime.
+const fs=require('fs'),path=require('path'),crypto=require('crypto'),assert=require('assert/strict'),Module=require('module'),root=path.resolve(__dirname,'../../../..'),baseline=JSON.parse(fs.readFileSync(path.join(__dirname,'baseline-source.json'))),map=new Map();
+for(const file of['agent/costIntelligence','agent/naturalGrounding','agent/conversationSemantics','agent/vietnameseNormalizer','services/agentCoreService']){const relative='backend/dist/'+file+'.js',bytes=fs.readFileSync(path.join(__dirname,'baseline-runtime',relative));assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),baseline.hashes[relative]);map.set(path.join(root,relative),bytes.toString('utf8'));}
+const original=Module._extensions['.js'];Module._extensions['.js']=function(module,file){if(map.has(file))return module._compile(map.get(file),file);return original(module,file);};

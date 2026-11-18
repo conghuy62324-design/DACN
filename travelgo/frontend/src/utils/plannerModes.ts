@@ -16,13 +16,13 @@ export function initialPlannerModes(source: unknown): { pacing: unknown; transpo
 }
 
 type ModeSelection =
-  | { valid: true; pacing: 'balanced'; transportation: 'car' | 'motorbike' }
+  | { valid: true; pacing: 'balanced'|'relaxed'|'packed'; transportation: 'car' | 'motorbike' }
   | { valid: false; message: string };
 
 const display = (value: unknown) => typeof value === 'string' && value ? value : 'không hợp lệ';
 
-export function validatePlannerModes(pacing: unknown, transportation: unknown): ModeSelection {
-  if (pacing !== 'balanced') {
+export function validatePlannerModes(pacing: unknown, transportation: unknown, version?:'TIME_AWARE_V2'): ModeSelection {
+  if (pacing !== 'balanced'&&!(version==='TIME_AWARE_V2'&&(pacing==='relaxed'||pacing==='packed'))) {
     return { valid: false,
       message: `Nhịp độ ${display(pacing)} của dữ liệu cũ chưa được hỗ trợ khi tạo lịch mới. Hãy chọn Cân bằng: tối đa 2 điểm tham quan/ngày, không tính bữa ăn.` };
   }
@@ -30,5 +30,5 @@ export function validatePlannerModes(pacing: unknown, transportation: unknown): 
     return { valid: false,
       message: `Phương tiện ${display(transportation)} chưa được hỗ trợ khi tạo lịch mới. Hãy chọn Ô tô hoặc Xe máy để ước lượng ETA giữa các điểm; chưa tính chặng và chi phí liên tỉnh.` };
   }
-  return { valid: true, pacing, transportation };
+  return { valid: true, pacing:pacing as 'balanced'|'relaxed'|'packed', transportation };
 }

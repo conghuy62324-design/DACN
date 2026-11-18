@@ -1,3 +1,4 @@
+import {PlanningNotice,ActivityTiming} from '../components/common/PlanningTimeline';
 import {LocationCombobox} from '../components/common/LocationCombobox';
 import { PlannerBudgetNotice } from '../components/common/PlannerBudgetNotice';
 import React, { useState, useEffect, useRef } from 'react';
@@ -41,6 +42,8 @@ import { isMandatoryPlannerActivity, movePlannerActivity, removePlannerActivity 
 import { BALANCED_PACING_DESCRIPTION, PLANNER_TRANSPORT_OPTIONS, initialPlannerModes, validatePlannerModes } from '../utils/plannerModes';
 import { plannerPopup, roundMapMarker } from '../utils/mapPopup';
 
+const costReferenceText=(text:string)=>text.replace(/Catalog priceFrom/g,'Giá tham khảo catalog').replace(/priceFrom/g,'giá tham khảo').replace(/planner T11-B/g,'lập kế hoạch TravelGo').replace(/N−1/g,'số ngày trừ một').replace(/\bactivity\b/g,'hoạt động');
+
 export const TourPlannerPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -61,7 +64,7 @@ export const TourPlannerPage: React.FC = () => {
   const [transportation, setTransportation] = useState<unknown>(() => initialPlannerModes(templateTour).transportation);
   const [preferences, setPreferences] = useState<string[]>([]);
   const [pacing, setPacing] = useState<unknown>(() => initialPlannerModes(templateTour).pacing);
-  const modeSelection = validatePlannerModes(pacing, transportation);
+  const modeSelection = validatePlannerModes(pacing, transportation,'TIME_AWARE_V2');
 
   // Generation & Result State
   const [isGenerating, setIsGenerating] = useState(false);
@@ -165,6 +168,7 @@ export const TourPlannerPage: React.FC = () => {
         transportation: modeSelection.transportation,
         preferences,
         pacing: modeSelection.pacing,
+        planningVersion:'TIME_AWARE_V2',
         mandatoryPlaceIds: mandatoryPlace ? [mandatoryPlace.id] : [],
       };
 
@@ -184,12 +188,14 @@ export const TourPlannerPage: React.FC = () => {
   // Reorder activity up / down
   const moveActivity = (dayNumber: number, actIndex: number, direction: 'up' | 'down') => {
     if (!itinerary) return;
+    if(itinerary.planningVersion){setGenerationError('Lịch có giờ cần được tính lại bằng Planner; bạn có thể yêu cầu sửa riêng một ngày trong trợ lý.');return;}
     setItinerary(movePlannerActivity(itinerary, dayNumber, actIndex, direction));
   };
 
   // Delete activity
   const deleteActivity = (dayNumber: number, actId: string) => {
     if (!itinerary) return;
+    if(itinerary.planningVersion){setGenerationError('Lịch có giờ cần được tính lại bằng Planner trước khi bỏ hoạt động.');return;}
     setItinerary(removePlannerActivity(itinerary, dayNumber, actId));
   };
 
@@ -260,7 +266,7 @@ export const TourPlannerPage: React.FC = () => {
       const dayCoords: [number, number][] = [];
 
       day.activities.forEach((act, actIdx) => {
-        if (!act.latitude || !act.longitude) return;
+        if (typeof act.latitude!=='number'||!Number.isFinite(act.latitude)||Math.abs(act.latitude)>90||typeof act.longitude!=='number'||!Number.isFinite(act.longitude)||Math.abs(act.longitude)>180) return;
 
         const pos: [number, number] = [act.latitude, act.longitude];
         dayCoords.push(pos);
@@ -315,7 +321,7 @@ export const TourPlannerPage: React.FC = () => {
               HuGo Tour Planner – Tạo Lịch Trình Cá Nhân Hóa
             </h1>
             <p className="mt-1 text-slate-400 text-xs sm:text-sm max-w-2xl">
-              Hệ thống kết hợp Bayesian Average, sở thích, ngân sách và phân cụm Haversine đường chim bay. Đây là gợi ý tham khảo, không phải tối ưu tuyến đường bộ thực tế.
+              Lịch dự kiến theo sở thích, ngân sách và khoảng cách đường chim bay. Thời gian, giá và tuyến đường thực tế cần xác minh.
             </p>
           </div>
 
@@ -541,9 +547,11 @@ export const TourPlannerPage: React.FC = () => {
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                     Nhịp độ lịch trình mới
                   </label>
-                  <div>
+                  <div className="grid grid-cols-3 gap-2">
                     {[
                       { id: 'balanced', label: 'Cân bằng', desc: BALANCED_PACING_DESCRIPTION },
+                      { id: 'relaxed', label: 'Nghỉ dưỡng', desc: 'Ít điểm hơn, dành thêm thời gian nghỉ.' },
+                      { id: 'packed', label: 'Khám phá nhiều', desc: 'Thêm điểm khi vừa quỹ thời gian và giờ hoạt động.' },
                     ].map((item) => {
                       const active = pacing === item.id;
                       return (
@@ -552,7 +560,7 @@ export const TourPlannerPage: React.FC = () => {
                           type="button"
                           onClick={() => setPacing(item.id)}
                           aria-pressed={active}
-                          data-testid="planner-pacing-balanced"
+                          data-testid={'planner-pacing-'+item.id}
                           className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center ${
                             active
                               ? 'border-orange-500 bg-orange-50 text-orange-800 font-bold shadow-sm'
@@ -612,7 +620,7 @@ export const TourPlannerPage: React.FC = () => {
                   {isGenerating ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Thuật toán đang phân cụm địa lý và xếp hạng Bayesian...</span>
+                      <span>Đang lập lịch trình dự kiến theo yêu cầu...</span>
                     </>
                   ) : (
                     <>
@@ -646,7 +654,7 @@ export const TourPlannerPage: React.FC = () => {
                   <details className="mt-2 text-xs text-slate-600">
                     <summary className="cursor-pointer font-semibold">Giả định chi phí và khoản chưa bao gồm</summary>
                     <ul className="mt-2 list-disc pl-4 space-y-1">
-                      {itinerary.costAssumptions.map((assumption) => <li key={assumption}>{assumption}</li>)}
+                      {itinerary.costAssumptions.map((assumption) => <li key={assumption}>{costReferenceText(assumption)}</li>)}
                     </ul>
                   </details>
                 ) : null}
@@ -700,6 +708,7 @@ export const TourPlannerPage: React.FC = () => {
                   ))}
                 </div>
 
+                <PlanningNotice plan={itinerary}/>
                 {/* Day Activities List */}
                 {itinerary.days
                   .filter((d) => selectedDayTab === 'all' || d.dayNumber === selectedDayTab)
@@ -729,7 +738,7 @@ export const TourPlannerPage: React.FC = () => {
                         {(day.lodgingNights ?? 0) > 0 && (
                           <p className="text-xs text-slate-600" data-testid="day-lodging-cost">
                             Đã gồm lưu trú {day.lodgingNights} đêm: {new Intl.NumberFormat('vi-VN').format(day.lodgingEstimatedCostVND ?? 0)}đ / nhóm (ước tính 1 phòng).
-                            {day.lodgingCostSource && <span className="block">{day.lodgingCostSource}</span>}
+                            {day.lodgingCostSource && <span className="block">{day.lodgingCostSource?costReferenceText(day.lodgingCostSource):''}</span>}
                           </p>
                         )}
                         {day.activities.map((act, actIdx) => (
@@ -754,7 +763,7 @@ export const TourPlannerPage: React.FC = () => {
                                 <div>
                                   <div className="flex items-center gap-2 mb-0.5">
                                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                      {act.timeSlot}
+                                      {{morning:'Buổi sáng',lunch:'Bữa trưa',afternoon:'Buổi chiều',dinner:'Bữa tối',evening:'Buổi tối'}[act.timeSlot]}
                                     </span>
                                     {act.recommendationReason && (
                                       <span className="bg-emerald-50 text-emerald-700 text-[10px] font-semibold px-2 py-0.5 rounded border border-emerald-200">
@@ -762,9 +771,9 @@ export const TourPlannerPage: React.FC = () => {
                                       </span>
                                     )}
                                   </div>
-                                  <h4 className="font-bold text-slate-900 text-sm">{act.title}</h4>
+                                  <h4 className="font-bold text-slate-900 text-sm">{act.title}</h4><ActivityTiming activity={act}/>
                                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">{act.description}</p>
-                                  {act.costSource && <p className="text-xs text-slate-500 mt-1" data-testid="activity-cost-source">{act.costSource}</p>}
+                                  {act.costSource && <p className="text-xs text-slate-500 mt-1" data-testid="activity-cost-source">{costReferenceText(act.costSource)}</p>}
 
                                   {/* Transit time & aerial distance note */}
                                   {act.aerialDistanceToNextKm !== undefined && (
@@ -786,7 +795,7 @@ export const TourPlannerPage: React.FC = () => {
                                 <div className="flex items-center gap-1 mt-1">
                                   <button
                                     onClick={() => moveActivity(day.dayNumber, actIdx, 'up')}
-                                    disabled={actIdx === 0}
+                                    disabled={!!itinerary.planningVersion || actIdx === 0}
                                     className="p-1 rounded text-slate-400 hover:text-slate-700 disabled:opacity-30"
                                     title="Di chuyển lên"
                                   >
@@ -794,7 +803,7 @@ export const TourPlannerPage: React.FC = () => {
                                   </button>
                                   <button
                                     onClick={() => moveActivity(day.dayNumber, actIdx, 'down')}
-                                    disabled={actIdx === day.activities.length - 1}
+                                    disabled={!!itinerary.planningVersion || actIdx === day.activities.length - 1}
                                     className="p-1 rounded text-slate-400 hover:text-slate-700 disabled:opacity-30"
                                     title="Di chuyển xuống"
                                   >
@@ -845,12 +854,12 @@ export const TourPlannerPage: React.FC = () => {
                         </p>
                         <div className="mt-2 flex items-center justify-between gap-3">
                           <span data-testid="hotel-estimate-source" className="text-xs text-slate-600">
-                            {(itinerary.nightsCount ?? Math.max(0, itinerary.daysCount - 1)) > 0
+                            {costReferenceText((itinerary.nightsCount ?? Math.max(0, itinerary.daysCount - 1)) > 0
                               ? itinerary.days.find((day) => (day.lodgingNights ?? 0) > 0)?.lodgingCostSource || 'Ước tính một phòng/nhóm/đêm; xem lưu trú từng ngày, chưa xác minh giá.'
-                              : 'Chuyến đi 0 đêm: khách sạn chỉ để tham khảo, không tính phí lưu trú.'}
+                              : 'Chuyến đi 0 đêm: khách sạn chỉ để tham khảo, không tính phí lưu trú.')}
                           </span>
                           <span className="text-xs text-emerald-600 font-medium">
-                            Bayesian Score: {itinerary.hotelSuggestion.bayesianRating.toFixed(2)}★
+                            Chưa xác nhận còn chỗ
                           </span>
                         </div>
                       </div>
@@ -873,7 +882,7 @@ export const TourPlannerPage: React.FC = () => {
                   </div>
 
                   {/* Leaflet Map Div */}
-                  {googleMapsSelected() ? <GoogleMap height={480} points={itinerary.days.filter(d=>selectedDayTab==='all'||d.dayNumber===selectedDayTab).flatMap(d=>d.activities.map(a=>({id:a.id,name:a.title,latitude:a.latitude,longitude:a.longitude})))} selectedId={selectedActivityId || undefined} onSelect={setSelectedActivityId}/> : <div ref={mapContainerRef} className="w-full z-10" style={{ height: 480 }} />}
+                  {googleMapsSelected() ? <GoogleMap height={480} points={itinerary.days.filter(d=>selectedDayTab==='all'||d.dayNumber===selectedDayTab).flatMap(d=>d.activities.filter(a=>typeof a.latitude==='number'&&typeof a.longitude==='number').map(a=>({id:a.id,name:a.title,latitude:a.latitude!,longitude:a.longitude!})))} selectedId={selectedActivityId || undefined} onSelect={setSelectedActivityId}/> : <div ref={mapContainerRef} className="w-full z-10" style={{ height: 480 }} />}
 
                   {/* Map Legend */}
                   <div className="p-3 bg-white border-t border-slate-100 flex flex-wrap items-center gap-3 text-xs text-slate-600">

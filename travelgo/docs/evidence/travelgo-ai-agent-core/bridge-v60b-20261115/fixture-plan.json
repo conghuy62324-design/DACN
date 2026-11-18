@@ -1,0 +1,108 @@
+{
+  "status": "APPROVED_BOUNDED_STAGING",
+  "at": "2026-11-15T02:41:16.538Z",
+  "sourceFreeze": "source-freeze-final-v2.json",
+  "actorId": "446f9501-60f9-4c05-bcdf-4db6a8bd8fe8",
+  "foreignCustomerId": "b2fd7618-6ba3-4ba4-9ee9-9f4e9b7fbe90",
+  "sourceIds": [
+    "82cd7f24-8ca2-473c-b70c-d6f8efd3d5bb"
+  ],
+  "candidateIds": [
+    "428f4efc-7a82-4532-878f-58f238861cac"
+  ],
+  "jobIds": [
+    "45da601e-694c-47a3-8289-ba3e6bd67d69"
+  ],
+  "sourceDomains": [
+    "example.org"
+  ],
+  "knowledgeIds": [],
+  "customerHash": "856f41c9ad2ffc1e3f467eeb45f0069a943196101062d0e3ab3927bec64b95c5",
+  "personalTestWrites": true,
+  "realKnowledgeApprovalAllowed": false,
+  "expiresAfterAuthorizationHours": 2,
+  "database": {
+    "host": "127.0.0.1",
+    "port": 15452,
+    "name": "travelgo_staging_catalog_20261112",
+    "role": "catalog_runtime",
+    "sentinel": "travelgo-public-staging:catalog-20261112",
+    "tables": 40,
+    "migrations": 17,
+    "places": 130,
+    "businesses": 20
+  },
+  "fixtureScope": {
+    "newUsers": 2,
+    "roles": [
+      "SUPER_ADMIN_SYNTHETIC_ONLY",
+      "CUSTOMER_FOREIGN_READ_ISOLATION_ONLY"
+    ],
+    "sources": 1,
+    "candidates": 1,
+    "jobs": 1,
+    "approvedSyntheticKnowledgeSnapshots": 1,
+    "language": "vanuvi -> accommodation_type.homestay; approved existing customer only, settings/table baseline empty",
+    "memory": "quality quiet only, approved existing customer, baseline empty",
+    "noRawChatStored": true,
+    "sourceLabel": "SYNTHETIC_COST_FIXTURE_NOT_REAL_KNOWLEDGE",
+    "sourceData": "Tiền phòng 800k/phòng/đêm; room=1,nights=2,party=2,days=3,period10/2026; no external fetch"
+  },
+  "chatCap": 6,
+  "quota": {
+    "sameApprovedPrincipal": true,
+    "capPerHour": 20,
+    "reserve": 10,
+    "requiredFreshRemaining": 16,
+    "scan": "One fresh Agent scan after NEW approval before any write/chat; previous09:23 gate BLOCKED preserved; no polling/wait/reset/principal change"
+  },
+  "runtime": "Only owned API5057 scoped profile; frontend5177, Qwen/search/workerOFF. Return protected READ ONLY after cleanup.",
+  "normalChats": [
+    {
+      "id": "A1",
+      "input": "Tìm vanuvi ở Đà Lạt",
+      "expected": "Unknown expression; ask meaning, no auto-save"
+    },
+    {
+      "id": "A2",
+      "input": "Ý mình là homestay",
+      "expected": "Confirm SESSION meaning; explicit browser save after independent consent, actual save receipt"
+    },
+    {
+      "id": "A3",
+      "input": "Tìm vanuvi ở Đà Lạt",
+      "newSession": true,
+      "expected": "Fresh conversation ID; current expression evidence+canonical homestay+correct hotel retrieval+visible rendering. Public scope field NOT required or added. Foreign customer memory/language GET empty; no foreign chat."
+    },
+    {
+      "id": "A4",
+      "input": "Chi phí lưu trú Đà Lạt mỗi phòng mỗi đêm, thuê 2 phòng trong 2 đêm?",
+      "expected": "Source-backed SYNTHETIC historical room scenario3200000, no model or Booking claim"
+    },
+    {
+      "id": "A5",
+      "input": "Tìm vanuvi ở Đà Lạt",
+      "newSession": true,
+      "before": "Revoke language and memory",
+      "expected": "No reuse after actual revoke; no saved preference"
+    },
+    {
+      "id": "A6",
+      "input": "Chi phí lưu trú Đà Lạt mỗi phòng mỗi đêm, thuê 2 phòng trong 2 đêm?",
+      "newSession": true,
+      "before": "Revoke SYNTHETIC source",
+      "expected": "No source/scenario after revoke"
+    }
+  ],
+  "authorizationRequired": "Explicit new user approval of this packet; does not approve real facts or model calls",
+  "forbidden": [
+    "originalDB",
+    "catalog/review/Trip/Booking/payment/schema writes",
+    "Qwen GET/POST/resources/model-quota",
+    "new Internet",
+    "commit/push/deploy"
+  ],
+  "cleanup": "Exact new IDs, all knowledge revisions, task audits/users/roles, own test memory/language;40/40 fingerprints unchanged,130/20 preserved,private auth removed",
+  "expiresAt": "2026-11-15T04:46:39.872Z",
+  "sourceHash": "027817bcce88f20b0c39dd76155dcfd1212176cda81febca0edf583c0bd107c5"
+}

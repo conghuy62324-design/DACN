@@ -8,6 +8,8 @@ const primaryNavigation = [
   { to: '/admin/partner-applications', label: 'Duyệt hồ sơ đối tác', icon: FileCheck2 },
   { to: '/admin/places', label: 'Duyệt địa điểm', icon: MapPinned },
   { to: '/admin/tours', label: 'Duyệt tour', icon: Route },
+  { to: '/admin/travel-web', label: 'Nguồn web & kiến thức', icon: BookOpen },
+  { to: '/admin/language-lexicon', label: 'Từ điển tiếng Việt', icon: BookOpen },
   { to: '/admin/blogs', label: 'Duyệt bài viết', icon: BookOpen },
 ];
 

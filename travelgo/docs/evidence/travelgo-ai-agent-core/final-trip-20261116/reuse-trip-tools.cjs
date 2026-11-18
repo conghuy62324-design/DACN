@@ -1,0 +1,11 @@
+// Thin adapter for existing 21.27 actual helper/oracle, not another persistence implementation.
+const fs=require('fs'),path=require('path'),Module=require('module');
+const original=path.resolve(__dirname,'../business-v61b-20261116/actual-common.cjs');let source=fs.readFileSync(original,'utf8');
+source=source.replaceAll('business-v61b-isolation.dpapi','final-trip-isolation.dpapi').replaceAll('business-v61b-auth.dpapi','final-trip-auth.dpapi');
+source=source.replaceAll("const q=c.quota({id:packet.approvedPrincipalId});","const q=read('fresh-quota-gate.json').quota;").replace("const quota=c.quota(a.body.data.user);","const quota=read('fresh-quota-gate.json').quota;");
+const start=source.indexOf('function reserve(id,kind)'),end=source.indexOf('function oracle(',start);if(start<0||end<0)throw Error('EXISTING_RESERVATION_HELPER_CHANGED');
+source=source.slice(0,start)+`function reserve(id,kind){authorized();frozen();const gate=read('fresh-quota-gate.json'),used=fs.readdirSync(__dirname).filter(n=>/^attempt-.*[.]json$/.test(n)).map(read);assert(used.length<gate.plannedEntries);const max=kind.startsWith('NORMAL_AGENT')?5:kind.startsWith('VALID_AGENT')?2:gate.negativeConfirmationProbes;assert(used.filter(r=>r.kind.startsWith(kind.split(':')[0])).length<max);assert(gate.quota.remainingConservativeSlots-used.length>=11,'RESERVE10');const at=new Date().toISOString();write('attempt-'+id+'.json',{id:crypto.randomUUID(),at,createdAt:at,principalId:packet.approvedPrincipalId,principalHash:packet.approvedPrincipalHash,kind,state:'RESERVED_BEFORE_ONE_POST_NO_RETRY',manifestSha256:sha(fs.readFileSync(path.join(__dirname,'actual-journey-manifest.json')))});return{remaining:gate.quota.remainingConservativeSlots-used.length,reserve:10,freshGateScannedOnce:true};}
+`+source.slice(end);
+source=source.replace('if(require.main===module)',"if(process.env.TRIP_TOOL_PHASE)");
+source=source.replace("const phase=process.argv[2],db=", "const phase=process.env.TRIP_TOOL_PHASE,db=");
+const virtual=path.join(__dirname,'_existing_trip_common.cjs'),loaded=new Module(virtual,module);loaded.filename=virtual;loaded.paths=Module._nodeModulePaths(__dirname);loaded._compile(source,virtual);module.exports=loaded.exports;

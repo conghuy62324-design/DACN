@@ -1,0 +1,68 @@
+{
+  "at": "2026-11-16T07:19:16.541Z",
+  "status": "LOCKED_BEFORE_FIRST_AGENT_POST",
+  "sourceFreezeSha256": "770f4ec0fc0530b1d066da3dd051d1764407670e7bcaa1acd0fd2c7cfdc8b7cd",
+  "proposalSha256": "4fea2bf4d3e43baf48718796391b124b8ea16eac2f4a05b56a89a3e6df64d734",
+  "principalHash": "856f41c9ad2ffc1e3f467eeb45f0069a943196101062d0e3ab3927bec64b95c5",
+  "principalId": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+  "isolationCustomerId": "4dd05bce-b3a4-4456-b4f5-1b1bd43d4de7",
+  "tripIds": [
+    "ec852403-b11e-42e3-96de-f033ff15ffc0",
+    "4393fa83-9440-474d-912c-6e130fdd3ed9"
+  ],
+  "maxNormalChats": 8,
+  "maxValidConfirmations": 2,
+  "reserve": 10,
+  "requiredInitial": 20,
+  "journeys": [
+    {
+      "id": "J1",
+      "input": "Lập lịch trình từ SG đến ĐL, 3n2đ, 2 đứa, ngân sách cả nhóm5 củ, đi10/12/2027-12/12/2027 bằng xe máy, thích thiên nhiên",
+      "expected": "SERVER_VERIFIED trip roles, two adults, 3days/2nights, group5M, motorbike, nature; real Planner/GROUP_VND_V1; no write or Booking; catalog explicitly DEMO"
+    },
+    {
+      "id": "J2",
+      "input": "Ngày thứ2 muốn đi ít chỗ thôi",
+      "expected": "Only day2 replanned, day1/day3 and lodging retained; oracle recomputed; draft only"
+    },
+    {
+      "id": "J3",
+      "input": "Thêm một ngày thì tốn bao nhiêu?",
+      "expected": "Hypothetical4days, immutable actual draft/verified context/mandatory selections; delta same catalog basis; no save"
+    },
+    {
+      "id": "J4",
+      "input": "Lưu lịch trình",
+      "expected": "CREATE preview of actual3day draft; no database Trip before explicit confirmation; expiry/reject/forgery guards"
+    },
+    {
+      "id": "J5",
+      "input": "Lưu lịch trình",
+      "expected": "A separately planned new preview after observing original expiry; no mutation retry; explicit browser confirmation commits exactly Trip1 once"
+    },
+    {
+      "id": "J6",
+      "input": "Xem Trip của tôi",
+      "expected": "After exact API restart, MyTrips/owned dropdown + separate context consent; reload committed3day context, sameTripID/lodging/selection without notes/private data"
+    },
+    {
+      "id": "J7",
+      "input": "Thêm một ngày vào lịch trình giúp tôi.",
+      "expected": "Explicit four-day draft; saved3day row unchanged until preview+confirmation"
+    },
+    {
+      "id": "J8",
+      "input": "Lưu lịch trình",
+      "expected": "UPDATE preview targets sameTripID and original loadedversion; valid confirmation changes actualTrip1 to4days; reload new browser and directDB proves persistence; no Trip2"
+    }
+  ],
+  "model": false,
+  "mocks": false,
+  "storage": {
+    "mechanism": "WINDOWS_DPAPI_CURRENT_USER",
+    "sidHash": "23ab0093f3125b39276dda39862f5d584b7c1ec72615aa8f072df7600783f383",
+    "aclProtected": true,
+    "explicitUserOnly": true,
+    "roundTripVerified": true
+  }
+}

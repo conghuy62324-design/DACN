@@ -1,0 +1,248 @@
+{
+  "at": "2026-11-14T15:55:12.585Z",
+  "count": 40,
+  "development": [
+    {
+      "id": "D01",
+      "expected": "2tr5 chi phí ->2500000 VND, không đoán đơn vị"
+    },
+    {
+      "id": "D02",
+      "expected": "2.500.000đ,500k/người,5 củ khi có cost context"
+    },
+    {
+      "id": "D03",
+      "expected": "range1,2–1,5triệu/người ->interval1200000..1500000; không midpoint"
+    },
+    {
+      "id": "D04",
+      "expected": "800k/phòng/đêm và300k/người/ngày giữ dimensional units"
+    },
+    {
+      "id": "D05",
+      "expected": "HTML table/list/header scope, không nhầm vé thành total"
+    },
+    {
+      "id": "D06",
+      "expected": "USD/EUR giữ currency, không FX VND"
+    },
+    {
+      "id": "D07",
+      "expected": "included/excluded giữ nguyên dấu, unknown distinct"
+    },
+    {
+      "id": "D08",
+      "expected": "publication/travel/retrieved dates độc lập"
+    },
+    {
+      "id": "D09",
+      "expected": "4m/group2 ->derived2m/person formula/provenance"
+    },
+    {
+      "id": "D10",
+      "expected": "600k/room/night rooms2 nights2 ->2.4m accommodation/group"
+    },
+    {
+      "id": "D11",
+      "expected": "missing rooms or party ->UNKNOWN không tự2người"
+    },
+    {
+      "id": "D12",
+      "expected": "negative/overflow/inverted range reject; rounding explicit"
+    },
+    {
+      "id": "D13",
+      "expected": "total trips car vs plane NOT_COMPARABLE"
+    },
+    {
+      "id": "D14",
+      "expected": "same food scope transport differs PARTIALLY_COMPARABLE category-only"
+    },
+    {
+      "id": "D15",
+      "expected": "unknown inclusions ->INSUFFICIENT_DATA"
+    },
+    {
+      "id": "D16",
+      "expected": "duplicate/syndication/originating trip counted once"
+    },
+    {
+      "id": "D17",
+      "expected": "1source observation;2sources pairwise;3 independent comparable ->range/median"
+    },
+    {
+      "id": "D18",
+      "expected": "revoked/stale/future/current-tariff invalid excluded, history not refreshed into current price"
+    },
+    {
+      "id": "D19",
+      "expected": "3dest maximum; missing evidence no cheaper ranking"
+    },
+    {
+      "id": "D20",
+      "expected": "ambiguous5củfor2people asks budget scope; no sufficient-budget claim"
+    },
+    {
+      "id": "D21",
+      "expected": "saving/allocation based real known categories; no arbitrary percentage/price cut"
+    },
+    {
+      "id": "D22",
+      "expected": "Core full multi-turn cost/knowledge vs replan/reference routing; one primary op"
+    },
+    {
+      "id": "D23",
+      "expected": "admin URL import/CAS correction must require permission/role/reason; no price mutation"
+    },
+    {
+      "id": "D24",
+      "expected": "worker two bounded cycles/due/backoff/lease, source edits invalidate old facts"
+    }
+  ],
+  "holdout": [
+    {
+      "id": "H01",
+      "text": "Tổng chi phí 3tr8/người cho 4N3Đ.",
+      "expected": {
+        "amount": 3800000,
+        "unit": "PER_PERSON",
+        "days": 4,
+        "nights": 3
+      }
+    },
+    {
+      "id": "H02",
+      "text": "Tiền phòng 750k/phòng/đêm; thuê 2 phòng trong 3 đêm.",
+      "expected": {
+        "amount": 750000,
+        "unit": "PER_ROOM_NIGHT",
+        "rooms": 2,
+        "nights": 3,
+        "derived": 4500000
+      }
+    },
+    {
+      "id": "H03",
+      "text": "Ăn uống 250–350 nghìn/người/ngày.",
+      "expected": {
+        "min": 250000,
+        "max": 350000,
+        "unit": "PER_PERSON_DAY"
+      }
+    },
+    {
+      "id": "H04",
+      "text": "Vé xe khứ hồi 1,1 triệu/người; vé vào cổng 90k/lượt.",
+      "expected": {
+        "firstCategory": "TRANSPORT",
+        "firstUnit": "PER_PERSON_ROUND_TRIP",
+        "secondCategory": "ATTRACTION",
+        "secondUnit": "PER_VISIT"
+      }
+    },
+    {
+      "id": "H05",
+      "text": "Tổng chi phí 7.200.000đ cho cả nhóm 4 người.",
+      "expected": {
+        "reported": 7200000,
+        "derivedPerson": 1800000
+      }
+    },
+    {
+      "id": "H06",
+      "text": "Lưu trú 80 EUR/phòng/đêm.",
+      "expected": {
+        "currency": "EUR",
+        "vndAggregate": false
+      }
+    },
+    {
+      "id": "H07",
+      "text": "Tổng chi phí 2 triệu, chưa nói đơn vị.",
+      "expected": {
+        "unit": "UNKNOWN_UNIT",
+        "aggregate": false
+      }
+    },
+    {
+      "id": "H08",
+      "text": "Chi phí 4,5–3,5 triệu/người.",
+      "expected": {
+        "invalid": true
+      }
+    },
+    {
+      "id": "H09",
+      "scenario": "Different duration3N2D versus5N4D total same unit",
+      "expected": {
+        "comparable": false
+      }
+    },
+    {
+      "id": "H10",
+      "scenario": "Same total scope but one excludes flight, other includes",
+      "expected": {
+        "comparable": false
+      }
+    },
+    {
+      "id": "H11",
+      "scenario": "3 comparable independent approved samples1.8m,2.2m,9m",
+      "expected": {
+        "min": 1800000,
+        "median": 2200000,
+        "max": 9000000,
+        "outlierRetained": true
+      }
+    },
+    {
+      "id": "H12",
+      "scenario": "3 articles all same originating trip",
+      "expected": {
+        "independent": 1,
+        "rangeAvailable": false
+      }
+    },
+    {
+      "id": "H13",
+      "scenario": "Budget group6m, no verified origin/transport/date or costs",
+      "expected": {
+        "sufficient": false,
+        "questionCount": 1
+      }
+    },
+    {
+      "id": "H14",
+      "scenario": "CompareDaLat andNhaTrang onlyDaLat has evidence",
+      "expected": {
+        "missing": "NhaTrang",
+        "cheapestClaim": false
+      }
+    },
+    {
+      "id": "H15",
+      "scenario": "Manual correction after approval creates draft revision; previous approved snapshot immutable",
+      "expected": {
+        "freshOldEligible": false,
+        "requiresReview": true
+      }
+    },
+    {
+      "id": "H16",
+      "scenario": "Source revoke during cost retrieval",
+      "expected": {
+        "abortOrExclude": true,
+        "noToolMutation": true
+      }
+    }
+  ],
+  "policy": "DEVELOPMENT24; LOCKED_HOLDOUT16 not executed/read by test runner until source freeze. Designed in-session, not externally independent corpus. Known V58 regressions separate. Expected not extractor output.",
+  "tiers": [
+    "OFFLINE_SYNTHETIC",
+    "REAL_LICENSED_EXCERPT_CORPUS_MANUALLY_LABELED_BEFORE_EXTRACT",
+    "ACTUAL_PG",
+    "ACTUAL_ADMIN_BROWSER",
+    "CUSTOMER_BROWSER",
+    "QWEN_NOT_RUN"
+  ]
+}

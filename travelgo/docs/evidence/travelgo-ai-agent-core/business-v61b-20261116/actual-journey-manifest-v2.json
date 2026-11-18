@@ -1,0 +1,101 @@
+{
+  "at": "2026-11-16T07:29:42.974Z",
+  "status": "LOCKED_FINAL_SOURCE_AFTER_PROVEN_ROUTING_FIX_BEFORE_CONTINUATION_POSTS",
+  "sourceFreezeSha256": "9fefe9f1e4c5cc62177e0a35d706873d16bbb448dc018146201fbf4f577a0e26",
+  "proposalSha256": "4fea2bf4d3e43baf48718796391b124b8ea16eac2f4a05b56a89a3e6df64d734",
+  "principalHash": "856f41c9ad2ffc1e3f467eeb45f0069a943196101062d0e3ab3927bec64b95c5",
+  "principalId": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+  "isolationCustomerId": "4dd05bce-b3a4-4456-b4f5-1b1bd43d4de7",
+  "tripIds": [
+    "ec852403-b11e-42e3-96de-f033ff15ffc0",
+    "4393fa83-9440-474d-912c-6e130fdd3ed9"
+  ],
+  "maxNormalChats": 8,
+  "maxValidConfirmations": 2,
+  "reserve": 10,
+  "requiredInitial": 20,
+  "journeys": [
+    {
+      "id": "J1-final",
+      "input": "Lập lịch trình từ SG đến ĐL, 3n2đ, 2 đứa, ngân sách cả nhóm5 củ, đi10/12/2027-12/12/2027 bằng xe máy, thích thiên nhiên",
+      "expected": "SERVER_VERIFIED trip roles, two adults, 3days/2nights, group5M, motorbike, nature; real Planner/GROUP_VND_V1; no write or Booking; catalog explicitly DEMO"
+    },
+    {
+      "id": "J2-final",
+      "input": "Ngày thứ2 muốn đi ít chỗ thôi",
+      "expected": "Only day2 replanned, day1/day3 and lodging retained; oracle recomputed; draft only"
+    },
+    {
+      "id": "J3-final",
+      "input": "Thêm một ngày thì tốn bao nhiêu?",
+      "expected": "Hypothetical4days, immutable actual draft/verified context/mandatory selections; delta same catalog basis; no save"
+    },
+    {
+      "id": "J4-final",
+      "input": "Lưu lịch trình",
+      "expected": "CREATE preview of actual3day draft; no database Trip before explicit confirmation; expiry/reject/forgery guards"
+    },
+    {
+      "id": "J5-final",
+      "input": "Lưu lịch trình",
+      "expected": "A separately planned new preview after observing original expiry; no mutation retry; explicit browser confirmation commits exactly Trip1 once"
+    },
+    {
+      "id": "J6-final",
+      "input": "Xem Trip của tôi",
+      "expected": "After exact API restart, MyTrips/owned dropdown + separate context consent; reload committed3day context, sameTripID/lodging/selection without notes/private data"
+    },
+    {
+      "id": "J7-final",
+      "input": "Thêm một ngày vào lịch trình giúp tôi.",
+      "expected": "Explicit four-day draft; saved3day row unchanged until preview+confirmation"
+    },
+    {
+      "id": "J8-final",
+      "input": "Lưu lịch trình",
+      "expected": "UPDATE preview targets sameTripID and original loadedversion; valid confirmation changes actualTrip1 to4days; reload new browser and directDB proves persistence; no Trip2"
+    }
+  ],
+  "model": false,
+  "mocks": false,
+  "storage": {
+    "mechanism": "WINDOWS_DPAPI_CURRENT_USER",
+    "sidHash": "23ab0093f3125b39276dda39862f5d584b7c1ec72615aa8f072df7600783f383",
+    "aclProtected": true,
+    "explicitUserOnly": true,
+    "roundTripVerified": true
+  },
+  "priorFailedNormalChats": 1,
+  "normalChatSlotsRemaining": 7,
+  "requiredRemaining": 19,
+  "priorRawFailure": "actual-J1-raw.json",
+  "quotaBeforeContinuation": {
+    "checkedAt": "2026-11-16T07:29:41.235Z",
+    "principalHash": "856f41c9ad2ffc1e3f467eeb45f0069a943196101062d0e3ab3927bec64b95c5",
+    "principalSource": ".local/catalog-staging/accounts.json",
+    "known": 219,
+    "recent": [
+      {
+        "id": "0ea13318-006b-4818-be71-e8ec0a0e9ac0",
+        "at": "2026-11-16T07:22:51.435Z",
+        "timestamps": [
+          {
+            "field": "at",
+            "value": "2026-11-16T07:22:51.435Z"
+          },
+          {
+            "field": "createdAt",
+            "value": "2026-11-16T07:22:51.435Z"
+          }
+        ],
+        "path": "docs/evidence/travelgo-ai-agent-core/business-v61b-20261116/attempt-J1.json",
+        "kind": "NORMAL_AGENT_TRIP_BUSINESS_QWEN_OFF"
+      }
+    ],
+    "remainingConservativeSlots": 19,
+    "futureDatedEntries": [],
+    "timestampPolicy": "Read BOTH at and createdAt; conservative latest if both; operator load counted separately/conservatively"
+  },
+  "expectedUnchanged": true,
+  "realExpiryCase": "NOT_RUN_CALL_BUDGET_AFTER_FIRST_J1_FAIL"
+}

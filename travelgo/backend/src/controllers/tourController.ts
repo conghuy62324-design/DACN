@@ -73,7 +73,7 @@ export class TourController {
 
       res.json({
         success: true,
-        message: 'Tạo lịch trình du lịch thông minh thành công',
+        message: itinerary.planningVersion?'Đã tạo bản lịch trình dự kiến; xem giả định và cảnh báo.':'Tạo lịch trình du lịch thông minh thành công',
         data: itinerary,
       });
     } catch (error) {

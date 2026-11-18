@@ -1,3 +1,4 @@
+import {validTimeAwarePlan} from './plannerContract';
 import type { AgentResponse, AgentPrivacy, AgentG2Privacy, AgentG2Request, AgentConversationMetadata, AgentError, AgentChatRequest } from '../types/agent';
 
 const invalid = () => { throw { status: 502, code: 'AGENT_INVALID_RESPONSE' }; };
@@ -82,6 +83,8 @@ export function parseAgentResponse(envelope: any): AgentResponse {
       if (r.source !== 'RecommendationService' || !Array.isArray(r.places) || !r.places.every(place)) return invalid();
     } else if (r.type === 'itinerary') {
       const p = r.itinerary, c = r.cost;
+      if(!validTimeAwarePlan(p))return invalid();
+      if(p?.planningVersion&&(!c||c.estimated!==p.totalEstimatedCostVND||c.budget!==p.totalBudgetUserVND||c.budgetStatus!==p.budgetStatus||c.overBudget!==p.overBudgetVND))return invalid();
       if (r.source !== 'TourPlannerService' || !p || !c || c.currency !== 'VND' || c.basis !== 'GROUP_VND_V1' ||
         ![c.estimated, c.budget, c.overBudget].every(money) || !['within_budget', 'over_budget'].includes(c.budgetStatus) ||
         !['title', 'destinationCity', 'startDate', 'endDate', 'budgetAdvice'].every(k => typeof p[k] === 'string') ||

@@ -1,0 +1,34 @@
+{
+  "journeys": [
+    {
+      "id": "P1",
+      "input": "Lập lịch trình từ SG đến ĐL, 3n2đ, 2 đứa, ngân sách cả nhóm5 củ, đi10/12/2027-12/12/2027 bằng xe máy, thích thiên nhiên",
+      "expected": "Real Planner3days/2nights,2adults,group5M,motorbike,nature,DEMO caveats,independent oracle; Trip count0"
+    },
+    {
+      "id": "P2",
+      "input": "Lưu lịch trình",
+      "expected": "CREATE preview; no Trip until separate explicit confirmation; C1commit exact Trip1 owned by A; receipt and MyTrips match DB"
+    },
+    {
+      "id": "P3",
+      "input": "Xem Trip của tôi",
+      "expected": "New conversation via MyTrips/TripDetail link and separate context consent; unchanged DB snapshot, same ID/lodging/mandatory selections/pace, itinerary/cost/editing status visible"
+    },
+    {
+      "id": "P4",
+      "input": "Ngày thứ2 muốn đi ít chỗ thôi",
+      "expected": "Meaningful day2 diff only, day1/day3 and lodging unchanged; saved row unchanged before confirmation; independent cost oracle"
+    },
+    {
+      "id": "P5",
+      "input": "Lưu lịch trình",
+      "expected": "UPDATE preview bound same Trip ID/revision; C2commit updates existing record only; reload/new mobile view and approved exact API restart prove persistence"
+    }
+  ],
+  "maxNormalChats": 5,
+  "maxValidConfirmations": 2,
+  "negativeConfirmationEntries": 3,
+  "expectedUnchanged": true,
+  "model": false
+}

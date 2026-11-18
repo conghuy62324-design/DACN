@@ -1,0 +1,45 @@
+{
+  "at": "2026-11-16T08:10:48.028Z",
+  "status": "PASS_OFFLINE_ONLY",
+  "checks": [
+    {
+      "name": "new record exact identity survives repeated validation",
+      "status": "PASS"
+    },
+    {
+      "name": "real ORM INSERT accepted by unchanged SQL fence",
+      "status": "PASS"
+    },
+    {
+      "name": "wrong owner INSERT denied",
+      "status": "PASS"
+    },
+    {
+      "name": "unknown Trip identity denied",
+      "status": "PASS"
+    },
+    {
+      "name": "existing identity is never reassigned",
+      "status": "PASS"
+    },
+    {
+      "name": "second new identity and max count remain enforced",
+      "status": "PASS"
+    },
+    {
+      "name": "expiry remains enforced",
+      "status": "PASS"
+    },
+    {
+      "name": "no owner update or unbounded DELETE allowed",
+      "status": "PASS"
+    }
+  ],
+  "capturedSql": [
+    "INSERT INTO \"trip_sessions\" (\"id\",\"user_id\",\"name\",\"destination_city\",\"departure_city\",\"start_date\",\"end_date\",\"days_count\",\"total_budget_vnd\",\"estimated_cost_vnd\",\"actual_spent_vnd\",\"pacing\",\"status\",\"preferences\",\"itinerary\",\"selected_place_ids\",\"selected_tour_ids\",\"checkins\",\"progress_percent\",\"is_public\",\"planner_metadata\",\"created_at\",\"updated_at\") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING \"id\",\"user_id\",\"name\",\"destination_city\",\"departure_city\",\"start_date\",\"end_date\",\"days_count\",\"total_budget_vnd\",\"estimated_cost_vnd\",\"actual_spent_vnd\",\"pacing\",\"status\",\"preferences\",\"itinerary\",\"selected_place_ids\",\"selected_tour_ids\",\"checkins\",\"progress_percent\",\"notes\",\"is_public\",\"planner_metadata\",\"created_at\",\"updated_at\";",
+    "UPDATE \"trip_sessions\" SET \"total_budget_vnd\"=$1,\"updated_at\"=$2 WHERE \"id\" = $3"
+  ],
+  "actualDatabase": 0,
+  "driverDispatched": 0,
+  "nativeModel": 0
+}

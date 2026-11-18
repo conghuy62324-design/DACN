@@ -1,0 +1,20 @@
+﻿/** Resolve what is sold, not the last nearby travel word. Context is bounded to one paragraph. */
+export function pricedObjectFor(clause:string,previous:string|null,following:string,legacy:CostCategory,heading=''):{kind:PricedObject;category?:CostCategory;evidence:string}{
+ const raw=clause.slice(0,1000),s=literalVietnamese(raw),prior=literalVietnamese((previous||'').slice(-400)),next=literalVietnamese(following.slice(0,700)),local=s.split(/bao gom|including|includes/)[0],generic=/^(?:gia|tien|price|cost|\d|US\$|USD|EUR|VND|\$)/i.test(s),access=/(?:\(|\b)(?:di|den|toi|access|reach|go|get there)\s+(?:bang|by)\b/.test(prior+' '+local);
+ const result=(kind:PricedObject,category:CostCategory,evidence:string)=>({kind,category,evidence});
+ // A sale reference binds a generic subsequent price to the item, not to the surrounding attraction.
+ const saleRaw=(previous||'')+' '+raw,sale=/(?:cua (?:hang|hieu).{0,80}\bban\b|san pham|souvenir|merchandise|products? for sale|shops?.{0,50}sell)/.test(literalVietnamese(saleRaw))||/(?:bán|selling)\s+[^.!?]{2,90}/iu.test(saleRaw);
+ if(sale&&(generic||/\b(?:gia|price|cost)\b/.test(local))&&!/\b(?:ban|sell|buy)\s+(?:ve|tickets?|phong|rooms?|tour)\b/.test(prior+' '+local)){
+  const sold=literalVietnamese(saleRaw).split(/\b(?:ban|selling|sell)\b/).at(-1)!;
+  if(/\b(?:mon an|do an|food|nem chua|cha gio|yen sao|coffee|juice|smoothie)\b/.test(sold))return result('FOOD_ITEM','FOOD','Giá gắn với thực phẩm được bán; không phải phí điểm tham quan lân cận.');
+  return result('MERCHANDISE','OTHER','Giá gắn với hàng hóa/sản phẩm được bán, không phải giá đến hoặc vào khu du lịch.');
+ }
+ if(/\b(?:ve (?:vao(?: cua)?|tham quan)|phi (?:vao cua|tham quan)|admission|entrance (?:fee|ticket)|entry (?:fee|ticket))\b/.test(local))return result('ATTRACTION_ADMISSION','ATTRACTION','Đối tượng giá là vé/phí vào điểm tham quan; phương tiện được bao gồm không đổi đối tượng.');
+ if(/\b(?:ve cap treo|gia cap treo|cable car(?: ticket| fare)?\s*:|cable car.{0,35}(?:cost|price|fare)|cap treo.{0,35}gia ve)\b/.test(local))return result('CABLE_CAR_TICKET','TRANSPORT','Giá được gắn trực tiếp với vé cáp treo bán riêng.');
+ if(!access&&/\b(?:taxi|xe buyt|buses?|shuttle|train|xe khach|boat|ferry|motorbike)\b/.test(local))return result('TRANSPORT_FARE','TRANSPORT','Đối tượng cùng mệnh đề là dịch vụ vận chuyển, không phải điểm đến của phương tiện.');
+ if(/\b(?:tour|package|combo|goi tham quan)\b/.test(local)&&/\b(?:gia|price|cost|fee|tron goi|bao gom)\b/.test(s))return result('TOUR_PACKAGE','ATTRACTION','Giá gắn với tour/package; không cộng thành tổng chuyến ngoài phạm vi nguồn.');
+ if(generic&&access&&/\b(?:khu du lich|khu vui choi|cong vien|vui choi giai tri|amusement park|theme park)\b/.test(prior+' '+next))return result('ATTRACTION_ADMISSION','ATTRACTION','Giá chung của điểm vui chơi; câu nhắc phương tiện là mô tả cách đến, không phải vé phương tiện.');
+ if(generic&&access)return result('UNKNOWN','OTHER','Chỉ thấy cách đi bằng phương tiện; chưa đủ evidence xác định đối tượng giá.');
+ const kinds:Partial<Record<CostCategory,PricedObject>>={TOTAL_TRIP:'TRIP_TOTAL',ACCOMMODATION:'ROOM_STAY',FOOD:'FOOD_ITEM',ATTRACTION:'ATTRACTION_ADMISSION',TRANSPORT:'TRANSPORT_FARE'};
+ return{kind:kinds[legacy]||'UNKNOWN',evidence:legacy==='OTHER'?'Chưa xác định được đối tượng giá từ câu/heading có nguồn.':'Giữ đối tượng có cùng phạm vi câu/heading; không bổ sung đơn vị hoặc inclusions.'};
+}

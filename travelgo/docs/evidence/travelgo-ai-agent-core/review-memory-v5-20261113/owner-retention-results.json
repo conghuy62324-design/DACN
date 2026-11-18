@@ -1,0 +1,1605 @@
+{
+  "at": "2026-11-13T05:26:09.597Z",
+  "passed": 4,
+  "failed": 0,
+  "results": [
+    {
+      "name": "Consented account B cannot read/edit/delete active preference of account A",
+      "status": "PASS"
+    },
+    {
+      "name": "Deleting one preference removes its use on next actual Agent turn, without clearing current session",
+      "status": "PASS"
+    },
+    {
+      "name": "Disable immediately stops personalization in same active session",
+      "status": "PASS"
+    },
+    {
+      "name": "Concurrent save and delete-all serialize without a retained hidden preference",
+      "status": "PASS"
+    }
+  ],
+  "evidence": [
+    {
+      "actor": "a",
+      "method": "PUT",
+      "url": "/agent/memory/settings",
+      "status": 200,
+      "data": {
+        "settings": {
+          "enabled": true,
+          "allowNew": true,
+          "policyVersion": "TRAVELGO_MEMORY_V1",
+          "updatedAt": "2026-11-13T05:26:09.086Z"
+        },
+        "items": [],
+        "policyVersion": "TRAVELGO_MEMORY_V1",
+        "choices": {
+          "quality": {
+            "quiet": "Khách sạn yên tĩnh",
+            "clean": "Ưu tiên vệ sinh",
+            "value": "Giá hợp lý"
+          },
+          "interest": {
+            "nature": "Khám phá thiên nhiên",
+            "culture": "Văn hóa",
+            "food": "Ẩm thực địa phương",
+            "relax": "Nghỉ dưỡng"
+          },
+          "transportation": {
+            "car": "Thường ưu tiên ô tô",
+            "motorbike": "Thường ưu tiên xe máy"
+          },
+          "pace": {
+            "relaxed": "Lịch trình thư giãn",
+            "balanced": "Lịch trình cân bằng",
+            "packed": "Khám phá nhiều địa điểm"
+          }
+        }
+      }
+    },
+    {
+      "actor": "b",
+      "method": "PUT",
+      "url": "/agent/memory/settings",
+      "status": 200,
+      "data": {
+        "settings": {
+          "enabled": true,
+          "allowNew": true,
+          "policyVersion": "TRAVELGO_MEMORY_V1",
+          "updatedAt": "2026-11-13T05:26:09.101Z"
+        },
+        "items": [],
+        "policyVersion": "TRAVELGO_MEMORY_V1",
+        "choices": {
+          "quality": {
+            "quiet": "Khách sạn yên tĩnh",
+            "clean": "Ưu tiên vệ sinh",
+            "value": "Giá hợp lý"
+          },
+          "interest": {
+            "nature": "Khám phá thiên nhiên",
+            "culture": "Văn hóa",
+            "food": "Ẩm thực địa phương",
+            "relax": "Nghỉ dưỡng"
+          },
+          "transportation": {
+            "car": "Thường ưu tiên ô tô",
+            "motorbike": "Thường ưu tiên xe máy"
+          },
+          "pace": {
+            "relaxed": "Lịch trình thư giãn",
+            "balanced": "Lịch trình cân bằng",
+            "packed": "Khám phá nhiều địa điểm"
+          }
+        }
+      }
+    },
+    {
+      "actor": "a",
+      "method": "POST",
+      "url": "/agent/memory/preferences",
+      "status": 200,
+      "data": {
+        "settings": {
+          "enabled": true,
+          "allowNew": true,
+          "policyVersion": "TRAVELGO_MEMORY_V1",
+          "updatedAt": "2026-11-13T05:26:09.086Z"
+        },
+        "items": [
+          {
+            "id": "475ae243-2443-47ec-85dd-326638efb0e9",
+            "type": "quality",
+            "value": "quiet",
+            "source": "CONFIRMED",
+            "status": "ACTIVE",
+            "scope": "TRAVEL_ADVICE",
+            "createdAt": "2026-11-13T05:26:09.116Z",
+            "updatedAt": "2026-11-13T05:26:09.116Z",
+            "label": "Khách sạn yên tĩnh"
+          }
+        ],
+        "policyVersion": "TRAVELGO_MEMORY_V1",
+        "choices": {
+          "quality": {
+            "quiet": "Khách sạn yên tĩnh",
+            "clean": "Ưu tiên vệ sinh",
+            "value": "Giá hợp lý"
+          },
+          "interest": {
+            "nature": "Khám phá thiên nhiên",
+            "culture": "Văn hóa",
+            "food": "Ẩm thực địa phương",
+            "relax": "Nghỉ dưỡng"
+          },
+          "transportation": {
+            "car": "Thường ưu tiên ô tô",
+            "motorbike": "Thường ưu tiên xe máy"
+          },
+          "pace": {
+            "relaxed": "Lịch trình thư giãn",
+            "balanced": "Lịch trình cân bằng",
+            "packed": "Khám phá nhiều địa điểm"
+          }
+        }
+      }
+    },
+    {
+      "actor": "a",
+      "method": "POST",
+      "url": "/agent/memory/preferences",
+      "status": 200,
+      "data": {
+        "settings": {
+          "enabled": true,
+          "allowNew": true,
+          "policyVersion": "TRAVELGO_MEMORY_V1",
+          "updatedAt": "2026-11-13T05:26:09.086Z"
+        },
+        "items": [
+          {
+            "id": "475ae243-2443-47ec-85dd-326638efb0e9",
+            "type": "quality",
+            "value": "quiet",
+            "source": "CONFIRMED",
+            "status": "ACTIVE",
+            "scope": "TRAVEL_ADVICE",
+            "createdAt": "2026-11-13T05:26:09.116Z",
+            "updatedAt": "2026-11-13T05:26:09.116Z",
+            "label": "Khách sạn yên tĩnh"
+          },
+          {
+            "id": "c5413fb4-b2eb-43af-8cfe-dbf653dbb3b5",
+            "type": "quality",
+            "value": "clean",
+            "source": "CONFIRMED",
+            "status": "ACTIVE",
+            "scope": "TRAVEL_ADVICE",
+            "createdAt": "2026-11-13T05:26:09.132Z",
+            "updatedAt": "2026-11-13T05:26:09.132Z",
+            "label": "Ưu tiên vệ sinh"
+          }
+        ],
+        "policyVersion": "TRAVELGO_MEMORY_V1",
+        "choices": {
+          "quality": {
+            "quiet": "Khách sạn yên tĩnh",
+            "clean": "Ưu tiên vệ sinh",
+            "value": "Giá hợp lý"
+          },
+          "interest": {
+            "nature": "Khám phá thiên nhiên",
+            "culture": "Văn hóa",
+            "food": "Ẩm thực địa phương",
+            "relax": "Nghỉ dưỡng"
+          },
+          "transportation": {
+            "car": "Thường ưu tiên ô tô",
+            "motorbike": "Thường ưu tiên xe máy"
+          },
+          "pace": {
+            "relaxed": "Lịch trình thư giãn",
+            "balanced": "Lịch trình cân bằng",
+            "packed": "Khám phá nhiều địa điểm"
+          }
+        }
+      }
+    },
+    {
+      "actor": "a",
+      "method": "GET",
+      "url": "/agent/memory",
+      "status": 200,
+      "data": {
+        "settings": {
+          "enabled": true,
+          "allowNew": true,
+          "policyVersion": "TRAVELGO_MEMORY_V1",
+          "updatedAt": "2026-11-13T05:26:09.086Z"
+        },
+        "items": [
+          {
+            "id": "475ae243-2443-47ec-85dd-326638efb0e9",
+            "type": "quality",
+            "value": "quiet",
+            "source": "CONFIRMED",
+            "status": "ACTIVE",
+            "scope": "TRAVEL_ADVICE",
+            "createdAt": "2026-11-13T05:26:09.116Z",
+            "updatedAt": "2026-11-13T05:26:09.116Z",
+            "label": "Khách sạn yên tĩnh"
+          },
+          {
+            "id": "c5413fb4-b2eb-43af-8cfe-dbf653dbb3b5",
+            "type": "quality",
+            "value": "clean",
+            "source": "CONFIRMED",
+            "status": "ACTIVE",
+            "scope": "TRAVEL_ADVICE",
+            "createdAt": "2026-11-13T05:26:09.132Z",
+            "updatedAt": "2026-11-13T05:26:09.132Z",
+            "label": "Ưu tiên vệ sinh"
+          }
+        ],
+        "policyVersion": "TRAVELGO_MEMORY_V1",
+        "choices": {
+          "quality": {
+            "quiet": "Khách sạn yên tĩnh",
+            "clean": "Ưu tiên vệ sinh",
+            "value": "Giá hợp lý"
+          },
+          "interest": {
+            "nature": "Khám phá thiên nhiên",
+            "culture": "Văn hóa",
+            "food": "Ẩm thực địa phương",
+            "relax": "Nghỉ dưỡng"
+          },
+          "transportation": {
+            "car": "Thường ưu tiên ô tô",
+            "motorbike": "Thường ưu tiên xe máy"
+          },
+          "pace": {
+            "relaxed": "Lịch trình thư giãn",
+            "balanced": "Lịch trình cân bằng",
+            "packed": "Khám phá nhiều địa điểm"
+          }
+        }
+      }
+    },
+    {
+      "actor": "b",
+      "method": "GET",
+      "url": "/agent/memory",
+      "status": 200,
+      "data": {
+        "settings": {
+          "enabled": true,
+          "allowNew": true,
+          "policyVersion": "TRAVELGO_MEMORY_V1",
+          "updatedAt": "2026-11-13T05:26:09.101Z"
+        },
+        "items": [],
+        "policyVersion": "TRAVELGO_MEMORY_V1",
+        "choices": {
+          "quality": {
+            "quiet": "Khách sạn yên tĩnh",
+            "clean": "Ưu tiên vệ sinh",
+            "value": "Giá hợp lý"
+          },
+          "interest": {
+            "nature": "Khám phá thiên nhiên",
+            "culture": "Văn hóa",
+            "food": "Ẩm thực địa phương",
+            "relax": "Nghỉ dưỡng"
+          },
+          "transportation": {
+            "car": "Thường ưu tiên ô tô",
+            "motorbike": "Thường ưu tiên xe máy"
+          },
+          "pace": {
+            "relaxed": "Lịch trình thư giãn",
+            "balanced": "Lịch trình cân bằng",
+            "packed": "Khám phá nhiều địa điểm"
+          }
+        }
+      }
+    },
+    {
+      "actor": "b",
+      "method": "PATCH",
+      "url": "/agent/memory/preferences/475ae243-2443-47ec-85dd-326638efb0e9",
+      "status": 404,
+      "code": "MEMORY_NOT_FOUND"
+    },
+    {
+      "actor": "b",
+      "method": "DELETE",
+      "url": "/agent/memory/preferences/475ae243-2443-47ec-85dd-326638efb0e9",
+      "status": 200,
+      "data": {
+        "settings": {
+          "enabled": true,
+          "allowNew": true,
+          "policyVersion": "TRAVELGO_MEMORY_V1",
+          "updatedAt": "2026-11-13T05:26:09.101Z"
+        },
+        "items": [],
+        "policyVersion": "TRAVELGO_MEMORY_V1",
+        "choices": {
+          "quality": {
+            "quiet": "Khách sạn yên tĩnh",
+            "clean": "Ưu tiên vệ sinh",
+            "value": "Giá hợp lý"
+          },
+          "interest": {
+            "nature": "Khám phá thiên nhiên",
+            "culture": "Văn hóa",
+            "food": "Ẩm thực địa phương",
+            "relax": "Nghỉ dưỡng"
+          },
+          "transportation": {
+            "car": "Thường ưu tiên ô tô",
+            "motorbike": "Thường ưu tiên xe máy"
+          },
+          "pace": {
+            "relaxed": "Lịch trình thư giãn",
+            "balanced": "Lịch trình cân bằng",
+            "packed": "Khám phá nhiều địa điểm"
+          }
+        }
+      }
+    },
+    {
+      "actor": "a",
+      "method": "GET",
+      "url": "/agent/memory",
+      "status": 200,
+      "data": {
+        "settings": {
+          "enabled": true,
+          "allowNew": true,
+          "policyVersion": "TRAVELGO_MEMORY_V1",
+          "updatedAt": "2026-11-13T05:26:09.086Z"
+        },
+        "items": [
+          {
+            "id": "475ae243-2443-47ec-85dd-326638efb0e9",
+            "type": "quality",
+            "value": "quiet",
+            "source": "CONFIRMED",
+            "status": "ACTIVE",
+            "scope": "TRAVEL_ADVICE",
+            "createdAt": "2026-11-13T05:26:09.116Z",
+            "updatedAt": "2026-11-13T05:26:09.116Z",
+            "label": "Khách sạn yên tĩnh"
+          },
+          {
+            "id": "c5413fb4-b2eb-43af-8cfe-dbf653dbb3b5",
+            "type": "quality",
+            "value": "clean",
+            "source": "CONFIRMED",
+            "status": "ACTIVE",
+            "scope": "TRAVEL_ADVICE",
+            "createdAt": "2026-11-13T05:26:09.132Z",
+            "updatedAt": "2026-11-13T05:26:09.132Z",
+            "label": "Ưu tiên vệ sinh"
+          }
+        ],
+        "policyVersion": "TRAVELGO_MEMORY_V1",
+        "choices": {
+          "quality": {
+            "quiet": "Khách sạn yên tĩnh",
+            "clean": "Ưu tiên vệ sinh",
+            "value": "Giá hợp lý"
+          },
+          "interest": {
+            "nature": "Khám phá thiên nhiên",
+            "culture": "Văn hóa",
+            "food": "Ẩm thực địa phương",
+            "relax": "Nghỉ dưỡng"
+          },
+          "transportation": {
+            "car": "Thường ưu tiên ô tô",
+            "motorbike": "Thường ưu tiên xe máy"
+          },
+          "pace": {
+            "relaxed": "Lịch trình thư giãn",
+            "balanced": "Lịch trình cân bằng",
+            "packed": "Khám phá nhiều địa điểm"
+          }
+        }
+      }
+    },
+    {
+      "actor": "a",
+      "method": "DELETE",
+      "url": "/agent/memory/preferences/475ae243-2443-47ec-85dd-326638efb0e9",
+      "status": 200,
+      "data": {
+        "settings": {
+          "enabled": true,
+          "allowNew": true,
+          "policyVersion": "TRAVELGO_MEMORY_V1",
+          "updatedAt": "2026-11-13T05:26:09.086Z"
+        },
+        "items": [
+          {
+            "id": "c5413fb4-b2eb-43af-8cfe-dbf653dbb3b5",
+            "type": "quality",
+            "value": "clean",
+            "source": "CONFIRMED",
+            "status": "ACTIVE",
+            "scope": "TRAVEL_ADVICE",
+            "createdAt": "2026-11-13T05:26:09.132Z",
+            "updatedAt": "2026-11-13T05:26:09.132Z",
+            "label": "Ưu tiên vệ sinh"
+          }
+        ],
+        "policyVersion": "TRAVELGO_MEMORY_V1",
+        "choices": {
+          "quality": {
+            "quiet": "Khách sạn yên tĩnh",
+            "clean": "Ưu tiên vệ sinh",
+            "value": "Giá hợp lý"
+          },
+          "interest": {
+            "nature": "Khám phá thiên nhiên",
+            "culture": "Văn hóa",
+            "food": "Ẩm thực địa phương",
+            "relax": "Nghỉ dưỡng"
+          },
+          "transportation": {
+            "car": "Thường ưu tiên ô tô",
+            "motorbike": "Thường ưu tiên xe máy"
+          },
+          "pace": {
+            "relaxed": "Lịch trình thư giãn",
+            "balanced": "Lịch trình cân bằng",
+            "packed": "Khám phá nhiều địa điểm"
+          }
+        }
+      }
+    },
+    {
+      "actor": "a",
+      "method": "POST",
+      "url": "/agent/core/chat",
+      "status": 200,
+      "data": {
+        "status": "completed",
+        "reply": "Bạn có thể cân nhắc các lựa chọn sau từ TravelGo. DEMO Nha Trang — Resort ở Nha Trang. Địa chỉ trong TravelGo: Địa chỉ DEMO chưa xác minh; không dùng để đi lại. Dịch vụ lưu trú. Tiện ích ghi nhận: Wi-Fi, Điều hòa, Hồ bơi, Ăn sáng. Chưa có đánh giá khách hàng để kết luận chất lượng. Giá tham khảo từ nguồn TravelGo (giả định DEMO): 550.000 VND; đơn vị giá và tình trạng còn chỗ chưa được xác minh. Đúng khu vực Nha Trang Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét. Xem chi tiết trên TravelGo: /places/3e975c7b-759d-5f82-a9ee-3b681d295622. Dữ liệu DEMO để kiểm thử, không phải cơ sở hoặc báo giá Booking thật.\n\nDEMO Nha Trang — Villa ở Nha Trang. Địa chỉ trong TravelGo: Địa chỉ DEMO chưa xác minh; không dùng để đi lại. Dịch vụ lưu trú. Tiện ích ghi nhận: Wi-Fi, Điều hòa. Chưa có đánh giá khách hàng để kết luận chất lượng. Giá tham khảo từ nguồn TravelGo (giả định DEMO): 1.100.000 VND; đơn vị giá và tình trạng còn chỗ chưa được xác minh. Đúng khu vực Nha Trang Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét. Xem chi tiết trên TravelGo: /places/4e4ab78e-4ad7-55a9-aa2b-d5425a333027. Dữ liệu DEMO để kiểm thử, không phải cơ sở hoặc báo giá Booking thật.\n\nDEMO Nha Trang — Khách sạn ở Nha Trang. Địa chỉ trong TravelGo: Địa chỉ DEMO chưa xác minh; không dùng để đi lại. Dịch vụ lưu trú. Tiện ích ghi nhận: Wi-Fi, Điều hòa, Bãi đỗ xe. Chưa có đánh giá khách hàng để kết luận chất lượng. Giá tham khảo từ nguồn TravelGo (giả định DEMO): 350.000 VND; đơn vị giá và tình trạng còn chỗ chưa được xác minh. Đúng khu vực Nha Trang Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét. Xem chi tiết trên TravelGo: /places/92fbee7e-735b-5a8a-a4ee-7103cc797bbf. Dữ liệu DEMO để kiểm thử, không phải cơ sở hoặc báo giá Booking thật.\n\nMình đang tham khảo những sở thích bạn đã cho phép lưu: Ưu tiên vệ sinh. Chúng chỉ là ưu tiên mềm; yêu cầu rõ trong chuyến này được ưu tiên và mình chưa tự chọn phương tiện hoặc đổi ngân sách.\n\nBạn có thể hỏi giá của một lựa chọn theo thứ tự, so sánh các lựa chọn hoặc chọn dịch vụ cho bản dự tính. Chưa có dịch vụ nào được đặt.",
+        "tool": "search_registered_hotels",
+        "result": {
+          "type": "registered_options",
+          "category": "hotel",
+          "source": "TRAVELGO_REGISTERED_CATALOG",
+          "filters": {
+            "city": "Nha Trang",
+            "locationId": "destination:nha-trang",
+            "preferences": []
+          },
+          "weights": {
+            "quality": 0.35,
+            "preference": 0.25,
+            "budget": 0.25,
+            "distance": 0.15
+          },
+          "ranking": "Existing deterministic RecommendationService; no new weights; budget cap/area/amenities/exclusions are hard filters, preferences soft.",
+          "items": [
+            {
+              "id": "3e975c7b-759d-5f82-a9ee-3b681d295622",
+              "name": "DEMO Nha Trang — Resort",
+              "category": "hotel",
+              "city": "Nha Trang",
+              "province": "Nha Trang",
+              "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+              "openingHours": {},
+              "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+              "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+              "heroImage": "/images/catalog-demo.svg",
+              "amenities": [
+                "Wi-Fi",
+                "Điều hòa",
+                "Hồ bơi",
+                "Ăn sáng"
+              ],
+              "priceFrom": 550000,
+              "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+              "currency": "VND",
+              "rating": 0,
+              "reviewCount": 0,
+              "status": "APPROVED",
+              "businessStatus": "ACTIVE",
+              "source": "DEMO",
+              "href": "/places/3e975c7b-759d-5f82-a9ee-3b681d295622",
+              "availability": "NOT_VERIFIED",
+              "capacity": "NOT_MANAGED_FOR_PLACES",
+              "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+              "bookingEligible": false,
+              "geography": {
+                "locationId": "destination:nha-trang",
+                "provinceCode": "56",
+                "provinceName": "Khánh Hòa",
+                "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+              },
+              "catalogMetadata": {
+                "cohort": "travelgo-catalog-10-v1",
+                "source": "DEMO",
+                "priceBasis": "ASSUMED_DEMO_VND",
+                "sourceUrls": [],
+                "imageLicense": "TravelGo original SVG placeholder",
+                "priceSegment": "budget",
+                "coordinateBasis": "SYNTHETIC_SCENARIO",
+                "accommodationType": "resort"
+              },
+              "approvedAt": "2026-11-12T00:00:00.000Z",
+              "isDemo": true,
+              "score": 0.791937,
+              "scoreBreakdown": {
+                "qualityScore": 0.84,
+                "preferenceScore": 0.6,
+                "budgetScore": 0.8,
+                "distanceScore": 0.98625
+              },
+              "reasons": [
+                "Đúng khu vực Nha Trang"
+              ],
+              "matchedPreferences": [],
+              "reviewInsights": {
+                "isDemo": true,
+                "method": "BOUNDED_VI_ASPECT_RULES_V1",
+                "rating": null,
+                "aspects": {},
+                "placeId": "3e975c7b-759d-5f82-a9ee-3b681d295622",
+                "opinionOnly": true,
+                "evidenceScope": "PUBLISHED_AND_AI_ALLOWED_ONLY",
+                "sourceRevision": "1",
+                "validReviewCount": 0,
+                "unknownReviewCount": 0,
+                "analyzedReviewCount": 0,
+                "verifiedBookingCount": 0,
+                "computedAt": "2026-11-13T05:22:29.281Z",
+                "status": "INSUFFICIENT"
+              }
+            },
+            {
+              "id": "4e4ab78e-4ad7-55a9-aa2b-d5425a333027",
+              "name": "DEMO Nha Trang — Villa",
+              "category": "hotel",
+              "city": "Nha Trang",
+              "province": "Nha Trang",
+              "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+              "openingHours": {},
+              "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+              "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+              "heroImage": "/images/catalog-demo.svg",
+              "amenities": [
+                "Wi-Fi",
+                "Điều hòa"
+              ],
+              "priceFrom": 1100000,
+              "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+              "currency": "VND",
+              "rating": 0,
+              "reviewCount": 0,
+              "status": "APPROVED",
+              "businessStatus": "ACTIVE",
+              "source": "DEMO",
+              "href": "/places/4e4ab78e-4ad7-55a9-aa2b-d5425a333027",
+              "availability": "NOT_VERIFIED",
+              "capacity": "NOT_MANAGED_FOR_PLACES",
+              "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+              "bookingEligible": false,
+              "geography": {
+                "locationId": "destination:nha-trang",
+                "provinceCode": "56",
+                "provinceName": "Khánh Hòa",
+                "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+              },
+              "catalogMetadata": {
+                "cohort": "travelgo-catalog-10-v1",
+                "source": "DEMO",
+                "priceBasis": "ASSUMED_DEMO_VND",
+                "sourceUrls": [],
+                "imageLicense": "TravelGo original SVG placeholder",
+                "priceSegment": "midrange",
+                "coordinateBasis": "SYNTHETIC_SCENARIO",
+                "accommodationType": "villa"
+              },
+              "approvedAt": "2026-11-12T00:00:00.000Z",
+              "isDemo": true,
+              "score": 0.791937,
+              "scoreBreakdown": {
+                "qualityScore": 0.84,
+                "preferenceScore": 0.6,
+                "budgetScore": 0.8,
+                "distanceScore": 0.98625
+              },
+              "reasons": [
+                "Đúng khu vực Nha Trang"
+              ],
+              "matchedPreferences": [],
+              "reviewInsights": {
+                "isDemo": true,
+                "method": "BOUNDED_VI_ASPECT_RULES_V1",
+                "rating": null,
+                "aspects": {},
+                "placeId": "4e4ab78e-4ad7-55a9-aa2b-d5425a333027",
+                "opinionOnly": true,
+                "evidenceScope": "PUBLISHED_AND_AI_ALLOWED_ONLY",
+                "sourceRevision": "1",
+                "validReviewCount": 0,
+                "unknownReviewCount": 0,
+                "analyzedReviewCount": 0,
+                "verifiedBookingCount": 0,
+                "computedAt": "2026-11-13T05:22:29.307Z",
+                "status": "INSUFFICIENT"
+              }
+            },
+            {
+              "id": "92fbee7e-735b-5a8a-a4ee-7103cc797bbf",
+              "name": "DEMO Nha Trang — Khách sạn",
+              "category": "hotel",
+              "city": "Nha Trang",
+              "province": "Nha Trang",
+              "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+              "openingHours": {},
+              "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+              "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+              "heroImage": "/images/catalog-demo.svg",
+              "amenities": [
+                "Wi-Fi",
+                "Điều hòa",
+                "Bãi đỗ xe"
+              ],
+              "priceFrom": 350000,
+              "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+              "currency": "VND",
+              "rating": 0,
+              "reviewCount": 0,
+              "status": "APPROVED",
+              "businessStatus": "ACTIVE",
+              "source": "DEMO",
+              "href": "/places/92fbee7e-735b-5a8a-a4ee-7103cc797bbf",
+              "availability": "NOT_VERIFIED",
+              "capacity": "NOT_MANAGED_FOR_PLACES",
+              "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+              "bookingEligible": false,
+              "geography": {
+                "locationId": "destination:nha-trang",
+                "provinceCode": "56",
+                "provinceName": "Khánh Hòa",
+                "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+              },
+              "catalogMetadata": {
+                "cohort": "travelgo-catalog-10-v1",
+                "source": "DEMO",
+                "priceBasis": "ASSUMED_DEMO_VND",
+                "sourceUrls": [],
+                "imageLicense": "TravelGo original SVG placeholder",
+                "priceSegment": "budget",
+                "coordinateBasis": "SYNTHETIC_SCENARIO",
+                "accommodationType": "hotel"
+              },
+              "approvedAt": "2026-11-12T00:00:00.000Z",
+              "isDemo": true,
+              "score": 0.789875,
+              "scoreBreakdown": {
+                "qualityScore": 0.84,
+                "preferenceScore": 0.6,
+                "budgetScore": 0.8,
+                "distanceScore": 0.9725
+              },
+              "reasons": [
+                "Đúng khu vực Nha Trang"
+              ],
+              "matchedPreferences": [],
+              "reviewInsights": {
+                "isDemo": true,
+                "method": "BOUNDED_VI_ASPECT_RULES_V1",
+                "rating": null,
+                "aspects": {},
+                "placeId": "92fbee7e-735b-5a8a-a4ee-7103cc797bbf",
+                "opinionOnly": true,
+                "evidenceScope": "PUBLISHED_AND_AI_ALLOWED_ONLY",
+                "sourceRevision": "1",
+                "validReviewCount": 0,
+                "unknownReviewCount": 0,
+                "analyzedReviewCount": 0,
+                "verifiedBookingCount": 0,
+                "computedAt": "2026-11-13T05:22:29.332Z",
+                "status": "INSUFFICIENT"
+              }
+            },
+            {
+              "id": "af162e0d-a682-53be-aa32-8576432f6e32",
+              "name": "DEMO Nha Trang — Căn hộ",
+              "category": "hotel",
+              "city": "Nha Trang",
+              "province": "Nha Trang",
+              "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+              "openingHours": {},
+              "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+              "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+              "heroImage": "/images/catalog-demo.svg",
+              "amenities": [
+                "Wi-Fi",
+                "Điều hòa",
+                "Bãi đỗ xe"
+              ],
+              "priceFrom": null,
+              "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+              "currency": "VND",
+              "rating": 0,
+              "reviewCount": 0,
+              "status": "APPROVED",
+              "businessStatus": "ACTIVE",
+              "source": "DEMO",
+              "href": "/places/af162e0d-a682-53be-aa32-8576432f6e32",
+              "availability": "NOT_VERIFIED",
+              "capacity": "NOT_MANAGED_FOR_PLACES",
+              "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+              "bookingEligible": false,
+              "geography": {
+                "locationId": "destination:nha-trang",
+                "provinceCode": "56",
+                "provinceName": "Khánh Hòa",
+                "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+              },
+              "catalogMetadata": {
+                "cohort": "travelgo-catalog-10-v1",
+                "source": "DEMO",
+                "priceBasis": "ASSUMED_DEMO_VND",
+                "sourceUrls": [],
+                "imageLicense": "TravelGo original SVG placeholder",
+                "priceSegment": "unknown",
+                "coordinateBasis": "SYNTHETIC_SCENARIO",
+                "accommodationType": "apartment"
+              },
+              "approvedAt": "2026-11-12T00:00:00.000Z",
+              "isDemo": true,
+              "score": 0.789875,
+              "scoreBreakdown": {
+                "qualityScore": 0.84,
+                "preferenceScore": 0.6,
+                "budgetScore": 0.8,
+                "distanceScore": 0.9725
+              },
+              "reasons": [
+                "Đúng khu vực Nha Trang"
+              ],
+              "matchedPreferences": [],
+              "reviewInsights": {
+                "isDemo": true,
+                "method": "BOUNDED_VI_ASPECT_RULES_V1",
+                "rating": null,
+                "aspects": {},
+                "placeId": "af162e0d-a682-53be-aa32-8576432f6e32",
+                "opinionOnly": true,
+                "evidenceScope": "PUBLISHED_AND_AI_ALLOWED_ONLY",
+                "sourceRevision": "1",
+                "validReviewCount": 0,
+                "unknownReviewCount": 0,
+                "analyzedReviewCount": 0,
+                "verifiedBookingCount": 0,
+                "computedAt": "2026-11-13T05:22:29.356Z",
+                "status": "INSUFFICIENT"
+              }
+            },
+            {
+              "id": "2d8a8dd4-3fc5-5972-af2f-fa5c1ca09f58",
+              "name": "DEMO Nha Trang — Homestay",
+              "category": "hotel",
+              "city": "Nha Trang",
+              "province": "Nha Trang",
+              "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+              "openingHours": {},
+              "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+              "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+              "heroImage": "/images/catalog-demo.svg",
+              "amenities": [
+                "Wi-Fi",
+                "Điều hòa",
+                "Bãi đỗ xe"
+              ],
+              "priceFrom": 750000,
+              "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+              "currency": "VND",
+              "rating": 3,
+              "reviewCount": 2,
+              "status": "APPROVED",
+              "businessStatus": "ACTIVE",
+              "source": "DEMO",
+              "href": "/places/2d8a8dd4-3fc5-5972-af2f-fa5c1ca09f58",
+              "availability": "NOT_VERIFIED",
+              "capacity": "NOT_MANAGED_FOR_PLACES",
+              "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+              "bookingEligible": false,
+              "geography": {
+                "locationId": "destination:nha-trang",
+                "provinceCode": "56",
+                "provinceName": "Khánh Hòa",
+                "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+              },
+              "catalogMetadata": {
+                "cohort": "travelgo-catalog-10-v1",
+                "source": "DEMO",
+                "priceBasis": "ASSUMED_DEMO_VND",
+                "sourceUrls": [],
+                "imageLicense": "TravelGo original SVG placeholder",
+                "priceSegment": "midrange",
+                "coordinateBasis": "SYNTHETIC_SCENARIO",
+                "accommodationType": "homestay"
+              },
+              "approvedAt": "2026-11-12T00:00:00.000Z",
+              "isDemo": true,
+              "score": 0.78,
+              "scoreBreakdown": {
+                "qualityScore": 0.8,
+                "preferenceScore": 0.6,
+                "budgetScore": 0.8,
+                "distanceScore": 1
+              },
+              "reasons": [
+                "Đúng khu vực Nha Trang"
+              ],
+              "matchedPreferences": [],
+              "reviewInsights": {
+                "isDemo": true,
+                "method": "BOUNDED_VI_ASPECT_RULES_V1",
+                "rating": 3,
+                "aspects": {},
+                "placeId": "2d8a8dd4-3fc5-5972-af2f-fa5c1ca09f58",
+                "opinionOnly": true,
+                "evidenceScope": "PUBLISHED_AND_AI_ALLOWED_ONLY",
+                "sourceRevision": "8",
+                "validReviewCount": 2,
+                "unknownReviewCount": 1,
+                "analyzedReviewCount": 0,
+                "verifiedBookingCount": 0,
+                "computedAt": "2026-11-13T05:22:29.993Z",
+                "status": "INSUFFICIENT"
+              }
+            }
+          ],
+          "warnings": [
+            "Giá từ catalog chưa xác minh đơn vị phòng/đêm hoặc món/phần. Ngày/khách không xác nhận còn phòng, bàn hay sức chứa.",
+            "Không có dữ liệu thực đơn đầy đủ; loại trừ từ khóa không là cam kết an toàn dị ứng."
+          ]
+        },
+        "sourceInfo": {
+          "label": "Dữ liệu TravelGo được phép hiển thị",
+          "retrievedAt": "2026-11-13T05:26:09.388Z",
+          "externalKnowledgeIntegrated": false
+        },
+        "conversation": {
+          "id": "1539f570-4e36-47f5-9351-c383e45d1c79",
+          "revision": 1,
+          "expiresAt": "2026-11-13T05:41:09.226Z",
+          "mode": "CORE_VERIFIED",
+          "persisted": false
+        },
+        "model": {
+          "invoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        },
+        "intent": {
+          "version": "NATURAL_CHAT_V3",
+          "authority": "SERVER_VERIFIED"
+        },
+        "languageStatus": "disabled",
+        "verifiedTravel": {
+          "destinationCity": "Nha Trang"
+        }
+      }
+    },
+    {
+      "actor": "a",
+      "method": "PUT",
+      "url": "/agent/memory/settings",
+      "status": 200,
+      "data": {
+        "settings": {
+          "enabled": false,
+          "allowNew": false,
+          "policyVersion": null,
+          "updatedAt": "2026-11-13T05:26:09.393Z"
+        },
+        "items": [
+          {
+            "id": "c5413fb4-b2eb-43af-8cfe-dbf653dbb3b5",
+            "type": "quality",
+            "value": "clean",
+            "source": "CONFIRMED",
+            "status": "ACTIVE",
+            "scope": "TRAVEL_ADVICE",
+            "createdAt": "2026-11-13T05:26:09.132Z",
+            "updatedAt": "2026-11-13T05:26:09.132Z",
+            "label": "Ưu tiên vệ sinh"
+          }
+        ],
+        "policyVersion": "TRAVELGO_MEMORY_V1",
+        "choices": {
+          "quality": {
+            "quiet": "Khách sạn yên tĩnh",
+            "clean": "Ưu tiên vệ sinh",
+            "value": "Giá hợp lý"
+          },
+          "interest": {
+            "nature": "Khám phá thiên nhiên",
+            "culture": "Văn hóa",
+            "food": "Ẩm thực địa phương",
+            "relax": "Nghỉ dưỡng"
+          },
+          "transportation": {
+            "car": "Thường ưu tiên ô tô",
+            "motorbike": "Thường ưu tiên xe máy"
+          },
+          "pace": {
+            "relaxed": "Lịch trình thư giãn",
+            "balanced": "Lịch trình cân bằng",
+            "packed": "Khám phá nhiều địa điểm"
+          }
+        }
+      }
+    },
+    {
+      "actor": "a",
+      "method": "POST",
+      "url": "/agent/core/chat",
+      "status": 200,
+      "data": {
+        "status": "completed",
+        "reply": "Bạn có thể cân nhắc các lựa chọn sau từ TravelGo. DEMO Nha Trang — Resort ở Nha Trang. Địa chỉ trong TravelGo: Địa chỉ DEMO chưa xác minh; không dùng để đi lại. Dịch vụ lưu trú. Tiện ích ghi nhận: Wi-Fi, Điều hòa, Hồ bơi, Ăn sáng. Chưa có đánh giá khách hàng để kết luận chất lượng. Giá tham khảo từ nguồn TravelGo (giả định DEMO): 550.000 VND; đơn vị giá và tình trạng còn chỗ chưa được xác minh. Đúng khu vực Nha Trang Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét. Xem chi tiết trên TravelGo: /places/3e975c7b-759d-5f82-a9ee-3b681d295622. Dữ liệu DEMO để kiểm thử, không phải cơ sở hoặc báo giá Booking thật.\n\nDEMO Nha Trang — Villa ở Nha Trang. Địa chỉ trong TravelGo: Địa chỉ DEMO chưa xác minh; không dùng để đi lại. Dịch vụ lưu trú. Tiện ích ghi nhận: Wi-Fi, Điều hòa. Chưa có đánh giá khách hàng để kết luận chất lượng. Giá tham khảo từ nguồn TravelGo (giả định DEMO): 1.100.000 VND; đơn vị giá và tình trạng còn chỗ chưa được xác minh. Đúng khu vực Nha Trang Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét. Xem chi tiết trên TravelGo: /places/4e4ab78e-4ad7-55a9-aa2b-d5425a333027. Dữ liệu DEMO để kiểm thử, không phải cơ sở hoặc báo giá Booking thật.\n\nDEMO Nha Trang — Khách sạn ở Nha Trang. Địa chỉ trong TravelGo: Địa chỉ DEMO chưa xác minh; không dùng để đi lại. Dịch vụ lưu trú. Tiện ích ghi nhận: Wi-Fi, Điều hòa, Bãi đỗ xe. Chưa có đánh giá khách hàng để kết luận chất lượng. Giá tham khảo từ nguồn TravelGo (giả định DEMO): 350.000 VND; đơn vị giá và tình trạng còn chỗ chưa được xác minh. Đúng khu vực Nha Trang Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét. Xem chi tiết trên TravelGo: /places/92fbee7e-735b-5a8a-a4ee-7103cc797bbf. Dữ liệu DEMO để kiểm thử, không phải cơ sở hoặc báo giá Booking thật.\n\nBạn có thể hỏi giá của một lựa chọn theo thứ tự, so sánh các lựa chọn hoặc chọn dịch vụ cho bản dự tính. Chưa có dịch vụ nào được đặt.",
+        "tool": "search_registered_hotels",
+        "result": {
+          "type": "registered_options",
+          "category": "hotel",
+          "source": "TRAVELGO_REGISTERED_CATALOG",
+          "filters": {
+            "city": "Nha Trang",
+            "locationId": "destination:nha-trang"
+          },
+          "weights": {
+            "quality": 0.35,
+            "preference": 0.25,
+            "budget": 0.25,
+            "distance": 0.15
+          },
+          "ranking": "Existing deterministic RecommendationService; no new weights; budget cap/area/amenities/exclusions are hard filters, preferences soft.",
+          "items": [
+            {
+              "id": "3e975c7b-759d-5f82-a9ee-3b681d295622",
+              "name": "DEMO Nha Trang — Resort",
+              "category": "hotel",
+              "city": "Nha Trang",
+              "province": "Nha Trang",
+              "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+              "openingHours": {},
+              "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+              "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+              "heroImage": "/images/catalog-demo.svg",
+              "amenities": [
+                "Wi-Fi",
+                "Điều hòa",
+                "Hồ bơi",
+                "Ăn sáng"
+              ],
+              "priceFrom": 550000,
+              "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+              "currency": "VND",
+              "rating": 0,
+              "reviewCount": 0,
+              "status": "APPROVED",
+              "businessStatus": "ACTIVE",
+              "source": "DEMO",
+              "href": "/places/3e975c7b-759d-5f82-a9ee-3b681d295622",
+              "availability": "NOT_VERIFIED",
+              "capacity": "NOT_MANAGED_FOR_PLACES",
+              "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+              "bookingEligible": false,
+              "geography": {
+                "locationId": "destination:nha-trang",
+                "provinceCode": "56",
+                "provinceName": "Khánh Hòa",
+                "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+              },
+              "catalogMetadata": {
+                "cohort": "travelgo-catalog-10-v1",
+                "source": "DEMO",
+                "priceBasis": "ASSUMED_DEMO_VND",
+                "sourceUrls": [],
+                "imageLicense": "TravelGo original SVG placeholder",
+                "priceSegment": "budget",
+                "coordinateBasis": "SYNTHETIC_SCENARIO",
+                "accommodationType": "resort"
+              },
+              "approvedAt": "2026-11-12T00:00:00.000Z",
+              "isDemo": true,
+              "score": 0.791937,
+              "scoreBreakdown": {
+                "qualityScore": 0.84,
+                "preferenceScore": 0.6,
+                "budgetScore": 0.8,
+                "distanceScore": 0.98625
+              },
+              "reasons": [
+                "Đúng khu vực Nha Trang"
+              ],
+              "matchedPreferences": [],
+              "reviewInsights": {
+                "isDemo": true,
+                "method": "BOUNDED_VI_ASPECT_RULES_V1",
+                "rating": null,
+                "aspects": {},
+                "placeId": "3e975c7b-759d-5f82-a9ee-3b681d295622",
+                "opinionOnly": true,
+                "evidenceScope": "PUBLISHED_AND_AI_ALLOWED_ONLY",
+                "sourceRevision": "1",
+                "validReviewCount": 0,
+                "unknownReviewCount": 0,
+                "analyzedReviewCount": 0,
+                "verifiedBookingCount": 0,
+                "computedAt": "2026-11-13T05:22:29.281Z",
+                "status": "INSUFFICIENT"
+              }
+            },
+            {
+              "id": "4e4ab78e-4ad7-55a9-aa2b-d5425a333027",
+              "name": "DEMO Nha Trang — Villa",
+              "category": "hotel",
+              "city": "Nha Trang",
+              "province": "Nha Trang",
+              "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+              "openingHours": {},
+              "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+              "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+              "heroImage": "/images/catalog-demo.svg",
+              "amenities": [
+                "Wi-Fi",
+                "Điều hòa"
+              ],
+              "priceFrom": 1100000,
+              "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+              "currency": "VND",
+              "rating": 0,
+              "reviewCount": 0,
+              "status": "APPROVED",
+              "businessStatus": "ACTIVE",
+              "source": "DEMO",
+              "href": "/places/4e4ab78e-4ad7-55a9-aa2b-d5425a333027",
+              "availability": "NOT_VERIFIED",
+              "capacity": "NOT_MANAGED_FOR_PLACES",
+              "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+              "bookingEligible": false,
+              "geography": {
+                "locationId": "destination:nha-trang",
+                "provinceCode": "56",
+                "provinceName": "Khánh Hòa",
+                "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+              },
+              "catalogMetadata": {
+                "cohort": "travelgo-catalog-10-v1",
+                "source": "DEMO",
+                "priceBasis": "ASSUMED_DEMO_VND",
+                "sourceUrls": [],
+                "imageLicense": "TravelGo original SVG placeholder",
+                "priceSegment": "midrange",
+                "coordinateBasis": "SYNTHETIC_SCENARIO",
+                "accommodationType": "villa"
+              },
+              "approvedAt": "2026-11-12T00:00:00.000Z",
+              "isDemo": true,
+              "score": 0.791937,
+              "scoreBreakdown": {
+                "qualityScore": 0.84,
+                "preferenceScore": 0.6,
+                "budgetScore": 0.8,
+                "distanceScore": 0.98625
+              },
+              "reasons": [
+                "Đúng khu vực Nha Trang"
+              ],
+              "matchedPreferences": [],
+              "reviewInsights": {
+                "isDemo": true,
+                "method": "BOUNDED_VI_ASPECT_RULES_V1",
+                "rating": null,
+                "aspects": {},
+                "placeId": "4e4ab78e-4ad7-55a9-aa2b-d5425a333027",
+                "opinionOnly": true,
+                "evidenceScope": "PUBLISHED_AND_AI_ALLOWED_ONLY",
+                "sourceRevision": "1",
+                "validReviewCount": 0,
+                "unknownReviewCount": 0,
+                "analyzedReviewCount": 0,
+                "verifiedBookingCount": 0,
+                "computedAt": "2026-11-13T05:22:29.307Z",
+                "status": "INSUFFICIENT"
+              }
+            },
+            {
+              "id": "92fbee7e-735b-5a8a-a4ee-7103cc797bbf",
+              "name": "DEMO Nha Trang — Khách sạn",
+              "category": "hotel",
+              "city": "Nha Trang",
+              "province": "Nha Trang",
+              "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+              "openingHours": {},
+              "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+              "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+              "heroImage": "/images/catalog-demo.svg",
+              "amenities": [
+                "Wi-Fi",
+                "Điều hòa",
+                "Bãi đỗ xe"
+              ],
+              "priceFrom": 350000,
+              "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+              "currency": "VND",
+              "rating": 0,
+              "reviewCount": 0,
+              "status": "APPROVED",
+              "businessStatus": "ACTIVE",
+              "source": "DEMO",
+              "href": "/places/92fbee7e-735b-5a8a-a4ee-7103cc797bbf",
+              "availability": "NOT_VERIFIED",
+              "capacity": "NOT_MANAGED_FOR_PLACES",
+              "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+              "bookingEligible": false,
+              "geography": {
+                "locationId": "destination:nha-trang",
+                "provinceCode": "56",
+                "provinceName": "Khánh Hòa",
+                "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+              },
+              "catalogMetadata": {
+                "cohort": "travelgo-catalog-10-v1",
+                "source": "DEMO",
+                "priceBasis": "ASSUMED_DEMO_VND",
+                "sourceUrls": [],
+                "imageLicense": "TravelGo original SVG placeholder",
+                "priceSegment": "budget",
+                "coordinateBasis": "SYNTHETIC_SCENARIO",
+                "accommodationType": "hotel"
+              },
+              "approvedAt": "2026-11-12T00:00:00.000Z",
+              "isDemo": true,
+              "score": 0.789875,
+              "scoreBreakdown": {
+                "qualityScore": 0.84,
+                "preferenceScore": 0.6,
+                "budgetScore": 0.8,
+                "distanceScore": 0.9725
+              },
+              "reasons": [
+                "Đúng khu vực Nha Trang"
+              ],
+              "matchedPreferences": [],
+              "reviewInsights": {
+                "isDemo": true,
+                "method": "BOUNDED_VI_ASPECT_RULES_V1",
+                "rating": null,
+                "aspects": {},
+                "placeId": "92fbee7e-735b-5a8a-a4ee-7103cc797bbf",
+                "opinionOnly": true,
+                "evidenceScope": "PUBLISHED_AND_AI_ALLOWED_ONLY",
+                "sourceRevision": "1",
+                "validReviewCount": 0,
+                "unknownReviewCount": 0,
+                "analyzedReviewCount": 0,
+                "verifiedBookingCount": 0,
+                "computedAt": "2026-11-13T05:22:29.332Z",
+                "status": "INSUFFICIENT"
+              }
+            },
+            {
+              "id": "af162e0d-a682-53be-aa32-8576432f6e32",
+              "name": "DEMO Nha Trang — Căn hộ",
+              "category": "hotel",
+              "city": "Nha Trang",
+              "province": "Nha Trang",
+              "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+              "openingHours": {},
+              "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+              "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+              "heroImage": "/images/catalog-demo.svg",
+              "amenities": [
+                "Wi-Fi",
+                "Điều hòa",
+                "Bãi đỗ xe"
+              ],
+              "priceFrom": null,
+              "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+              "currency": "VND",
+              "rating": 0,
+              "reviewCount": 0,
+              "status": "APPROVED",
+              "businessStatus": "ACTIVE",
+              "source": "DEMO",
+              "href": "/places/af162e0d-a682-53be-aa32-8576432f6e32",
+              "availability": "NOT_VERIFIED",
+              "capacity": "NOT_MANAGED_FOR_PLACES",
+              "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+              "bookingEligible": false,
+              "geography": {
+                "locationId": "destination:nha-trang",
+                "provinceCode": "56",
+                "provinceName": "Khánh Hòa",
+                "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+              },
+              "catalogMetadata": {
+                "cohort": "travelgo-catalog-10-v1",
+                "source": "DEMO",
+                "priceBasis": "ASSUMED_DEMO_VND",
+                "sourceUrls": [],
+                "imageLicense": "TravelGo original SVG placeholder",
+                "priceSegment": "unknown",
+                "coordinateBasis": "SYNTHETIC_SCENARIO",
+                "accommodationType": "apartment"
+              },
+              "approvedAt": "2026-11-12T00:00:00.000Z",
+              "isDemo": true,
+              "score": 0.789875,
+              "scoreBreakdown": {
+                "qualityScore": 0.84,
+                "preferenceScore": 0.6,
+                "budgetScore": 0.8,
+                "distanceScore": 0.9725
+              },
+              "reasons": [
+                "Đúng khu vực Nha Trang"
+              ],
+              "matchedPreferences": [],
+              "reviewInsights": {
+                "isDemo": true,
+                "method": "BOUNDED_VI_ASPECT_RULES_V1",
+                "rating": null,
+                "aspects": {},
+                "placeId": "af162e0d-a682-53be-aa32-8576432f6e32",
+                "opinionOnly": true,
+                "evidenceScope": "PUBLISHED_AND_AI_ALLOWED_ONLY",
+                "sourceRevision": "1",
+                "validReviewCount": 0,
+                "unknownReviewCount": 0,
+                "analyzedReviewCount": 0,
+                "verifiedBookingCount": 0,
+                "computedAt": "2026-11-13T05:22:29.356Z",
+                "status": "INSUFFICIENT"
+              }
+            },
+            {
+              "id": "2d8a8dd4-3fc5-5972-af2f-fa5c1ca09f58",
+              "name": "DEMO Nha Trang — Homestay",
+              "category": "hotel",
+              "city": "Nha Trang",
+              "province": "Nha Trang",
+              "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+              "openingHours": {},
+              "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+              "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+              "heroImage": "/images/catalog-demo.svg",
+              "amenities": [
+                "Wi-Fi",
+                "Điều hòa",
+                "Bãi đỗ xe"
+              ],
+              "priceFrom": 750000,
+              "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+              "currency": "VND",
+              "rating": 3,
+              "reviewCount": 2,
+              "status": "APPROVED",
+              "businessStatus": "ACTIVE",
+              "source": "DEMO",
+              "href": "/places/2d8a8dd4-3fc5-5972-af2f-fa5c1ca09f58",
+              "availability": "NOT_VERIFIED",
+              "capacity": "NOT_MANAGED_FOR_PLACES",
+              "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+              "bookingEligible": false,
+              "geography": {
+                "locationId": "destination:nha-trang",
+                "provinceCode": "56",
+                "provinceName": "Khánh Hòa",
+                "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+              },
+              "catalogMetadata": {
+                "cohort": "travelgo-catalog-10-v1",
+                "source": "DEMO",
+                "priceBasis": "ASSUMED_DEMO_VND",
+                "sourceUrls": [],
+                "imageLicense": "TravelGo original SVG placeholder",
+                "priceSegment": "midrange",
+                "coordinateBasis": "SYNTHETIC_SCENARIO",
+                "accommodationType": "homestay"
+              },
+              "approvedAt": "2026-11-12T00:00:00.000Z",
+              "isDemo": true,
+              "score": 0.78,
+              "scoreBreakdown": {
+                "qualityScore": 0.8,
+                "preferenceScore": 0.6,
+                "budgetScore": 0.8,
+                "distanceScore": 1
+              },
+              "reasons": [
+                "Đúng khu vực Nha Trang"
+              ],
+              "matchedPreferences": [],
+              "reviewInsights": {
+                "isDemo": true,
+                "method": "BOUNDED_VI_ASPECT_RULES_V1",
+                "rating": 3,
+                "aspects": {},
+                "placeId": "2d8a8dd4-3fc5-5972-af2f-fa5c1ca09f58",
+                "opinionOnly": true,
+                "evidenceScope": "PUBLISHED_AND_AI_ALLOWED_ONLY",
+                "sourceRevision": "8",
+                "validReviewCount": 2,
+                "unknownReviewCount": 1,
+                "analyzedReviewCount": 0,
+                "verifiedBookingCount": 0,
+                "computedAt": "2026-11-13T05:22:29.993Z",
+                "status": "INSUFFICIENT"
+              }
+            }
+          ],
+          "warnings": [
+            "Giá từ catalog chưa xác minh đơn vị phòng/đêm hoặc món/phần. Ngày/khách không xác nhận còn phòng, bàn hay sức chứa.",
+            "Không có dữ liệu thực đơn đầy đủ; loại trừ từ khóa không là cam kết an toàn dị ứng."
+          ]
+        },
+        "sourceInfo": {
+          "label": "Dữ liệu TravelGo được phép hiển thị",
+          "retrievedAt": "2026-11-13T05:26:09.534Z",
+          "externalKnowledgeIntegrated": false
+        },
+        "conversation": {
+          "id": "1539f570-4e36-47f5-9351-c383e45d1c79",
+          "revision": 2,
+          "expiresAt": "2026-11-13T05:41:09.226Z",
+          "mode": "CORE_VERIFIED",
+          "persisted": false
+        },
+        "model": {
+          "invoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        },
+        "intent": {
+          "version": "NATURAL_CHAT_V3",
+          "authority": "SERVER_VERIFIED"
+        },
+        "languageStatus": "disabled",
+        "verifiedTravel": {
+          "destinationCity": "Nha Trang"
+        }
+      }
+    },
+    {
+      "actor": "a",
+      "method": "PUT",
+      "url": "/agent/memory/settings",
+      "status": 200,
+      "data": {
+        "settings": {
+          "enabled": true,
+          "allowNew": true,
+          "policyVersion": "TRAVELGO_MEMORY_V1",
+          "updatedAt": "2026-11-13T05:26:09.546Z"
+        },
+        "items": [
+          {
+            "id": "c5413fb4-b2eb-43af-8cfe-dbf653dbb3b5",
+            "type": "quality",
+            "value": "clean",
+            "source": "CONFIRMED",
+            "status": "ACTIVE",
+            "scope": "TRAVEL_ADVICE",
+            "createdAt": "2026-11-13T05:26:09.132Z",
+            "updatedAt": "2026-11-13T05:26:09.132Z",
+            "label": "Ưu tiên vệ sinh"
+          }
+        ],
+        "policyVersion": "TRAVELGO_MEMORY_V1",
+        "choices": {
+          "quality": {
+            "quiet": "Khách sạn yên tĩnh",
+            "clean": "Ưu tiên vệ sinh",
+            "value": "Giá hợp lý"
+          },
+          "interest": {
+            "nature": "Khám phá thiên nhiên",
+            "culture": "Văn hóa",
+            "food": "Ẩm thực địa phương",
+            "relax": "Nghỉ dưỡng"
+          },
+          "transportation": {
+            "car": "Thường ưu tiên ô tô",
+            "motorbike": "Thường ưu tiên xe máy"
+          },
+          "pace": {
+            "relaxed": "Lịch trình thư giãn",
+            "balanced": "Lịch trình cân bằng",
+            "packed": "Khám phá nhiều địa điểm"
+          }
+        }
+      }
+    },
+    {
+      "actor": "a",
+      "method": "POST",
+      "url": "/agent/memory/preferences",
+      "status": 200,
+      "data": {
+        "settings": {
+          "enabled": true,
+          "allowNew": true,
+          "policyVersion": "TRAVELGO_MEMORY_V1",
+          "updatedAt": "2026-11-13T05:26:09.546Z"
+        },
+        "items": [
+          {
+            "id": "c5413fb4-b2eb-43af-8cfe-dbf653dbb3b5",
+            "type": "quality",
+            "value": "clean",
+            "source": "CONFIRMED",
+            "status": "ACTIVE",
+            "scope": "TRAVEL_ADVICE",
+            "createdAt": "2026-11-13T05:26:09.132Z",
+            "updatedAt": "2026-11-13T05:26:09.132Z",
+            "label": "Ưu tiên vệ sinh"
+          },
+          {
+            "id": "14e65334-e52d-4486-ac20-fd6aca2d0b29",
+            "type": "quality",
+            "value": "value",
+            "source": "CONFIRMED",
+            "status": "ACTIVE",
+            "scope": "TRAVEL_ADVICE",
+            "createdAt": "2026-11-13T05:26:09.558Z",
+            "updatedAt": "2026-11-13T05:26:09.558Z",
+            "label": "Giá hợp lý"
+          }
+        ],
+        "policyVersion": "TRAVELGO_MEMORY_V1",
+        "choices": {
+          "quality": {
+            "quiet": "Khách sạn yên tĩnh",
+            "clean": "Ưu tiên vệ sinh",
+            "value": "Giá hợp lý"
+          },
+          "interest": {
+            "nature": "Khám phá thiên nhiên",
+            "culture": "Văn hóa",
+            "food": "Ẩm thực địa phương",
+            "relax": "Nghỉ dưỡng"
+          },
+          "transportation": {
+            "car": "Thường ưu tiên ô tô",
+            "motorbike": "Thường ưu tiên xe máy"
+          },
+          "pace": {
+            "relaxed": "Lịch trình thư giãn",
+            "balanced": "Lịch trình cân bằng",
+            "packed": "Khám phá nhiều địa điểm"
+          }
+        }
+      }
+    },
+    {
+      "actor": "a",
+      "method": "DELETE",
+      "url": "/agent/memory",
+      "status": 200,
+      "data": {
+        "settings": {
+          "enabled": false,
+          "allowNew": false,
+          "policyVersion": null
+        },
+        "items": [],
+        "policyVersion": "TRAVELGO_MEMORY_V1",
+        "choices": {
+          "quality": {
+            "quiet": "Khách sạn yên tĩnh",
+            "clean": "Ưu tiên vệ sinh",
+            "value": "Giá hợp lý"
+          },
+          "interest": {
+            "nature": "Khám phá thiên nhiên",
+            "culture": "Văn hóa",
+            "food": "Ẩm thực địa phương",
+            "relax": "Nghỉ dưỡng"
+          },
+          "transportation": {
+            "car": "Thường ưu tiên ô tô",
+            "motorbike": "Thường ưu tiên xe máy"
+          },
+          "pace": {
+            "relaxed": "Lịch trình thư giãn",
+            "balanced": "Lịch trình cân bằng",
+            "packed": "Khám phá nhiều địa điểm"
+          }
+        }
+      }
+    },
+    {
+      "actor": "a",
+      "method": "GET",
+      "url": "/agent/memory",
+      "status": 200,
+      "data": {
+        "settings": {
+          "enabled": false,
+          "allowNew": false,
+          "policyVersion": null
+        },
+        "items": [],
+        "policyVersion": "TRAVELGO_MEMORY_V1",
+        "choices": {
+          "quality": {
+            "quiet": "Khách sạn yên tĩnh",
+            "clean": "Ưu tiên vệ sinh",
+            "value": "Giá hợp lý"
+          },
+          "interest": {
+            "nature": "Khám phá thiên nhiên",
+            "culture": "Văn hóa",
+            "food": "Ẩm thực địa phương",
+            "relax": "Nghỉ dưỡng"
+          },
+          "transportation": {
+            "car": "Thường ưu tiên ô tô",
+            "motorbike": "Thường ưu tiên xe máy"
+          },
+          "pace": {
+            "relaxed": "Lịch trình thư giãn",
+            "balanced": "Lịch trình cân bằng",
+            "packed": "Khám phá nhiều địa điểm"
+          }
+        }
+      }
+    },
+    {
+      "actor": "b",
+      "method": "DELETE",
+      "url": "/agent/memory",
+      "status": 200,
+      "data": {
+        "settings": {
+          "enabled": false,
+          "allowNew": false,
+          "policyVersion": null
+        },
+        "items": [],
+        "policyVersion": "TRAVELGO_MEMORY_V1",
+        "choices": {
+          "quality": {
+            "quiet": "Khách sạn yên tĩnh",
+            "clean": "Ưu tiên vệ sinh",
+            "value": "Giá hợp lý"
+          },
+          "interest": {
+            "nature": "Khám phá thiên nhiên",
+            "culture": "Văn hóa",
+            "food": "Ẩm thực địa phương",
+            "relax": "Nghỉ dưỡng"
+          },
+          "transportation": {
+            "car": "Thường ưu tiên ô tô",
+            "motorbike": "Thường ưu tiên xe máy"
+          },
+          "pace": {
+            "relaxed": "Lịch trình thư giãn",
+            "balanced": "Lịch trình cân bằng",
+            "packed": "Khám phá nhiều địa điểm"
+          }
+        }
+      }
+    }
+  ],
+  "native": 0
+}

@@ -1,0 +1,191 @@
+# TASK — TRAVELGO AI AGENT V5: SEMANTIC INTELLIGENCE FIX
+
+Tiếp tục dự án TravelGo sau `QWEN_V5_SEMANTIC_ACCEPTANCE_FAIL`.
+
+Đọc `docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md`, đặc biệt mục 21.9 và 21.10.4–21.10.7.
+
+MỤC TIÊU: Khắc phục nguyên nhân Qwen hiểu sai ý định khách, cải thiện kiến trúc hiểu ngữ nghĩa và truyền ngữ cảnh cá nhân hóa vào Qwen.
+
+**TASK NÀY CHỈ SỬA CODE VÀ KIỂM THỬ OFFLINE. KHÔNG GỌI INFERENCE QWEN MỚI.**
+
+## 1. PHÂN TÍCH LỖI L1
+
+Đọc raw Qwen L1 và exact prompt/schema/request đã khóa.
+
+Input:
+`tui muon den da latt ma chua ro nen bat dau sao, giup tui voi`
+
+Raw model:
+`{"kind":"natural","operation":"chat","updates":[],"change":"hotel_cheaper","changeQuote":"tui muon den da latt ma chua ro nen bat dau sao, giup tui voi"}`
+
+Cần xác định:
+
+- Vì sao model có thể đề xuất hotel_cheaper khi không có khách sạn được chọn?
+- Vì sao destination Đà Lạt có evidence nhưng không xuất hiện trong proposal?
+- Mô tả operation/change trong prompt có gây nhầm lẫn không?
+- Schema đã ràng buộc đủ quan hệ giữa operation, updates và change chưa?
+- Fuzzy geographic evidence có tạo candidate nhiễu không?
+
+Không khẳng định nguyên nhân nội tại của model khi chưa đủ bằng chứng.
+
+## 2. SỬA KIẾN TRÚC HIỂU Ý ĐỊNH
+
+Giữ một Agent Core hiện tại.
+
+Thiết kế ranh giới rõ giữa:
+
+A. Người khách đang muốn làm gì.
+
+B. Những thông tin khách đã cung cấp.
+
+C. Những thông tin còn thiếu.
+
+D. Hành động nào được phép đề xuất.
+
+E. Hành động nào phải hỏi xác nhận.
+
+Qwen chỉ được đề xuất ý định và dữ liệu có bằng chứng.
+
+Backend chịu trách nhiệm xác minh và thực thi.
+
+Không cho model tự lựa chọn thao tác đổi khách sạn, đổi phương tiện, đổi ngân sách hoặc đặt dịch vụ khi lời khách không có căn cứ.
+
+### Yêu cầu đối với schema
+
+- Ràng buộc operation với cấu trúc updates/change tương ứng.
+- `hotel_cheaper` chỉ hợp lệ khi ngữ cảnh có khách sạn tham chiếu và lời khách thực sự yêu cầu lựa chọn rẻ hơn.
+- `plan_trip` được phép mang thông tin địa điểm có bằng chứng.
+- `chat` không được tự thực hiện cập nhật chuyến đi.
+- Các hành động không tương thích phải bị từ chối từ schema hoặc semantic validation.
+- Quote phải chứng minh đúng ý nghĩa của trường được cập nhật, không chỉ là substring hợp lệ.
+- Không tự tạo UUID, budget, transport hoặc listing.
+
+Không làm yếu validator để model dễ PASS.
+
+## 3. HIỂU TIẾNG VIỆT TỰ NHIÊN
+
+Cải thiện khả năng phân biệt:
+
+- Yêu cầu đi du lịch.
+- Yêu cầu tư vấn cách bắt đầu chuyến đi.
+- Tìm khách sạn.
+- Tìm khách sạn rẻ hơn.
+- Hỏi thông tin khách sạn.
+- So sánh lựa chọn.
+- Thay đổi kế hoạch.
+- Câu nói chưa rõ.
+- Câu phủ định, điều kiện hoặc đổi ý.
+
+Ví dụ:
+
+"Muốn đi Đà Lạt mà chưa biết bắt đầu từ đâu."
+
+Agent nên ghi nhận hoặc đề xuất xác nhận điểm đến Đà Lạt, sau đó hướng dẫn những thông tin cần thiết để lập kế hoạch.
+
+Không tự suy thành yêu cầu tìm khách sạn rẻ hơn.
+
+Nếu chưa có nơi xuất phát, ngày đi hoặc ngân sách, hỏi bổ sung phù hợp.
+
+Tái sử dụng shared geography, VietnameseNormalizer, verified context và V5 consultant.
+
+Không hard-code riêng câu L1 để PASS.
+
+Kiểm tra và hạn chế false-positive từ fuzzy alias trên các từ tiếng Việt thông thường.
+
+## 4. TÍCH HỢP NGỮ CẢNH REVIEW + MEMORY CHO QWEN
+
+Đây là yêu cầu quan trọng.
+
+Kiểm tra luồng grounded model hiện tại.
+
+Khi khách đã cho phép sử dụng bộ nhớ dài hạn, Qwen cần nhận được context được kiểm soát gồm:
+
+- Sở thích hợp lệ của đúng authenticated Customer.
+- Yêu cầu hiện tại của khách.
+- Verified session context.
+- Danh sách khách sạn/nhà hàng đủ điều kiện.
+- Review insights có evidence.
+- Mức độ đầy đủ và giới hạn của dữ liệu.
+
+Chỉ truyền những thông tin thực sự cần thiết cho lượt tư vấn.
+
+Không truyền toàn bộ lịch sử chat, thông tin cá nhân nhạy cảm hoặc raw comments chứa chỉ dẫn không đáng tin cậy.
+
+Qwen có thể dùng các facts này để đề xuất lựa chọn và thứ tự fact IDs.
+
+Server vẫn quyết định hard filters, kiểm tra eligibility và dựng lời giải thích có nguồn.
+
+Đảm bảo:
+
+- Khách thích yên tĩnh thì tư vấn có xét các review về tiếng ồn.
+- Khách thích sạch sẽ thì dùng evidence vệ sinh hợp lệ.
+- Nếu nhận xét trái chiều, AI không kết luận chắc chắn.
+- Nếu khách đổi sở thích trong chuyến hiện tại, ưu tiên mới thắng memory cũ.
+- Nếu khách tắt/xóa memory, Qwen không nhận hoặc sử dụng memory đó ở lượt mới.
+- Không tự biến sở thích thành lệnh Booking/Trip.
+
+Không sửa RecommendationService weights nếu chưa có bằng chứng cần thiết.
+
+## 5. KIỂM THỬ OFFLINE
+
+Dùng nguyên raw L1 mới nhất làm negative regression fixture.
+
+Bổ sung nhiều câu diễn đạt khác thực sự độc lập với L1, gồm:
+
+- Tiếng Việt không dấu.
+- Sai chính tả.
+- Câu nhiều ý.
+- Câu tư vấn không yêu cầu tool.
+- Yêu cầu đổi khách sạn thật.
+- Yêu cầu đổi khách sạn không đủ bằng chứng.
+- Ngữ cảnh nhiều lượt.
+- Review tích cực/tiêu cực/trái chiều.
+- Memory được bật, tắt, sửa hoặc xóa.
+- Prompt injection trong dữ liệu bình luận.
+
+Kiểm tra cả schema, semantic validators, privacy và grounded rendering.
+
+Không thay historical expected hoặc regrade L1 FAIL.
+
+Chạy targeted tests, compatibility liên quan, backend/frontend typecheck và build.
+
+Chỉ dùng offline model doubles ở những bài kiểm thử được ghi rõ là offline.
+
+## 6. GIỮ NGUYÊN CÁC PHẦN ĐÃ PASS
+
+Không xây Agent thứ hai.
+
+Không sửa Planner, Trip, Booking, migration14, geography34 hoặc dữ liệu130 Place/20 Business.
+
+Không thay logic Review/Memory đã PASS nếu không phát hiện lỗi có bằng chứng.
+
+Không ghi database gốc hoặc27 Trip.
+
+Không thay model Qwen, context16384 hoặc cấu hình website.
+
+Không warm-load, inference, retry hoặc dùng API trả phí.
+
+Không Google Maps, VPS, commit, push, deploy.
+
+## 7. BÁO CÁO
+
+Cập nhật Master mục:
+
+**21.11 — QWEN V5 SEMANTIC ARCHITECTURE OFFLINE FIX**
+
+Ghi rõ:
+
+1. Nguyên nhân có bằng chứng của L1.
+2. Những sửa đổi về operation/change contract.
+3. Cách hạn chế suy diễn hành động sai.
+4. Cách truyền review insights, memory và customer request cho model.
+5. Các file đã sửa.
+6. Targeted/compatibility/build.
+7. Những giới hạn còn lại.
+8. Điều kiện nghiệm thu Qwen LIVE lần tiếp theo.
+
+Không tạo nhiều task phụ hoặc chỉ viết kế hoạch.
+
+**MỤC TIÊU CUỐI: AI Agent hiểu mục đích thực sự của khách, biết sử dụng sở thích và đánh giá để tư vấn, nhưng không tự thực hiện những hành động chưa được khách yêu cầu.**
+
+Dừng sau khi sửa code, kiểm thử offline và cập nhật báo cáo. Chưa chạy Qwen LIVE trong task này.

@@ -1,0 +1,32 @@
+{
+  "at": "2026-11-17T04:06:38.702Z",
+  "status": "PURE_READ_ONLY_CODE_PATH_ANALYSIS_NO_CHAT_RETRY",
+  "results": [
+    {
+      "id": "B1",
+      "normalized": "gia xe shuttle san bay da lat moi nguoi hang 02/2026 la bao nhieu",
+      "costDetected": true,
+      "operation": "plan_trip",
+      "canonical": "",
+      "costSuppressedByCurrentCoreGate": false,
+      "genericUnitGuardWouldMatch": true
+    },
+    {
+      "id": "B2",
+      "normalized": "gia xe shuttle san bay da lat moi nguoi hang 11/2026 da duoc xac minh chua",
+      "costDetected": true,
+      "operation": "plan_trip",
+      "canonical": "",
+      "costSuppressedByCurrentCoreGate": false,
+      "genericUnitGuardWouldMatch": true
+    }
+  ],
+  "files": [
+    "backend/src/services/agentCoreService.ts:400",
+    "backend/src/agent/conversationSemantics.ts:54"
+  ],
+  "finding": "Cost fare cue exists, but Core drops early cost criteria for normalized verification question without bao-nhieu/chi-phi/gia-ve; normalized punctuation removes ?. Generic unit guard then treats year digits plus moi-nguoi as unsupported catalog price-unit request.",
+  "sourceChangedAfterOutput": false,
+  "expectedChanged": false,
+  "inferenceOrActualChatRetries": 0
+}

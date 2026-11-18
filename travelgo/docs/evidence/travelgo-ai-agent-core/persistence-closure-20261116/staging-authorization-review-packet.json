@@ -1,0 +1,124 @@
+{
+  "at": "2026-11-16T08:17:57.431Z",
+  "task": "21.27-A",
+  "status": "PREPARED_NOT_APPROVED_NOT_ACTIVATED_BLOCKED_QUOTA",
+  "database": {
+    "host": "127.0.0.1",
+    "port": 15452,
+    "name": "travelgo_staging_catalog_20261112",
+    "sentinel": "travelgo-public-staging:catalog-20261112",
+    "role": "catalog_runtime"
+  },
+  "approvedPrincipalId": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+  "approvedPrincipalHash": "856f41c9ad2ffc1e3f467eeb45f0069a943196101062d0e3ab3927bec64b95c5",
+  "syntheticCustomerId": "c67a994c-e43a-4ead-b1d3-9a58155ab01a",
+  "syntheticRoleId": "fcb5bbe7-dabd-4497-b3bb-b435cf86cf36",
+  "tripIds": [
+    "773bcf92-34fa-4dd5-90e3-cc37641fef24"
+  ],
+  "maximumTemporaryCustomers": 1,
+  "maximumTrips": 1,
+  "allowedTables": [
+    "users",
+    "user_roles",
+    "trip_sessions"
+  ],
+  "existingScopedLauncher": "agent-staging-profile.cjs scoped-trip-write",
+  "sqlFence": "Unchanged exact Trip identity/owner/column/cap/expiry checks; existing production publicStagingGuard required",
+  "modelOffIsolation": "Permanent model-off-isolation.cjs preload; flags OFF before dotenv; allowed localhost5177/5057/15452 only; actual native model dispatched must remain0",
+  "newApprovalRequired": true,
+  "oldAuthorizationMayBeReused": false,
+  "normalChatCap": 8,
+  "plannedNormalChats": 5,
+  "validConfirmationAttemptCap": 2,
+  "plannedValidConfirmations": 2,
+  "negativeConfirmationProbes": [
+    {
+      "id": "N1",
+      "request": "B submits foreign A ticket",
+      "limiter": "Owner/ticket validation rejects before consume in current service",
+      "conservativeApprovedPrincipalLedgerCharge": 1
+    },
+    {
+      "id": "N2",
+      "request": "A confirmation carries forged owner/itinerary/cost extra fields",
+      "limiter": "Strict body validation rejects before consume",
+      "conservativeApprovedPrincipalLedgerCharge": 1
+    },
+    {
+      "id": "N3",
+      "request": "A replays consumed ticket",
+      "limiter": "Used ticket rejects before consume",
+      "conservativeApprovedPrincipalLedgerCharge": 1
+    }
+  ],
+  "nonAgentOwnershipProbes": "B GET/PUT exact task Trip ID must404; not Agent/chat/confirm routes and do not call AgentLimits.consume. Record separately; no B chats.",
+  "callBudget": {
+    "normal": 5,
+    "validConfirmations": 2,
+    "negativeConservativeEntries": 3,
+    "totalCounted": 10,
+    "capPerHour": 20,
+    "reserve": 10,
+    "requiredRemaining": 20,
+    "freshObservedRemaining": 14,
+    "gate": "BLOCKED_QUOTA_NO_RESCAN_THIS_TASK"
+  },
+  "journey": [
+    {
+      "id": "P1",
+      "input": "Lập lịch trình từ SG đến ĐL, 3n2đ, 2 đứa, ngân sách cả nhóm5 củ, đi10/12/2027-12/12/2027 bằng xe máy, thích thiên nhiên",
+      "expected": "Real Planner3days/2nights,2adults,group5M,motorbike,nature,DEMO caveats,independent oracle; Trip count0"
+    },
+    {
+      "id": "P2",
+      "input": "Lưu lịch trình",
+      "expected": "CREATE preview; no Trip until separate explicit confirmation; C1commit exact Trip1 owned by A; receipt and MyTrips match DB"
+    },
+    {
+      "id": "P3",
+      "input": "Xem Trip của tôi",
+      "expected": "New conversation via MyTrips/TripDetail link and separate context consent; unchanged DB snapshot, same ID/lodging/mandatory selections/pace, itinerary/cost/editing status visible"
+    },
+    {
+      "id": "P4",
+      "input": "Ngày thứ2 muốn đi ít chỗ thôi",
+      "expected": "Meaningful day2 diff only, day1/day3 and lodging unchanged; saved row unchanged before confirmation; independent cost oracle"
+    },
+    {
+      "id": "P5",
+      "input": "Lưu lịch trình",
+      "expected": "UPDATE preview bound same Trip ID/revision; C2commit updates existing record only; reload/new mobile view and approved exact API restart prove persistence"
+    }
+  ],
+  "optionalReadOnlyMobile": [
+    "MyTrips",
+    "TripDetail",
+    "itinerary/cost",
+    "no overflow",
+    "no additional Trip or chat"
+  ],
+  "actualExpiryConcurrencyStaleCatalog": "Keep existing offline tier when not within this bounded budget; no fake clock or TTL reduction",
+  "cancelPreview": "Offline contract/replay retained; no extra preview chat planned",
+  "restartScope": "Exact task-owned API5057 only, if fresh packet approved; no Docker/DB restart",
+  "cleanup": {
+    "tripIds": "Exact packet IDs and committed ledger, owner A and SYNTHETIC marker required",
+    "user": "Exact temporary B+CUSTOMER role only; preserve existing customer/owner/retained knowledge rows",
+    "credentials": "Task-only CurrentUser DPAPI blobs; never owner DPAPI or plaintext",
+    "fingerprints": "Compare all40tables against fresh baseline including existing owner/credential rotation/retained source+candidate",
+    "restore": "protected READ ONLY; model/search/workerOFF"
+  },
+  "excluded": [
+    "Original DB/27Trip",
+    "Booking/payment",
+    "Owner provisioning/credentials",
+    "catalog/reviews/knowledge/memory/language writes",
+    "schema/migration/reset/reseed/recreate",
+    "Internet/Maps/GPS/VPS/paid provider",
+    "Qwen/Ollama/resource/model quota",
+    "commit/push/deploy"
+  ],
+  "earliest20SlotRecheckAccordingToThisLedgerUTC": "2026-11-16T08:29:52.542Z",
+  "earliest20SlotRecheckICT": "15:29:52 16/11/26",
+  "earliestIsNotApprovalOrGuaranteedQuota": true
+}

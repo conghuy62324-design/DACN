@@ -31,9 +31,11 @@ const BookingsPage=React.lazy(()=>import('../pages/BookingsPage').then(m=>({defa
 const BecomePartnerPage=React.lazy(()=>import('../pages/BecomePartnerPage').then(m=>({default:m.BecomePartnerPage})));
 const ForbiddenPage=React.lazy(()=>import('../pages/ForbiddenPage').then(m=>({default:m.ForbiddenPage})));
 const NotFoundPage=React.lazy(()=>import('../pages/NotFoundPage').then(m=>({default:m.NotFoundPage})));
+const TravelWebPage=React.lazy(()=>import('../pages/admin/TravelWebPage'));
 const AdminDashboardPage=React.lazy(()=>import('../pages/admin/AdminDashboardPage').then(m=>({default:m.AdminDashboardPage})));
 const PartnerApplicationsPage=React.lazy(()=>import('../pages/admin/PartnerApplicationsPage').then(m=>({default:m.PartnerApplicationsPage})));
 const AdminSectionPage=React.lazy(()=>import('../pages/admin/AdminSectionPage').then(m=>({default:m.AdminSectionPage})));
+const LanguageLexiconPage=React.lazy(()=>import('../pages/admin/LanguageLexiconPage'));
 const AdminModerationPage=React.lazy(()=>import('../pages/admin/AdminModerationPage').then(m=>({default:m.AdminModerationPage})));
 const PartnerDashboardPage=React.lazy(()=>import('../pages/partner/PartnerDashboardPage').then(m=>({default:m.PartnerDashboardPage})));
 const PartnerSectionPage=React.lazy(()=>import('../pages/partner/PartnerSectionPage').then(m=>({default:m.PartnerSectionPage})));
@@ -51,7 +53,7 @@ export const AppRouter:React.FC=()=> <Suspense fallback={<Loading/>}><Routes>
     <Route path="privacy" element={<IntegrationPolicyPage/>}/><Route path="terms" element={<IntegrationPolicyPage/>}/>
     <Route path="*" element={<NotFoundPage/>}/>
   </Route>
-  <Route element={<ProtectedRoute roles={['SUPER_ADMIN']}/>}><Route path="/admin" element={<AdminLayout/>}><Route index element={<AdminDashboardPage/>}/><Route path="partner-applications" element={<PartnerApplicationsPage/>}/><Route path="places" element={<AdminModerationPage/>}/><Route path="places/:id" element={<AdminModerationPage/>}/><Route path="tours" element={<AdminModerationPage/>}/><Route path="tours/:id" element={<AdminModerationPage/>}/><Route path="blogs" element={<AdminModerationPage/>}/><Route path="blogs/:id" element={<AdminModerationPage/>}/><Route path=":section" element={<AdminSectionPage/>}/></Route></Route>
+  <Route element={<ProtectedRoute roles={['SUPER_ADMIN']}/>}><Route path="/admin" element={<AdminLayout/>}><Route index element={<AdminDashboardPage/>}/><Route path="travel-web" element={<TravelWebPage/>}/><Route path="language-lexicon" element={<LanguageLexiconPage/>}/><Route path="partner-applications" element={<PartnerApplicationsPage/>}/><Route path="places" element={<AdminModerationPage/>}/><Route path="places/:id" element={<AdminModerationPage/>}/><Route path="tours" element={<AdminModerationPage/>}/><Route path="tours/:id" element={<AdminModerationPage/>}/><Route path="blogs" element={<AdminModerationPage/>}/><Route path="blogs/:id" element={<AdminModerationPage/>}/><Route path=":section" element={<AdminSectionPage/>}/></Route></Route>
   <Route element={<ProtectedRoute roles={['PARTNER']}/>}><Route path="/partner" element={<PartnerLayout/>}><Route index element={<PartnerDashboardPage/>}/><Route path="bookings" element={<PartnerBookingsPage/>}/><Route path="bookings/:id" element={<PartnerBookingsPage/>}/><Route path=":resource/new" element={<PartnerResourceFormPage/>}/><Route path=":resource/:id/edit" element={<PartnerResourceFormPage/>}/><Route path=":resource/:id" element={<PartnerResourceFormPage/>}/><Route path=":resource" element={<PartnerResourceListPage/>}/><Route path="workspace/:section" element={<PartnerSectionPage/>}/></Route></Route>
   <Route path="/403" element={<ForbiddenPage/>}/>
 </Routes></Suspense>;

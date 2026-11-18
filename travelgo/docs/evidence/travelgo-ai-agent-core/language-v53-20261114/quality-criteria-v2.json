@@ -1,0 +1,87 @@
+{
+  "lockedAt": "2026-11-14T03:49:00.307Z",
+  "scope": "SYNTHETIC_OFFLINE_APPLICATION_LANGUAGE_NOT_QWEN_TRAINING",
+  "training": {
+    "expression": "zyvoro",
+    "conceptId": "accommodation_type.homestay",
+    "input": "Tìm zyvoro ở Đà Lạt",
+    "correction": "Ý mình là homestay"
+  },
+  "holdout": [
+    {
+      "input": "Kiếm zyvoro ở Nha Trang giúp tui",
+      "expected": "search_registered_hotels",
+      "type": "homestay",
+      "location": "destination:nha-trang"
+    },
+    {
+      "input": "Tìm zyvoro tại Hội An cho 2 người",
+      "expected": "search_registered_hotels",
+      "type": "homestay",
+      "location": "destination:hoi-an"
+    },
+    {
+      "input": "Kiem zývoro o nha trang",
+      "expected": "search_registered_hotels",
+      "type": "homestay",
+      "location": "destination:nha-trang"
+    },
+    {
+      "input": "Tìm zyvoro ở Đà Lạt giùm",
+      "expected": "search_registered_hotels",
+      "type": "homestay",
+      "location": "destination:da-lat"
+    },
+    {
+      "input": "Ko tìm zyvoro ở Đà Lạt",
+      "expected": "CLARIFY"
+    },
+    {
+      "input": "Nếu có thể thì kiếm zyvoro ở Đà Lạt",
+      "expected": "CLARIFY"
+    },
+    {
+      "input": "zyvoro 2 xị",
+      "expected": "CLARIFY"
+    },
+    {
+      "input": "Tìm zyvoro ở Đà Lạt nhưng đừng đặt phòng",
+      "expected": "CLARIFY"
+    },
+    {
+      "input": "Tìm vvvzyvoro ở Đà Lạt",
+      "expected": "CLARIFY"
+    },
+    {
+      "input": "Tìm qerul ở Đà Lạt",
+      "expected": "CLARIFY"
+    },
+    {
+      "input": "ghé zyvoro hôm nào nhỉ",
+      "expected": "CLARIFY"
+    },
+    {
+      "input": "Kiếm zyvoro ở Phú Quốc cho nhóm bạn",
+      "expected": "search_registered_hotels",
+      "type": "homestay",
+      "location": "destination:phu-quoc"
+    }
+  ],
+  "invariants": [
+    "dynamic unknown meaning then separate consent/persistence/new conversation reuse",
+    "no ambiguous yes save or mutation",
+    "owner isolation/account switch",
+    "consent off and deletion effective",
+    "inflight revocation fence",
+    "pending TTL/revision/candidate purpose/replay",
+    "explicit correction replaces session meaning, saved correction versioned",
+    "no numeric inference from currency slang or k",
+    "shared candidate never used until approved; conflict clarifies",
+    "source/control/PII rejection",
+    "feedback categories separate from learning",
+    "model context has only bounded relevant spans and concepts; no owner IDs",
+    "base feature-off compatibility and protected context",
+    "exact arbitrary expression absent from production files before learning"
+  ],
+  "fixtureEncodingRepair": "Original PowerShell pipe encoded Vietnamese as question marks; original file and initial FAIL preserved. Expected/ground-truth fields unchanged."
+}

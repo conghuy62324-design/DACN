@@ -3,6 +3,9 @@ import { User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import type { UserRole } from '../types';
+import {CustomerMemoryPanel} from '../components/agent/CustomerMemoryPanel';
+import {ReviewModerationPanel} from '../components/common/ReviewModerationPanel';
+import {OwnReviewsPanel} from '../components/common/OwnReviewsPanel';
 
 const roleLabels: Record<UserRole, string> = {
   CUSTOMER: 'Khách hàng',
@@ -43,6 +46,9 @@ export const ProfilePage: React.FC = () => {
             <div className="min-w-0"><dt className="text-slate-500 mb-1">Vai trò</dt><dd data-testid="profile-roles" className="font-medium text-slate-900">{user.roles.map(role => roleLabels[role]).join(', ') || 'Chưa cung cấp'}</dd></div>
           </dl>
         </section>
+        {user.roles.includes('CUSTOMER')&&<CustomerMemoryPanel key={user.id+':'+localStorage.getItem('travelgo_token')} token={localStorage.getItem('travelgo_token')||''}/>}
+        <OwnReviewsPanel key={'reviews:'+user.id+':'+localStorage.getItem('travelgo_token')} token={localStorage.getItem('travelgo_token')||''}/>
+        {user.roles.includes('SUPER_ADMIN')&&<ReviewModerationPanel/>}
       </div>
     </div>
   );

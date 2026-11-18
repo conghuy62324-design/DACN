@@ -1,3 +1,4 @@
+import {TIME_AWARE_V2,timeMinute} from './plannerScheduling.js';
 import type { PlannerInput } from '../services/tourPlannerService.js';
 import { HttpError } from './httpError.js';
 import { validateTravelPreferences } from './travelPreferences.js';
@@ -83,7 +84,8 @@ export function validatePlannerInput(value: unknown, now = new Date()): PlannerI
       'Planner mới chỉ hỗ trợ car hoặc motorbike để ước lượng thời gian giữa các điểm; chưa hỗ trợ flight/train hay chặng liên tỉnh. Hãy chọn lại phương tiện.',
       'UNSUPPORTED_PLANNER_TRANSPORTATION');
   }
-  if (pacing !== 'balanced') {
+  if(input.planningVersion!==undefined&&input.planningVersion!==TIME_AWARE_V2)throw new HttpError(400,'Unsupported planning version.','INVALID_PLANNING_VERSION');
+  if (pacing !== 'balanced'&&input.planningVersion!==TIME_AWARE_V2) {
     throw new HttpError(400,
       'Planner mới chỉ hỗ trợ balanced: tối đa 2 điểm tham quan/ngày, không tính bữa ăn. Hãy chọn lại nhịp độ.',
       'UNSUPPORTED_PLANNER_PACING');
@@ -92,7 +94,13 @@ export function validatePlannerInput(value: unknown, now = new Date()): PlannerI
   if (!Array.isArray(mandatoryPlaceIds)) {
     throw new HttpError(400, 'mandatoryPlaceIds phải là một danh sách Place ID.', 'INVALID_MANDATORY_PLACE_IDS');
   }
+  if(input.planningVersion===TIME_AWARE_V2){
+    for(const k of ['arrivalTime','departureTime'])if(input[k]!==undefined&&(typeof input[k]!=='string'||!Number.isFinite(timeMinute(input[k] as string))))throw new HttpError(400,'Giờ phải đúng HH:mm.','INVALID_PLANNER_TIME');
+    if(startDate===endDate&&typeof input.arrivalTime==='string'&&typeof input.departureTime==='string'&&timeMinute(input.arrivalTime)>=timeMinute(input.departureTime))throw new HttpError(400,'Khung giờ đi/về không hợp lệ.','INVALID_PLANNER_TIME_WINDOW');
+    if(input.excludedPlaceIds!==undefined&&(!Array.isArray(input.excludedPlaceIds)||input.excludedPlaceIds.length>100||input.excludedPlaceIds.some((id:unknown)=>typeof id!=='string'||! /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id))))throw new HttpError(400,'Excluded IDs invalid.','INVALID_PLANNER_EXCLUSIONS');
+  }
   return {
+    ...(input.planningVersion===TIME_AWARE_V2?{planningVersion:TIME_AWARE_V2,arrivalTime:input.arrivalTime as string|undefined,departureTime:input.departureTime as string|undefined,excludedPlaceIds:input.excludedPlaceIds as string[]|undefined}:{}),
     departureCity, destinationCity, startDate: startDate as string, endDate: endDate as string,
     adults, children, totalBudget,
     transportation: transportation as PlannerInput['transportation'],

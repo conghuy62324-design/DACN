@@ -3,6 +3,7 @@ import { PlaceController } from '../controllers/placeController.js';
 import { authenticate, requireRoles } from '../middlewares/authMiddleware.js';
 import {GEOGRAPHY_VERSION,PROVINCES,searchLocations,resolveLocation,locationsWithCatalog} from '../geography/vietnam.js';
 import {RegisteredCatalogService} from '../services/registeredCatalogService.js';
+import {ReviewInsightService} from '../services/reviewInsightService.js';
 
 const router = Router();
 router.get('/locations',async(req,res)=>{
@@ -15,6 +16,7 @@ router.get('/locations',async(req,res)=>{
 router.get('/', PlaceController.getPlaces);
 router.get('/:id', PlaceController.getPlaceById);
 router.get('/:id/reviews', PlaceController.getPlaceReviews);
+router.get('/:id/review-insights',async(req,res,next)=>{try{res.setHeader('Cache-Control','no-store');res.json({success:true,data:await ReviewInsightService.get(String(req.params.id))});}catch(e){next(e);}});
 router.post('/:id/reviews', authenticate, requireRoles('CUSTOMER', 'PARTNER', 'SUPER_ADMIN'), PlaceController.addReview);
 router.post('/', authenticate, requireRoles('SUPER_ADMIN'), PlaceController.createPlace);
 router.delete('/:id', authenticate, requireRoles('SUPER_ADMIN'), PlaceController.deletePlace);

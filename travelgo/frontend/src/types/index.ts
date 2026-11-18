@@ -215,7 +215,8 @@ export interface PlannerInput {
   totalBudget: number;
   transportation: 'car' | 'motorbike';
   preferences: string[];
-  pacing: 'balanced';
+  pacing: 'relaxed'|'balanced'|'packed';
+  planningVersion?:'TIME_AWARE_V2';arrivalTime?:string;departureTime?:string;excludedPlaceIds?:string[];
   mandatoryPlaceIds?: string[];
 }
 
@@ -229,8 +230,9 @@ export interface ItineraryActivity {
   durationMinutes: number;
   estimatedCostVND: number;
   costSource?: string;
-  latitude: number;
-  longitude: number;
+  latitude: number|null;
+  longitude: number|null;
+  startMinute?:number;endMinute?:number;expectedStart?:string;expectedEnd?:string;schedulingSource?:string;transitBeforeMinutes?:number;transitBasis?:string;bufferBeforeMinutes?:number;openingHoursStatus?:string;
   imageUrl?: string;
   recommendationReason?: string;
   aerialDistanceToNextKm?: number;
@@ -246,7 +248,8 @@ export interface ItineraryDay {
   lodgingNights?: number;
   lodgingEstimatedCostVND?: number;
   lodgingCostSource?: string;
-  centroid: { latitude: number; longitude: number };
+  centroid: { latitude: number|null; longitude: number|null };
+  travelWindow?:{start:number;end:number};
 }
 
 export interface GeneratedItinerary {
@@ -277,6 +280,8 @@ export interface GeneratedItinerary {
   hotelSuggestion?: Place;
   selectedPlaceIds: string[];
   createdAt: string;
+  planningVersion?:'TIME_AWARE_V2';
+  planning?:{requestedPace:'relaxed'|'balanced'|'packed';effectivePace:'relaxed'|'balanced'|'packed';feasibility:string;warnings:string[];route:{beforeKm:number|null;afterKm:number|null;basis:'HAVERSINE_SAME_CANDIDATES'};catalogFingerprint:string;mandatoryIds:string[];replanning?:{changedDays:number[];unchangedDays:number[]}};
 }
 
 export interface TripCheckin {

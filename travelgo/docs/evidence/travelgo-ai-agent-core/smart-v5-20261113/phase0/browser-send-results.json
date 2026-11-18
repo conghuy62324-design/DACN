@@ -1,0 +1,950 @@
+{
+  "at": "2026-11-13T04:25:06.319Z",
+  "tier": "REAL_EDGE_REAL_HTTP_REAL_READ_ONLY_STAGING_MODEL_OFF",
+  "passed": 2,
+  "failed": 0,
+  "results": [
+    {
+      "mode": "desktop",
+      "status": "PASS",
+      "checks": [
+        "no consent + valid draft => Send disabled, no chat request",
+        "authenticated + consent + valid draft => Send enabled",
+        "real authenticated POST -> backend200 -> exact response visible -> pending clears",
+        "whitespace remains disabled",
+        "real staging restaurant tool reply rendered, source prices/caveats visible",
+        "revoking consent disables Send and ends RAM context",
+        "consent renewed => a fresh chat can send",
+        "no horizontal overflow or React page errors"
+      ],
+      "responses": [
+        {
+          "input": "xin chao",
+          "status": 200,
+          "latencyMs": 58.6871000000001,
+          "data": {
+            "status": "completed",
+            "reply": "Chào bạn! Bạn muốn đi đâu trong chuyến sắp tới?",
+            "conversation": {
+              "id": "98707b5c-447e-4edd-9a5c-0c1730475d70",
+              "revision": 1,
+              "expiresAt": "2026-11-13T04:40:03.285Z",
+              "mode": "CORE_VERIFIED",
+              "persisted": false
+            },
+            "model": {
+              "invoked": false,
+              "rawNlu": "NOT_EVALUATED"
+            },
+            "intent": {
+              "version": "NATURAL_CHAT_V3",
+              "authority": "SERVER_VERIFIED"
+            },
+            "languageStatus": "disabled",
+            "verifiedTravel": {}
+          }
+        },
+        {
+          "input": "tim nha hang o da lat",
+          "status": 200,
+          "latencyMs": 95.23630000000003,
+          "data": {
+            "status": "completed",
+            "reply": "Bạn có thể cân nhắc các lựa chọn sau từ TravelGo. DEMO Đà Lạt — Đồ chay ở Đà Lạt. Giá tham khảo từ nguồn TravelGo (giả định DEMO): 250.000 VND; đơn vị giá và tình trạng còn chỗ chưa được xác minh. Đúng khu vực Đà Lạt Dữ liệu DEMO để kiểm thử, không phải cơ sở hoặc báo giá Booking thật.\n\nDEMO Đà Lạt — Hải sản ở Đà Lạt. Giá tham khảo từ nguồn TravelGo (giả định DEMO): 150.000 VND; đơn vị giá và tình trạng còn chỗ chưa được xác minh. Đúng khu vực Đà Lạt Dữ liệu DEMO để kiểm thử, không phải cơ sở hoặc báo giá Booking thật.\n\nDEMO Đà Lạt — BBQ và lẩu ở Đà Lạt. Giá tham khảo từ nguồn TravelGo (giả định DEMO): 350.000 VND; đơn vị giá và tình trạng còn chỗ chưa được xác minh. Đúng khu vực Đà Lạt Dữ liệu DEMO để kiểm thử, không phải cơ sở hoặc báo giá Booking thật.",
+            "tool": "search_registered_restaurants",
+            "result": {
+              "type": "registered_options",
+              "category": "restaurant",
+              "source": "TRAVELGO_REGISTERED_CATALOG",
+              "filters": {
+                "city": "Đà Lạt",
+                "locationId": "destination:da-lat"
+              },
+              "weights": {
+                "quality": 0.35,
+                "preference": 0.25,
+                "budget": 0.25,
+                "distance": 0.15
+              },
+              "ranking": "Existing deterministic RecommendationService; no new weights; budget cap/area/amenities/exclusions are hard filters, preferences soft.",
+              "items": [
+                {
+                  "id": "bf78464f-dfd4-583b-a309-76a406320cdf",
+                  "name": "DEMO Đà Lạt — Đồ chay",
+                  "category": "restaurant",
+                  "city": "Đà Lạt",
+                  "province": "Đà Lạt",
+                  "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+                  "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+                  "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+                  "heroImage": "/images/catalog-demo.svg",
+                  "amenities": [
+                    "Wi-Fi",
+                    "Điều hòa",
+                    "Bãi đỗ xe"
+                  ],
+                  "priceFrom": 250000,
+                  "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+                  "currency": "VND",
+                  "rating": 0,
+                  "reviewCount": 0,
+                  "status": "APPROVED",
+                  "businessStatus": "ACTIVE",
+                  "source": "DEMO",
+                  "href": "/places/bf78464f-dfd4-583b-a309-76a406320cdf",
+                  "availability": "NOT_VERIFIED",
+                  "capacity": "NOT_MANAGED_FOR_PLACES",
+                  "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+                  "bookingEligible": false,
+                  "geography": {
+                    "locationId": "destination:da-lat",
+                    "provinceCode": "68",
+                    "provinceName": "Lâm Đồng",
+                    "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+                  },
+                  "catalogMetadata": {
+                    "cohort": "travelgo-catalog-10-v1",
+                    "source": "DEMO",
+                    "cuisines": [
+                      "vegetarian"
+                    ],
+                    "priceBasis": "ASSUMED_DEMO_VND",
+                    "sourceUrls": [],
+                    "imageLicense": "TravelGo original SVG placeholder",
+                    "priceSegment": "midrange",
+                    "coordinateBasis": "SYNTHETIC_SCENARIO"
+                  },
+                  "approvedAt": "2026-11-12T00:00:00.000Z",
+                  "isDemo": true,
+                  "score": 0.794,
+                  "scoreBreakdown": {
+                    "qualityScore": 0.84,
+                    "preferenceScore": 0.6,
+                    "budgetScore": 0.8,
+                    "distanceScore": 1
+                  },
+                  "reasons": [
+                    "Đúng khu vực Đà Lạt"
+                  ],
+                  "matchedPreferences": []
+                },
+                {
+                  "id": "857935d7-bfe6-596a-a2e3-8fdcd9423894",
+                  "name": "DEMO Đà Lạt — Hải sản",
+                  "category": "restaurant",
+                  "city": "Đà Lạt",
+                  "province": "Đà Lạt",
+                  "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+                  "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+                  "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+                  "heroImage": "/images/catalog-demo.svg",
+                  "amenities": [
+                    "Wi-Fi",
+                    "Điều hòa"
+                  ],
+                  "priceFrom": 150000,
+                  "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+                  "currency": "VND",
+                  "rating": 0,
+                  "reviewCount": 0,
+                  "status": "APPROVED",
+                  "businessStatus": "ACTIVE",
+                  "source": "DEMO",
+                  "href": "/places/857935d7-bfe6-596a-a2e3-8fdcd9423894",
+                  "availability": "NOT_VERIFIED",
+                  "capacity": "NOT_MANAGED_FOR_PLACES",
+                  "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+                  "bookingEligible": false,
+                  "geography": {
+                    "locationId": "destination:da-lat",
+                    "provinceCode": "68",
+                    "provinceName": "Lâm Đồng",
+                    "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+                  },
+                  "catalogMetadata": {
+                    "cohort": "travelgo-catalog-10-v1",
+                    "source": "DEMO",
+                    "cuisines": [
+                      "seafood"
+                    ],
+                    "priceBasis": "ASSUMED_DEMO_VND",
+                    "sourceUrls": [],
+                    "imageLicense": "TravelGo original SVG placeholder",
+                    "priceSegment": "budget",
+                    "coordinateBasis": "SYNTHETIC_SCENARIO"
+                  },
+                  "approvedAt": "2026-11-12T00:00:00.000Z",
+                  "isDemo": true,
+                  "score": 0.791937,
+                  "scoreBreakdown": {
+                    "qualityScore": 0.84,
+                    "preferenceScore": 0.6,
+                    "budgetScore": 0.8,
+                    "distanceScore": 0.98625
+                  },
+                  "reasons": [
+                    "Đúng khu vực Đà Lạt"
+                  ],
+                  "matchedPreferences": []
+                },
+                {
+                  "id": "d7b5ef2a-68fa-58bb-a4af-df1dd7c30ed9",
+                  "name": "DEMO Đà Lạt — BBQ và lẩu",
+                  "category": "restaurant",
+                  "city": "Đà Lạt",
+                  "province": "Đà Lạt",
+                  "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+                  "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+                  "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+                  "heroImage": "/images/catalog-demo.svg",
+                  "amenities": [
+                    "Wi-Fi",
+                    "Điều hòa"
+                  ],
+                  "priceFrom": 350000,
+                  "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+                  "currency": "VND",
+                  "rating": 0,
+                  "reviewCount": 0,
+                  "status": "APPROVED",
+                  "businessStatus": "ACTIVE",
+                  "source": "DEMO",
+                  "href": "/places/d7b5ef2a-68fa-58bb-a4af-df1dd7c30ed9",
+                  "availability": "NOT_VERIFIED",
+                  "capacity": "NOT_MANAGED_FOR_PLACES",
+                  "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+                  "bookingEligible": false,
+                  "geography": {
+                    "locationId": "destination:da-lat",
+                    "provinceCode": "68",
+                    "provinceName": "Lâm Đồng",
+                    "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+                  },
+                  "catalogMetadata": {
+                    "cohort": "travelgo-catalog-10-v1",
+                    "source": "DEMO",
+                    "cuisines": [
+                      "bbq_hotpot"
+                    ],
+                    "priceBasis": "ASSUMED_DEMO_VND",
+                    "sourceUrls": [],
+                    "imageLicense": "TravelGo original SVG placeholder",
+                    "priceSegment": "midrange",
+                    "coordinateBasis": "SYNTHETIC_SCENARIO"
+                  },
+                  "approvedAt": "2026-11-12T00:00:00.000Z",
+                  "isDemo": true,
+                  "score": 0.791937,
+                  "scoreBreakdown": {
+                    "qualityScore": 0.84,
+                    "preferenceScore": 0.6,
+                    "budgetScore": 0.8,
+                    "distanceScore": 0.98625
+                  },
+                  "reasons": [
+                    "Đúng khu vực Đà Lạt"
+                  ],
+                  "matchedPreferences": []
+                },
+                {
+                  "id": "93686425-2721-5e31-abbf-f149e7cc14f2",
+                  "name": "DEMO Đà Lạt — Đặc sản",
+                  "category": "restaurant",
+                  "city": "Đà Lạt",
+                  "province": "Đà Lạt",
+                  "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+                  "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+                  "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+                  "heroImage": "/images/catalog-demo.svg",
+                  "amenities": [
+                    "Wi-Fi",
+                    "Điều hòa",
+                    "Bãi đỗ xe"
+                  ],
+                  "priceFrom": 80000,
+                  "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+                  "currency": "VND",
+                  "rating": 0,
+                  "reviewCount": 0,
+                  "status": "APPROVED",
+                  "businessStatus": "ACTIVE",
+                  "source": "DEMO",
+                  "href": "/places/93686425-2721-5e31-abbf-f149e7cc14f2",
+                  "availability": "NOT_VERIFIED",
+                  "capacity": "NOT_MANAGED_FOR_PLACES",
+                  "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+                  "bookingEligible": false,
+                  "geography": {
+                    "locationId": "destination:da-lat",
+                    "provinceCode": "68",
+                    "provinceName": "Lâm Đồng",
+                    "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+                  },
+                  "catalogMetadata": {
+                    "cohort": "travelgo-catalog-10-v1",
+                    "source": "DEMO",
+                    "cuisines": [
+                      "vietnamese",
+                      "local"
+                    ],
+                    "priceBasis": "ASSUMED_DEMO_VND",
+                    "sourceUrls": [],
+                    "imageLicense": "TravelGo original SVG placeholder",
+                    "priceSegment": "budget",
+                    "coordinateBasis": "SYNTHETIC_SCENARIO"
+                  },
+                  "approvedAt": "2026-11-12T00:00:00.000Z",
+                  "isDemo": true,
+                  "score": 0.789875,
+                  "scoreBreakdown": {
+                    "qualityScore": 0.84,
+                    "preferenceScore": 0.6,
+                    "budgetScore": 0.8,
+                    "distanceScore": 0.9725
+                  },
+                  "reasons": [
+                    "Đúng khu vực Đà Lạt"
+                  ],
+                  "matchedPreferences": []
+                },
+                {
+                  "id": "c75e78a8-6a4b-5d1a-aa09-643693df3008",
+                  "name": "DEMO Đà Lạt — Gia đình",
+                  "category": "restaurant",
+                  "city": "Đà Lạt",
+                  "province": "Đà Lạt",
+                  "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+                  "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+                  "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+                  "heroImage": "/images/catalog-demo.svg",
+                  "amenities": [
+                    "Wi-Fi",
+                    "Điều hòa",
+                    "Bãi đỗ xe"
+                  ],
+                  "priceFrom": null,
+                  "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+                  "currency": "VND",
+                  "rating": 0,
+                  "reviewCount": 0,
+                  "status": "APPROVED",
+                  "businessStatus": "ACTIVE",
+                  "source": "DEMO",
+                  "href": "/places/c75e78a8-6a4b-5d1a-aa09-643693df3008",
+                  "availability": "NOT_VERIFIED",
+                  "capacity": "NOT_MANAGED_FOR_PLACES",
+                  "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+                  "bookingEligible": false,
+                  "geography": {
+                    "locationId": "destination:da-lat",
+                    "provinceCode": "68",
+                    "provinceName": "Lâm Đồng",
+                    "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+                  },
+                  "catalogMetadata": {
+                    "cohort": "travelgo-catalog-10-v1",
+                    "source": "DEMO",
+                    "cuisines": [
+                      "family",
+                      "buffet",
+                      "international"
+                    ],
+                    "priceBasis": "ASSUMED_DEMO_VND",
+                    "sourceUrls": [],
+                    "imageLicense": "TravelGo original SVG placeholder",
+                    "priceSegment": "unknown",
+                    "coordinateBasis": "SYNTHETIC_SCENARIO"
+                  },
+                  "approvedAt": "2026-11-12T00:00:00.000Z",
+                  "isDemo": true,
+                  "score": 0.789875,
+                  "scoreBreakdown": {
+                    "qualityScore": 0.84,
+                    "preferenceScore": 0.6,
+                    "budgetScore": 0.8,
+                    "distanceScore": 0.9725
+                  },
+                  "reasons": [
+                    "Đúng khu vực Đà Lạt"
+                  ],
+                  "matchedPreferences": []
+                }
+              ],
+              "warnings": [
+                "Giá từ catalog chưa xác minh đơn vị phòng/đêm hoặc món/phần. Ngày/khách không xác nhận còn phòng, bàn hay sức chứa.",
+                "Không có dữ liệu thực đơn đầy đủ; loại trừ từ khóa không là cam kết an toàn dị ứng."
+              ]
+            },
+            "conversation": {
+              "id": "98707b5c-447e-4edd-9a5c-0c1730475d70",
+              "revision": 2,
+              "expiresAt": "2026-11-13T04:40:03.285Z",
+              "mode": "CORE_VERIFIED",
+              "persisted": false
+            },
+            "model": {
+              "invoked": false,
+              "rawNlu": "NOT_EVALUATED"
+            },
+            "intent": {
+              "version": "NATURAL_CHAT_V3",
+              "authority": "SERVER_VERIFIED"
+            },
+            "languageStatus": "disabled",
+            "verifiedTravel": {
+              "destinationCity": "Đà Lạt"
+            }
+          }
+        },
+        {
+          "input": "cam on",
+          "status": 200,
+          "latencyMs": 219.91619999999966,
+          "data": {
+            "status": "completed",
+            "reply": "Rất vui được giúp bạn! Nếu muốn đổi kế hoạch hay xem thêm lựa chọn, cứ nhắn mình nhé.",
+            "conversation": {
+              "id": "c3e5494f-d89d-4d38-8cb4-fb173c965245",
+              "revision": 1,
+              "expiresAt": "2026-11-13T04:40:04.647Z",
+              "mode": "CORE_VERIFIED",
+              "persisted": false
+            },
+            "model": {
+              "invoked": false,
+              "rawNlu": "NOT_EVALUATED"
+            },
+            "intent": {
+              "version": "NATURAL_CHAT_V3",
+              "authority": "SERVER_VERIFIED"
+            },
+            "languageStatus": "disabled",
+            "verifiedTravel": {}
+          }
+        }
+      ],
+      "errors": [],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:5177/api/agent/core/chat",
+          "method": "POST",
+          "body": {
+            "message": "xin chao",
+            "conversation": {
+              "action": "start",
+              "requestId": "a5fa47c0-25fe-4acc-946d-ce2d6ed06040",
+              "consentVersion": "TRAVELGO_CORE_SLOTS_V1"
+            },
+            "consentVersion": "TRAVELGO_CORE_SLOTS_V1",
+            "intentVersion": "NATURAL_CHAT_V3"
+          },
+          "authorizationPresent": true
+        },
+        {
+          "url": "http://127.0.0.1:5177/api/agent/core/chat",
+          "method": "POST",
+          "body": {
+            "message": "tim nha hang o da lat",
+            "conversation": {
+              "action": "continue",
+              "id": "98707b5c-447e-4edd-9a5c-0c1730475d70",
+              "revision": 1,
+              "requestId": "7be29022-eb86-4444-aa38-9ee1ca7e51c2",
+              "consentVersion": "TRAVELGO_CORE_SLOTS_V1"
+            },
+            "consentVersion": "TRAVELGO_CORE_SLOTS_V1",
+            "intentVersion": "NATURAL_CHAT_V3"
+          },
+          "authorizationPresent": true
+        },
+        {
+          "url": "http://127.0.0.1:5177/api/agent/core/chat",
+          "method": "POST",
+          "body": {
+            "message": "cam on",
+            "conversation": {
+              "action": "start",
+              "requestId": "0157a505-298d-4acb-8253-689d68115fd5",
+              "consentVersion": "TRAVELGO_CORE_SLOTS_V1"
+            },
+            "consentVersion": "TRAVELGO_CORE_SLOTS_V1",
+            "intentVersion": "NATURAL_CHAT_V3"
+          },
+          "authorizationPresent": true
+        }
+      ]
+    },
+    {
+      "mode": "mobile",
+      "status": "PASS",
+      "checks": [
+        "no consent + valid draft => Send disabled, no chat request",
+        "authenticated + consent + valid draft => Send enabled",
+        "real authenticated POST -> backend200 -> exact response visible -> pending clears",
+        "whitespace remains disabled",
+        "real staging restaurant tool reply rendered, source prices/caveats visible",
+        "revoking consent disables Send and ends RAM context",
+        "consent renewed => a fresh chat can send",
+        "no horizontal overflow or React page errors"
+      ],
+      "responses": [
+        {
+          "input": "xin chao",
+          "status": 200,
+          "latencyMs": 32.4329000000007,
+          "data": {
+            "status": "completed",
+            "reply": "Chào bạn! Bạn muốn đi đâu trong chuyến sắp tới?",
+            "conversation": {
+              "id": "6e035029-888b-4ee2-bb87-40be50a9cdd0",
+              "revision": 1,
+              "expiresAt": "2026-11-13T04:40:05.149Z",
+              "mode": "CORE_VERIFIED",
+              "persisted": false
+            },
+            "model": {
+              "invoked": false,
+              "rawNlu": "NOT_EVALUATED"
+            },
+            "intent": {
+              "version": "NATURAL_CHAT_V3",
+              "authority": "SERVER_VERIFIED"
+            },
+            "languageStatus": "disabled",
+            "verifiedTravel": {}
+          }
+        },
+        {
+          "input": "tim nha hang o da lat",
+          "status": 200,
+          "latencyMs": 82.25720000000001,
+          "data": {
+            "status": "completed",
+            "reply": "Bạn có thể cân nhắc các lựa chọn sau từ TravelGo. DEMO Đà Lạt — Đồ chay ở Đà Lạt. Giá tham khảo từ nguồn TravelGo (giả định DEMO): 250.000 VND; đơn vị giá và tình trạng còn chỗ chưa được xác minh. Đúng khu vực Đà Lạt Dữ liệu DEMO để kiểm thử, không phải cơ sở hoặc báo giá Booking thật.\n\nDEMO Đà Lạt — Hải sản ở Đà Lạt. Giá tham khảo từ nguồn TravelGo (giả định DEMO): 150.000 VND; đơn vị giá và tình trạng còn chỗ chưa được xác minh. Đúng khu vực Đà Lạt Dữ liệu DEMO để kiểm thử, không phải cơ sở hoặc báo giá Booking thật.\n\nDEMO Đà Lạt — BBQ và lẩu ở Đà Lạt. Giá tham khảo từ nguồn TravelGo (giả định DEMO): 350.000 VND; đơn vị giá và tình trạng còn chỗ chưa được xác minh. Đúng khu vực Đà Lạt Dữ liệu DEMO để kiểm thử, không phải cơ sở hoặc báo giá Booking thật.",
+            "tool": "search_registered_restaurants",
+            "result": {
+              "type": "registered_options",
+              "category": "restaurant",
+              "source": "TRAVELGO_REGISTERED_CATALOG",
+              "filters": {
+                "city": "Đà Lạt",
+                "locationId": "destination:da-lat"
+              },
+              "weights": {
+                "quality": 0.35,
+                "preference": 0.25,
+                "budget": 0.25,
+                "distance": 0.15
+              },
+              "ranking": "Existing deterministic RecommendationService; no new weights; budget cap/area/amenities/exclusions are hard filters, preferences soft.",
+              "items": [
+                {
+                  "id": "bf78464f-dfd4-583b-a309-76a406320cdf",
+                  "name": "DEMO Đà Lạt — Đồ chay",
+                  "category": "restaurant",
+                  "city": "Đà Lạt",
+                  "province": "Đà Lạt",
+                  "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+                  "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+                  "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+                  "heroImage": "/images/catalog-demo.svg",
+                  "amenities": [
+                    "Wi-Fi",
+                    "Điều hòa",
+                    "Bãi đỗ xe"
+                  ],
+                  "priceFrom": 250000,
+                  "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+                  "currency": "VND",
+                  "rating": 0,
+                  "reviewCount": 0,
+                  "status": "APPROVED",
+                  "businessStatus": "ACTIVE",
+                  "source": "DEMO",
+                  "href": "/places/bf78464f-dfd4-583b-a309-76a406320cdf",
+                  "availability": "NOT_VERIFIED",
+                  "capacity": "NOT_MANAGED_FOR_PLACES",
+                  "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+                  "bookingEligible": false,
+                  "geography": {
+                    "locationId": "destination:da-lat",
+                    "provinceCode": "68",
+                    "provinceName": "Lâm Đồng",
+                    "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+                  },
+                  "catalogMetadata": {
+                    "cohort": "travelgo-catalog-10-v1",
+                    "source": "DEMO",
+                    "cuisines": [
+                      "vegetarian"
+                    ],
+                    "priceBasis": "ASSUMED_DEMO_VND",
+                    "sourceUrls": [],
+                    "imageLicense": "TravelGo original SVG placeholder",
+                    "priceSegment": "midrange",
+                    "coordinateBasis": "SYNTHETIC_SCENARIO"
+                  },
+                  "approvedAt": "2026-11-12T00:00:00.000Z",
+                  "isDemo": true,
+                  "score": 0.794,
+                  "scoreBreakdown": {
+                    "qualityScore": 0.84,
+                    "preferenceScore": 0.6,
+                    "budgetScore": 0.8,
+                    "distanceScore": 1
+                  },
+                  "reasons": [
+                    "Đúng khu vực Đà Lạt"
+                  ],
+                  "matchedPreferences": []
+                },
+                {
+                  "id": "857935d7-bfe6-596a-a2e3-8fdcd9423894",
+                  "name": "DEMO Đà Lạt — Hải sản",
+                  "category": "restaurant",
+                  "city": "Đà Lạt",
+                  "province": "Đà Lạt",
+                  "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+                  "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+                  "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+                  "heroImage": "/images/catalog-demo.svg",
+                  "amenities": [
+                    "Wi-Fi",
+                    "Điều hòa"
+                  ],
+                  "priceFrom": 150000,
+                  "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+                  "currency": "VND",
+                  "rating": 0,
+                  "reviewCount": 0,
+                  "status": "APPROVED",
+                  "businessStatus": "ACTIVE",
+                  "source": "DEMO",
+                  "href": "/places/857935d7-bfe6-596a-a2e3-8fdcd9423894",
+                  "availability": "NOT_VERIFIED",
+                  "capacity": "NOT_MANAGED_FOR_PLACES",
+                  "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+                  "bookingEligible": false,
+                  "geography": {
+                    "locationId": "destination:da-lat",
+                    "provinceCode": "68",
+                    "provinceName": "Lâm Đồng",
+                    "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+                  },
+                  "catalogMetadata": {
+                    "cohort": "travelgo-catalog-10-v1",
+                    "source": "DEMO",
+                    "cuisines": [
+                      "seafood"
+                    ],
+                    "priceBasis": "ASSUMED_DEMO_VND",
+                    "sourceUrls": [],
+                    "imageLicense": "TravelGo original SVG placeholder",
+                    "priceSegment": "budget",
+                    "coordinateBasis": "SYNTHETIC_SCENARIO"
+                  },
+                  "approvedAt": "2026-11-12T00:00:00.000Z",
+                  "isDemo": true,
+                  "score": 0.791937,
+                  "scoreBreakdown": {
+                    "qualityScore": 0.84,
+                    "preferenceScore": 0.6,
+                    "budgetScore": 0.8,
+                    "distanceScore": 0.98625
+                  },
+                  "reasons": [
+                    "Đúng khu vực Đà Lạt"
+                  ],
+                  "matchedPreferences": []
+                },
+                {
+                  "id": "d7b5ef2a-68fa-58bb-a4af-df1dd7c30ed9",
+                  "name": "DEMO Đà Lạt — BBQ và lẩu",
+                  "category": "restaurant",
+                  "city": "Đà Lạt",
+                  "province": "Đà Lạt",
+                  "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+                  "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+                  "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+                  "heroImage": "/images/catalog-demo.svg",
+                  "amenities": [
+                    "Wi-Fi",
+                    "Điều hòa"
+                  ],
+                  "priceFrom": 350000,
+                  "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+                  "currency": "VND",
+                  "rating": 0,
+                  "reviewCount": 0,
+                  "status": "APPROVED",
+                  "businessStatus": "ACTIVE",
+                  "source": "DEMO",
+                  "href": "/places/d7b5ef2a-68fa-58bb-a4af-df1dd7c30ed9",
+                  "availability": "NOT_VERIFIED",
+                  "capacity": "NOT_MANAGED_FOR_PLACES",
+                  "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+                  "bookingEligible": false,
+                  "geography": {
+                    "locationId": "destination:da-lat",
+                    "provinceCode": "68",
+                    "provinceName": "Lâm Đồng",
+                    "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+                  },
+                  "catalogMetadata": {
+                    "cohort": "travelgo-catalog-10-v1",
+                    "source": "DEMO",
+                    "cuisines": [
+                      "bbq_hotpot"
+                    ],
+                    "priceBasis": "ASSUMED_DEMO_VND",
+                    "sourceUrls": [],
+                    "imageLicense": "TravelGo original SVG placeholder",
+                    "priceSegment": "midrange",
+                    "coordinateBasis": "SYNTHETIC_SCENARIO"
+                  },
+                  "approvedAt": "2026-11-12T00:00:00.000Z",
+                  "isDemo": true,
+                  "score": 0.791937,
+                  "scoreBreakdown": {
+                    "qualityScore": 0.84,
+                    "preferenceScore": 0.6,
+                    "budgetScore": 0.8,
+                    "distanceScore": 0.98625
+                  },
+                  "reasons": [
+                    "Đúng khu vực Đà Lạt"
+                  ],
+                  "matchedPreferences": []
+                },
+                {
+                  "id": "93686425-2721-5e31-abbf-f149e7cc14f2",
+                  "name": "DEMO Đà Lạt — Đặc sản",
+                  "category": "restaurant",
+                  "city": "Đà Lạt",
+                  "province": "Đà Lạt",
+                  "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+                  "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+                  "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+                  "heroImage": "/images/catalog-demo.svg",
+                  "amenities": [
+                    "Wi-Fi",
+                    "Điều hòa",
+                    "Bãi đỗ xe"
+                  ],
+                  "priceFrom": 80000,
+                  "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+                  "currency": "VND",
+                  "rating": 0,
+                  "reviewCount": 0,
+                  "status": "APPROVED",
+                  "businessStatus": "ACTIVE",
+                  "source": "DEMO",
+                  "href": "/places/93686425-2721-5e31-abbf-f149e7cc14f2",
+                  "availability": "NOT_VERIFIED",
+                  "capacity": "NOT_MANAGED_FOR_PLACES",
+                  "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+                  "bookingEligible": false,
+                  "geography": {
+                    "locationId": "destination:da-lat",
+                    "provinceCode": "68",
+                    "provinceName": "Lâm Đồng",
+                    "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+                  },
+                  "catalogMetadata": {
+                    "cohort": "travelgo-catalog-10-v1",
+                    "source": "DEMO",
+                    "cuisines": [
+                      "vietnamese",
+                      "local"
+                    ],
+                    "priceBasis": "ASSUMED_DEMO_VND",
+                    "sourceUrls": [],
+                    "imageLicense": "TravelGo original SVG placeholder",
+                    "priceSegment": "budget",
+                    "coordinateBasis": "SYNTHETIC_SCENARIO"
+                  },
+                  "approvedAt": "2026-11-12T00:00:00.000Z",
+                  "isDemo": true,
+                  "score": 0.789875,
+                  "scoreBreakdown": {
+                    "qualityScore": 0.84,
+                    "preferenceScore": 0.6,
+                    "budgetScore": 0.8,
+                    "distanceScore": 0.9725
+                  },
+                  "reasons": [
+                    "Đúng khu vực Đà Lạt"
+                  ],
+                  "matchedPreferences": []
+                },
+                {
+                  "id": "c75e78a8-6a4b-5d1a-aa09-643693df3008",
+                  "name": "DEMO Đà Lạt — Gia đình",
+                  "category": "restaurant",
+                  "city": "Đà Lạt",
+                  "province": "Đà Lạt",
+                  "address": "Địa chỉ DEMO chưa xác minh; không dùng để đi lại",
+                  "summary": "DEMO kiểm thử TravelGo. Giá và vị trí là giả định, không phải dịch vụ hoặc báo giá thật.",
+                  "description": "Cơ sở DEMO do hệ thống tạo trong staging riêng; không phải đối tác thật. Không đặt dịch vụ hoặc thanh toán.",
+                  "heroImage": "/images/catalog-demo.svg",
+                  "amenities": [
+                    "Wi-Fi",
+                    "Điều hòa",
+                    "Bãi đỗ xe"
+                  ],
+                  "priceFrom": null,
+                  "priceUnit": "ASSUMED_DEMO_VND_UNIT_UNVERIFIED",
+                  "currency": "VND",
+                  "rating": 0,
+                  "reviewCount": 0,
+                  "status": "APPROVED",
+                  "businessStatus": "ACTIVE",
+                  "source": "DEMO",
+                  "href": "/places/c75e78a8-6a4b-5d1a-aa09-643693df3008",
+                  "availability": "NOT_VERIFIED",
+                  "capacity": "NOT_MANAGED_FOR_PLACES",
+                  "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+                  "bookingEligible": false,
+                  "geography": {
+                    "locationId": "destination:da-lat",
+                    "provinceCode": "68",
+                    "provinceName": "Lâm Đồng",
+                    "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+                  },
+                  "catalogMetadata": {
+                    "cohort": "travelgo-catalog-10-v1",
+                    "source": "DEMO",
+                    "cuisines": [
+                      "family",
+                      "buffet",
+                      "international"
+                    ],
+                    "priceBasis": "ASSUMED_DEMO_VND",
+                    "sourceUrls": [],
+                    "imageLicense": "TravelGo original SVG placeholder",
+                    "priceSegment": "unknown",
+                    "coordinateBasis": "SYNTHETIC_SCENARIO"
+                  },
+                  "approvedAt": "2026-11-12T00:00:00.000Z",
+                  "isDemo": true,
+                  "score": 0.789875,
+                  "scoreBreakdown": {
+                    "qualityScore": 0.84,
+                    "preferenceScore": 0.6,
+                    "budgetScore": 0.8,
+                    "distanceScore": 0.9725
+                  },
+                  "reasons": [
+                    "Đúng khu vực Đà Lạt"
+                  ],
+                  "matchedPreferences": []
+                }
+              ],
+              "warnings": [
+                "Giá từ catalog chưa xác minh đơn vị phòng/đêm hoặc món/phần. Ngày/khách không xác nhận còn phòng, bàn hay sức chứa.",
+                "Không có dữ liệu thực đơn đầy đủ; loại trừ từ khóa không là cam kết an toàn dị ứng."
+              ]
+            },
+            "conversation": {
+              "id": "6e035029-888b-4ee2-bb87-40be50a9cdd0",
+              "revision": 2,
+              "expiresAt": "2026-11-13T04:40:05.149Z",
+              "mode": "CORE_VERIFIED",
+              "persisted": false
+            },
+            "model": {
+              "invoked": false,
+              "rawNlu": "NOT_EVALUATED"
+            },
+            "intent": {
+              "version": "NATURAL_CHAT_V3",
+              "authority": "SERVER_VERIFIED"
+            },
+            "languageStatus": "disabled",
+            "verifiedTravel": {
+              "destinationCity": "Đà Lạt"
+            }
+          }
+        },
+        {
+          "input": "cam on",
+          "status": 200,
+          "latencyMs": 95.53839999999946,
+          "data": {
+            "status": "completed",
+            "reply": "Rất vui được giúp bạn! Nếu muốn đổi kế hoạch hay xem thêm lựa chọn, cứ nhắn mình nhé.",
+            "conversation": {
+              "id": "60822a66-45da-448f-a513-3c0ccabddae8",
+              "revision": 1,
+              "expiresAt": "2026-11-13T04:40:06.095Z",
+              "mode": "CORE_VERIFIED",
+              "persisted": false
+            },
+            "model": {
+              "invoked": false,
+              "rawNlu": "NOT_EVALUATED"
+            },
+            "intent": {
+              "version": "NATURAL_CHAT_V3",
+              "authority": "SERVER_VERIFIED"
+            },
+            "languageStatus": "disabled",
+            "verifiedTravel": {}
+          }
+        }
+      ],
+      "errors": [],
+      "requests": [
+        {
+          "url": "http://127.0.0.1:5177/api/agent/core/chat",
+          "method": "POST",
+          "body": {
+            "message": "xin chao",
+            "conversation": {
+              "action": "start",
+              "requestId": "9feda442-7fc7-4278-a1d8-ccf3cab559ba",
+              "consentVersion": "TRAVELGO_CORE_SLOTS_V1"
+            },
+            "consentVersion": "TRAVELGO_CORE_SLOTS_V1",
+            "intentVersion": "NATURAL_CHAT_V3"
+          },
+          "authorizationPresent": true
+        },
+        {
+          "url": "http://127.0.0.1:5177/api/agent/core/chat",
+          "method": "POST",
+          "body": {
+            "message": "tim nha hang o da lat",
+            "conversation": {
+              "action": "continue",
+              "id": "6e035029-888b-4ee2-bb87-40be50a9cdd0",
+              "revision": 1,
+              "requestId": "d28e3e9b-ba12-4b07-a994-c08b680ebf0a",
+              "consentVersion": "TRAVELGO_CORE_SLOTS_V1"
+            },
+            "consentVersion": "TRAVELGO_CORE_SLOTS_V1",
+            "intentVersion": "NATURAL_CHAT_V3"
+          },
+          "authorizationPresent": true
+        },
+        {
+          "url": "http://127.0.0.1:5177/api/agent/core/chat",
+          "method": "POST",
+          "body": {
+            "message": "cam on",
+            "conversation": {
+              "action": "start",
+              "requestId": "1f1a8410-6899-409f-a934-c491634a62b9",
+              "consentVersion": "TRAVELGO_CORE_SLOTS_V1"
+            },
+            "consentVersion": "TRAVELGO_CORE_SLOTS_V1",
+            "intentVersion": "NATURAL_CHAT_V3"
+          },
+          "authorizationPresent": true
+        }
+      ]
+    }
+  ],
+  "nativeInference": 0,
+  "fullBrowserQwenTools": "NOT_RUN"
+}

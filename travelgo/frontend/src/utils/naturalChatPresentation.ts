@@ -4,6 +4,7 @@ export function authenticatedGreeting(name?: string) {
  return `Xin chào${safe?' '+safe:''}! Mình là trợ lý du lịch TravelGo. Mình có thể giúp bạn tìm khách sạn, nhà hàng và lên kế hoạch chuyến đi. Bạn muốn khám phá nơi nào?`;
 }
 export function naturalChatError(error:any){
+ if(error?.code==='AGENT_MEMORY_CHANGED')return 'Sở thích hoặc quyền ghi nhớ vừa thay đổi. Bạn gửi lại yêu cầu để mình tư vấn theo đúng thông tin hiện tại nhé; mình không tự gửi lại.';
  if(/OLLAMA|PROVIDER_NOT_CONFIGURED|PROVIDER_ERROR|PROVIDER_QUOTA/.test(error?.code||''))return 'AI hiểu ngôn ngữ đang chưa sẵn sàng. Mình chưa thay đổi chuyến đi. Bạn có thể thử lại bằng một yêu cầu mới sau hoặc tiếp tục với thông tin cụ thể.';
  if(error?.code==='AGENT_TIMEOUT')return 'AI đang phản hồi chậm nên yêu cầu này đã dừng. Mình không tự gửi lại hoặc đặt dịch vụ.';
  if(/INVALID_PROVIDER|UNVERIFIED_TOOL|UNGROUNDED/.test(error?.code||''))return 'Mình chưa hiểu chắc yêu cầu nên chưa tự thay đổi thông tin. Bạn diễn đạt lại giúp mình nhé.';

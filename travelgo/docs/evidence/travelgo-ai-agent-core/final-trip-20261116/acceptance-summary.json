@@ -1,0 +1,80 @@
+{
+  "at": "2026-11-16T12:33:46.427Z",
+  "task": "21.27-B",
+  "status": "FINAL_REAL_TRIP_ACCEPTANCE_PASS_MODEL_OFF",
+  "environment": "Actual Edge browser -> localhost5177 -> API5057 -> PostgreSQL staging15452; no API/model/DB doubles",
+  "approval": "Fresh bounded packet21.27-B, explicit owner approval; no prior write authorization reused",
+  "tripId": "773bcf92-34fa-4dd5-90e3-cc37641fef24",
+  "verdicts": {
+    "actualTripSave": "PASS_COMMITTED_READBACK",
+    "actualTripReopen": "PASS_NEW_CONVERSATION_SEPARATE_CONSENT",
+    "actualTripUpdate": "PASS_SAME_ID_COUNT_ONE_COMMITTED_READBACK",
+    "postgresqlPersistence": "PASS_RELOAD_AND_TWO_API_RESTARTS",
+    "ownershipAndReplay": "PASS_ACTUAL_BOUNDED_PROBES",
+    "costIntegrity": "PASS_TWO_INDEPENDENT_CATALOG_ORACLES",
+    "desktopExperience": "PASS_ACTUAL_CREATE_REOPEN_EDIT_UPDATE",
+    "mobileExperience": "PASS_ACTUAL_READ_VIEW_ONLY",
+    "guardedServeModelOffIsolation": "PASS_NATIVE_ATTEMPTS_0_DISPATCHED_0",
+    "dataIntegrity": "PASS_40_OF_40_BASELINE",
+    "realKnowledgeActivation": "PENDING",
+    "qwenRealModel": "DEFERRED",
+    "browserQwenTools": "NOT_RUN",
+    "liveReady": "NO"
+  },
+  "confirmedMutationReceipts": [
+    "actual-create-receipt.json",
+    "actual-trip-created-db.json",
+    "actual-update-receipt.json",
+    "actual-trip-updated-db.json"
+  ],
+  "itineraryChange": "Removed day2 zero-cost sightseeing; days1/3 unchanged; estimated group cost remains3760000VND",
+  "costCaveat": "DEMO catalog and Planner assumptions, not a real supplier quote; GROUP_VND_V1 and N-1 lodging unchanged",
+  "security": {
+    "foreignTicket": 409,
+    "forgedOwnerAndItineraryBody": 400,
+    "consumedTicketReplay": 409,
+    "otherCustomerRead": 404,
+    "otherCustomerUpdate": 404,
+    "standaloneForgedCostProbe": "NOT_RUN_ACTUAL; existing offline coverage only",
+    "expiryConcurrencyStaleCatalog": "OFFLINE_ONLY"
+  },
+  "quota": {
+    "initialFreshRemaining": 20,
+    "countedEntries": 10,
+    "normal": 5,
+    "valid": 2,
+    "negative": 3,
+    "conservativeRemainingFromLockedGate": 10,
+    "reserve": 10,
+    "oneInitialFreshScan": true,
+    "limiterResetOrPrincipalSwitch": false
+  },
+  "cleanup": {
+    "tripDeleted": true,
+    "temporaryCustomerAndRoleDeleted": true,
+    "taskDpapiFilesRemoved": true,
+    "matchedTables": 40,
+    "stagingTripRows": 0,
+    "retainedOwnerCustomerCatalogSourceCandidateUnchanged": true,
+    "protectedApiPid": 23020,
+    "mode": "protected"
+  },
+  "source": {
+    "at": "2026-11-16T12:32:14.149Z",
+    "status": "PASS_UNCHANGED_SOURCE_AND_HISTORICAL_EVIDENCE",
+    "sourceFiles": 764,
+    "priorHistoricalEvidenceFiles": 16348,
+    "priorTaskSealArtifacts": 46,
+    "priorMasterExactBytesUnchanged": true,
+    "drift": [],
+    "noProductionSourceChanges": true,
+    "testsAndBuildReused": true
+  },
+  "limitations": [
+    "Mobile conversational mutation not tested",
+    "Initial check-ins/progress were empty/zero; no claim of actual nonzero progress preservation",
+    "Historical C1 FAIL, quota BLOCKED and metadata GET UNKNOWN remain unchanged",
+    "No Qwen, knowledge activation, Booking or payment acceptance"
+  ],
+  "stoppedAfterTask": true
+}

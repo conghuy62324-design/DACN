@@ -10,6 +10,12 @@ import {assertStructuredOutput} from './structuredOutput.js';
 export const CORE_MODEL = 'qwen3:4b-instruct-2507-q4_K_M', CORE_DIGEST = '0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0';
 export const CORE_MODEL_OPTIONS = { temperature: 0, num_ctx: 16384, num_predict: 2048 };
 export const CORE_DECISION_SCHEMA = { type: 'object', additionalProperties: false, required: ['kind', 'name'], properties: { kind: { type: 'string', enum: ['core'] }, name: { type: 'string', enum: CORE_OPERATIONS } } };
+/** Pure production serializer, also inspected offline without touching Ollama. */
+export function serializeCoreRequest(input:ProviderRequest){
+ const schema=input.responseSchema===NATURAL_RESPONSE_SCHEMA||input.responseSchema===GROUNDED_RESPONSE_SCHEMA?input.responseSchema:CORE_DECISION_SCHEMA;
+ const body=JSON.stringify({model:CORE_MODEL,stream:false,format:schema===CORE_DECISION_SCHEMA?'json':schema,options:CORE_MODEL_OPTIONS,messages:[{role:'system',content:input.system+(schema===CORE_DECISION_SCHEMA?'\nSelect one operation. Schema: ':'\nReturn JSON for schema: ')+JSON.stringify(schema)},...input.messages]});
+ if(Buffer.byteLength(JSON.stringify(input))>12288||Buffer.byteLength(body)>12288)throw new HttpError(400,'Yêu cầu quá dài.','AGENT_INPUT_TOKEN_LIMIT');return body;
+}
 export class CoreOllamaProvider implements LlmProvider {
     readonly configured = true;
     readonly external = false;
@@ -18,9 +24,10 @@ export class CoreOllamaProvider implements LlmProvider {
         signal.throwIfAborted();
         if (Buffer.byteLength(JSON.stringify(input)) > 12288)
             throw new HttpError(400, 'Yêu cầu quá dài.', 'AGENT_INPUT_TOKEN_LIMIT');
+        const body=serializeCoreRequest(input);
         await assertOllamaReady({ baseUrl: 'http://127.0.0.1:11434', model: CORE_MODEL, modelDigest: CORE_DIGEST }, this.fetcher, signal, 16384, () => { });
         const schema = input.responseSchema === NATURAL_RESPONSE_SCHEMA || input.responseSchema === GROUNDED_RESPONSE_SCHEMA ? input.responseSchema : CORE_DECISION_SCHEMA;
-        const e = await externalJson(this.fetcher, 'http://127.0.0.1:11434/api/chat', { method: 'POST', signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: CORE_MODEL, stream: false, format: schema===CORE_DECISION_SCHEMA?'json':schema, options: CORE_MODEL_OPTIONS, messages: [{ role: 'system', content: input.system + (schema===CORE_DECISION_SCHEMA?'\nSelect one operation. Schema: ':'\nReturn JSON for schema: ') + JSON.stringify(schema) }, ...input.messages] }) }, 65536);
+        const e = await externalJson(this.fetcher, 'http://127.0.0.1:11434/api/chat', { method: 'POST', signal, headers: { 'Content-Type': 'application/json' }, body }, 65536);
         if (e.done !== true || e.done_reason !== 'stop' || e.message?.role !== 'assistant' || typeof e.message?.content !== 'string' || e.message?.tool_calls?.length)
             throw Error('INVALID_ENVELOPE');
         const d = JSON.parse(e.message.content);

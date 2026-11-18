@@ -1,0 +1,66 @@
+import https from 'node:https';
+import {lookup} from 'node:dns/promises';
+import {isIP} from 'node:net';
+import {HttpError} from '../utils/httpError.js';
+
+export const webFailure=(code:string)=>new HttpError(502,'Nguồn web chưa đáp ứng điều kiện truy xuất an toàn.',code);
+export function publicAddress(address:string):boolean {
+ const s=address.toLowerCase();
+ if(isIP(s)===4){const n=s.split('.').map(Number);return !(n[0]===0||n[0]===10||n[0]===127||n[0]>=224||n[0]===169&&n[1]===254||n[0]===172&&n[1]>=16&&n[1]<=31||n[0]===192&&(n[1]===168||n[1]===0||n[1]===2)||n[0]===100&&n[1]>=64&&n[1]<=127||n[0]===198&&(n[1]===18||n[1]===19||n[1]===51)||n[0]===203&&n[1]===0&&n[2]===113);}
+ // Restrict public IPv6 to global unicast. Deny mapped/transition/documentation ranges.
+ return isIP(s)===6&&/^[23]/.test(s)&&!s.startsWith('2001:db8:')&&!s.startsWith('2001:0:')&&!s.startsWith('2002:')&&!s.includes('.');
+}
+export function webUrl(raw:string,domains:ReadonlySet<string>,allowQuery=false):URL {
+ let u:URL;try{u=new URL(raw);}catch{throw webFailure('WEB_URL_INVALID');}
+ if(u.protocol!=='https:'||u.port&&u.port!=='443'||u.username||u.password||isIP(u.hostname)||!domains.has(u.hostname)||u.hostname.endsWith('.')||u.href.length>600||!allowQuery&&!!u.search)throw webFailure('WEB_URL_DENIED');
+ u.hash='';return u;
+}
+export type WebReceipt={attempt:number;url:string;at:string;status?:number;bytes?:number;error?:string};
+export type WebDocument={url:string;status:number;body:string;headers:Record<string,string>;retrievedAt:string};
+/** Separate from local search: public HTTPS only, fresh pinned DNS on EVERY hop, no cookies/auth/proxy. */
+export class TravelWebHttp {
+ private active=0;private attempts=0;private articles=0;private domainsSeen=new Set<string>();
+ constructor(readonly allowedDomains:ReadonlySet<string>,private options:{maxAttempts?:number;maxArticles?:number;maxDomains?:number;concurrency?:number;deadlineMs?:number;onAttempt?:(r:WebReceipt)=>void;resolve?:typeof lookup}={}){}
+ get counts(){return{attempts:this.attempts,articles:this.articles,domains:this.domainsSeen.size,active:this.active};}
+ async get(raw:string,signal:AbortSignal,options:{article?:boolean;headers?:{etag?:string;modified?:string};allowQuery?:boolean;maxBytes?:number;authorizeUrl?:(url:string)=>unknown}={}):Promise<WebDocument>{
+  if(options.article&&!options.authorizeUrl)throw webFailure('WEB_SOURCE_POLICY_REQUIRED');
+  if(this.active>=Math.min(2,this.options.concurrency??2))throw webFailure('WEB_BUSY');
+  if(options.article&&this.articles>=Math.min(10,this.options.maxArticles??10))throw webFailure('WEB_ARTICLE_CAP');
+  if(options.article)this.articles++;this.active++;
+  const bounded=AbortSignal.any([signal,AbortSignal.timeout(Math.min(10000,this.options.deadlineMs??10000))]);
+  try{let url=webUrl(raw,this.allowedDomains,options.allowQuery),hops=0;
+   for(;;){bounded.throwIfAborted();options.authorizeUrl?.(url.href);if(this.attempts>=Math.min(30,this.options.maxAttempts??30))throw webFailure('WEB_REQUEST_CAP');this.domainsSeen.add(url.hostname);if(this.domainsSeen.size>Math.min(5,this.options.maxDomains??5))throw webFailure('WEB_DOMAIN_CAP');
+    const receipt:WebReceipt={attempt:++this.attempts,url:url.href,at:new Date().toISOString()};this.options.onAttempt?.({...receipt});
+    try{const addresses=await Promise.race([(this.options.resolve||lookup)(url.hostname,{all:true,verbatim:true}),new Promise<never>((_,reject)=>{if(bounded.aborted)reject(webFailure('WEB_ABORTED'));else bounded.addEventListener('abort',()=>reject(webFailure('WEB_ABORTED')),{once:true});})]);
+     if(!addresses.length||addresses.some(a=>!publicAddress(a.address)))throw webFailure('WEB_DNS_DENIED');bounded.throwIfAborted();
+     const response=await this.request(url,addresses,bounded,Math.min(524288,options.maxBytes??524288),options.headers);receipt.status=response.status;receipt.bytes=Buffer.byteLength(response.body);this.options.onAttempt?.({...receipt});
+     if(response.status>=300&&response.status<400&&response.status!==304){if(++hops>2||!response.headers.location)throw webFailure('WEB_REDIRECT_LIMIT');url=webUrl(new URL(response.headers.location,url).href,this.allowedDomains,options.allowQuery);continue;}
+     if(response.status!==200&&response.status!==304)throw webFailure(response.status===403?'WEB_FORBIDDEN':response.status===429?'WEB_RATE_LIMIT':'WEB_UPSTREAM_ERROR');
+     return{...response,url:url.href,retrievedAt:new Date().toISOString()};
+    }catch(e){receipt.error=e instanceof HttpError?e.code:'WEB_FETCH_FAILED';this.options.onAttempt?.({...receipt});throw e instanceof HttpError?e:webFailure(bounded.aborted?'WEB_ABORTED':'WEB_FETCH_FAILED');}
+   }
+  }finally{this.active--;}
+ }
+ private request(url:URL,addresses:Array<{address:string;family:number}>,signal:AbortSignal,maxBytes:number,conditional?:{etag?:string;modified?:string}):Promise<Omit<WebDocument,'url'|'retrievedAt'>>{
+  return new Promise((resolve,reject)=>{
+   const headers:Record<string,string>={'User-Agent':'TravelGoKnowledge/5.8 (bounded research; no login; metadata and attributed facts)','Accept':'text/html, application/rss+xml, application/atom+xml, application/json, text/plain, application/xml','Accept-Encoding':'identity'};
+   if(conditional?.etag&&conditional.etag.length<200&&!/[\r\n]/.test(conditional.etag))headers['If-None-Match']=conditional.etag;
+   if(conditional?.modified&&conditional.modified.length<100&&!/[\r\n]/.test(conditional.modified))headers['If-Modified-Since']=conditional.modified;
+   const pinned=addresses[0],request=https.request(url,{method:'GET',agent:false,signal,headers,lookup:((_:unknown,o:any,cb:any)=>o?.all?cb(null,[pinned]):cb(null,pinned.address,pinned.family)) as any},res=>{
+    const peer=res.socket.remoteAddress?.replace(/^::ffff:/,'');if(!peer||!publicAddress(peer)||!addresses.some(a=>a.address.toLowerCase()===peer.toLowerCase())){res.destroy();reject(webFailure('WEB_PEER_MISMATCH'));return;}
+    const status=res.statusCode||0,out:Record<string,string>={};for(const k of ['content-type','etag','last-modified','location'])if(typeof res.headers[k]==='string')out[k]=res.headers[k] as string;
+    if(status!==200){res.destroy();resolve({status,body:'',headers:out});return;}
+    if(res.headers['content-encoding']&&res.headers['content-encoding']!=='identity'||Number(res.headers['content-length'])>maxBytes||!/^(?:text\/(?:html|plain|xml)|application\/(?:rss\+xml|atom\+xml|xml|json))(?:;|$)/i.test(out['content-type']||'')){res.destroy();reject(webFailure('WEB_CONTENT_DENIED'));return;}
+    const chunks:Buffer[]=[];let bytes=0;res.on('data',(chunk:Buffer)=>{bytes+=chunk.length;if(bytes>maxBytes){res.destroy(webFailure('WEB_RESPONSE_LIMIT'));return;}chunks.push(chunk);});res.on('end',()=>resolve({status,body:Buffer.concat(chunks).toString('utf8'),headers:out}));res.on('error',()=>reject(webFailure('WEB_RESPONSE_FAILED')));
+   });request.on('error',()=>reject(webFailure(signal.aborted?'WEB_ABORTED':'WEB_CONNECTION_FAILED')));request.end();
+  });
+ }
+}
+
+/** Conservative robots subset: unknown directives fail closed; longest matching allow/disallow wins. */
+export function robotsAllowed(text:string,path:string):boolean{
+ if(text.length>131072||!/^User-agent:/im.test(text))return false;
+ let applies=false,seenRule=false,groups:Array<{allow:boolean;path:string}>=[];
+ for(const line of text.split(/\r?\n/)){const clean=line.replace(/#.*/,'').trim(),m=/^([a-z-]+)\s*:\s*(.*)$/i.exec(clean);if(!m)continue;const key=m[1].toLowerCase(),value=m[2].trim();if(key==='user-agent'){if(seenRule){applies=false;seenRule=false;}applies=applies||value==='*'||/travelgoknowledge/i.test(value);continue;}if(applies&&['allow','disallow'].includes(key)){seenRule=true;if(value)groups.push({allow:key==='allow',path:value});}}
+ const matching=groups.filter(r=>{const escaped=r.path.replace(/[.+?^${}()|[\]\\]/g,'\\$&').replace(/\*/g,'.*');return new RegExp('^'+escaped).test(path);}).sort((a,b)=>b.path.length-a.path.length||Number(b.allow)-Number(a.allow));return !matching.length||matching[0].allow;
+}

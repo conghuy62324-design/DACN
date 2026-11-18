@@ -1,0 +1,121 @@
+{
+  "at": "2026-11-17T02:47:07.619Z",
+  "task": "21.30",
+  "status": "PREPARED_REQUIRES_FRESH_OWNER_APPROVAL",
+  "database": {
+    "host": "127.0.0.1",
+    "port": 15452,
+    "name": "travelgo_staging_catalog_20261112",
+    "role": "catalog_runtime",
+    "sentinel": "travelgo-public-staging:catalog-20261112"
+  },
+  "owner": {
+    "id": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+    "principalHash": "856f41c9ad2ffc1e3f467eeb45f0069a943196101062d0e3ab3927bec64b95c5",
+    "classification": "EXISTING_APPROVED_STAGING_TEST_CUSTOMER",
+    "testEmail": true,
+    "syntheticName": false,
+    "existingLanguageBaseline": {
+      "language_learning_settings": 0,
+      "personal_language_mappings": 0,
+      "language_contributions": 0,
+      "language_feedback_events": 0
+    },
+    "noAccountRenameOrNewPrincipal": true,
+    "condition": "Only if test-account provenance remains verified; existing personal rows must remain0 before writes"
+  },
+  "fixture": {
+    "mappingId": "9d578fb7-772e-4ce5-a5b8-a74b6096a4ad",
+    "expression": "zelvani",
+    "conceptId": "accommodation_type.homestay",
+    "scope": "PERSONAL",
+    "settingsOwner": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+    "synthetic": true,
+    "retain": false
+  },
+  "allowedWriteTables": [
+    "language_learning_settings",
+    "personal_language_mappings",
+    "language_contributions"
+  ],
+  "intentionalRows": "One task settings row and one exact mapping UUID. Existing settings/mappings/contributions must0. Contribution DELETE is zero-row housekeeping from existing settings API; contribution INSERT/UPDATE forbidden.",
+  "sqlFence": "Existing scoped-knowledge-write launcher, languageOnly branch: exact owner/policy/meaning and one INSERT reservation; binds exact task UUID server-side solely in isolated launcher; no public client-supplied ID, no persistent default/schema changes; all other DML denied.",
+  "maxConservativeAttempts": 6,
+  "plannedNormalChats": 4,
+  "plannedManagement": 2,
+  "requiredInitialRemaining": 16,
+  "capPerHour": 20,
+  "reserve": 10,
+  "noRetry": true,
+  "management": [
+    {
+      "id": "M1",
+      "operation": "Actual single UI click consent; wait PUT response then React checked"
+    },
+    {
+      "id": "M2",
+      "operation": "Actual UI Save-button click, wait POST response and rendered success; no HTTP substitute"
+    }
+  ],
+  "journeys": [
+    {
+      "id": "J1",
+      "message": "Từ giờ mình gọi homestay là zelvani",
+      "expected": "Clarify meaning; no search or persistence"
+    },
+    {
+      "id": "J2",
+      "message": "Ý mình là homestay",
+      "expected": "SESSION meaning only; SAVE_PERSONAL ticket; no search"
+    },
+    {
+      "id": "J3",
+      "viewport": "desktop-new-conversation",
+      "message": "Tìm zelvani có Wi-Fi ở Đà Lạt",
+      "expected": "PERSONAL meaning read as homestay in new session; correct geography; no mutation"
+    },
+    {
+      "id": "J4",
+      "viewport": "mobile-new-conversation",
+      "message": "Tìm zelvani ở Đà Lạt",
+      "expected": "Mobile consent/send, PERSONAL persisted meaning; no overflow or mutation"
+    }
+  ],
+  "runtime": {
+    "frontend": 5177,
+    "api": 5057,
+    "ownedLauncherOnly": true,
+    "activationAndProtectedRestoration": true,
+    "maximumWindowHours": 2,
+    "modelSearchWorker": "OFF",
+    "frontendStartIfAbsent": true,
+    "sourceFrozenBeforeActivation": true
+  },
+  "forbidden": [
+    "users/user_roles/Owner credentials",
+    "catalog130Place20Business",
+    "Trip/Booking/payment",
+    "customer memory preferences",
+    "shared approvals",
+    "knowledge/source/candidate writes",
+    "model/Internet/Maps/VPS",
+    "schema/migrations",
+    "production env changes"
+  ],
+  "cleanup": {
+    "exactMappingId": "9d578fb7-772e-4ce5-a5b8-a74b6096a4ad",
+    "exactSettingsOwner": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+    "zeroContributions": true,
+    "expectedFinalTables": 40,
+    "requireFreshBaselineMatch": true,
+    "restore": "protected READ ONLY",
+    "deleteTaskCredentials": false,
+    "explanation": "No new credentials; never delete existing dedicated account file or owner credentials"
+  },
+  "approvalFromPreviousTasksMayNotBeReused": true,
+  "credentialUse": "Existing dedicated synthetic staging customer login through approved helper, in memory only, no owner credentials/DPAPI read",
+  "strictRecorder": "Both 5177/api and5057, sync reserve before dispatch; fail closed, no backfill; no retry",
+  "knowledgeJourney": "PENDING_OWNER_ACTION, not spent under this A-only packet",
+  "maxDmlStatements": 7,
+  "maxAffectedRows": 6
+}

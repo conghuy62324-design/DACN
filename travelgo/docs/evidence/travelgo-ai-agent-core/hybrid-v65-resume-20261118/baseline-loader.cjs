@@ -1,0 +1,5 @@
+// Pre-edit compiled bytes, validated against source-before.json. Offline comparison only.
+const fs=require('fs'),path=require('path'),crypto=require('crypto'),assert=require('assert/strict'),Module=require('module'),root=path.resolve(__dirname,'../../../..'),before=JSON.parse(fs.readFileSync(__dirname+'/source-before.json')),sha=b=>crypto.createHash('sha256').update(b).digest('hex'),map=new Map();
+for(const[relative,copy]of[['backend/dist/services/agentCoreService.js','core-before.js'],['backend/dist/agent/vietnameseConversation.js','conversation-before.js']]){const bytes=fs.readFileSync(path.join(__dirname,copy));assert.equal(sha(bytes),before.hashes[relative]);map.set(path.join(root,relative),bytes.toString('utf8'));}
+for(const[f,h]of Object.entries(before.hashes))if(f.startsWith('backend/dist/')&&!map.has(path.join(root,f)))assert.equal(sha(fs.readFileSync(path.join(root,f))),h,f);
+const original=Module._extensions['.js'];Module._extensions['.js']=function(module,file){return map.has(file)?module._compile(map.get(file),file):original(module,file);};

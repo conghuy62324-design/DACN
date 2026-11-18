@@ -13,8 +13,11 @@ const rows:[string,string,string[]?][]=[
 ];
 export const PROVINCES:GeoLocation[]=rows.map(([id,name,legacyNames=[]])=>({id,name,kind:'province',provinceCode:id,aliases:[],legacyNames,catalogName:name==='Hồ Chí Minh'?'Thành phố Hồ Chí Minh':name}));
 const tourism:[string,string,string,string[]?][]=[
- ['da-nang','Đà Nẵng','48',['DN']],['da-lat','Đà Lạt','68',['ĐL','Dalat']],['nha-trang','Nha Trang','56'],['hoi-an','Hội An','48'],['hue','Huế','46'],['ha-noi','Hà Nội','01',['HN']],['ho-chi-minh','Hồ Chí Minh','79',['HCM','SG','Sài Gòn','TP.HCM','TP. Hồ Chí Minh','Thành phố Hồ Chí Minh']],['phu-quoc','Phú Quốc','91',['PQ']],['ha-long','Hạ Long','22'],['sa-pa','Sa Pa','15',['Sapa']]
+ ['da-nang','Đà Nẵng','48',['DN']],['da-lat','Đà Lạt','68',['ĐL','Dalat']],['nha-trang','Nha Trang','56'],['hoi-an','Hội An','48'],['hue','Huế','46'],['ha-noi','Hà Nội','01',['HN']],['ho-chi-minh','Hồ Chí Minh','79',['HCM','SG','Sài Gòn','TP.HCM','TP. Hồ Chí Minh','Thành phố Hồ Chí Minh']],['phu-quoc','Phú Quốc','91',['PQ']],['ha-long','Hạ Long','22'],['sa-pa','Sa Pa','15',['Sapa']],['quy-nhon','Quy Nhơn','52']
 ];
+// Tourism destination, not a new province or a claim about ward boundaries/catalog availability.
+// Official provincial sources: indexed excerpts reviewed 2026-11-14; full signed PDF fetch unavailable.
+export const DESTINATION_PROVENANCE={ 'destination:quy-nhon':{provinceCode:'52',reviewedAt:'2026-11-14',sources:['https://gialai.dcs.vn/van-hoa-xa-hoi/-/view-content/669827/le-be-mac-nam-du-lich-quoc-gia-gia-lai-2026-se-dien-ra-tai-phuong-quy-nhon','https://hoiphu.gialai.gov.vn/upload/105646/20260406/1284_SVHTTDL-QLVHGD_03042026-signed_d4fea.pdf']}};
 export const DESTINATIONS:GeoLocation[]=tourism.map(([id,name,provinceCode,aliases=[]])=>({id:'destination:'+id,name,kind:'destination',provinceCode,aliases,catalogName:name==='Hồ Chí Minh'?'Thành phố Hồ Chí Minh':name}));
 export const ALL_LOCATION:GeoLocation={id:'all',name:'Tất cả địa điểm',kind:'all',aliases:[],catalogName:'all'};
 export const GEO_LOCATIONS=[ALL_LOCATION,...PROVINCES,...DESTINATIONS];

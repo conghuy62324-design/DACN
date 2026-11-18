@@ -1,0 +1,129 @@
+{
+  "at": "2026-11-13T06:59:32.882Z",
+  "scoringType": "INDEPENDENT_READ_ONLY_RECOMPUTATION_FROM_FROZEN_RAW_EVIDENCE",
+  "manifestSha256": "d14f326f1cc34f1879bd046b2d4e8b5b2fa3f4ed2e65f7bfce5e001cd615c59e",
+  "verdict": "QWEN_V5_SEMANTIC_ACCEPTANCE_FAIL",
+  "preflight": "PASS",
+  "warmLoad": "NOT_RUN_ALREADY_RESIDENT",
+  "L1": {
+    "input": "tui muon den da latt ma chua ro nen bat dau sao, giup tui voi",
+    "verifiedContext": {},
+    "expected": {
+      "operation": "plan_trip",
+      "updates": {
+        "destinationCity": "Đà Lạt"
+      },
+      "noExtraUpdates": true,
+      "exactCurrentMessageQuote": true,
+      "noTools": true,
+      "requiresConfirmation": true
+    },
+    "rawOutput": "{\"kind\":\"natural\",\"operation\":\"chat\",\"updates\":[],\"change\":\"hotel_cheaper\",\"changeQuote\":\"tui muon den da latt ma chua ro nen bat dau sao, giup tui voi\"}",
+    "proposedOperation": "chat",
+    "proposedChange": "hotel_cheaper",
+    "rawUpdates": [],
+    "envelope": "PASS",
+    "schema": "PASS",
+    "semantic": "FAIL",
+    "grounding": "FAIL",
+    "quoteSubstringMatches": true,
+    "quoteActuallySupportsHotelChange": false,
+    "rejection": "AGENT_UNVERIFIED_TOOL_INPUT",
+    "renderer": "NOT_RUN_VALIDATOR_REJECTED_PROPOSAL",
+    "rendererOutput": null,
+    "failures": [
+      "Expected plan_trip destinationCity Đà Lạt absent despite unique supplied geographicEvidence",
+      "Unsupported hotel_cheaper action with no selected hotel or user request for hotel change",
+      "chat plus change is schema-valid but rejected by production semantic operation/change guard"
+    ],
+    "modelDigest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+    "context": 16384,
+    "options": {
+      "temperature": 0,
+      "num_ctx": 16384,
+      "num_predict": 2048
+    },
+    "latencyMs": {
+      "native": 2618.7546,
+      "providerAndGuards": 3269.1022000000003
+    },
+    "tokens": {
+      "prompt": 2315,
+      "completion": 46,
+      "cachedPrompt": 4
+    },
+    "actualToolCalls": 0,
+    "mutations": 0
+  },
+  "L2": {
+    "result": "NOT_RUN",
+    "reason": "STOP_AFTER_FIRST_FAIL",
+    "input": "muc tien ca nhom ban vua ghi ay, nhich len chut cho de tho nha; xe nao thi tui chua chot",
+    "verifiedContext": {
+      "destinationCity": "Đà Lạt",
+      "departureCity": "Hồ Chí Minh",
+      "adults": 2,
+      "totalBudget": 5000000
+    },
+    "schema": "NOT_RUN",
+    "semantic": "NOT_RUN",
+    "grounding": "NOT_RUN",
+    "rendererOutput": null,
+    "tokenUsage": null,
+    "latencyMs": null
+  },
+  "L3": {
+    "result": "NOT_RUN",
+    "reason": "STOP_AFTER_FIRST_FAIL",
+    "scope": "SYNTHETIC_FIXTURE_TEST_ONLY_MEMORY_FACTS_NOT_REAL_INTEGRATION",
+    "input": "Mình ưu tiên sạch sẽ và yên tĩnh. So sánh hai khách sạn này, gợi ý nơi phù hợp hơn nhưng cho biết điều gì còn chưa rõ.",
+    "verifiedContext": {
+      "scope": "SYNTHETIC_SEMANTIC_ON_FIXTURE",
+      "consent": {
+        "enabled": true,
+        "policy": "TRAVELGO_MEMORY_V1",
+        "source": "SYNTHETIC_EXPLICIT_CONSENT_NOT_REAL_ACCOUNT"
+      },
+      "allowedPreferences": [
+        {
+          "type": "quality",
+          "value": "clean",
+          "label": "Ưu tiên vệ sinh",
+          "source": "CONFIRMED",
+          "scope": "TRAVEL_ADVICE"
+        },
+        {
+          "type": "quality",
+          "value": "quiet",
+          "label": "Khách sạn yên tĩnh",
+          "source": "CONFIRMED",
+          "scope": "TRAVEL_ADVICE"
+        }
+      ]
+    },
+    "schema": "NOT_RUN",
+    "semantic": "NOT_RUN",
+    "grounding": "NOT_RUN",
+    "rendererOutput": null,
+    "tokenUsage": null,
+    "latencyMs": null
+  },
+  "native": {
+    "get": 6,
+    "post": 1,
+    "warmLoad": 0,
+    "inference": 1,
+    "retry": 0
+  },
+  "quotaRemaining": 19,
+  "minimumReserve": 10,
+  "browserQwenTools": "NOT_RUN",
+  "realReviewMemoryIntegration": "NOT_RUN",
+  "postgresConnections": 0,
+  "sourceChanged": false,
+  "limits": [
+    "SYNTHETIC facts, not current real review integration",
+    "Test-only preference/current-request facts use the production schema/provider/renderer, but are not automatically emitted by current Core toolReply",
+    "Cannot conclude live persistence/authorization/review retrieval/browser integration from this case"
+  ]
+}

@@ -1,0 +1,18 @@
+// Authorization contract for the existing staging launcher, not a second launcher.
+const assert=require('node:assert/strict');
+const uuid=x=>typeof x==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x);
+function scopeCurrent(p,now=Date.now()){assert(Number.isFinite(Date.parse(p.expiresAt))&&Date.parse(p.expiresAt)>now,'SCOPED_AUTHORIZATION_EXPIRED');}
+function realReviewScope(p,now=Date.now()){
+ assert.equal(p.status,'APPROVED_SCOPED_REAL_OWNER_REVIEW');assert.equal(p.realKnowledgeApprovalAllowed,true);assert.equal(p.actorClass,'REAL_OWNER_SUPER_ADMIN');assert(uuid(p.actorId));assert.equal(p.personalTestWrites,false);assert(Date.parse(p.expiresAt)>now&&Date.parse(p.expiresAt)<=now+24*3600000);
+ for(const [key,max]of [['sourceIds',4],['candidateIds',8],['jobIds',8],['knowledgeIds',8]])assert(Array.isArray(p[key])&&p[key].length<=max&&p[key].every(uuid)&&new Set(p[key]).size===p[key].length,key);
+ assert(p.sourceIds.length&&p.candidateIds.length);assert(Array.isArray(p.sourceDomains)&&p.sourceDomains.length<=4&&p.sourceDomains.every(x=>typeof x==='string'&&/^[a-z0-9.-]+\.[a-z]{2,}$/.test(x)&&x!=='example.org'));
+ assert(Number.isInteger(p.maxKnowledgeSnapshots)&&p.maxKnowledgeSnapshots>=1&&p.maxKnowledgeSnapshots<=8);
+ assert.equal(p.retentionApproval,'EXACT_REAL_COHORT_APPROVED');assert.equal(p.workerLongTermAllowed,false);assert.equal(p.internetAllowed,false);assert.equal(p.modelAllowed,false);
+ if(p.knowledgeExpiresAt!==undefined)assert(Number.isFinite(Date.parse(p.knowledgeExpiresAt))&&Date.parse(p.knowledgeExpiresAt)>now);
+ if(p.preparedReview!==undefined){const t=p.preparedReview;assert(t&&Object.keys(t).every(k=>['sourceId','candidateId','contentHash','travelPeriod'].includes(k)));assert(p.sourceIds.includes(t.sourceId)&&p.candidateIds.includes(t.candidateId));assert.equal(t.contentHash,p.reviewSelections?.[t.candidateId]?.contentHash);assert(typeof t.travelPeriod==='string'&&/^(?:0[1-9]|1[0-2])\/\d{4}$/.test(t.travelPeriod));}
+ assert(p.reviewSelections&&Object.keys(p.reviewSelections).length===p.candidateIds.length);
+ for(const id of p.candidateIds){const s=p.reviewSelections[id];assert(s&&Number.isSafeInteger(s.version)&&s.version>=1&&typeof s.contentHash==='string'&&/^[a-f0-9]{64}$/.test(s.contentHash));assert(Array.isArray(s.observationIds)&&Array.isArray(s.factHashes)&&s.observationIds.length<=12&&s.factHashes.length<=8&&s.observationIds.length+s.factHashes.length>0);assert(s.observationIds.every(x=>typeof x==='string'&&/^[a-f0-9]{16,64}$/.test(x))&&s.factHashes.every(x=>typeof x==='string'&&/^[a-f0-9]{64}$/.test(x)));}
+ return p;
+}
+function realKnowledgeInsertAllowed(p,values){try{const provenance=JSON.parse(values[8]),x=provenance.external,s=p.reviewSelections[provenance.webCandidateId];return (!p.knowledgeExpiresAt||Number.isFinite(Date.parse(values[10]))&&Date.parse(values[10])<=Date.parse(p.knowledgeExpiresAt)&&Date.parse(values[10])>Date.now())&&values[5]==='EXTERNAL_REVIEWED'&&p.sourceIds.includes(provenance.webSourceId)&&p.candidateIds.includes(provenance.webCandidateId)&&x?.synthetic!==true&&s&&x.contentHash===s.contentHash&&provenance.webCandidateVersion===s.version&&x.reviewSelection&&x.reviewSelection.observationIds.every(id=>s.observationIds.includes(id))&&x.reviewSelection.factHashes.every(id=>s.factHashes.includes(id))&&x.reviewSelection.observationIds.length+x.reviewSelection.factHashes.length>0&&typeof values[6]==='string'&&p.sourceDomains.includes(new URL(values[6]).hostname);}catch{return false;}}
+module.exports={realReviewScope,realKnowledgeInsertAllowed,scopeCurrent};

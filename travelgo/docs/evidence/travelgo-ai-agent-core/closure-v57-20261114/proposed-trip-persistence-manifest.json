@@ -1,0 +1,60 @@
+{
+  "status": "PROPOSED_NOT_APPROVED_NOT_RUN",
+  "sourceReferenceOnly": "e48e30f14746a4af024ae2846c49e4a5ceb0e70d8461d13d28b53d00bf491a74",
+  "liveLocked": false,
+  "target": {
+    "host": "127.0.0.1",
+    "port": 15452,
+    "database": "travelgo_staging_catalog_20261112",
+    "role": "catalog_runtime",
+    "sentinel": "travelgo-public-staging:catalog-20261112",
+    "tables": 37,
+    "migrations": 16
+  },
+  "cohort": {
+    "ownerA": "FRESH_AUTH_AND_EXISTING_APPROVED_PRINCIPAL_HASH_REQUIRED",
+    "ownerB": "FRESH_DISTINCT_AUTH_OWNER_REQUIRED_NOT_VERIFIED_THIS_TASK",
+    "tripIds": "ONLY_NEW_TRIP_ID_RETURNED_BY_APPROVED_CONFIRMATION_AND_COMMITTED_LEDGER; EMPTY_NOW",
+    "countMax": 1,
+    "existingUsersOnly": true
+  },
+  "allowedTables": [
+    "trip_sessions"
+  ],
+  "allowedOperations": [
+    "INSERT_TASK_TRIP_THROUGH_EXISTING_CONFIRM",
+    "UPDATE_SAME_TRIP_THROUGH_EXISTING_CONFIRM_AND_EXPECTED_VERSION",
+    "SELECT_OWNED_REOPEN",
+    "DELETE_EXACT_COMMITTED_TASK_TRIP_DURING_CLEANUP"
+  ],
+  "forbiddenTables": [
+    "bookings",
+    "payments",
+    "users",
+    "places",
+    "businesses"
+  ],
+  "cases": [
+    "V1 saved snapshot readable, V2 partial-day create and round-trip timeline/cost",
+    "scoped day2 replan update preserves day1/hotel and V2 metadata",
+    "wrong owner denied",
+    "wrong hash/revision, expired, one-use replay denied",
+    "price/location drift denied",
+    "optimistic stale version denied"
+  ],
+  "confirmation": [
+    "fresh auth+session consent",
+    "fresh source/catalog snapshot and exact preview hash",
+    "separate explicit confirmation",
+    "owner/version rechecked in transaction"
+  ],
+  "requiredBeforeApproval": [
+    "Fresh target identity/sentinel/checksums and 37 fingerprints",
+    "Fresh owner A/B identities; record hashes and exact fixture IDs",
+    "Exact SQL fence/table scope and bounded native-zero budget",
+    "Separate authorization for real Trip writes; PUBLIC_STAGING_WRITES_APPROVED remains false now"
+  ],
+  "cleanup": "Compare exact committed ledger IDs+owner; delete only task trip in transaction; compare 37/37 baseline fingerprints and 130/20; restore READ ONLY",
+  "actualWrites": 0,
+  "blockingMissingFreshIdentities": true
+}

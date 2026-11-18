@@ -1,0 +1,41 @@
+{
+  "at": "2026-11-15T01:43:22.548Z",
+  "status": "PREPARED_OFFLINE_WITH_GAPS_NOT_LIVE_READY",
+  "currentRoutes": {
+    "nlu": "Unknown parse -> NATURAL_RESPONSE_SCHEMA -> naturalProposal with quote/geography/current evidence -> confirmation. Returns without tool execution.",
+    "grounding": "Typed current tool output -> boundedGroundingFacts <=7500bytes, personalized context <=3000bytes -> GROUNDED_RESPONSE_SCHEMA factIds<=3 -> server renderer and freshness fences.",
+    "knowledge": "Only eligible/selected approved facts; max3 sources, source/expiry/revocation recheck.",
+    "cost": "Cost branch currently deterministic reply; explicit model-selectable cost fact IDs are NOT WIRED. Future B3 blocked until bounded typed bridge tested.",
+    "nluPrivacyGap": "Current NLU fallback passes body.message directly to provider, unlike sanitized structured grounded-response context. No model call occurred in21.23. Future general website Qwen activation must add/verify a privacy projection that preserves quote-evidence offsets and rejects/redacts identity before native request."
+  },
+  "allowed": {
+    "currentQuestion": true,
+    "verifiedSlots": true,
+    "currentGoal": true,
+    "allowedSoftPreferences": true,
+    "selectedApprovedKnowledgeIds": true,
+    "typedCostFactIds": "PROPOSED_NOT_WIRED",
+    "compactReviewProvenance": true,
+    "missingInformation": true,
+    "permittedActions": true
+  },
+  "forbidden": [
+    "private identity",
+    "raw web HTML/full articles",
+    "raw reviewer text",
+    "whole customer history",
+    "all knowledge",
+    "model-written prices or reviews",
+    "model mutation/booking/payment authority"
+  ],
+  "maximumCallsPerTurn": 1,
+  "schemaValidation": "additionalProperties false, enum operations, typed slots, no coercion",
+  "scoring": "Raw output + schema + semantics + grounding separately; deterministic fallback never model PASS",
+  "runtimeTests": "NOT RUN",
+  "ollamaGet": 0,
+  "ollamaPost": 0,
+  "futureExecutionBlockers": [
+    "Cost fact-ID bridge not wired",
+    "NLU direct current-message privacy projection not yet verified"
+  ]
+}

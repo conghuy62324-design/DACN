@@ -1,3 +1,4 @@
+import {readWebRetrieval,readCostAdvice} from '../utils/webSourceCards';
 import { api } from './api';
 import { parseAgentResponse } from '../utils/agentContract';
 export const CORE_CONSENT = 'TRAVELGO_CORE_SLOTS_V1';
@@ -31,13 +32,29 @@ export function readCoreResponse(r: any, request: any, previous?: CoreMetadata) 
     if (r?.success !== true || typeof d?.reply !== 'string' || !['completed', 'no_results', 'needs_input', 'needs_confirmation'].includes(d.status))
         throw Error('Phản hồi Core không hợp lệ.');
     const conversation = coreMetadata(d.conversation, request, previous);
+    if(d.editingTrip&&(!uuid(d.editingTrip.id)||typeof d.editingTrip.title!=='string'||!d.editingTrip.title.trim()||d.editingTrip.title.length>255||Object.keys(d.editingTrip).some(k=>!['id','title'].includes(k))))throw Error('Editing Trip metadata invalid');
+    if(d.languageFeedback&&(!uuid(d.languageFeedback.id)||d.languageFeedback.revision!==conversation.revision))throw Error('Language feedback metadata invalid');
+    if(d.languageLearning&&(!uuid(d.languageLearning.candidateId)||typeof d.languageLearning.expression!=='string'||d.languageLearning.expression.length>48||typeof d.languageLearning.label!=='string'||typeof d.languageLearning.conceptId!=='string'||d.languageLearning.purpose!=='SAVE_PERSONAL'||d.languageLearning.policyVersion!=='TRAVELGO_LANGUAGE_MEMORY_V1'||!Number.isFinite(Date.parse(d.languageLearning.expiresAt))||d.confirmation))throw Error('Language learning confirmation invalid');
+    if(d.languageClarification&&(!uuid(d.languageClarification.candidateId)||typeof d.languageClarification.expression!=='string'||d.languageClarification.expression.length>48||!Array.isArray(d.languageClarification.concepts)||d.languageClarification.concepts.length>20||d.languageClarification.concepts.some((c:any)=>typeof c.id!=='string'||typeof c.label!=='string'||c.label.length>120)||d.confirmation||d.result))throw Error('Language clarification invalid');
+    if(d.languageUnderstanding&&(!Array.isArray(d.languageUnderstanding.evidence)||d.languageUnderstanding.evidence.length>4||d.languageUnderstanding.evidence.some((e:any)=>e.executionAuthority!==false||typeof e.expression!=='string'||e.expression.length>48||typeof e.conceptId!=='string')))throw Error('Language evidence invalid');
     if (d.clarification && (d.status !== 'needs_input' || d.result || d.confirmation ||
         Object.keys(d.clarification).some(k => !['suggestedOperation','requiresExplicitRequest'].includes(k)) ||
         d.clarification.requiresExplicitRequest !== true || !Object.prototype.hasOwnProperty.call(CORE_CLARIFICATION_ACTIONS, d.clarification.suggestedOperation)))
         throw Error('Gợi ý tác vụ chưa hợp lệ; chưa gửi yêu cầu công cụ.');
+    if(d.webRetrieval)readWebRetrieval(d.webRetrieval);
+    if(d.costIntelligence)readCostAdvice(d.costIntelligence);
     const v = d.result;
+    if(d.knowledge){const k=d.knowledge;if(k.mutationAuthority!==false||!Array.isArray(k.sources)||k.sources.length>3||k.sources.some((s:any)=>{
+        if(!s||typeof s.title!=='string'||!s.title.trim()||s.title.length>160||!Number.isFinite(Date.parse(s.reviewedAt))||!Number.isSafeInteger(s.version)||s.version<1||typeof s.href!=='string')return true;
+        if(/^\/places\/[0-9a-f-]{36}$/i.test(s.href))return false;
+        try{const u=new URL(s.href);return u.protocol!=='https:'||!!u.username||!!u.password||!!u.search||!!u.hash;}catch{return true;}
+    }))throw Error('Knowledge sources invalid');}
     if (v) {
         switch (v.type) {
+            case 'knowledge_options':
+                if(!Array.isArray(v.items)||v.items.length>3||v.items.some((p:any)=>!p||!uuid(p.id)||typeof p.name!=='string'||!p.name.trim()||p.name.length>160||!['attraction','tour'].includes(p.category)||p.href!=='/places/'+p.id||typeof p.isDemo!=='boolean'||!Array.isArray(p.amenities)||p.amenities.length>4||p.amenities.some((a:any)=>typeof a!=='string'||a.length>80)||!Number.isFinite(Date.parse(p.retrievedAt))))throw Error('Knowledge catalog invalid');
+                if(d.confirmation)throw Error('Knowledge cannot authorize mutation');
+                break;
             case 'registered_options':
             case 'comparison':
                 if (!Array.isArray(v.items) || v.items.length > 5 || !v.items.every(listing))
@@ -68,4 +85,4 @@ export function readCoreResponse(r: any, request: any, previous?: CoreMetadata) 
     return { ...d, conversation };
 }
 export function agentCoreClient(token: string, intentVersion: typeof CORE_INTENT_V2 | typeof NATURAL_CHAT_V3 = CORE_INTENT_V2) { const config = (signal?: AbortSignal) => ({ signal, timeout: 25000, headers: { Authorization: `Bearer ${token}` } }); return { privacy: async (signal: AbortSignal) => { const r: any = await api.get('/agent/core/privacy', config(signal)); if (r?.success !== true || r.data?.version !== CORE_CONSENT || r.data?.mode !== 'CORE_VERIFIED' || r.data.ttlSeconds !== 900 || typeof r.data.text !== 'string')
-        throw Error('Chưa lấy được thông báo Core.'); return r.data; }, chat: (body: any, signal: AbortSignal) => api.post('/agent/core/chat', { ...body, intentVersion }, config(signal)), confirm: (body: any, signal: AbortSignal) => api.post('/agent/core/confirm', body, config(signal)), revoke: () => api.delete('/agent/core/sessions', { ...config(), timeout: 5000 }) }; }
+        throw Error('Chưa lấy được thông báo Core.'); return r.data; }, chat: (body: any, signal: AbortSignal) => api.post('/agent/core/chat', { ...body, intentVersion }, config(signal)), confirm: (body: any, signal: AbortSignal) => api.post('/agent/core/confirm', body, config(signal)), cancelPreview: (body:any,signal:AbortSignal) => api.post('/agent/core/preview/cancel',body,config(signal)), revoke: () => api.delete('/agent/core/sessions', { ...config(), timeout: 5000 }) }; }

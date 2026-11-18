@@ -1,6 +1,7 @@
 import { readCurrentTurnProof, readPendingTurnProof, validateCurrentTurnProof, type CurrentTurnProof } from './currentTurnProof.js';
 import { AGENT_TOOLS } from './tools.js';
 import { fold, type CatalogFilters } from '../services/registeredCatalogService.js';
+import {validateTravelPreferences} from '../utils/travelPreferences.js';
 export const CORE_OPERATIONS = ['search_registered_hotels', 'search_registered_restaurants', 'get_listing_details', 'compare_travel_options', 'search_places', 'plan_trip', 'get_trip', 'save_or_update_trip', 'booking_preview'] as const;
 export type CoreOperation = typeof CORE_OPERATIONS[number];
 export type CoreInterpretation = {
@@ -82,6 +83,11 @@ export function coreInterpretation(message: string, values: Record<string, any>,
     return { ...(proof?.toolName === 'plan_trip' ? { operation: 'plan_trip' as const } : {}), canonical: raw };
 }
 export function mergeCorePlanProof(previous: CurrentTurnProof | undefined, message: string): CurrentTurnProof | undefined {
+    // Natural canonicalization carries typed preferences beside required slots.
+    // Preserve the strict G1 proof grammar and accept only existing preference IDs.
+    let preferences:string[]|undefined;
+    const parts=message.split(/[;\n]/),preferenceParts=parts.filter(p=>/^\s*Sở thích\s*:/iu.test(p));
+    if(preferenceParts.length){if(preferenceParts.length!==1)return previous;try{preferences=validateTravelPreferences(preferenceParts[0].replace(/^\s*Sở thích\s*:\s*/iu,'').split(',').map(p=>p.trim()));}catch{return previous;}message=parts.filter(p=>!preferenceParts.includes(p)).join('; ');}
     const patch = readCurrentTurnProof(message) || readPendingTurnProof(message, 'plan_trip');
     if (!patch || patch.toolName !== 'plan_trip')
         return previous;
@@ -111,6 +117,7 @@ export function mergeCorePlanProof(previous: CurrentTurnProof | undefined, messa
                 delete next.optionalValues[field];
         }
     next.accentInsensitiveCities = [...new Set([...next.accentInsensitiveCities, ...patch.accentInsensitiveCities])];
+    if(preferences){next.optionalValues.preferences=preferences;(next.optionalStates||={}).preferences='SET';}
     validateCurrentTurnProof(next);
     return next;
 }

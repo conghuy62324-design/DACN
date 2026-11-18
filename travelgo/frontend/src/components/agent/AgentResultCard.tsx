@@ -1,3 +1,4 @@
+import {PlanningNotice,ActivityTiming} from '../common/PlanningTimeline';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import type { AgentResult } from '../../types/agent';
@@ -32,10 +33,11 @@ export function AgentResultCard({ result,customer=false }: { result: AgentResult
       <p className="mt-2 text-sm">{p.budgetAdvice}</p>
       <details className="mt-3 text-sm"><summary className="cursor-pointer font-semibold">Giả định chi phí</summary><ul className="mt-2 list-disc space-y-1 pl-5">{p.costAssumptions?.map((a, i) => <li key={i}>{display(a)}</li>)}</ul></details>
     </section>
+    <PlanningNotice plan={p}/>
     {p.days.map((day, i) => <section key={day.date + i} className="rounded-xl border border-slate-200 bg-white p-4">
       <h4 className="font-bold">Ngày {i + 1} · {day.date}</h4><p className="text-sm text-slate-600">{day.themeTitle}</p>
       <ol className="mt-3 space-y-3">{day.activities.map((a, index) => <li key={a.id || index} className="border-l-2 border-orange-300 pl-3">
-        <p className="font-semibold">{a.title}</p><p className="mt-1 text-sm text-slate-600">{a.description}</p>
+        <p className="font-semibold">{a.title}</p><ActivityTiming activity={a}/><p className="mt-1 text-sm text-slate-600">{a.description}</p>
         <p className="mt-1 text-sm">Dự toán: {money(a.estimatedCostVND)}</p>{a.costSource && <p className="text-xs text-slate-500">{display(text(a.costSource))}</p>}
       </li>)}</ol>
       <p className="mt-4 text-sm font-semibold">Dự toán ngày: {money(day.dayEstimatedCostVND)}</p>

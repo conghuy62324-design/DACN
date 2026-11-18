@@ -1,0 +1,10 @@
+import {Router} from 'express';import {authenticate,requireRoles,type AuthenticatedRequest} from '../middlewares/authMiddleware.js';import {CustomerMemoryService} from '../services/customerMemoryService.js';
+const router=Router();router.use(authenticate,requireRoles('CUSTOMER'));
+const route=(f:(req:AuthenticatedRequest)=>Promise<any>)=>async(req:any,res:any,next:any)=>{try{res.setHeader('Cache-Control','no-store');res.json({success:true,data:await f(req)});}catch(e){next(e);}};
+router.get('/',route(req=>CustomerMemoryService.get(req.user!.id)));
+router.put('/settings',route(req=>CustomerMemoryService.settings(req.user!.id,req.body)));
+router.post('/preferences',route(req=>CustomerMemoryService.save(req.user!.id,req.body)));
+router.patch('/preferences/:id',route(req=>CustomerMemoryService.save(req.user!.id,req.body,String(req.params.id))));
+router.delete('/preferences/:id',route(req=>CustomerMemoryService.remove(req.user!.id,String(req.params.id))));
+router.delete('/',route(req=>CustomerMemoryService.remove(req.user!.id)));
+export default router;

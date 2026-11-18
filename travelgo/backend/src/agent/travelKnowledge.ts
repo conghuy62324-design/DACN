@@ -1,0 +1,59 @@
+import {normalizeVietnamese,travelLocations} from './vietnameseNormalizer.js';
+import {resolveLocation,matchesLocation} from '../geography/vietnam.js';
+import {geographicEvidence} from './geographicEvidence.js';
+
+export const KNOWLEDGE_TOPICS=['overview','experience','culture','family','visit','preparation','hours','rules','cost'] as const;
+export type KnowledgeTopic=typeof KNOWLEDGE_TOPICS[number];
+export type KnowledgeItem={id:string;locationId:string;placeId?:string|null;topic:KnowledgeTopic;title:string;content:string;sourceType:'INTERNAL_CATALOG'|'OFFICIAL'|'PARTNER_VERIFIED'|'EXTERNAL_REVIEWED';sourceUrl?:string|null;internalSourceId?:string|null;reviewedAt:string|null;validFrom?:string|null;expiresAt?:string|null;status:'DRAFT'|'APPROVED'|'REVOKED';publicUse:boolean;version:number;provenance:Record<string,unknown>;synthetic?:boolean;retrievedAt?:string};
+const unsafe=/(?:ignore\s+(?:all|previous|system)|system\s*prompt|bypass|bo qua (?:he thong|chi dan)|mat khau|password|api[_ -]?key|\b(?:insert|delete|drop|truncate)\s+(?:table|from|into)|<[^>]*>|[\w.+-]+@[\w.-]+\.[a-z]{2,}|(?:\+?\d[ .-]*){9,})/i;
+export const safeKnowledgeText=(v:unknown,max=900):v is string=>typeof v==='string'&&v.trim().length>0&&v.length<=max&&!unsafe.test(normalizeVietnamese(v).normalized);
+export function safeKnowledgeUrl(v:unknown){try{if(typeof v!=='string'||v.length>600)return false;const u=new URL(v);return u.protocol==='https:'&&!u.username&&!u.password&&!u.hash&&!/^(?:localhost|127\.|0\.|10\.|192\.168\.|169\.254\.|\[|.*\.local$)/i.test(u.hostname)&&!u.search;}catch{return false;}}
+export function usableKnowledge(k:KnowledgeItem,now:number,eligibleIds:Set<string>){
+ return k.status==='APPROVED'&&k.publicUse===true&&Number.isSafeInteger(k.version)&&k.version>=1&&!!resolveLocation(k.locationId)&&k.locationId!=='all'&&KNOWLEDGE_TOPICS.includes(k.topic)&&safeKnowledgeText(k.title,160)&&safeKnowledgeText(k.content)&&(!k.placeId||eligibleIds.has(k.placeId))&&
+ !!k.reviewedAt&&Number.isFinite(Date.parse(k.reviewedAt))&&Date.parse(k.reviewedAt)<=now&&(!k.validFrom||Number.isFinite(Date.parse(k.validFrom))&&Date.parse(k.validFrom)<=now)&&(!k.expiresAt||Number.isFinite(Date.parse(k.expiresAt))&&Date.parse(k.expiresAt)>now)&&
+ (k.sourceType==='INTERNAL_CATALOG'?typeof k.internalSourceId==='string'&&k.internalSourceId===k.placeId&&eligibleIds.has(k.internalSourceId):['OFFICIAL','PARTNER_VERIFIED','EXTERNAL_REVIEWED'].includes(k.sourceType)&&safeKnowledgeUrl(k.sourceUrl))&&!!k.provenance&&typeof k.provenance==='object'&&typeof k.provenance.evidenceHash==='string'&&/^[a-f0-9]{64}$/.test(k.provenance.evidenceHash);
+}
+const rules:Array<[KnowledgeTopic,RegExp]>=[['cost',/\b(?:chi phi|gia ve|ve (?:vo|vao)|ton khoang|ton bao nhieu|het nhieu|ton them|gia mem|bao nhieu tien)\b/],['overview',/\b(?:tong quan|gioi thieu|dac diem|biet ve)\b/],['experience',/\b(?:hoat dong|trai nghiem|tham quan|co gi choi|co gi vui|choi gi|chill(?: chill)?|dac san|thien nhien)\b/],['culture',/\b(?:van hoa|lich su|di san)\b/],['family',/\b(?:gia dinh|tre em|be nho|nhom ban)\b/],['visit',/\b(?:luu y|kinh nghiem|tham quan)\b/],['preparation',/\b(?:chuan bi|hanh ly|mang theo)\b/],['hours',/\b(?:mo cua|dong cua|gio hoat dong|may gio)\b/],['rules',/\b(?:quy dinh|dieu kien|cam|cho phep)\b/]];
+export type KnowledgeRequest={requested:boolean;topics:KnowledgeTopic[];excluded:KnowledgeTopic[];locationId?:string;clarification?:string};
+/** Compositional topic vocabulary and the shared geography; this reader grants no tool/mutation authority. */
+export function knowledgeRequest(message:string,verifiedDestination?:string):KnowledgeRequest{
+ const s=normalizeVietnamese(message).normalized,topics:KnowledgeTopic[]=[],excluded:KnowledgeTopic[]=[];
+ for(const [topic,pattern]of rules){const m=pattern.exec(s);if(m){if(/\b(?:khong (?:can|muon|thich)|bo qua)\s*$/.test(s.slice(Math.max(0,m.index-35),m.index)))excluded.push(topic);else topics.push(topic);}}
+ const requested=!/\b(?:booking|dat phong|dat ban|thanh toan|xac nhan|luu trip|cap nhat trip)\b/.test(s)&&!/\b(?:chua|chang|khong) (?:biet|ro).*(?:chuan bi|bat dau)\b/.test(s)&&topics.length>0&&(/\b(?:chi phi|gia ve|ve (?:vo|vao)|het nhieu|ton them|gia mem|dac san|chill|ton khoang|ton bao nhieu|bao nhieu tien|co gi|choi gi|gioi thieu|tong quan|luu y|kinh nghiem|chuan bi|quy dinh|hoat dong|trai nghiem|biet ve|mo cua|dong cua|gio hoat dong|may gio)\b/.test(s)||/\b(?:tham quan|van hoa|gia dinh)\b/.test(s)&&/\b(?:goi y|tu van|phu hop|thich)\b/.test(s));
+ const matches=travelLocations(s,requested?'destination':undefined).filter(x=>x.role!=='departureCity'),ids=[...new Set(matches.map(m=>m.geo.id))];
+ if(ids.length>1)return{requested,topics,excluded,clarification:'Bạn muốn mình tra thông tin cho điểm đến nào trước?'};
+ const fuzzy=geographicEvidence(message);if(!ids.length&&(fuzzy.ambiguous||fuzzy.candidates.some(c=>c.role==='destinationCity'&&c.match==='fuzzy')))return{requested,topics,excluded,clarification:'Bạn xác nhận lại tên điểm đến để mình tra đúng nguồn nhé?'};
+ const locationId=ids[0]||resolveLocation(verifiedDestination)?.id;
+ if(requested&&!ids.length&&/\b(?:o do|cho hoi nay|cho do|noi do)\b/.test(s)&&!locationId)return{requested,topics,excluded,clarification:'Bạn đang nhắc đến điểm đến nào để mình tra đúng nguồn?'};
+ return{requested,topics,excluded,locationId};
+}
+/** Bounded synonym expansion; no embeddings, generated facts or second geographic map. */
+const synonyms:Array<{topic:KnowledgeTopic;terms:string[]}>= [{topic:'experience',terms:['thien nhien','cay xanh','rung','ngoai troi']},{topic:'culture',terms:['van hoa','di san','lich su','bao tang']},{topic:'family',terms:['gia dinh','tre em','be nho']},{topic:'preparation',terms:['chuan bi','hanh ly','mang theo']},{topic:'visit',terms:['luu y','kinh nghiem','dieu kien']}];
+const factTopics:Record<string,KnowledgeTopic>={LOCAL_CUISINE:'experience',ACTIVITY:'experience',CULTURE:'culture',REPORTED_HOURS:'hours',TRAVEL_TIP:'visit',PREPARATION:'preparation',REPORTED_COST:'cost'};
+const itemTopics=(k:KnowledgeItem):KnowledgeTopic[]=>[k.topic,...(k.sourceType==='EXTERNAL_REVIEWED'&&Array.isArray((k.provenance.external as any)?.facts)?(k.provenance.external as any).facts.slice(0,8).map((f:any)=>factTopics[f.kind]).filter(Boolean):[])];
+const tokens=(v:string)=>normalizeVietnamese(v).normalized.split(/[^a-z0-9]+/).filter(w=>w.length>=3);
+const editOne=(a:string,b:string)=>{if(Math.max(a.length,b.length)<4||Math.abs(a.length-b.length)>1)return false;let i=0,j=0,n=0;while(i<a.length&&j<b.length){if(a[i]===b[j]){i++;j++;}else{if(++n>1)return false;if(a.length>=b.length)i++;if(b.length>=a.length)j++;}}return n+(i<a.length||j<b.length?1:0)<=1;};
+export function retrieveKnowledge(items:KnowledgeItem[],request:KnowledgeRequest,message:string,now:number,eligibleIds:Set<string>){
+ if(!request.locationId||request.clarification)return[];
+ const normalized=normalizeVietnamese(message).normalized,queryWords=normalized.split(/[^a-z0-9]+/),nearPhrase=(term:string)=>{const words=term.split(' ');return queryWords.some((_,i)=>{let edits=0;return words.every((w,j)=>queryWords[i+j]===w||!!queryWords[i+j]&&editOne(queryWords[i+j],w)&&++edits<=1);});};
+ const related=synonyms.filter(g=>g.terms.some(nearPhrase)),topics=new Set([...request.topics,...related.map(g=>g.topic)]),expanded=[normalized,...related.flatMap(g=>g.terms)],wanted=new Set(tokens(expanded.join(' ')));
+ return items.filter(k=>usableKnowledge(k,now,eligibleIds)&&k.locationId===request.locationId&&!request.excluded.includes(k.topic)&&itemTopics(k).some(t=>topics.has(t))).map(k=>{
+ const words=tokens(k.title+' '+k.content),lexical=[...wanted].filter(t=>words.some(w=>w===t||editOne(t,w))).length;
+ return{k,score:(itemTopics(k).some(t=>request.topics.includes(t))?20:0)+lexical};
+ }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||a.k.id.localeCompare(b.k.id)).slice(0,3).map(x=>x.k);
+}
+/** Only typed catalog fields are projected. Description/summary/review text cannot become knowledge instructions. */
+export function catalogKnowledge(listings:any[],locationId:string,now:number){
+ return listings.filter(p=>['attraction','tour'].includes(p.category)&&matchesLocation(p,locationId)&&safeKnowledgeText(p.name,160)).slice(0,3).map(p=>({id:p.id,name:p.name,category:p.category,href:p.href,isDemo:!!p.isDemo,amenities:(p.amenities||[]).filter((a:unknown)=>safeKnowledgeText(a,80)).slice(0,4),approvedAt:p.approvedAt||null,retrievedAt:new Date(now).toISOString()}));
+}
+export function renderKnowledge(items:KnowledgeItem[],catalog:ReturnType<typeof catalogKnowledge>,request:KnowledgeRequest,needs:string[]=[]){
+ const location=resolveLocation(request.locationId)?.name,parts:string[]=[];
+ if(request.clarification)return request.clarification;
+ if(!location)return 'Bạn muốn tìm hiểu điểm đến nào?';
+ for(const k of items){const external=k.provenance.external as any;parts.push(`${k.synthetic?'[SYNTHETIC — chỉ kiểm thử] ':''}${k.title}: ${k.sourceType==='EXTERNAL_REVIEWED'?k.content.replace(/\b(?:PER_ROOM_NIGHT|PER_PERSON|PER_GROUP|PER_NIGHT|UNKNOWN_UNIT)\b/g,u=>({PER_ROOM_NIGHT:'mỗi phòng/đêm',PER_PERSON:'mỗi người',PER_GROUP:'cả nhóm',PER_NIGHT:'mỗi đêm',UNKNOWN_UNIT:'chưa xác minh đơn vị'}[u]!)):k.content}\nNguồn: ${k.sourceType==='OFFICIAL'?'nguồn chính thức đã duyệt':k.sourceType==='PARTNER_VERIFIED'?'thông tin đối tác đã duyệt':k.sourceType==='EXTERNAL_REVIEWED'?'nguồn bên ngoài đã qua duyệt, không phải báo giá hiện tại':'TravelGo'}. Kiểm tra: ${k.reviewedAt!.slice(0,10)}${k.expiresAt?'; được phép sử dụng đến '+k.expiresAt.slice(0,10):''}.`);if(k.sourceUrl)parts.push('Nguồn gốc: '+k.sourceUrl+'.'+(external?' Công bố: '+(external.publishedAt?.slice(0,10)||'chưa rõ')+'; thời điểm quan sát: '+(external.travelPeriod||'chưa rõ')+'; thu thập: '+(external.retrievedAt?.slice(0,10)||'chưa rõ')+'. Thời điểm thu thập hoặc duyệt không biến dữ liệu lịch sử thành giá hiện hành.':''));}
+ if(catalog.length){parts.push(`Tại ${location}, catalog TravelGo đang ghi nhận:\n`+catalog.map((p,i)=>`${i+1}. ${p.name} — ${p.category==='tour'?'trải nghiệm tour':'điểm tham quan'}${p.amenities.length?'; tiện ích ghi nhận: '+p.amenities.join(', '):''}.`).join('\n'));if(needs.length)parts.push('Mình đang đối chiếu ưu tiên '+needs.join(', ')+'. Chỉ những tiện ích hoặc kiến thức có nguồn ở trên mới là căn cứ phù hợp; chưa xác nhận chính sách cho gia đình hay mức độ đông khách.');}
+ if(!items.length)parts.push(`TravelGo chưa có kiến thức đã duyệt, còn hiệu lực về ${request.topics.includes('hours')?'giờ hoạt động':request.topics.includes('preparation')?'việc chuẩn bị chuyến đi':'chủ đề bạn hỏi'} tại ${location}; mình không tự bổ sung thông tin chưa xác minh.`);
+ if(catalog.length)parts.push('Đây là gợi ý tham khảo, chưa phải lịch trình được Planner tính toán; chưa xác minh thời tiết, độ an toàn, giờ mở cửa hoặc tình trạng còn chỗ ngoài những mục có nguồn rõ ở trên.');
+ if(catalog.some(p=>p.isDemo))parts.push('Danh sách có dữ liệu DEMO để kiểm thử, không phải xác nhận dịch vụ thật.');
+ return parts.join('\n\n');
+}

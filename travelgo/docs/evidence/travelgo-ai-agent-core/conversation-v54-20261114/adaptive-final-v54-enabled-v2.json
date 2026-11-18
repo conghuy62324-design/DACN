@@ -1,0 +1,1036 @@
+{
+  "continualMeasurement": {
+    "cases": 12,
+    "intentAccuracy": 1,
+    "precision": 1,
+    "recall": 1,
+    "falsePositiveReadOperations": 0,
+    "unknownExpressionRate": {
+      "numerator": 2,
+      "denominator": 12,
+      "rate": 0.16666666666666666
+    },
+    "clarificationRate": {
+      "numerator": 7,
+      "denominator": 12,
+      "rate": 0.5833333333333334
+    },
+    "userCorrectionRate": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "ambiguousMappingRate": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "confirmedMappingCount": null,
+    "correctReuse": 5,
+    "incorrectReuse": 0,
+    "labeledReuse": 5,
+    "crossAccountLeakageCount": null,
+    "wrongOperationCount": 0,
+    "unauthorizedMutationCount": 0,
+    "meanLatencyMs": 2.569783333333324,
+    "meanQueries": null,
+    "limits": "Null means not measured. Reuse correctness requires labeled ground truth; feedback clicks and mapping count are not evidence of quality."
+  },
+  "tier": "OFFLINE_SYNTHETIC_STORAGE_DOUBLE_NOT_PG_OR_QWEN",
+  "criteriaHash": "8406cb0d86120c07bde1a20024923a24c27ac76820b4195b3b35d8b45da58de0",
+  "passed": 15,
+  "failed": 0,
+  "results": [
+    {
+      "name": "arbitrary discovery, explicit meaning, separate saving and new-conversation reuse",
+      "status": "PASS"
+    },
+    {
+      "name": "personal owner isolation and consent off",
+      "status": "PASS"
+    },
+    {
+      "name": "deletion and new session do not resurrect personal mapping",
+      "status": "PASS"
+    },
+    {
+      "name": "inflight revocation rejects result before presentation",
+      "status": "PASS"
+    },
+    {
+      "name": "pending TTL and candidate mismatch are rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "account switch cannot confirm another owner ticket",
+      "status": "PASS"
+    },
+    {
+      "name": "explicit correction changes only session meaning until independent save",
+      "status": "PASS"
+    },
+    {
+      "name": "negative, ambiguous money and conditional phrases cannot create numeric slots",
+      "status": "PASS"
+    },
+    {
+      "name": "conflicting shared meanings ask; personal data does not grant mutation authority",
+      "status": "PASS"
+    },
+    {
+      "name": "PII/control/proper names rejected, numeric units never learned",
+      "status": "PASS"
+    },
+    {
+      "name": "feedback kinds are not corrections, confirmations have separate purpose",
+      "status": "PASS"
+    },
+    {
+      "name": "controlled model mapping context is bounded and contains no owner or private row ID",
+      "status": "PASS"
+    },
+    {
+      "name": "locked holdout: base without mappings versus trained adaptive lookup on new sentences",
+      "status": "PASS"
+    },
+    {
+      "name": "known mapping with incomplete or conflicting geographic/compound context asks instead of fallback",
+      "status": "PASS"
+    },
+    {
+      "name": "feature disabled leaves legacy NLU and metadata contracts unchanged",
+      "status": "PASS"
+    }
+  ],
+  "transcripts": [
+    {
+      "tier": "OFFLINE_STORAGE_DOUBLE",
+      "turns": [
+        {
+          "message": "Tìm zyvoro ở Đà Lạt",
+          "data": {
+            "status": "needs_input",
+            "reply": "Bạn dùng “zyvoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+            "languageClarification": {
+              "candidateId": "8bb6cf89-2dab-4c08-ad61-612c1c7242af",
+              "expression": "zyvoro",
+              "concepts": [
+                {
+                  "id": "accommodation_type.hotel",
+                  "type": "accommodation_type",
+                  "domain": "travel_accommodation",
+                  "label": "khách sạn",
+                  "value": "hotel"
+                },
+                {
+                  "id": "accommodation_type.resort",
+                  "type": "accommodation_type",
+                  "domain": "travel_accommodation",
+                  "label": "resort",
+                  "value": "resort"
+                },
+                {
+                  "id": "accommodation_type.homestay",
+                  "type": "accommodation_type",
+                  "domain": "travel_accommodation",
+                  "label": "homestay",
+                  "value": "homestay"
+                },
+                {
+                  "id": "accommodation_type.villa",
+                  "type": "accommodation_type",
+                  "domain": "travel_accommodation",
+                  "label": "villa",
+                  "value": "villa"
+                },
+                {
+                  "id": "accommodation_type.apartment",
+                  "type": "accommodation_type",
+                  "domain": "travel_accommodation",
+                  "label": "căn hộ",
+                  "value": "apartment"
+                },
+                {
+                  "id": "accommodation_type.guesthouse",
+                  "type": "accommodation_type",
+                  "domain": "travel_accommodation",
+                  "label": "nhà nghỉ",
+                  "value": "guesthouse"
+                },
+                {
+                  "id": "category.restaurant",
+                  "type": "category",
+                  "domain": "travel_dining",
+                  "label": "nhà hàng",
+                  "value": "restaurant"
+                },
+                {
+                  "id": "category.attraction",
+                  "type": "category",
+                  "domain": "travel_experience",
+                  "label": "điểm tham quan",
+                  "value": "attraction"
+                },
+                {
+                  "id": "cuisine.vietnamese",
+                  "type": "cuisine",
+                  "domain": "travel_dining",
+                  "label": "món Việt",
+                  "value": "vietnamese"
+                },
+                {
+                  "id": "cuisine.seafood",
+                  "type": "cuisine",
+                  "domain": "travel_dining",
+                  "label": "hải sản",
+                  "value": "seafood"
+                },
+                {
+                  "id": "cuisine.local",
+                  "type": "cuisine",
+                  "domain": "travel_dining",
+                  "label": "đặc sản",
+                  "value": "local"
+                },
+                {
+                  "id": "cuisine.vegetarian",
+                  "type": "cuisine",
+                  "domain": "travel_dining",
+                  "label": "đồ chay",
+                  "value": "vegetarian"
+                },
+                {
+                  "id": "cuisine.bbq_hotpot",
+                  "type": "cuisine",
+                  "domain": "travel_dining",
+                  "label": "lẩu nướng",
+                  "value": "bbq_hotpot"
+                },
+                {
+                  "id": "cuisine.buffet",
+                  "type": "cuisine",
+                  "domain": "travel_dining",
+                  "label": "buffet",
+                  "value": "buffet"
+                },
+                {
+                  "id": "cuisine.international",
+                  "type": "cuisine",
+                  "domain": "travel_dining",
+                  "label": "quốc tế",
+                  "value": "international"
+                },
+                {
+                  "id": "cuisine.family",
+                  "type": "cuisine",
+                  "domain": "travel_dining",
+                  "label": "ẩm thực gia đình",
+                  "value": "family"
+                }
+              ]
+            },
+            "languageDiscovery": {
+              "kind": "UNKNOWN_PHRASE",
+              "stored": false
+            },
+            "languageFeedback": {
+              "id": "209a92d9-c5f6-479c-ad82-3bd7cc766dbb",
+              "revision": 1
+            },
+            "dialogue": {
+              "deferredGoals": [],
+              "activeConstraints": {},
+              "softPreferences": {},
+              "mutationAuthority": false
+            },
+            "conversation": {
+              "id": "da130107-9c98-487c-aeb0-4258a1f9ecb8",
+              "revision": 1,
+              "expiresAt": "2026-11-14T03:45:00.000Z",
+              "mode": "CORE_VERIFIED",
+              "persisted": false
+            },
+            "model": {
+              "invoked": false,
+              "rawNlu": "NOT_EVALUATED"
+            },
+            "intent": {
+              "version": "NATURAL_CHAT_V3",
+              "authority": "SERVER_VERIFIED"
+            },
+            "languageStatus": "disabled",
+            "verifiedTravel": {}
+          }
+        },
+        {
+          "message": "đúng rồi",
+          "data": {
+            "status": "needs_input",
+            "reply": "Bạn dùng “zyvoro” để chỉ loại dịch vụ nào? Xác nhận nghĩa không tự bật ghi nhớ lâu dài.",
+            "languageClarification": {
+              "candidateId": "8bb6cf89-2dab-4c08-ad61-612c1c7242af",
+              "expression": "zyvoro",
+              "concepts": [
+                {
+                  "id": "accommodation_type.hotel",
+                  "type": "accommodation_type",
+                  "domain": "travel_accommodation",
+                  "label": "khách sạn",
+                  "value": "hotel"
+                },
+                {
+                  "id": "accommodation_type.resort",
+                  "type": "accommodation_type",
+                  "domain": "travel_accommodation",
+                  "label": "resort",
+                  "value": "resort"
+                },
+                {
+                  "id": "accommodation_type.homestay",
+                  "type": "accommodation_type",
+                  "domain": "travel_accommodation",
+                  "label": "homestay",
+                  "value": "homestay"
+                },
+                {
+                  "id": "accommodation_type.villa",
+                  "type": "accommodation_type",
+                  "domain": "travel_accommodation",
+                  "label": "villa",
+                  "value": "villa"
+                },
+                {
+                  "id": "accommodation_type.apartment",
+                  "type": "accommodation_type",
+                  "domain": "travel_accommodation",
+                  "label": "căn hộ",
+                  "value": "apartment"
+                },
+                {
+                  "id": "accommodation_type.guesthouse",
+                  "type": "accommodation_type",
+                  "domain": "travel_accommodation",
+                  "label": "nhà nghỉ",
+                  "value": "guesthouse"
+                },
+                {
+                  "id": "category.restaurant",
+                  "type": "category",
+                  "domain": "travel_dining",
+                  "label": "nhà hàng",
+                  "value": "restaurant"
+                },
+                {
+                  "id": "category.attraction",
+                  "type": "category",
+                  "domain": "travel_experience",
+                  "label": "điểm tham quan",
+                  "value": "attraction"
+                },
+                {
+                  "id": "cuisine.vietnamese",
+                  "type": "cuisine",
+                  "domain": "travel_dining",
+                  "label": "món Việt",
+                  "value": "vietnamese"
+                },
+                {
+                  "id": "cuisine.seafood",
+                  "type": "cuisine",
+                  "domain": "travel_dining",
+                  "label": "hải sản",
+                  "value": "seafood"
+                },
+                {
+                  "id": "cuisine.local",
+                  "type": "cuisine",
+                  "domain": "travel_dining",
+                  "label": "đặc sản",
+                  "value": "local"
+                },
+                {
+                  "id": "cuisine.vegetarian",
+                  "type": "cuisine",
+                  "domain": "travel_dining",
+                  "label": "đồ chay",
+                  "value": "vegetarian"
+                },
+                {
+                  "id": "cuisine.bbq_hotpot",
+                  "type": "cuisine",
+                  "domain": "travel_dining",
+                  "label": "lẩu nướng",
+                  "value": "bbq_hotpot"
+                },
+                {
+                  "id": "cuisine.buffet",
+                  "type": "cuisine",
+                  "domain": "travel_dining",
+                  "label": "buffet",
+                  "value": "buffet"
+                },
+                {
+                  "id": "cuisine.international",
+                  "type": "cuisine",
+                  "domain": "travel_dining",
+                  "label": "quốc tế",
+                  "value": "international"
+                },
+                {
+                  "id": "cuisine.family",
+                  "type": "cuisine",
+                  "domain": "travel_dining",
+                  "label": "ẩm thực gia đình",
+                  "value": "family"
+                }
+              ]
+            },
+            "languageFeedback": {
+              "id": "5ec52eae-a37c-4949-bed7-c6821b990e21",
+              "revision": 2
+            },
+            "dialogue": {
+              "deferredGoals": [],
+              "activeConstraints": {},
+              "softPreferences": {},
+              "mutationAuthority": false
+            },
+            "conversation": {
+              "id": "da130107-9c98-487c-aeb0-4258a1f9ecb8",
+              "revision": 2,
+              "expiresAt": "2026-11-14T03:45:00.000Z",
+              "mode": "CORE_VERIFIED",
+              "persisted": false
+            },
+            "model": {
+              "invoked": false,
+              "rawNlu": "NOT_EVALUATED"
+            },
+            "intent": {
+              "version": "NATURAL_CHAT_V3",
+              "authority": "SERVER_VERIFIED"
+            },
+            "languageStatus": "disabled",
+            "verifiedTravel": {}
+          }
+        },
+        {
+          "message": "Ý mình là homestay",
+          "data": {
+            "status": "completed",
+            "reply": "SYNTHETIC Đà Lạt homestay. Giá tham khảo từ nguồn TravelGo: 400.000 VND. Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét. Chưa có địa chỉ chi tiết. Dịch vụ lưu trú. Chưa có tiện ích được ghi nhận. Đánh giá trong TravelGo: 4.6/5 từ 30 lượt.\n\nGiá được ghi từ TravelGo; đơn vị giá và tình trạng còn chỗ chưa được xác minh.",
+            "tool": "search_registered_hotels",
+            "result": {
+              "type": "registered_options",
+              "category": "hotel",
+              "source": "TRAVELGO_REGISTERED_CATALOG",
+              "filters": {
+                "city": "Đà Lạt",
+                "locationId": "destination:da-lat",
+                "accommodationType": "homestay"
+              },
+              "weights": {
+                "quality": 0.35,
+                "preference": 0.25,
+                "budget": 0.25,
+                "distance": 0.15
+              },
+              "ranking": "Existing deterministic RecommendationService; no new weights; budget cap/area/amenities/exclusions are hard filters, preferences soft.",
+              "items": [
+                {
+                  "id": "61000000-0000-4000-8000-000000000001",
+                  "name": "SYNTHETIC Đà Lạt homestay",
+                  "category": "hotel",
+                  "city": "Đà Lạt",
+                  "province": "Đà Lạt",
+                  "openingHours": {},
+                  "summary": "Nghỉ dưỡng hồ bơi",
+                  "heroImage": null,
+                  "amenities": [],
+                  "priceFrom": 400000,
+                  "priceUnit": "CATALOG_FROM_PRICE_UNIT_UNVERIFIED",
+                  "currency": "VND",
+                  "rating": 4.6,
+                  "reviewCount": 30,
+                  "status": "APPROVED",
+                  "businessStatus": "ACTIVE",
+                  "source": "TRAVELGO_REGISTERED_CATALOG",
+                  "href": "/places/61000000-0000-4000-8000-000000000001",
+                  "availability": "NOT_VERIFIED",
+                  "capacity": "NOT_MANAGED_FOR_PLACES",
+                  "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+                  "bookingEligible": true,
+                  "geography": {
+                    "locationId": "destination:da-lat",
+                    "provinceCode": "68",
+                    "provinceName": "Lâm Đồng",
+                    "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+                  },
+                  "catalogMetadata": {
+                    "accommodationType": "homestay"
+                  },
+                  "approvedAt": null,
+                  "isDemo": false,
+                  "score": 0.815,
+                  "scoreBreakdown": {
+                    "qualityScore": 0.9,
+                    "preferenceScore": 0.6,
+                    "budgetScore": 0.8,
+                    "distanceScore": 1
+                  },
+                  "reasons": [
+                    "Đúng khu vực Đà Lạt"
+                  ],
+                  "matchedPreferences": []
+                }
+              ],
+              "warnings": [
+                "Giá từ catalog chưa xác minh đơn vị phòng/đêm hoặc món/phần. Ngày/khách không xác nhận còn phòng, bàn hay sức chứa.",
+                "Không có dữ liệu thực đơn đầy đủ; loại trừ từ khóa không là cam kết an toàn dị ứng."
+              ]
+            },
+            "sourceInfo": {
+              "label": "Dữ liệu TravelGo được phép hiển thị",
+              "retrievedAt": "2026-11-14T03:30:00.000Z",
+              "externalKnowledgeIntegrated": false
+            },
+            "advisory": {
+              "version": "ADVISORY_V51",
+              "goal": "DETAILS",
+              "options": [
+                {
+                  "index": 0,
+                  "id": "61000000-0000-4000-8000-000000000001",
+                  "name": "SYNTHETIC Đà Lạt homestay",
+                  "price": 400000,
+                  "claims": [
+                    {
+                      "kind": "UNKNOWN",
+                      "text": "Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét.",
+                      "factIds": []
+                    }
+                  ],
+                  "fit": "UNKNOWN",
+                  "reviewCount": 0,
+                  "sourceHref": "/places/61000000-0000-4000-8000-000000000001"
+                }
+              ],
+              "recommendationIndex": null,
+              "preferenceSource": "NONE",
+              "quality": [],
+              "tradeoffs": [],
+              "warnings": [
+                "Đây là ý kiến khách hàng, không phải cam kết chất lượng hoặc tiện ích do cơ sở xác minh.",
+                "Giá được ghi từ TravelGo; đơn vị giá và tình trạng còn chỗ chưa được xác minh."
+              ],
+              "mutationAuthority": false
+            },
+            "languageFeedback": {
+              "id": "6c24a4b4-4f2a-4431-882e-c3f186df6524",
+              "revision": 3
+            },
+            "languageLearning": {
+              "candidateId": "932bc947-50e6-4c7e-85fc-5fca06e6693e",
+              "expression": "zyvoro",
+              "conceptId": "accommodation_type.homestay",
+              "label": "homestay",
+              "purpose": "SAVE_PERSONAL",
+              "expiresAt": "2026-11-14T03:35:00.000Z",
+              "policyVersion": "TRAVELGO_LANGUAGE_MEMORY_V1"
+            },
+            "languageUnderstanding": {
+              "status": "RESOLVED",
+              "evidence": [
+                {
+                  "expression": "zyvoro",
+                  "meaning": "homestay",
+                  "conceptId": "accommodation_type.homestay",
+                  "domain": "travel_accommodation",
+                  "evidenceStatus": "USER_CONFIRMED",
+                  "origin": "CONFIRMED_PENDING_REQUEST",
+                  "executionAuthority": false
+                }
+              ]
+            },
+            "dialogue": {
+              "currentGoal": "hotel",
+              "deferredGoals": [],
+              "activeConstraints": {
+                "hotel": {}
+              },
+              "softPreferences": {},
+              "mutationAuthority": false
+            },
+            "conversation": {
+              "id": "da130107-9c98-487c-aeb0-4258a1f9ecb8",
+              "revision": 3,
+              "expiresAt": "2026-11-14T03:45:00.000Z",
+              "mode": "CORE_VERIFIED",
+              "persisted": false
+            },
+            "model": {
+              "invoked": false,
+              "rawNlu": "NOT_EVALUATED"
+            },
+            "intent": {
+              "version": "NATURAL_CHAT_V3",
+              "authority": "SERVER_VERIFIED"
+            },
+            "languageStatus": "disabled",
+            "verifiedTravel": {}
+          }
+        },
+        {
+          "message": "Kiếm zyvoro ở Nha Trang giúp tui",
+          "data": {
+            "status": "completed",
+            "reply": "SYNTHETIC Nha Trang homestay. Giá tham khảo từ nguồn TravelGo: 400.000 VND. Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét.\n\nGiá được ghi từ TravelGo; đơn vị giá và tình trạng còn chỗ chưa được xác minh.",
+            "tool": "search_registered_hotels",
+            "result": {
+              "type": "registered_options",
+              "category": "hotel",
+              "source": "TRAVELGO_REGISTERED_CATALOG",
+              "filters": {
+                "city": "Nha Trang",
+                "locationId": "destination:nha-trang",
+                "accommodationType": "homestay"
+              },
+              "weights": {
+                "quality": 0.35,
+                "preference": 0.25,
+                "budget": 0.25,
+                "distance": 0.15
+              },
+              "ranking": "Existing deterministic RecommendationService; no new weights; budget cap/area/amenities/exclusions are hard filters, preferences soft.",
+              "items": [
+                {
+                  "id": "61000000-0000-4000-8000-000000000003",
+                  "name": "SYNTHETIC Nha Trang homestay",
+                  "category": "hotel",
+                  "city": "Nha Trang",
+                  "province": "Nha Trang",
+                  "openingHours": {},
+                  "summary": "Nghỉ dưỡng hồ bơi",
+                  "heroImage": null,
+                  "amenities": [],
+                  "priceFrom": 400000,
+                  "priceUnit": "CATALOG_FROM_PRICE_UNIT_UNVERIFIED",
+                  "currency": "VND",
+                  "rating": 4.6,
+                  "reviewCount": 30,
+                  "status": "APPROVED",
+                  "businessStatus": "ACTIVE",
+                  "source": "TRAVELGO_REGISTERED_CATALOG",
+                  "href": "/places/61000000-0000-4000-8000-000000000003",
+                  "availability": "NOT_VERIFIED",
+                  "capacity": "NOT_MANAGED_FOR_PLACES",
+                  "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+                  "bookingEligible": true,
+                  "geography": {
+                    "locationId": "destination:nha-trang",
+                    "provinceCode": "56",
+                    "provinceName": "Khánh Hòa",
+                    "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+                  },
+                  "catalogMetadata": {
+                    "accommodationType": "homestay"
+                  },
+                  "approvedAt": null,
+                  "isDemo": false,
+                  "score": 0.815,
+                  "scoreBreakdown": {
+                    "qualityScore": 0.9,
+                    "preferenceScore": 0.6,
+                    "budgetScore": 0.8,
+                    "distanceScore": 1
+                  },
+                  "reasons": [
+                    "Đúng khu vực Nha Trang"
+                  ],
+                  "matchedPreferences": []
+                }
+              ],
+              "warnings": [
+                "Giá từ catalog chưa xác minh đơn vị phòng/đêm hoặc món/phần. Ngày/khách không xác nhận còn phòng, bàn hay sức chứa.",
+                "Không có dữ liệu thực đơn đầy đủ; loại trừ từ khóa không là cam kết an toàn dị ứng."
+              ]
+            },
+            "sourceInfo": {
+              "label": "Dữ liệu TravelGo được phép hiển thị",
+              "retrievedAt": "2026-11-14T03:30:00.000Z",
+              "externalKnowledgeIntegrated": false
+            },
+            "advisory": {
+              "version": "ADVISORY_V51",
+              "goal": "SEARCH",
+              "options": [
+                {
+                  "index": 0,
+                  "id": "61000000-0000-4000-8000-000000000003",
+                  "name": "SYNTHETIC Nha Trang homestay",
+                  "price": 400000,
+                  "claims": [
+                    {
+                      "kind": "UNKNOWN",
+                      "text": "Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét.",
+                      "factIds": []
+                    }
+                  ],
+                  "fit": "UNKNOWN",
+                  "reviewCount": 0,
+                  "sourceHref": "/places/61000000-0000-4000-8000-000000000003"
+                }
+              ],
+              "recommendationIndex": null,
+              "preferenceSource": "NONE",
+              "quality": [],
+              "tradeoffs": [],
+              "warnings": [
+                "Đây là ý kiến khách hàng, không phải cam kết chất lượng hoặc tiện ích do cơ sở xác minh.",
+                "Giá được ghi từ TravelGo; đơn vị giá và tình trạng còn chỗ chưa được xác minh."
+              ],
+              "mutationAuthority": false
+            },
+            "languageFeedback": {
+              "id": "bc8a4988-acaa-4b11-8767-775c1a43fbc3",
+              "revision": 1
+            },
+            "languageUnderstanding": {
+              "status": "RESOLVED",
+              "evidence": [
+                {
+                  "expression": "zyvoro",
+                  "meaning": "homestay",
+                  "conceptId": "accommodation_type.homestay",
+                  "domain": "travel_accommodation",
+                  "evidenceStatus": "USER_CONFIRMED",
+                  "currentSpan": {
+                    "start": 5,
+                    "end": 11
+                  },
+                  "executionAuthority": false
+                }
+              ]
+            },
+            "dialogue": {
+              "currentGoal": "hotel",
+              "deferredGoals": [],
+              "activeConstraints": {
+                "hotel": {}
+              },
+              "softPreferences": {},
+              "mutationAuthority": false
+            },
+            "conversation": {
+              "id": "b57b85b8-1247-4045-89ce-fedbd67ce165",
+              "revision": 1,
+              "expiresAt": "2026-11-14T03:45:00.000Z",
+              "mode": "CORE_VERIFIED",
+              "persisted": false
+            },
+            "model": {
+              "invoked": false,
+              "rawNlu": "NOT_EVALUATED"
+            },
+            "intent": {
+              "version": "NATURAL_CHAT_V3",
+              "authority": "SERVER_VERIFIED"
+            },
+            "languageStatus": "disabled",
+            "verifiedTravel": {
+              "destinationCity": "Nha Trang"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "evaluation": [
+    {
+      "input": "Kiếm zyvoro ở Nha Trang giúp tui",
+      "expected": "search_registered_hotels",
+      "base": "CLARIFY",
+      "adaptive": "search_registered_hotels",
+      "baseCorrect": false,
+      "adaptiveCorrect": true,
+      "baseMs": 0.8113999999999351,
+      "adaptiveMs": 5.588300000000004,
+      "baseReply": "Bạn dùng “zyvoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "adaptiveReply": "SYNTHETIC Nha Trang homestay. Giá tham khảo từ nguồn TravelGo: 400.000 VND. Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét.\n\nGiá được ghi từ TravelGo; đơn vị giá và tình trạng còn chỗ chưa được xác minh.",
+      "adaptiveEvidence": {
+        "status": "RESOLVED",
+        "evidence": [
+          {
+            "expression": "zyvoro",
+            "meaning": "homestay",
+            "conceptId": "accommodation_type.homestay",
+            "domain": "travel_accommodation",
+            "evidenceStatus": "USER_CONFIRMED",
+            "currentSpan": {
+              "start": 5,
+              "end": 11
+            },
+            "executionAuthority": false
+          }
+        ]
+      },
+      "baseClarification": true,
+      "adaptiveClarification": false,
+      "unknownBefore": true,
+      "unknownAfter": false
+    },
+    {
+      "input": "Tìm zyvoro tại Hội An cho 2 người",
+      "expected": "search_registered_hotels",
+      "base": "CLARIFY",
+      "adaptive": "search_registered_hotels",
+      "baseCorrect": false,
+      "adaptiveCorrect": true,
+      "baseMs": 1.0215999999999212,
+      "adaptiveMs": 5.948399999999992,
+      "baseReply": "Bạn dùng “zyvoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "adaptiveReply": "SYNTHETIC Hội An homestay. Giá tham khảo từ nguồn TravelGo: 400.000 VND. Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét.\n\nGiá được ghi từ TravelGo; đơn vị giá và tình trạng còn chỗ chưa được xác minh.",
+      "adaptiveEvidence": {
+        "status": "RESOLVED",
+        "evidence": [
+          {
+            "expression": "zyvoro",
+            "meaning": "homestay",
+            "conceptId": "accommodation_type.homestay",
+            "domain": "travel_accommodation",
+            "evidenceStatus": "USER_CONFIRMED",
+            "currentSpan": {
+              "start": 4,
+              "end": 10
+            },
+            "executionAuthority": false
+          }
+        ]
+      },
+      "baseClarification": true,
+      "adaptiveClarification": false,
+      "unknownBefore": true,
+      "unknownAfter": false
+    },
+    {
+      "input": "Kiem zývoro o nha trang",
+      "expected": "search_registered_hotels",
+      "base": "CLARIFY",
+      "adaptive": "search_registered_hotels",
+      "baseCorrect": false,
+      "adaptiveCorrect": true,
+      "baseMs": 1.4479000000000042,
+      "adaptiveMs": 3.811800000000062,
+      "baseReply": "Bạn dùng “zývoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "adaptiveReply": "SYNTHETIC Nha Trang homestay. Giá tham khảo từ nguồn TravelGo: 400.000 VND. Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét.\n\nGiá được ghi từ TravelGo; đơn vị giá và tình trạng còn chỗ chưa được xác minh.",
+      "adaptiveEvidence": {
+        "status": "RESOLVED",
+        "evidence": [
+          {
+            "expression": "zývoro",
+            "meaning": "homestay",
+            "conceptId": "accommodation_type.homestay",
+            "domain": "travel_accommodation",
+            "evidenceStatus": "USER_CONFIRMED",
+            "currentSpan": {
+              "start": 5,
+              "end": 11
+            },
+            "executionAuthority": false
+          }
+        ]
+      },
+      "baseClarification": true,
+      "adaptiveClarification": false,
+      "unknownBefore": true,
+      "unknownAfter": false
+    },
+    {
+      "input": "Tìm zyvoro ở Đà Lạt giùm",
+      "expected": "search_registered_hotels",
+      "base": "CLARIFY",
+      "adaptive": "search_registered_hotels",
+      "baseCorrect": false,
+      "adaptiveCorrect": true,
+      "baseMs": 0.6580999999999904,
+      "adaptiveMs": 3.9937999999999647,
+      "baseReply": "Bạn dùng “zyvoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "adaptiveReply": "SYNTHETIC Đà Lạt homestay. Giá tham khảo từ nguồn TravelGo: 400.000 VND. Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét.\n\nGiá được ghi từ TravelGo; đơn vị giá và tình trạng còn chỗ chưa được xác minh.",
+      "adaptiveEvidence": {
+        "status": "RESOLVED",
+        "evidence": [
+          {
+            "expression": "zyvoro",
+            "meaning": "homestay",
+            "conceptId": "accommodation_type.homestay",
+            "domain": "travel_accommodation",
+            "evidenceStatus": "USER_CONFIRMED",
+            "currentSpan": {
+              "start": 4,
+              "end": 10
+            },
+            "executionAuthority": false
+          }
+        ]
+      },
+      "baseClarification": true,
+      "adaptiveClarification": false,
+      "unknownBefore": true,
+      "unknownAfter": false
+    },
+    {
+      "input": "Ko tìm zyvoro ở Đà Lạt",
+      "expected": "CLARIFY",
+      "base": "CLARIFY",
+      "adaptive": "CLARIFY",
+      "baseCorrect": true,
+      "adaptiveCorrect": true,
+      "baseMs": 0.6843000000000075,
+      "adaptiveMs": 0.5756999999999834,
+      "baseReply": "Bạn dùng “zyvoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "adaptiveReply": "Bạn muốn tìm dịch vụ hay chỉ đang nêu một khả năng? Mình chưa thay đổi lựa chọn nào.",
+      "baseClarification": true,
+      "adaptiveClarification": true,
+      "unknownBefore": true,
+      "unknownAfter": false
+    },
+    {
+      "input": "Nếu có thể thì kiếm zyvoro ở Đà Lạt",
+      "expected": "CLARIFY",
+      "base": "CLARIFY",
+      "adaptive": "CLARIFY",
+      "baseCorrect": true,
+      "adaptiveCorrect": true,
+      "baseMs": 1.0676999999999452,
+      "adaptiveMs": 0.5997999999999593,
+      "baseReply": "Đây mới là phương án cân nhắc; mình vẫn giữ thông tin hiện tại. Bạn muốn so sánh chi phí phương tiện hay xác nhận một thay đổi cụ thể?",
+      "adaptiveReply": "Bạn muốn tìm dịch vụ hay chỉ đang nêu một khả năng? Mình chưa thay đổi lựa chọn nào.",
+      "baseClarification": true,
+      "adaptiveClarification": true,
+      "unknownBefore": false,
+      "unknownAfter": false
+    },
+    {
+      "input": "zyvoro 2 xị",
+      "expected": "CLARIFY",
+      "base": "CLARIFY",
+      "adaptive": "CLARIFY",
+      "baseCorrect": true,
+      "adaptiveCorrect": true,
+      "baseMs": 2.4435999999999467,
+      "adaptiveMs": 0.7649999999999864,
+      "baseReply": "AI hiểu ngôn ngữ tự nhiên hiện chưa được bật. Mình vẫn có thể ghi nhận thông tin chuyến đi và tìm dữ liệu TravelGo khi yêu cầu rõ. Bạn muốn đi đâu hoặc cần hỗ trợ phần nào?",
+      "adaptiveReply": "Mình thấy cách diễn đạt đã nhớ nhưng ngữ cảnh chưa đủ rõ hoặc có nhiều nghĩa. Bạn muốn tìm loại dịch vụ và điểm đến nào?",
+      "baseClarification": true,
+      "adaptiveClarification": true,
+      "unknownBefore": false,
+      "unknownAfter": false
+    },
+    {
+      "input": "Tìm zyvoro ở Đà Lạt nhưng đừng đặt phòng",
+      "expected": "CLARIFY",
+      "base": "CLARIFY",
+      "adaptive": "CLARIFY",
+      "baseCorrect": true,
+      "adaptiveCorrect": true,
+      "baseMs": 1.2323000000000093,
+      "adaptiveMs": 0.732599999999934,
+      "baseReply": "Bạn dùng “zyvoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "adaptiveReply": "Bạn muốn tìm dịch vụ hay chỉ đang nêu một khả năng? Mình chưa thay đổi lựa chọn nào.",
+      "baseClarification": true,
+      "adaptiveClarification": true,
+      "unknownBefore": true,
+      "unknownAfter": false
+    },
+    {
+      "input": "Tìm vvvzyvoro ở Đà Lạt",
+      "expected": "CLARIFY",
+      "base": "CLARIFY",
+      "adaptive": "CLARIFY",
+      "baseCorrect": true,
+      "adaptiveCorrect": true,
+      "baseMs": 0.9753000000000611,
+      "adaptiveMs": 0.8936999999999671,
+      "baseReply": "Bạn dùng “vvvzyvoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "adaptiveReply": "Bạn dùng “vvvzyvoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "baseClarification": true,
+      "adaptiveClarification": true,
+      "unknownBefore": true,
+      "unknownAfter": true
+    },
+    {
+      "input": "Tìm qerul ở Đà Lạt",
+      "expected": "CLARIFY",
+      "base": "CLARIFY",
+      "adaptive": "CLARIFY",
+      "baseCorrect": true,
+      "adaptiveCorrect": true,
+      "baseMs": 0.6348999999999023,
+      "adaptiveMs": 0.6315000000000737,
+      "baseReply": "Bạn dùng “qerul” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "adaptiveReply": "Bạn dùng “qerul” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "baseClarification": true,
+      "adaptiveClarification": true,
+      "unknownBefore": true,
+      "unknownAfter": true
+    },
+    {
+      "input": "ghé zyvoro hôm nào nhỉ",
+      "expected": "CLARIFY",
+      "base": "CLARIFY",
+      "adaptive": "CLARIFY",
+      "baseCorrect": true,
+      "adaptiveCorrect": true,
+      "baseMs": 2.1598999999999933,
+      "adaptiveMs": 0.4593999999999596,
+      "baseReply": "AI hiểu ngôn ngữ tự nhiên hiện chưa được bật. Mình vẫn có thể ghi nhận thông tin chuyến đi và tìm dữ liệu TravelGo khi yêu cầu rõ. Bạn muốn đi đâu hoặc cần hỗ trợ phần nào?",
+      "adaptiveReply": "Mình thấy cách diễn đạt đã nhớ nhưng ngữ cảnh chưa đủ rõ hoặc có nhiều nghĩa. Bạn muốn tìm loại dịch vụ và điểm đến nào?",
+      "baseClarification": true,
+      "adaptiveClarification": true,
+      "unknownBefore": false,
+      "unknownAfter": false
+    },
+    {
+      "input": "Kiếm zyvoro ở Phú Quốc cho nhóm bạn",
+      "expected": "search_registered_hotels",
+      "base": "CLARIFY",
+      "adaptive": "search_registered_hotels",
+      "baseCorrect": false,
+      "adaptiveCorrect": true,
+      "baseMs": 0.7166999999999462,
+      "adaptiveMs": 6.837400000000002,
+      "baseReply": "Bạn dùng “zyvoro” để chỉ loại chỗ ở hay dịch vụ nào vậy?",
+      "adaptiveReply": "SYNTHETIC Phú Quốc homestay. Giá tham khảo từ nguồn TravelGo: 400.000 VND. Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét.\n\nGiá được ghi từ TravelGo; đơn vị giá và tình trạng còn chỗ chưa được xác minh.",
+      "adaptiveEvidence": {
+        "status": "RESOLVED",
+        "evidence": [
+          {
+            "expression": "zyvoro",
+            "meaning": "homestay",
+            "conceptId": "accommodation_type.homestay",
+            "domain": "travel_accommodation",
+            "evidenceStatus": "USER_CONFIRMED",
+            "currentSpan": {
+              "start": 5,
+              "end": 11
+            },
+            "executionAuthority": false
+          }
+        ]
+      },
+      "baseClarification": true,
+      "adaptiveClarification": false,
+      "unknownBefore": true,
+      "unknownAfter": false
+    }
+  ],
+  "metrics": {
+    "cases": 12,
+    "baseCorrect": 7,
+    "adaptiveCorrect": 12,
+    "falsePositiveReadOperations": 0,
+    "baseClarifications": 12,
+    "adaptiveClarifications": 7,
+    "interpretation": "Small locked synthetic reuse holdout; not unseen-word generalization, Qwen accuracy, human helpfulness or production metrics"
+  }
+}

@@ -27,6 +27,8 @@ import { useTelemetry } from '../context/TelemetryContext';
 import { useTelemetryView } from '../hooks/useTelemetryView';
 import { useAuth } from '../context/AuthContext';
 import { Booking } from '../types';
+import {ReviewInsightsPanel} from '../components/common/ReviewInsightsPanel';
+import {api} from '../services/api';
 
 export const PlaceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,7 +38,7 @@ export const PlaceDetailPage: React.FC = () => {
   const [place, setPlace] = useState<Place | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [similarPlaces, setSimilarPlaces] = useState<Place[]>([]);
-  const [activeTab, setActiveTab] = useState<'overview' | 'itinerary' | 'inclusions' | 'policies' | 'reviews'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'itinerary' | 'inclusions' | 'policies' | 'reviews'>(()=>new URLSearchParams(window.location.search).get('tab')==='reviews'?'reviews':'overview');
   const [loading, setLoading] = useState(true);
 
   // Booking Card State
@@ -51,6 +53,7 @@ export const PlaceDetailPage: React.FC = () => {
   // New Review Form State
   const [newReviewScore, setNewReviewScore] = useState(5);
   const [newReviewComment, setNewReviewComment] = useState('');
+  const [analysisConsent,setAnalysisConsent]=useState(false),[editingReviewId,setEditingReviewId]=useState<string>(),[reviewRevision,setReviewRevision]=useState(0),[reportReasons,setReportReasons]=useState<Record<string,string>>({});
   const [selectedReviewBooking, setSelectedReviewBooking] = useState('');
   const [eligibleReviewBookings, setEligibleReviewBookings] = useState<Booking[]>([]);
   const [myReviewIds, setMyReviewIds] = useState<Set<string>>(new Set());
@@ -98,6 +101,7 @@ export const PlaceDetailPage: React.FC = () => {
 
     fetchPlaceData();
   }, [id, user?.id]);
+  useEffect(()=>{if(!loading&&activeTab==='reviews'&&/^#review-[0-9a-f-]{36}$/i.test(window.location.hash))document.getElementById(window.location.hash.slice(1))?.scrollIntoView({block:'center'});},[loading,activeTab,reviews]);
 
   if (loading || !place) {
     return (
@@ -136,13 +140,15 @@ export const PlaceDetailPage: React.FC = () => {
     setSubmittingReview(true);
     setReviewErrorMsg('');
     try {
-      const added = await PlaceService.addReview(place.id, {
+      const added = await (editingReviewId?PlaceService.updateReview(editingReviewId, {rating:newReviewScore,comment:newReviewComment,analysisConsent:analysisConsent?'REVIEW_INSIGHTS_V1':'DECLINED'}):PlaceService.addReview(place.id, {
         bookingId: selectedReviewBooking || undefined,
         rating: newReviewScore,
         comment: newReviewComment,
-      });
+        analysisConsent:analysisConsent?'REVIEW_INSIGHTS_V1':'DECLINED',
+      }));
 
-      setReviews((current) => [added, ...current]);
+      setReviews((current) => editingReviewId?current.map(r=>r.id===editingReviewId?added:r):[added, ...current]);
+      setEditingReviewId(undefined);setAnalysisConsent(false);setReviewRevision(v=>v+1);
       setMyReviewIds((current) => new Set(current).add(added.id));
       if (selectedReviewBooking) {
         setEligibleReviewBookings((current) => current.filter((booking) => booking.id !== selectedReviewBooking));
@@ -157,7 +163,7 @@ export const PlaceDetailPage: React.FC = () => {
       const updated = await PlaceService.getPlaceById(place.id);
       setPlace(updated);
     } catch (e: any) {
-      setReviewErrorMsg(e?.response?.data?.message || 'Không thể gửi đánh giá.');
+      setReviewErrorMsg(/^(?:REVIEW_|INVALID_REVIEW)/.test(e?.code||'')?e.message:'Không thể gửi đánh giá. Hãy kiểm tra nội dung hoặc sửa đánh giá đang có.');
     } finally {
       setSubmittingReview(false);
     }
@@ -182,7 +188,7 @@ export const PlaceDetailPage: React.FC = () => {
   const handleDeleteReview = async (reviewId: string) => {
     if (!window.confirm('Xóa đánh giá này?')) return;
     try {
-      await PlaceService.deleteReview(reviewId);
+      await PlaceService.deleteReview(reviewId);setReviewRevision(v=>v+1);
       setReviews((current) => current.filter((review) => review.id !== reviewId));
       setMyReviewIds((current) => { const next = new Set(current); next.delete(reviewId); return next; });
       const updated = await PlaceService.getPlaceById(place.id);
@@ -452,32 +458,33 @@ export const PlaceDetailPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* New Review Form */}
-                <form onSubmit={handleAddReview} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <ReviewInsightsPanel placeId={place.id} revision={reviewRevision}/>{/* New Review Form */}
+                <form aria-label="Đánh giá dịch vụ" onSubmit={handleAddReview} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                   <h4 className="font-bold text-slate-900 text-sm flex items-center">
                     <MessageSquare className="w-4 h-4 text-orange-500 mr-2" />
                     Để lại trải nghiệm thực tế của bạn
                   </h4>
 
                   {!user && <p className="text-sm text-slate-600">Vui lòng đăng nhập để gửi đánh giá.</p>}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <label className="flex gap-2 text-sm"><input type="checkbox" checked={analysisConsent} onChange={e=>setAnalysisConsent(e.target.checked)}/>Tôi cho phép tổng hợp bình luận công khai này để tư vấn; không dùng thông tin riêng tư của tôi.</label><div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-600 mb-1">Booking đã hoàn thành (không bắt buộc)</label>
                       <select
-                        data-testid="review-booking"
+                        disabled={!!editingReviewId} data-testid="review-booking"
                         value={selectedReviewBooking}
                         onChange={(e) => setSelectedReviewBooking(e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
                       >
-                        <option value="">Không gắn booking — UNVERIFIED</option>
+                        <option value="">Không gắn đơn đã hoàn thành — đánh giá chưa xác thực</option>
                         {eligibleReviewBookings.map((booking) => (
                           <option key={booking.id} value={booking.id}>{booking.bookingCode} — {booking.serviceName}</option>
                         ))}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">Đánh giá số sao</label>
+                      <label htmlFor="review-rating" className="block text-xs font-semibold text-slate-600 mb-1">Đánh giá số sao</label>
                       <select
+                        id="review-rating"
                         value={newReviewScore}
                         onChange={(e) => setNewReviewScore(Number(e.target.value))}
                         className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
@@ -492,8 +499,9 @@ export const PlaceDetailPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Nội dung đánh giá</label>
+                    <label htmlFor="review-comment" className="block text-xs font-semibold text-slate-600 mb-1">Nội dung đánh giá</label>
                     <textarea
+                      id="review-comment"
                       rows={3}
                       required
                       minLength={10}
@@ -518,7 +526,7 @@ export const PlaceDetailPage: React.FC = () => {
                 {/* Review List */}
                 <div className="space-y-4">
                   {reviews.map((rev) => (
-                    <div key={rev.id} className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
+                    <div key={rev.id} id={'review-'+rev.id} className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           <img
@@ -544,7 +552,8 @@ export const PlaceDetailPage: React.FC = () => {
                           ))}
                         </div>
                       </div>
-                      <p className="text-sm text-slate-600 leading-relaxed">{rev.comment}</p>
+                      <p className="text-sm text-slate-600 leading-relaxed">{place.isDemo&&'DEMO — bình luận kiểm thử: '}{rev.comment}</p>{user&&<div className="flex flex-wrap gap-2 text-xs"><select aria-label="Lý do báo cáo đánh giá" value={reportReasons[rev.id]||'SPAM'} onChange={e=>setReportReasons(v=>({...v,[rev.id]:e.target.value}))}><option value="SPAM">Spam</option><option value="ABUSE">Nội dung không phù hợp</option><option value="PRIVACY">Thông tin riêng tư</option><option value="MISLEADING">Thông tin gây hiểu nhầm</option></select><button className="underline" onClick={async()=>{try{await api.post('/reviews/'+rev.id+'/report',{reason:reportReasons[rev.id]||'SPAM'});setReviewSuccessMsg('Đã gửi báo cáo để quản trị viên kiểm tra.');}catch{setReviewErrorMsg('Chưa gửi được báo cáo.');}}}>Báo cáo đánh giá</button></div>}
+                      {myReviewIds.has(rev.id)&&<button className="mr-4 text-xs underline" onClick={()=>{setEditingReviewId(rev.id);setNewReviewScore(rev.rating);setNewReviewComment(rev.comment);setAnalysisConsent(false);}}>Sửa đánh giá</button>}
                       {myReviewIds.has(rev.id) && (
                         <button type="button" onClick={() => handleDeleteReview(rev.id)}
                           className="text-xs font-bold text-rose-600 hover:text-rose-700">

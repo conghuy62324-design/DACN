@@ -1,0 +1,35 @@
+// Exact saved wire response, offline production client contract. No HTTP/model/DB dispatch.
+const fs=require('fs'),path=require('path'),assert=require('assert/strict'),Module=require('module'),esbuild=require('esbuild');
+const root=path.resolve(__dirname,'../..'),dir=root+'/docs/evidence/travelgo-ai-agent-core/hybrid-v65-20261117';
+function compile(source,file){const m=new Module(file,module);m.filename=file;m.paths=module.paths;m._compile(source,file);return m.exports;}
+(async()=>{const evidence=JSON.parse(fs.readFileSync(dir+'/response-A.json')),raw=evidence.body,request={action:'start'};
+ const before=compile(esbuild.transformSync(fs.readFileSync(dir+'/frontend-webSourceCards-before-fix.ts','utf8'),{loader:'ts',format:'cjs'}).code,__filename+'.before.cjs');assert.throws(()=>before.readCostAdvice(raw.data.costIntelligence),/Cost advice contract invalid/);
+ const build=await esbuild.build({entryPoints:[path.join(root,'frontend/src/services/agentCoreClient.ts')],bundle:true,write:false,platform:'node',format:'cjs',define:{'import.meta':'{}'},logLevel:'silent'}),client=compile(build.outputFiles[0].text,__filename+'.client.cjs');const valid=client.readCoreResponse(raw,request);assert.equal(valid.costIntelligence.verification.currentPriceConfirmed,false);assert.equal(valid.costIntelligence.sources[0].version,2);
+ const checks=['old client reproduces exact rejection','current production client accepts saved real response'];
+ const negative=(name,edit)=>{const clone=structuredClone(raw);edit(clone.data.costIntelligence);assert.throws(()=>client.readCoreResponse(clone,request),name);checks.push(name);};
+ negative('extra advice field rejected',v=>v.extra=true);
+ negative('extra query field rejected',v=>v.criteria.query.execute=true);
+ negative('unknown operation rejected',v=>v.criteria.query.kind='WRITE_TRIP');
+ negative('typed quote amount rejects numeric string',v=>v.criteria.query.quotedAmount='150000');
+ negative('typed year rejects numeric string',v=>v.criteria.query.requestedYear='2026');
+ negative('invalid month rejected',v=>v.criteria.query.requestedPeriod='13/2026');
+ negative('period/year mismatch rejected',v=>v.criteria.query.requestedYear=2027);
+ negative('hypothetical boolean rejects coercion',v=>v.criteria.query.hypothetical='false');
+ negative('hypothetical cannot also request actual trip update',v=>{v.criteria.query.hypothetical=true;v.criteria.query.tripRequest=true;});
+ negative('arbitrary catalog goal rejected',v=>v.criteria.query.catalogGoal='booking');
+ negative('duplicate subgoals rejected',v=>v.criteria.query.subgoals=['hotel','hotel']);
+ negative('unknown priced object rejected',v=>v.criteria.query.pricedObject='BOOKING_PRICE');
+ negative('extra source field rejected',v=>v.sources[0].confirmedPrice=1);
+ negative('typed source version rejects numeric string',v=>v.sources[0].version='2');
+ negative('invalid reviewed date rejected',v=>v.sources[0].reviewedAt='not-a-date');
+ negative('unsafe source URL rejected',v=>v.sources[0].href='https://127.0.0.1/');
+ negative('current price claim rejected',v=>v.verification.currentPriceConfirmed=true);
+ negative('extra verification field rejected',v=>v.verification.confidence=99);
+ negative('source observation period cannot be replaced by requested period',v=>v.verification.observedPeriods=['11/2026']);
+ negative('historical evidence cannot be called empty',v=>v.verification.status='NO_APPROVED_EVIDENCE');
+ negative('query requires typed verification',v=>delete v.verification);
+ negative('source amount string rejected',v=>v.destinations[0].observations[0].reported.amount='150000');
+ negative('historical evidence cannot become booking authority',v=>v.priceBasis='BOOKING_CONFIRMED');
+ const legacy=structuredClone(raw);delete legacy.data.costIntelligence.verification;delete legacy.data.costIntelligence.criteria.query;for(const s of legacy.data.costIntelligence.sources){delete s.reviewedAt;delete s.expiresAt;delete s.version;}assert(client.readCoreResponse(legacy,request));checks.push('legacy advice remains compatible');
+ const out={at:new Date().toISOString(),status:'PASS',tier:'OFFLINE_PRODUCTION_CLIENT_SAVED_ACTUAL_WIRE',checks:checks.length,results:checks,actualBackendRequests:0,model:0,postgres:0,actualBrowserReacceptance:'NOT_RUN_NO_RETRY'};fs.writeFileSync(dir+'/frontend-contract-tests.json',JSON.stringify(out,null,2),{flag:'wx'});console.log(JSON.stringify({status:'PASS',checks:checks.length,actualBackendRequests:0}));
+})().catch(e=>{console.error(e.stack);process.exitCode=1;});

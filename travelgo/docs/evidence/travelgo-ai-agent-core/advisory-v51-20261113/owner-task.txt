@@ -1,0 +1,382 @@
+# TASK — TRAVELGO AI AGENT V5.1: ADVANCED ADVISORY REASONING & NATURAL RESPONSE
+
+Tiếp tục trực tiếp dự án TravelGo từ source và báo cáo Master mới nhất.
+
+Đọc kỹ:
+
+`docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md`
+
+Đặc biệt mục 21.9, 21.10 và 21.11.
+
+## MỤC TIÊU
+
+Nâng cấp chất lượng suy luận, lựa chọn thông tin và trả lời khách hàng của AI Agent TravelGo.
+
+Không xây chatbot mới, không viết lại Agent Core và không chỉ bổ sung keyword/regex để làm PASS vài câu kiểm thử.
+
+Tận dụng những thành phần hiện có:
+
+- Vietnamese Natural Agent.
+- Qwen structured proposals.
+- Smart Travel Consultant V5.
+- Registered Catalog.
+- RecommendationService.
+- Review Intelligence.
+- Long-term Customer Memory.
+- Verified Session Context.
+- Grounded Response Renderer.
+
+Mục tiêu là giúp AI tư vấn chính xác, có lập luận, tự nhiên, cá nhân hóa và hữu ích hơn.
+
+---
+
+## PHASE 1 — NÂNG CẤP SUY LUẬN NHU CẦU
+
+Phân biệt rõ các mục tiêu:
+
+1. Khách muốn được hướng dẫn bắt đầu chuyến đi.
+2. Khách cần gợi ý điểm đến.
+3. Khách muốn tìm khách sạn/nhà hàng.
+4. Khách muốn biết dịch vụ có phù hợp không.
+5. Khách yêu cầu so sánh.
+6. Khách hỏi vì sao AI đề xuất một lựa chọn.
+7. Khách muốn đổi sang lựa chọn khác.
+8. Khách chỉ đang nhận xét hoặc chưa đưa ra quyết định.
+9. Khách muốn lập lịch trình.
+10. Khách muốn tìm hiểu điểm mạnh/yếu qua review.
+
+Phân biệt:
+
+- Mục tiêu thực sự.
+- Thông tin đã xác minh.
+- Sở thích dài hạn.
+- Ưu tiên của chuyến đi hiện tại.
+- Điều kiện bắt buộc.
+- Thông tin còn thiếu.
+- Hành động cần khách xác nhận.
+
+Ví dụ:
+
+"Khách sạn này mắc quá."
+
+Không được tự đổi khách sạn.
+
+Hãy phản hồi tự nhiên:
+
+"Bạn muốn mình tìm khách sạn có giá thấp hơn hay kiểm tra lại giá của khách sạn này?"
+
+Nếu khách trả lời mơ hồ như "đúng rồi" sau câu hỏi có hai lựa chọn, phải hỏi rõ lựa chọn nào.
+
+Nếu khách nói:
+
+"Đổi sang khách sạn rẻ hơn đi."
+
+Khi có selected hotel hợp lệ thì thực hiện tìm kiếm có kiểm chứng, không đoán UUID hay giá.
+
+Giữ contract bảo vệ đã PASS ở mục 21.11.
+
+## PHASE 2 — SUY LUẬN DỰA TRÊN NHIỀU NGUỒN DỮ LIỆU
+
+Thiết kế bước tổng hợp tư vấn trên chính Agent Core hiện tại.
+
+Input có kiểm soát:
+
+- Current customer request.
+- Verified session context.
+- Allowed long-term preferences.
+- Current-trip preferences.
+- Approved/active catalog listings.
+- Review insights có provenance.
+- Giá/tiện ích/địa chỉ được lưu trong TravelGo.
+- Những giới hạn và dữ liệu chưa xác minh.
+
+Output là một advisory decision có cấu trúc, phục vụ trình bày, không phải lệnh mutation.
+
+Với mỗi lựa chọn, xác định:
+
+- Vì sao phù hợp nhu cầu.
+- Điều kiện nào được đáp ứng.
+- Những ưu điểm có bằng chứng.
+- Những hạn chế có bằng chứng.
+- Những thông tin còn thiếu.
+- Những tiêu chí có thể so sánh.
+- Mức độ phù hợp với ưu tiên hiện tại.
+
+Không tự tạo scoring model hoặc sửa trọng số RecommendationService hiện có nếu chưa có bằng chứng cần thiết.
+
+Không khẳng định khách sạn tốt chỉ vì tên đẹp, mức giá cao hoặc một review 5 sao.
+
+## PHASE 3 — TƯ VẤN TỪ BÌNH LUẬN KHÁCH CŨ
+
+Tích hợp sâu hơn Review Intelligence vào phần giải thích lựa chọn.
+
+Ví dụ:
+
+Khách sạn A:
+- Nhiều nhận xét tốt về vệ sinh.
+- Có phản ánh tiếng ồn.
+- Giá catalog thấp hơn B.
+
+Khách sạn B:
+- Có nhận xét tích cực về sự yên tĩnh.
+- Giá cao hơn A.
+- Ít review hơn A.
+
+Khách hiện ưu tiên yên tĩnh.
+
+AI cần giải thích:
+
+- A có lợi thế về giá.
+- B có tín hiệu phù hợp hơn với ưu tiên yên tĩnh, nếu evidence đủ.
+- Review về A và B có quy mô mẫu khác nhau.
+- Không chắc chắn dịch vụ thực tế luôn giống nhận xét trước đây.
+- Không khẳng định B tốt hơn tuyệt đối.
+
+Nếu dữ liệu trái chiều, nói rõ trái chiều.
+
+Nếu không có review, không tạo ưu/nhược điểm giả.
+
+Nếu review bị xóa/ẩn hoặc rút quyền AI-use, các lượt mới không được sử dụng evidence cũ.
+
+Không truyền raw comments không đáng tin cậy vào model như hướng dẫn.
+
+## PHASE 4 — SUY LUẬN CÁ NHÂN HÓA
+
+Kết hợp long-term memory từ đúng authenticated Customer.
+
+Ví dụ sở thích đã lưu:
+
+- Thích sạch sẽ.
+- Thích yên tĩnh.
+- Ưu tiên thiên nhiên.
+- Thích lịch trình thư giãn.
+
+Khách nói:
+
+"Lần này muốn đi chơi sôi động hơn, khách sạn gần trung tâm."
+
+AI phải hiểu:
+
+- Đây là ưu tiên cho chuyến hiện tại.
+- Ưu tiên mới thắng memory cũ khi xung đột.
+- Không tự xóa sở thích dài hạn.
+- Không tự chuyển thành yêu cầu Booking.
+
+Khi khách hỏi:
+
+"Sao bạn đề xuất khách sạn này cho tôi?"
+
+AI phải giải thích lựa chọn dựa trên sở thích được phép sử dụng và dữ liệu có nguồn.
+
+Không nói "theo sở thích của bạn" nếu memory đang tắt hoặc không có bằng chứng.
+
+Nếu khách tắt/xóa memory trong lúc request đang xử lý, giữ revocation fence và không phát hành phản hồi sử dụng memory đã bị thu hồi.
+
+## PHASE 5 — CẢI THIỆN CÁCH TRẢ LỜI TỰ NHIÊN
+
+Đây là phần bắt buộc.
+
+Hiện grounded response thiên về chọn fact IDs rồi ghép thông tin. Cần nâng chất lượng diễn giải nhưng không phá vỡ grounding.
+
+Thiết kế response composition linh hoạt theo loại câu hỏi:
+
+### A. Câu hỏi ngắn
+
+Khách: "Khách sạn thứ 2 giá bao nhiêu?"
+
+AI trả lời trực tiếp giá có nguồn và cảnh báo đơn vị khi cần.
+
+Không viết một đoạn tư vấn dài.
+
+### B. Tư vấn lựa chọn
+
+Khách: "Nên chọn khách sạn nào?"
+
+AI trình bày:
+
+- Đề xuất phù hợp nhất nếu có căn cứ.
+- Vì sao phù hợp.
+- Điểm cần cân nhắc.
+- Lựa chọn thay thế nếu hợp lý.
+
+Không chỉ liệt kê tên và giá.
+
+### C. So sánh
+
+Khách: "A với B chỗ nào đáng tiền hơn?"
+
+AI đánh giá theo nhu cầu của khách, dữ liệu giá có thể so sánh được, tiện ích và nhận xét.
+
+Nếu đơn vị giá chưa xác minh, không đưa kết luận chắc chắn về giá trị.
+
+### D. Khách do dự
+
+Khách: "Tôi vẫn chưa biết chọn chỗ nào."
+
+AI nêu điểm đánh đổi quan trọng nhất và hỏi một câu giúp khách quyết định.
+
+Không hỏi lại toàn bộ thông tin đã biết.
+
+### E. Khách hỏi lý do
+
+Khách: "Vì sao bạn không gợi ý khách sạn A?"
+
+AI giải thích những tiêu chí không phù hợp, hoặc thừa nhận thiếu căn cứ nếu không đủ dữ liệu.
+
+### F. Khách chưa biết bắt đầu
+
+Khách: "Muốn đi Đà Lạt mà chẳng biết chuẩn bị gì."
+
+AI hướng dẫn bước đầu và hỏi thông tin quan trọng nhất còn thiếu, không tự tìm khách sạn rẻ hơn.
+
+### Phong cách trả lời
+
+- Tiếng Việt tự nhiên, thân thiện, chuyên nghiệp.
+- Không giống chatbot đọc biểu mẫu.
+- Không lặp lời chào ở mỗi lượt.
+- Không lặp cùng một cảnh báo quá nhiều lần.
+- Không hỏi lại dữ liệu đã xác nhận.
+- Không trả lời dài khi chỉ cần một câu.
+- Không dùng JSON/UUID/schema hoặc thuật ngữ backend trong chat khách hàng.
+- Có thể nói "mình chưa có đủ thông tin" khi cần.
+
+Thiết kế server-grounded sentence/response planning để câu trả lời linh hoạt hơn.
+
+Nếu sử dụng lời văn do Qwen tạo, phải có cơ chế kiểm chứng từng nhận định với offered facts. Không được phát hành câu tự do chưa kiểm chứng chứa giá, rating, availability hoặc review claims.
+
+Nếu chưa thể bảo đảm claim grounding, dùng renderer có kiểm chứng thay thế và ghi rõ giới hạn chất lượng.
+
+Không tăng số model call mỗi lượt hoặc vượt context/runtime guards hiện có.
+
+## PHASE 6 — CÂU HỎI CHỦ ĐỘNG CÓ ÍCH
+
+AI không nên lúc nào cũng hỏi một danh sách dài.
+
+Chọn tối đa một câu hỏi quan trọng cho bước tiếp theo trong phản hồi thông thường.
+
+Ví dụ:
+
+Khách đã cung cấp:
+- Đà Lạt.
+- 3 ngày 2 đêm.
+- 2 người.
+- 6 triệu.
+
+Không hỏi lại bốn thông tin đó.
+
+Hỏi tiếp nơi xuất phát hoặc ngày đi, tùy việc khách đang yêu cầu tư vấn sơ bộ hay lập lịch trình thật.
+
+Nếu khách chỉ muốn tham khảo khách sạn thì không ép cung cấp mọi trường của Planner.
+
+Nếu thiếu giá được xác minh, không tự điền số tiền.
+
+## PHASE 7 — ĐÁNH GIÁ CHẤT LƯỢNG THỰC TẾ
+
+Không chỉ đánh giá bằng số unit tests PASS.
+
+Xây bộ đánh giá hội thoại ngắn nhưng đa dạng, với expected/criteria được khóa trước khi chạy.
+
+Bao gồm ít nhất các nhóm:
+
+1. Tư vấn điểm đến.
+2. Khách chưa biết bắt đầu.
+3. Tiếng Việt tự nhiên, không dấu, typo.
+4. Hiểu ngữ cảnh nhiều lượt.
+5. Tư vấn từ review tích cực và tiêu cực.
+6. Nhận xét trái chiều.
+7. Tư vấn dựa trên memory được phép dùng.
+8. Current-trip preference override.
+9. So sánh hai khách sạn.
+10. Đánh giá lựa chọn có đáng tiền không.
+11. Khách hỏi tại sao.
+12. Câu mơ hồ, phủ định hoặc lời chê chưa thành yêu cầu đổi.
+13. Thiếu dữ liệu/không có review.
+14. Review chứa prompt injection hoặc thông tin riêng tư.
+
+Đánh giá riêng:
+
+- Correctness: hiểu đúng nhu cầu.
+- Grounding: mọi thông tin cụ thể có nguồn.
+- Reasoning: giải thích được các đánh đổi dựa trên evidence.
+- Personalization: dùng đúng sở thích được phép.
+- Helpfulness: phản hồi giúp khách ra quyết định.
+- Naturalness: trả lời dễ hiểu, không máy móc.
+- Safety: không mutation/Booking/Trip trái quyền.
+
+Ghi rõ kết quả theo từng tình huống và những lỗi thực tế. Không làm đẹp số liệu bằng cách sửa expected sau output.
+
+Không yêu cầu model xuất chain-of-thought nội bộ; chỉ cần lý do tư vấn ngắn, có căn cứ và hữu ích cho khách.
+
+## PHASE 8 — KIỂM THỬ VÀ GIỮ TÍNH TƯƠNG THÍCH
+
+Thực hiện:
+
+A. Targeted offline regressions cho reasoning, grounded composition và privacy.
+
+B. Compatibility liên quan, đặc biệt N24.
+
+C. HTTP/PostgreSQL staging READ ONLY cho những luồng tư vấn có thể chạy an toàn.
+
+D. Browser desktop/mobile, Qwen OFF, kiểm tra nội dung phản hồi và trải nghiệm hội thoại.
+
+Không chỉ assert HTTP200 hoặc có text. Kiểm tra chất lượng nội dung và nguồn dữ liệu hiển thị.
+
+N24 là historical contract difference:
+- Giữ original N24 FAIL/expected cũ bất biến.
+- Thêm versioned acceptance cho hành vi hỏi lại mới.
+- Không coi việc tự đổi hotel từ lời chê mơ hồ là sửa lỗi.
+- Không sửa guard để ép compatibility 215/215.
+
+**Không gọi Qwen LIVE trong task này.**
+
+Không Ollama POST, warm-load, retry, provider-switch hoặc sử dụng quota cũ. Chuẩn bị manifest nghiệm thu thật mới nhưng không thực thi.
+
+## PHASE 9 — PHẠM VI BẢO VỆ
+
+- Không tạo Agent thứ hai.
+- Không thay Planner, Trip, Booking.
+- Không tự sửa RecommendationService weights.
+- Không sửa dữ liệu130 Place/20 Business.
+- Không sửa migration14 hoặc data reviews/memory đang PASS nếu không có bug có bằng chứng.
+- Không chạm DB gốc/27 Trip.
+- Không tự tạo review giả rồi trình bày là review thật.
+- Không thay cấu hình Qwen mặc định.
+- Không tăng inference quota/deadline/concurrency.
+- Không API trả phí.
+- Không Google Maps, GPS, VPS.
+- Không commit, push, deploy.
+
+Bảo vệ consent, memory revocation, ownership, replay, TTL, authorization và confirmation hiện có.
+
+## BÁO CÁO CUỐI
+
+Cập nhật duy nhất:
+
+`docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md`
+
+Thêm:
+
+**21.12 — ADVANCED ADVISORY REASONING & NATURAL RESPONSE**
+
+Báo cáo:
+
+1. Những điểm yếu chất lượng trả lời đã xác định.
+2. Kiến trúc reasoning/response mới hoặc những thành phần hiện có được hoàn thiện.
+3. Cách dùng reviews + memory + catalog để tư vấn.
+4. Ví dụ trước/sau với dữ liệu và nguồn rõ ràng.
+5. Kết quả targeted, compatibility, HTTP/staging, browser.
+6. N24 được xử lý ở current-contract như thế nào.
+7. Các trường hợp AI vẫn chưa tư vấn tốt.
+8. Những điều cần kiểm bằng Qwen thật.
+9. Manifest LIVE đề xuất theo source mới, chưa chạy.
+
+Kết luận trung thực:
+
+- OFFLINE QUALITY PASS/PARTIAL/FAIL.
+- STAGING ADVISORY PASS/PARTIAL/FAIL/NOT RUN.
+- QWEN REAL REASONING: NOT RUN.
+- FULL BROWSER QWEN E2E: NOT RUN.
+
+**MỤC TIÊU CUỐI: Khách hàng cảm thấy đang được tư vấn bởi một trợ lý du lịch thực sự hiểu nhu cầu, biết so sánh và giải thích lựa chọn có căn cứ, thay vì chatbot chỉ ghép thông tin hoặc trả lời theo mẫu cố định.**
+
+Thực hiện sửa code và kiểm thử trong phạm vi được phép, không chỉ lập kế hoạch.

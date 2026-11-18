@@ -1,0 +1,14 @@
+import {Router} from 'express';
+import {authenticate,requireRoles} from '../middlewares/authMiddleware.js';
+import {TravelWebService} from '../services/travelWebService.js';
+const router=Router(),service=new TravelWebService();router.use(authenticate,requireRoles('SUPER_ADMIN'));
+router.get('/',async(req:any,res,next)=>{try{res.json({success:true,data:await service.adminOverview(req.user)});}catch(e){next(e);}});
+router.get('/candidates/:id/history',async(req:any,res,next)=>{try{res.json({success:true,data:await service.candidateHistory(req.user,String(req.params.id))});}catch(e){next(e);}});
+router.post('/sources',async(req:any,res,next)=>{try{res.status(201).json({success:true,data:await service.saveSource(req.user,req.body)});}catch(e){next(e);}});
+router.patch('/sources/:id',async(req:any,res,next)=>{try{res.json({success:true,data:await service.saveSource(req.user,req.body,String(req.params.id))});}catch(e){next(e);}});
+router.post('/sources/:id/moderation',async(req:any,res,next)=>{try{res.json({success:true,data:await service.moderateSource(req.user,String(req.params.id),req.body)});}catch(e){next(e);}});
+router.post('/sources/:id/refresh',async(req:any,res,next)=>{try{res.json({success:true,data:{jobs:await service.enqueue(req.user,String(req.params.id)),message:'Chỉ những job chưa có mới được tạo; job hiện có giữ lịch/rate limit.'}});}catch(e){next(e);}});
+router.post('/candidates/:id/review',async(req:any,res,next)=>{try{res.json({success:true,data:await service.reviewCandidate(req.user,String(req.params.id),req.body)});}catch(e){next(e);}});
+router.post('/sources/:id/import',async(req:any,res,next)=>{try{res.json({success:true,data:await service.importArticle(req.user,String(req.params.id),req.body)});}catch(e){next(e);}});
+router.patch('/candidates/:id/extraction',async(req:any,res,next)=>{try{res.json({success:true,data:await service.correctCandidate(req.user,String(req.params.id),req.body)});}catch(e){next(e);}});
+export default router;

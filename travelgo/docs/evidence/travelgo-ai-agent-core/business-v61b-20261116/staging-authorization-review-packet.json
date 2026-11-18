@@ -1,0 +1,77 @@
+{
+  "at": "2026-11-16T06:46:39.171Z",
+  "status": "PENDING_NEW_OWNER_TRIP_WRITE_APPROVAL",
+  "task": "21.27",
+  "db": {
+    "host": "127.0.0.1",
+    "port": 15452,
+    "name": "travelgo_staging_catalog_20261112",
+    "sentinel": "travelgo-public-staging:catalog-20261112",
+    "role": "catalog_runtime"
+  },
+  "approvedPrincipalId": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+  "approvedPrincipalHash": "856f41c9ad2ffc1e3f467eeb45f0069a943196101062d0e3ab3927bec64b95c5",
+  "syntheticCustomerId": "4dd05bce-b3a4-4456-b4f5-1b1bd43d4de7",
+  "syntheticRoleId": "0f90a296-bd0c-48c2-948f-6098db85f514",
+  "tripIds": [
+    "ec852403-b11e-42e3-96de-f033ff15ffc0",
+    "4393fa83-9440-474d-912c-6e130fdd3ed9"
+  ],
+  "scope": {
+    "syntheticCustomersMaximum": 1,
+    "tripMaximum": 2,
+    "actualTripPlanned": 1,
+    "allowedTables": [
+      "users",
+      "user_roles",
+      "trip_sessions"
+    ],
+    "setup": "INSERT exactly one SYNTHETIC CUSTOMER B + one CUSTOMER role; no new admin; collision/identity/fingerprint guards first; crypto random/scrypt, task credentials DPAPI CurrentUser only",
+    "trip": "Production Core preview/confirmation/TripSessionService only; exact predetermined Trip IDs injected in isolated launcher beforeValidate hook; owned by existing approved principal A; create/update/read/reopen/delete only",
+    "apiMode": "Existing staging launcher scoped-trip-write; production publicStagingGuard remains required; SQL fence exact Trip IDs/columns and owner hooks; no default .env/global or other table writes",
+    "durationHoursMaximum": 2,
+    "normalChatsMaximum": 8,
+    "validConfirmationMaximum": 2,
+    "otherSecurityRequests": "Only non-chat read, preview cancel, invalid/foreign/replayed/forged ticket requests rejected before Agent consume; no additional successful mutation or limiter reset",
+    "quota": {
+      "cap": 20,
+      "reserve": 10,
+      "plannedNormalChats": 8,
+      "plannedValidConfirmations": 2,
+      "requiredRemaining": 20,
+      "principalHash": "856f41c9ad2ffc1e3f467eeb45f0069a943196101062d0e3ab3927bec64b95c5"
+    },
+    "browser": "Actual Edge desktop/mobile UI and API5057/PostgreSQL15452; no success/persistence mocks",
+    "restart": "Only verify and hand off exact task-owned API5057; no model/worker/search",
+    "cleanup": "Exact Trip IDs from committed ledger, verify owner A and SYNTHETIC test names; delete synthetic role/user B only after dependencies checked; compare fresh 40-table baseline including retained owner and real DRAFT records; restore protected READ ONLY"
+  },
+  "guards": {
+    "freshDbBaselineRequired": true,
+    "schemaTables": 40,
+    "migrations": 17,
+    "places": 130,
+    "businesses": 20,
+    "sourceFreezeBeforePosts": true,
+    "targetedAndBuildPassRequired": true,
+    "noOriginalDb": true,
+    "noCatalogWrites": true,
+    "noBookingPaymentWrites": true,
+    "noKnowledgeReviewMemoryLanguageWrites": true,
+    "noOwnerCredentialRoleChanges": true,
+    "noModelInternetResourceScans": true,
+    "noMigrationResetSeedRecreate": true
+  },
+  "retained": {
+    "ownerId": "bae330d6-c3cb-462e-839e-cf07d73a64d2",
+    "superAdminRoleId": "fe016c5b-63a1-4e9a-9938-465aaae58f69",
+    "sourceId": "3c427f07-c1e2-42eb-b380-42e46c28a2ca",
+    "candidateId": "92760bb5-b51a-440e-ab7d-c4c053a5d36b",
+    "until": "2026-12-15T00:00:00Z"
+  },
+  "blockedAtPreparation": {
+    "stagingPort15452": "ECONNREFUSED",
+    "dockerDesktopLinuxEngine": "PIPE_NOT_FOUND",
+    "freshBaseline": "NOT_CAPTURED_NOT_CLAIMED"
+  },
+  "authorization": "Separate approval required; 21.26-A/B approval is not reused; resume only after actual existing Docker/container restored and all fresh guards pass"
+}

@@ -1,0 +1,16 @@
+const {fs,path,root,assert,sha,quota,write}=require('./client.cjs');
+const previous='docs/evidence/travelgo-ai-agent-core/knowledge-v52-20261113',seal=JSON.parse(fs.readFileSync(path.join(root,previous,'artifact-checksums.json')));
+for(const[n,h]of Object.entries(seal.hashes))assert.equal(sha(fs.readFileSync(path.join(root,previous,n))),h,n);for(const[p,h]of Object.entries(seal.sourceHashes))assert.equal(sha(fs.readFileSync(path.join(root,p))),h,p);
+const report=fs.readFileSync(path.join(root,'docs/TRAVELGO_AI_AGENT_CORE_MASTER_REPORT.md'));fs.writeFileSync(path.join(__dirname,'master-before.md'),report,{flag:'wx'});
+const auth=JSON.parse(fs.readFileSync(path.join(root,'.local/catalog-staging/knowledge-v52-auth.json'))),q=quota(auth.user);write('agent-quota-before.json',q);
+assert.equal(q.futureDatedEntries.length,0);assert(q.remainingConservativeSlots>=20,'NEED10_TURNS_PLUS_RESERVE10_STOP');
+write('criteria.json',{lockedAt:new Date().toISOString(),scope:'REAL_HTTP_AND_EDGE_STAGING_PG_READ_ONLY_QWEN_OFF',cap:10,reserve:10,principalHash:q.principalHash,sourceHashes:seal.sourceHashes,priorSealArtifacts:Object.keys(seal.hashes).length,http:[
+{input:'Tư vấn tìm khách sạn ở Nha Trang cho gia đình',expected:'Eligible Nha Trang hotels; no family cuisine filter on hotels; DEMO, fresh insufficient-review caveats, no mutation'},
+{input:'Chỗ nào yên tĩnh hơn?',expected:'Compare exact shown listings, no quiet guarantee from missing review evidence; no Planner form'},
+{input:'Nhưng mình muốn tiết kiệm hơn',expected:'Keep quiet + add value preference; verified destination/budget/transport unchanged; conditional price tradeoff'},
+{input:'Vậy cái thứ hai có nhược điểm gì?',expected:'Details for actual second shown listing ID; honest missing-review evidence, no invented weakness'},
+{input:'Giữ nó để mình cân nhắc',expected:'Same referenced listing held for session consideration only, no confirmation/booking/trip write'},
+{input:'Nha Trang có hoạt động gì phù hợp với chuyến đi 3 ngày?',expected:'Actual eligible attraction/tour names and source links, DEMO, missing approved knowledge, not calculated itinerary'}
+],browser:{viewports:[{mode:'desktop',width:1440,height:1000},{mode:'mobile',width:390,height:844}],inputs:['Nha Trang có hoạt động gì phù hợp với chuyến đi 3 ngày?','Ở đó cần chuẩn bị gì trước khi tham quan?'],expected:['Real authenticated backend responses rendered without successful API mocks','Send disabled before consent; enabled after consent and valid text','Exact eligible catalog source IDs/names and source links; DEMO/unknown-knowledge caveats','Referent destination retained; no invented knowledge or Planner calculation; no mutation','No horizontal overflow, UUID/JSON leakage or React errors']},qwen:{metadata:0,quotaScans:0,post:0,warmLoad:0,inference:0},stop:'STOP on HTTP/browser failure; no retry to consume more turns'});
+fs.writeFileSync(path.join(__dirname,'criteria.sha256'),sha(fs.readFileSync(path.join(__dirname,'criteria.json'))),{flag:'wx'});
+console.log(JSON.stringify({status:'PASS',at:q.checkedAt,known:q.known,recent:q.recent.length,remaining:q.remainingConservativeSlots,reserve:10,authorizedTaskTurns:10,sourceFiles:Object.keys(seal.sourceHashes).length}));

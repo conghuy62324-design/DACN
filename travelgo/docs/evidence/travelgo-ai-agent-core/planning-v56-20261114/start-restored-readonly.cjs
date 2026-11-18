@@ -1,0 +1,1 @@
+const c=require('./staging.cjs');Object.assign(process.env,{INTELLIGENT_PLANNING_ENABLED:'false',ADAPTIVE_LANGUAGE_ENABLED:'false',CONVERSATIONAL_INTELLIGENCE_ENABLED:'false',PERSONALIZED_DECISION_ENABLED:'false'});require('../knowledge-v52-20261113/start-readonly.cjs');

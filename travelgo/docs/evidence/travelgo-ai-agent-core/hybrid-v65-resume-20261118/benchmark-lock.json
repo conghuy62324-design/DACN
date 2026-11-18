@@ -1,0 +1,408 @@
+{
+  "at": "2026-11-17T23:54:16.806Z",
+  "tier": "OFFLINE_SYNTHETIC_USING_EXISTING_PRODUCTION_CORE_DRIVER",
+  "knownFailuresDevelopmentOnly": true,
+  "sourceEditsNotStarted": true,
+  "cases": [
+    {
+      "id": "D01",
+      "kind": "cost",
+      "messages": [
+        "Giá xe shuttle sân bay Đà Lạt mỗi người tháng 11/2026 đã được xác minh chưa?"
+      ],
+      "fixture": "transport",
+      "expected": {
+        "amount": 150000,
+        "unit": "PER_PERSON",
+        "period": "02/2026",
+        "verification": "HISTORICAL_ONLY",
+        "knownB2Regression": true
+      },
+      "cohort": "DEVELOPMENT"
+    },
+    {
+      "id": "D02",
+      "kind": "cost",
+      "messages": [
+        "Giá xe sân bay Đà Lạt bây giờ bao nhiêu?",
+        "Cái giá lúc nãy còn đúng không?"
+      ],
+      "fixture": "transport",
+      "expected": {
+        "amount": 150000,
+        "unit": "PER_PERSON",
+        "period": "02/2026",
+        "verification": "HISTORICAL_ONLY"
+      },
+      "cohort": "DEVELOPMENT"
+    },
+    {
+      "id": "D03",
+      "kind": "cost",
+      "messages": [
+        "Nguồn ghi giá phòng Đà Lạt vào lúc nào?"
+      ],
+      "fixture": "all",
+      "expected": {
+        "amount": 600000,
+        "unit": "PER_ROOM_NIGHT",
+        "period": "03/2026",
+        "verification": "HISTORICAL_ONLY",
+        "questionMode": "OBSERVED_AT"
+      },
+      "cohort": "DEVELOPMENT"
+    },
+    {
+      "id": "D04",
+      "kind": "numeric",
+      "message": "2 khách đi3 ngày tháng11/2026, tổng cả nhóm5tr",
+      "expected": {
+        "money": [
+          5000000
+        ],
+        "period": "11/2026",
+        "party": 2,
+        "days": 3
+      },
+      "cohort": "DEVELOPMENT"
+    },
+    {
+      "id": "D05",
+      "kind": "clarify",
+      "fixture": "transport",
+      "messages": [
+        "Bây giờ vẫn giá đó à?"
+      ],
+      "expected": {},
+      "cohort": "DEVELOPMENT"
+    },
+    {
+      "id": "D06",
+      "kind": "clarify",
+      "fixture": "all",
+      "messages": [
+        "Chi phí Đà Lạt bao nhiêu?",
+        "Mức giá này còn đúng không?"
+      ],
+      "expected": {},
+      "cohort": "DEVELOPMENT"
+    },
+    {
+      "id": "D07",
+      "kind": "cost",
+      "messages": [
+        "Giá xe sân bay Đà Lạt 900k/người bây giờ có đúng không?"
+      ],
+      "fixture": "transport",
+      "expected": {
+        "amount": 150000,
+        "unit": "PER_PERSON",
+        "period": "02/2026",
+        "verification": "HISTORICAL_ONLY",
+        "moneyNotBudget": 900000,
+        "preserveBudget": 5000000
+      },
+      "seed": "Đi Đà Lạt từ SG,2 người,ngân sách cả nhóm5tr bằng xe máy",
+      "cohort": "DEVELOPMENT"
+    },
+    {
+      "id": "D08",
+      "kind": "cost",
+      "messages": [
+        "Giá xe sân bay Đà Lạt hiện tại bao nhiêu?"
+      ],
+      "fixture": "expired",
+      "expected": {
+        "amount": 150000,
+        "unit": "PER_PERSON",
+        "period": "02/2026",
+        "verification": "NO_APPROVED_EVIDENCE",
+        "observations": 0
+      },
+      "cohort": "DEVELOPMENT"
+    },
+    {
+      "id": "D09",
+      "kind": "cost",
+      "messages": [
+        "Giá xe sân bay Đà Lạt mới nhất bao nhiêu?"
+      ],
+      "fixture": "revoked",
+      "expected": {
+        "amount": 150000,
+        "unit": "PER_PERSON",
+        "period": "02/2026",
+        "verification": "NO_APPROVED_EVIDENCE",
+        "observations": 0
+      },
+      "cohort": "DEVELOPMENT"
+    },
+    {
+      "id": "D10",
+      "kind": "authority-preference",
+      "expected": {},
+      "cohort": "DEVELOPMENT"
+    },
+    {
+      "id": "D11",
+      "kind": "authority-review",
+      "expected": {},
+      "cohort": "DEVELOPMENT"
+    },
+    {
+      "id": "D12",
+      "kind": "authority-price",
+      "expected": {},
+      "cohort": "DEVELOPMENT"
+    },
+    {
+      "id": "D13",
+      "kind": "greeting",
+      "fixture": "transport",
+      "messages": [
+        "Chào bạn nhé"
+      ],
+      "expected": {},
+      "cohort": "DEVELOPMENT"
+    },
+    {
+      "id": "D14",
+      "kind": "freshness",
+      "fixture": "transport",
+      "messages": [
+        "Giá xe sân bay Đà Lạt bây giờ bao nhiêu?"
+      ],
+      "expected": {},
+      "cohort": "DEVELOPMENT"
+    },
+    {
+      "id": "D15",
+      "kind": "hybrid",
+      "fixture": "transport",
+      "message": "Tìm homestay ở Đà Lạt yên tĩnh, đồng thời giá xe sân bay bây giờ bao nhiêu?",
+      "expected": {
+        "amount": 150000,
+        "category": "hotel",
+        "maxCatalogQueries": 4
+      },
+      "cohort": "DEVELOPMENT"
+    },
+    {
+      "id": "D16",
+      "kind": "continuity",
+      "fixture": "transport",
+      "setup": [
+        "Đi Đà Lạt từ SG,2 người,ngân sách cả nhóm5tr bằng xe máy",
+        "Giá xe sân bay Đà Lạt tháng11/2026 hiện tại bao nhiêu?"
+      ],
+      "message": "Nếu 3 người đi xe sân bay Đà Lạt tháng12/2026 thì giá còn áp dụng không?",
+      "expected": {
+        "verifiedParty": 2,
+        "verifiedBudget": 5000000,
+        "keepCostCriteria": true
+      },
+      "cohort": "DEVELOPMENT"
+    },
+    {
+      "id": "D17",
+      "kind": "continuity",
+      "fixture": "transport",
+      "setup": [
+        "Đi Đà Lạt từ SG,2 người,ngân sách cả nhóm5tr bằng xe máy",
+        "Giá xe sân bay Đà Lạt tháng11/2026 hiện tại bao nhiêu?"
+      ],
+      "message": "Giả sử 4 người đi xe sân bay Đà Lạt thì giá bây giờ bao nhiêu?",
+      "expected": {
+        "verifiedParty": 2,
+        "verifiedBudget": 5000000,
+        "keepCostCriteria": true
+      },
+      "cohort": "DEVELOPMENT"
+    },
+    {
+      "id": "D18",
+      "kind": "failed-publish",
+      "fixture": "all",
+      "setup": [
+        "Đi Đà Lạt từ SG,2 người,ngân sách cả nhóm5tr bằng xe máy",
+        "Giá xe sân bay Đà Lạt bây giờ bao nhiêu?"
+      ],
+      "message": "Giá phòng Đà Lạt tháng12/2026 hiện tại bao nhiêu?",
+      "expected": {
+        "code": "AGENT_COST_SOURCE_CHANGED",
+        "keepCostCriteria": true
+      },
+      "cohort": "DEVELOPMENT"
+    },
+    {
+      "id": "H01",
+      "kind": "cost",
+      "messages": [
+        "Vé vào cổng Huế mỗi người năm2026 còn áp dụng không?"
+      ],
+      "fixture": "hue-ticket",
+      "expected": {
+        "amount": 125000,
+        "unit": "PER_PERSON",
+        "period": "06/2026",
+        "verification": "HISTORICAL_ONLY"
+      },
+      "cohort": "LOCKED_HOLDOUT"
+    },
+    {
+      "id": "H02",
+      "kind": "cost",
+      "messages": [
+        "Giá phòng Nha Trang được ghi nhận vào lúc nào?"
+      ],
+      "fixture": "nhatrang-room",
+      "expected": {
+        "amount": 700000,
+        "unit": "PER_ROOM_NIGHT",
+        "period": "06/2026",
+        "verification": "HISTORICAL_ONLY",
+        "questionMode": "OBSERVED_AT"
+      },
+      "cohort": "LOCKED_HOLDOUT"
+    },
+    {
+      "id": "H03",
+      "kind": "cost",
+      "messages": [
+        "Có giá xe đưa đón sân bay Đà Nẵng mới hơn chưa?"
+      ],
+      "fixture": "danang-transport",
+      "expected": {
+        "amount": 200000,
+        "unit": "PER_PERSON",
+        "period": "03/2026",
+        "verification": "HISTORICAL_ONLY"
+      },
+      "cohort": "LOCKED_HOLDOUT"
+    },
+    {
+      "id": "H04",
+      "kind": "numeric",
+      "message": "4 khách đi2 đêm tháng08/2027, tiền phòng350k/phòng/đêm",
+      "expected": {
+        "money": [
+          350000
+        ],
+        "period": "08/2027",
+        "party": 4,
+        "nights": 2
+      },
+      "cohort": "LOCKED_HOLDOUT"
+    },
+    {
+      "id": "H05",
+      "kind": "clarify",
+      "fixture": "transport",
+      "messages": [
+        "Tháng12/2026 còn áp dụng không?"
+      ],
+      "expected": {},
+      "cohort": "LOCKED_HOLDOUT"
+    },
+    {
+      "id": "H06",
+      "kind": "cost",
+      "messages": [
+        "Giá phòng Đà Lạt bây giờ đã xác minh chưa?"
+      ],
+      "fixture": "transport",
+      "expected": {
+        "amount": 150000,
+        "unit": "PER_PERSON",
+        "period": "02/2026",
+        "verification": "NO_APPROVED_EVIDENCE",
+        "observations": 0
+      },
+      "cohort": "LOCKED_HOLDOUT"
+    },
+    {
+      "id": "H07",
+      "kind": "cost",
+      "messages": [
+        "Giá xe đưa đón sân bay Đà Lạt hiện giờ bao nhiêu?"
+      ],
+      "fixture": "unknown-period",
+      "expected": {
+        "amount": 150000,
+        "unit": "PER_PERSON",
+        "period": null,
+        "verification": "DATE_UNKNOWN"
+      },
+      "cohort": "LOCKED_HOLDOUT"
+    },
+    {
+      "id": "H08",
+      "kind": "cost",
+      "messages": [
+        "Vé vào cổng Huế tháng09/2026 hiện tại có đúng không?"
+      ],
+      "fixture": "hue-ticket",
+      "expected": {
+        "amount": 125000,
+        "unit": "PER_PERSON",
+        "period": "06/2026",
+        "verification": "HISTORICAL_ONLY",
+        "preserveBudget": 5000000
+      },
+      "seed": "Đi Đà Lạt từ SG,2 người,ngân sách cả nhóm5tr bằng xe máy",
+      "cohort": "LOCKED_HOLDOUT"
+    },
+    {
+      "id": "H09",
+      "kind": "authority-review-comparison",
+      "expected": {},
+      "cohort": "LOCKED_HOLDOUT"
+    },
+    {
+      "id": "H10",
+      "kind": "continuity",
+      "fixture": "transport",
+      "setup": [
+        "Đi Đà Lạt từ SG,2 người,ngân sách cả nhóm5tr bằng xe máy",
+        "Giá xe sân bay Đà Lạt tháng11/2026 hiện tại bao nhiêu?"
+      ],
+      "message": "Nếu 5 khách đi xe sân bay Đà Lạt tháng01/2027 thì giá bây giờ bao nhiêu?",
+      "expected": {
+        "verifiedParty": 2,
+        "verifiedBudget": 5000000,
+        "keepCostCriteria": true
+      },
+      "cohort": "LOCKED_HOLDOUT"
+    },
+    {
+      "id": "H11",
+      "kind": "continuity",
+      "fixture": "transport",
+      "setup": [
+        "Đi Đà Lạt từ SG,2 người,ngân sách cả nhóm5tr bằng xe máy"
+      ],
+      "message": "Giả sử 3 người đi xe sân bay Đà Lạt thì giá hiện tại bao nhiêu?",
+      "expected": {
+        "verifiedParty": 2,
+        "verifiedBudget": 5000000,
+        "keepCostCriteria": true
+      },
+      "cohort": "LOCKED_HOLDOUT"
+    },
+    {
+      "id": "H12",
+      "kind": "failed-publish",
+      "fixture": "all",
+      "setup": [
+        "Đi Đà Lạt từ SG,2 người,ngân sách cả nhóm5tr bằng xe máy",
+        "Giá phòng Đà Lạt hiện tại bao nhiêu?"
+      ],
+      "message": "Giá vé vào cổng Đà Lạt tháng01/2027 hiện tại bao nhiêu?",
+      "expected": {
+        "code": "AGENT_COST_SOURCE_CHANGED",
+        "keepCostCriteria": true
+      },
+      "cohort": "LOCKED_HOLDOUT"
+    }
+  ]
+}

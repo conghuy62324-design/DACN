@@ -1,0 +1,36 @@
+import type {CostCurrency,CostObservation} from '../agent/costIntelligence.js';
+import {QueryTypes} from 'sequelize';
+import {sequelize} from '../config/database.js';
+import {externalJson} from './externalJson.js';
+import {TravelWebService,webIntelligenceEnabled} from './travelWebService.js';
+import {publicSearchQuery,sourceUsable,allowedSourceUrl} from '../agent/webTravelPolicy.js';
+import {safeKnowledgeText,type KnowledgeItem} from '../agent/travelKnowledge.js';
+import type {WebExtraction} from '../agent/webTravelExtraction.js';
+export type WebSourceCard={title:string;href:string;publisher:string;sourceClass:string;publishedAt:string|null;travelPeriod:string|null;retrievedAt:string;trust:'APPROVED_KNOWLEDGE'|'UNVERIFIED_CANDIDATE';license:string|null;costs:Array<{amount:number|null;amountMin?:number|null;amountMax?:number|null;priceBound?:CostObservation['priceBound'];schemaVersion?:2;currency:CostCurrency;unit:string;category:string;included:string[];excluded:string[];inclusionStatus:string}>};
+export type WebRetrieval={status:'DISABLED'|'APPROVED_ONLY'|'SEARCH_PROVIDER_NOT_CONFIGURED'|'BLOCKED_PROVIDER'|'NO_APPROVED_SOURCE'|'CANDIDATES';externalStages:number;sources:WebSourceCard[];mutationAuthority:false};
+export interface TravelSearchProvider {readonly configured:boolean;search(criteria:{locationId:string;topic:string;days?:number},domains:string[],signal:AbortSignal):Promise<Array<{url:string;title:string}>>;}
+/** Optional separately configured LOCAL SearXNG JSON API; never shares article fetch permissions. */
+export class SearxTravelSearch implements TravelSearchProvider {
+ private base:string|undefined;
+ constructor(env:NodeJS.ProcessEnv=process.env,private fetcher:typeof fetch=fetch){try{const u=new URL(env.TRAVEL_SEARCH_SEARXNG_URL||'');if(env.TRAVEL_SEARCH_ENABLED==='true'&&u.protocol==='http:'&&u.hostname==='127.0.0.1'&&['8080','8888'].includes(u.port)&&u.pathname==='/search'&&!u.search&&!u.hash&&!u.username&&!u.password)this.base=u.href;}catch{}}
+ get configured(){return !!this.base;}
+ async search(criteria:{locationId:string;topic:string;days?:number},domains:string[],signal:AbortSignal){if(!this.base)return[];const url=new URL(this.base);url.searchParams.set('q',publicSearchQuery(criteria)+' ('+domains.slice(0,5).map(d=>'site:'+d).join(' OR ')+')');url.searchParams.set('format','json');url.searchParams.set('language','vi');url.searchParams.set('safesearch','2');const d=await externalJson(this.fetcher,url.href,{method:'GET',headers:{Accept:'application/json'},signal:AbortSignal.any([signal,AbortSignal.timeout(4000)])},65536);if(!Array.isArray(d.results))throw Error('SEARCH_ENVELOPE');return d.results.slice(0,3).filter((r:any)=>typeof r.url==='string'&&safeKnowledgeText(r.title,160)).map((r:any)=>({url:r.url,title:r.title}));}
+}
+export const approvedWebCards=(items:KnowledgeItem[]):WebSourceCard[]=>items.filter(k=>k.sourceType==='EXTERNAL_REVIEWED'&&k.provenance?.method==='WEB_SOURCE_REVIEW').slice(0,3).map(k=>{const x=k.provenance.external as WebExtraction;return{title:k.title,href:k.sourceUrl!,publisher:x.publisher,sourceClass:x.sourceClass,publishedAt:x.publishedAt,travelPeriod:x.travelPeriod,retrievedAt:x.retrievedAt,trust:'APPROVED_KNOWLEDGE',license:String(k.provenance.license),costs:x.costs.map(o=>({amount:o.amount,currency:o.currency,unit:o.unit,category:o.category,included:o.included,excluded:o.excluded,inclusionStatus:o.inclusionStatus,...(o.schemaVersion===2?{schemaVersion:2 as const,amountMin:o.amountMin,amountMax:o.amountMax,priceBound:o.priceBound}:{})}))};});
+export class TravelWebRetrieval {
+ constructor(private registry=new TravelWebService(),private provider:TravelSearchProvider=new SearxTravelSearch()){}
+ async retrieve(criteria:{locationId:string;topic:string;days?:number},approved:KnowledgeItem[],signal:AbortSignal):Promise<WebRetrieval>{
+  const base:WebRetrieval={status:'DISABLED',sources:[],externalStages:0,mutationAuthority:false};if(!webIntelligenceEnabled())return base;
+  publicSearchQuery(criteria);const cards=approvedWebCards(approved);if(approved.length)return{...base,status:'APPROVED_ONLY',sources:cards};
+  const sources=(await this.registry.sources(true)).filter(s=>sourceUsable(s));signal.throwIfAborted();if(!sources.length)return{...base,status:this.provider.configured?'NO_APPROVED_SOURCE':'SEARCH_PROVIDER_NOT_CONFIGURED'};
+  // Only public metadata from permitted DRAFT candidates; never costs/content before review.
+  const drafts=await sequelize.query<any>("SELECT c.extraction,s.config FROM travel_web_candidates c JOIN travel_web_sources s ON s.id=c.source_id WHERE c.status='DRAFT' AND c.source_version=s.version AND c.extraction->>'locationId'=$1 AND s.enabled AND s.permission='ALLOWED' AND s.review_status='APPROVED' ORDER BY c.created_at DESC LIMIT 3",{bind:[criteria.locationId],type:QueryTypes.SELECT});
+  const pending:WebSourceCard[]=drafts.flatMap(row=>{const s=sources.find(s=>s.domain===new URL(row.extraction.canonicalUrl).hostname);if(!s)return[];try{allowedSourceUrl(s,row.extraction.canonicalUrl);}catch{return[];}const x=row.extraction as WebExtraction;return[{title:x.title,href:x.canonicalUrl,publisher:x.publisher,sourceClass:x.sourceClass,publishedAt:x.publishedAt,travelPeriod:x.travelPeriod,retrievedAt:x.retrievedAt,trust:'UNVERIFIED_CANDIDATE' as const,license:s.license,costs:[]}];});
+  const fence=async(cards:WebSourceCard[])=>{const current=await this.registry.sources(true);signal.throwIfAborted();return cards.filter(c=>sources.some(old=>current.some(n=>n.id===old.id&&n.version===old.version&&sourceUsable(n)&&new URL(c.href).hostname===n.domain)));};
+  if(!this.provider.configured)return{...base,status:'SEARCH_PROVIDER_NOT_CONFIGURED',sources:await fence(pending)};
+  try{const results=await this.provider.search(criteria,sources.map(s=>s.domain),signal),found:WebSourceCard[]=[];for(const r of results){const source=sources.find(s=>{try{return new URL(r.url).hostname===s.domain;}catch{return false;}});if(!source)continue;try{const href=allowedSourceUrl(source,r.url);found.push({title:r.title,href,publisher:source.publisher,sourceClass:source.sourceClass,publishedAt:null,travelPeriod:null,retrievedAt:new Date().toISOString(),trust:'UNVERIFIED_CANDIDATE',license:source.license,costs:[]});}catch{}}
+   return{...base,status:'CANDIDATES',sources:await fence([...pending,...found].filter((r,i,a)=>a.findIndex(x=>x.href===r.href)===i).slice(0,3)),externalStages:1};
+  }catch{return{...base,status:'BLOCKED_PROVIDER',sources:await fence(pending),externalStages:1};}
+ }
+}
+export function renderWebStatus(v:WebRetrieval){if(v.status==='DISABLED')return'';if(v.sources.some(s=>s.trust==='UNVERIFIED_CANDIDATE'))return'Các liên kết mới bên dưới chưa qua duyệt kiến thức. Mình chưa dùng nội dung hoặc chi phí trong đó để kết luận ngân sách; bạn có thể mở nguồn gốc để đối chiếu.';if(v.status==='SEARCH_PROVIDER_NOT_CONFIGURED')return'Chưa cấu hình nhà cung cấp tìm kiếm web được phép; mình chỉ sử dụng dữ liệu đã duyệt hiện có và nói rõ phần còn thiếu.';if(v.status==='BLOCKED_PROVIDER'||v.status==='NO_APPROVED_SOURCE')return'Hiện chưa thể tra thêm nguồn web đủ điều kiện. Mình không tự bổ sung chi phí hoặc thông tin chưa xác minh.';return'';}

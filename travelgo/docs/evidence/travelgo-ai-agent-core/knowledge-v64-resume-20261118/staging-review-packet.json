@@ -1,0 +1,150 @@
+{
+  "at": "2026-11-17T23:39:01.088Z",
+  "task": "21.30",
+  "status": "PREPARED_REQUIRES_FRESH_OWNER_APPROVAL",
+  "database": {
+    "host": "127.0.0.1",
+    "port": 15452,
+    "name": "travelgo_staging_catalog_20261112",
+    "role": "catalog_runtime",
+    "sentinel": "travelgo-public-staging:catalog-20261112"
+  },
+  "owner": {
+    "id": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+    "principalHash": "856f41c9ad2ffc1e3f467eeb45f0069a943196101062d0e3ab3927bec64b95c5",
+    "classification": "EXISTING_APPROVED_STAGING_TEST_CUSTOMER",
+    "testEmail": true,
+    "syntheticName": false,
+    "existingLanguageBaseline": {
+      "language_learning_settings": 0,
+      "personal_language_mappings": 0,
+      "language_contributions": 0,
+      "language_feedback_events": 0
+    },
+    "noAccountRenameOrNewPrincipal": true,
+    "condition": "Only if test-account provenance remains verified; existing personal rows must remain0 before writes"
+  },
+  "fixture": {
+    "mappingId": "8dccb796-aea7-4a7c-8bda-52669e8f7299",
+    "expression": "neruvia",
+    "conceptId": "accommodation_type.homestay",
+    "scope": "PERSONAL",
+    "settingsOwner": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+    "synthetic": true,
+    "retain": false
+  },
+  "allowedWriteTables": [
+    "language_learning_settings",
+    "personal_language_mappings",
+    "language_contributions"
+  ],
+  "intentionalRows": "One task settings row and one exact mapping UUID. Existing settings/mappings/contributions must0. Contribution DELETE is zero-row housekeeping from existing settings API; contribution INSERT/UPDATE forbidden.",
+  "sqlFence": "Existing scoped-knowledge-write launcher, languageOnly branch: exact owner/policy/meaning and one INSERT reservation; binds exact task UUID server-side solely in isolated launcher; no public client-supplied ID, no persistent default/schema changes; all other DML denied.",
+  "maxConservativeAttempts": 9,
+  "plannedNormalChats": 5,
+  "plannedManagement": 2,
+  "requiredInitialRemaining": 19,
+  "capPerHour": 20,
+  "reserve": 10,
+  "noRetry": true,
+  "management": [
+    {
+      "id": "M1",
+      "operation": "Actual single UI click consent; wait PUT response then React checked"
+    },
+    {
+      "id": "M2",
+      "operation": "Actual UI Save-button click, wait POST response and rendered success; no HTTP substitute"
+    }
+  ],
+  "journeys": [
+    {
+      "id": "J1",
+      "message": "Từ giờ mình gọi homestay là neruvia",
+      "expected": "Clarify meaning; no search or persistence"
+    },
+    {
+      "id": "J2",
+      "message": "Ý mình là homestay",
+      "expected": "SESSION meaning only; SAVE_PERSONAL ticket; no search"
+    },
+    {
+      "id": "J3",
+      "viewport": "desktop-new-conversation",
+      "message": "Tìm neruvia có Wi-Fi ở Đà Lạt",
+      "expected": "PERSONAL meaning read as homestay in new session; correct geography; no mutation"
+    },
+    {
+      "id": "J4",
+      "viewport": "mobile-new-conversation",
+      "message": "Tìm neruvia ở Đà Lạt",
+      "expected": "Mobile consent/send, PERSONAL persisted meaning; no overflow or mutation"
+    }
+  ],
+  "runtime": {
+    "frontend": 5177,
+    "api": 5057,
+    "ownedLauncherOnly": true,
+    "activationAndProtectedRestoration": true,
+    "maximumWindowHours": 2,
+    "modelSearchWorker": "OFF",
+    "frontendStartIfAbsent": true,
+    "sourceFrozenBeforeActivation": true,
+    "phaseA": "scoped-knowledge-write(languageOnly, task21.30,5DMLcap,webOFF)",
+    "phaseB": "integrated-review(SQL+PostgreSQL READ ONLY)"
+  },
+  "forbidden": [
+    "users/user_roles/Owner credentials",
+    "catalog130Place20Business",
+    "Trip/Booking/payment",
+    "customer memory preferences",
+    "shared approvals",
+    "knowledge/source/candidate writes",
+    "model/Internet/Maps/VPS",
+    "schema/migrations",
+    "production env changes",
+    "No new Internet, model, Owner review/credentials/DPAPI or retention changes"
+  ],
+  "cleanup": {
+    "exactMappingId": "8dccb796-aea7-4a7c-8bda-52669e8f7299",
+    "exactSettingsOwner": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+    "zeroContributions": true,
+    "expectedFinalTables": 40,
+    "requireFreshBaselineMatch": true,
+    "restore": "protected READ ONLY",
+    "deleteTaskCredentials": false,
+    "explanation": "No new credentials; never delete existing dedicated account file or owner credentials"
+  },
+  "approvalFromPreviousTasksMayNotBeReused": true,
+  "credentialUse": "Existing dedicated synthetic staging customer login through approved helper, in memory only, no owner credentials/DPAPI read",
+  "strictRecorder": "Both 5177/api and5057, sync reserve before dispatch; fail closed, no backfill; no retry",
+  "knowledgeJourney": {
+    "id": "B",
+    "viewport": "MOBILE_NEW_SESSION_AFTER_PERSONAL",
+    "message": "Giá xe shuttle sân bay Đà Lạt mỗi người tháng 11/2026 đã được xác minh chưa?",
+    "expected": {
+      "amount": 150000,
+      "currency": "VND",
+      "unit": "PER_PERSON",
+      "period": "02/2026",
+      "currentPriceConfirmed": false,
+      "status": "HISTORICAL_ONLY",
+      "knowledgeId": "467bd60b-27ab-42ad-a450-b3076a4215c3",
+      "version": 2,
+      "expiresAt": "2026-12-15T00:00:00.000Z"
+    },
+    "noKnowledgeWrites": true
+  },
+  "maxDmlStatements": 7,
+  "maxAffectedRows": 6,
+  "runId": "21.30-resume-20261118",
+  "conservativeAuthentication": 2,
+  "noPriorApprovalReused": true,
+  "priorStopDisclosed": "21.31 actual HTTP200 was rejected by old client contract; run stopped after2entries, no persistent fixtures, no retries. New task21.30 acceptance uses corrected final frontend contract validated26offline checks.",
+  "approvedKnowledgeReadOnly": {
+    "id": "467bd60b-27ab-42ad-a450-b3076a4215c3",
+    "version": 2,
+    "expiresAt": "2026-12-15T00:00:00.000Z",
+    "noMutation": true
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "at": "2026-11-13T06:26:16.069Z",
+  "verdict": "REVIEW_INTELLIGENCE_LONG_TERM_MEMORY_CODE_STAGING_PASS",
+  "analysisMethod": "BOUNDED_VI_ASPECT_RULES_V3",
+  "qwenSemantic": "NOT_RUN_NO_CURRENT_APPROVAL",
+  "fullBrowserQwenTools": "NOT_RUN",
+  "native": {
+    "get": 0,
+    "post": 0,
+    "warmLoad": 0,
+    "inference": 0
+  },
+  "targeted": {
+    "passed": 18,
+    "failed": 0,
+    "tier": "OFFLINE_BOUNDED_RULES_TYPED_MEMORY"
+  },
+  "compatibility": {
+    "agentNaturalChat": 28,
+    "agentNaturalV4": 42,
+    "agentCoreIntentV2": 22,
+    "agentQwenV4Fix": 42,
+    "agentConsultantV5": 21,
+    "agentCore": 42
+  },
+  "realHttp": {
+    "functionalGroups": 13,
+    "ownershipRetentionGroups": 4
+  },
+  "realPg": {
+    "persistentSchemaMigration": 14,
+    "workerRetryIdempotent": "PASS",
+    "ineligibleListingRejected": "PASS_ROLLBACK_ONLY",
+    "inflightRevocation": "PASS_ROLLBACK_ONLY",
+    "liveCohortDataCleaned": true,
+    "counts": {
+      "users": 1,
+      "reviews": 0,
+      "review_reports": 0,
+      "memory_settings": 0,
+      "preferences": 0,
+      "trips": 0,
+      "bookings": 0
+    },
+    "staleInsights": 0
+  },
+  "browser": {
+    "customerDesktop": "PASS",
+    "customerMobile": "PASS",
+    "mobileMemoryManagement": "PASS",
+    "adminModeration": "PASS",
+    "ownerHiddenReviewManagement": "PASS",
+    "apiMocks": false,
+    "provider": "OFF"
+  },
+  "build": "PASS",
+  "defaultFeatureOffGuards": "PASS_OFFLINE_NO_DB",
+  "offlineAuditedProcesses": 27,
+  "privacy": {
+    "separateMemoryConsent": true,
+    "perUserOwner": true,
+    "sensitiveTypesNotSupported": true,
+    "noRawTranscriptInMemory": true,
+    "noReviewerPiiInInsightsOrModelFacts": true,
+    "noMemoryPreferenceCache": true,
+    "inflightRevocationFence": true
+  },
+  "limits": [
+    "Bounded lexical aspects, not learned/model-validated Vietnamese semantics; ambiguous cases UNKNOWN",
+    "Reviews are opinions, not verified vendor amenities, geography or availability",
+    "No new RecommendationService weights, no quietness quality score/rerank",
+    "Stored travel interests can use existing soft-preference signals; current trip instructions win; saved transport never sets current transportation",
+    "No Qwen/Ollama/Gemini/paid API training/inference",
+    "Live model explanation quality and production deployment remain unaccepted"
+  ],
+  "protected": {
+    "baselineFiles": 14368,
+    "changedExistingSource": [
+      "backend/src/app.ts",
+      "backend/src/agent/naturalGrounding.ts",
+      "backend/src/agent/travelConsultant.ts",
+      "backend/src/routes/api.ts",
+      "backend/src/routes/placeRoutes.ts",
+      "backend/src/routes/reviewRoutes.ts",
+      "backend/src/services/agentCoreService.ts",
+      "backend/src/services/reviewService.ts",
+      "backend/scripts/catalog-staging-server.cjs",
+      "frontend/src/pages/PlaceDetailPage.tsx",
+      "frontend/src/pages/ProfilePage.tsx",
+      "frontend/src/services/placeService.ts",
+      "frontend/src/utils/naturalChatPresentation.ts",
+      "frontend/src/components/agent/AgentCorePanel.tsx"
+    ],
+    "addedSource": [
+      "database/migrations/20261113_14_review_insights_customer_memory.sql",
+      "backend/src/agent/reviewAspects.ts",
+      "backend/src/agent/customerPersonalization.ts",
+      "backend/src/services/reviewInsightService.ts",
+      "backend/src/services/customerMemoryService.ts",
+      "backend/src/routes/customerMemoryRoutes.ts",
+      "backend/src/tests/reviewMemoryV5.test.ts",
+      "frontend/src/components/agent/CustomerMemoryPanel.tsx",
+      "frontend/src/components/common/ReviewInsightsPanel.tsx",
+      "frontend/src/components/common/ReviewModerationPanel.tsx",
+      "frontend/src/components/common/OwnReviewsPanel.tsx"
+    ],
+    "originalDatabaseConnections": 0,
+    "placeBusinessChecksumsUnchanged": true,
+    "tripBookingWrites": 0,
+    "plannerRecommendationGeographyUnchanged": true,
+    "defaultEnvAndProviderModelUnchanged": true,
+    "historicalFailUnchanged": true
+  },
+  "sourceHashes": {
+    "backend/scripts/catalog-staging-server.cjs": "bbeb441af6f4fd690f061f2971ba247c722f282c7cf2631ce413e4cde23c6ae9",
+    "backend/src/app.ts": "304f176ffcde752c3d0c6d04395e81d8c4b5ef750df486508bec5ab103f19f2d",
+    "backend/src/agent/naturalGrounding.ts": "f1aa5bc3934909fb2176937de1794470c6a4550da6df12a4b3fe69a33392dd62",
+    "backend/src/agent/travelConsultant.ts": "cdead22ccf7e6d0985495f3ef134b11e92c53afab0e410ff3c548b51915abc68",
+    "backend/src/services/agentCoreService.ts": "423d1d903d1cbd17f5c8bf0f6375a1a49473a537cb9334b13754209c12eb47d8",
+    "backend/src/services/reviewService.ts": "cfce453dfac84b953dc9ae098bc7feb9c980b79f77ad3eaeeaf80e16aa65a2c2",
+    "backend/src/routes/api.ts": "865eb1931f4196b4efb0c86d11020e9705c629c8f8be353079d1e0e84acd58c3",
+    "backend/src/routes/placeRoutes.ts": "146ae1c33bb8f3257ea3e589f115005568fc3ed1622ad8ca4fb98bccd71de382",
+    "backend/src/routes/reviewRoutes.ts": "6a5edfe505f637981f28767a8e802171d08dd4f3648ab4bb152fe719694469b4",
+    "frontend/src/components/agent/AgentCorePanel.tsx": "156775592186bf999728881598bb96c91cf7bfd4b21c6622cc8f13d98fe4fe7a",
+    "frontend/src/pages/ProfilePage.tsx": "37d07120a53de0350f8263f20c8e700694b0e2f96c4c5d83f9b1bc9212117b10",
+    "frontend/src/pages/PlaceDetailPage.tsx": "8be29c66ac8bb9d0a1ef3d1e56635cc61ba214d5d30b1c35074c1595c999946f",
+    "frontend/src/services/placeService.ts": "f4667041c66e9b6d0af55e5b4bb83e8769e9eb446005ae6e49ef629d00634057",
+    "frontend/src/utils/naturalChatPresentation.ts": "86b0dd94b016100023cfe404acb7d97b0e350f53848f47b2ee1441778c42914e",
+    "database/migrations/20261113_14_review_insights_customer_memory.sql": "36a6c539224ed3967a8770dbd83508e1b7159ffa1c6c561adb913b4ed9ccc437",
+    "backend/src/agent/reviewAspects.ts": "cbbe928f4f1e9b35b909ef80f71ef2fc75725c0b0ad0a8fc1c00977d71939480",
+    "backend/src/agent/customerPersonalization.ts": "e951b05e29ba5fdab5fda22d3ec9ea40d8002fd596c482a15cfc627368d52a92",
+    "backend/src/services/reviewInsightService.ts": "0a8abbd3c70e7fef602373903c92001ae303549b7f94828159d4726319806f68",
+    "backend/src/services/customerMemoryService.ts": "cfbe5207ee8e9db27c7929beaf150bfd4fc76c463da914d73623b20a5e88c412",
+    "backend/src/routes/customerMemoryRoutes.ts": "bc146211317fbb6527646db10dc66a72028cbadeb6b4fee684ddaeb430607ecb",
+    "backend/src/tests/reviewMemoryV5.test.ts": "19e55f6efc295335a74446e3d310f55d6a3df8b058c63d2c9bb03b3b2c0b4cde",
+    "frontend/src/components/agent/CustomerMemoryPanel.tsx": "318688ff447a34dc1603c5f7a21ff1f1a0e519448c615a5a61712740db144d92",
+    "frontend/src/components/common/ReviewInsightsPanel.tsx": "e852f05bb9da7c51da65971ba6341fd8ba1808e825c86acbb4084ba1934a98c0",
+    "frontend/src/components/common/ReviewModerationPanel.tsx": "fc310b27b7ce6e00ee89a825819b3f9c9cb6e96ad50d79c3545b723cccf71eb4",
+    "frontend/src/components/common/OwnReviewsPanel.tsx": "3b5e8741a0bc07b5bc0525e004bd3aa31973cca5606ddb25f634626484f79d5e"
+  }
+}

@@ -1,16 +1,27 @@
 import {geoFold,DESTINATIONS,PROVINCES,resolveLocation,type GeoLocation} from '../geography/vietnam.js';
+import {AsyncLocalStorage} from 'node:async_hooks';
+
+// Request-local computed strings only; never a cross-customer cache or session transcript.
+const normalizationScope=new AsyncLocalStorage<Map<string,Readonly<{raw:string;normalized:string}>>>();
+export const withVietnameseNormalizationScope=<T>(work:()=>Promise<T>)=>normalizationScope.run(new Map(),work);
+
+/** Documentary evidence must not apply conversational typo/alias rewrites (e.g. tháng). */
+export const literalVietnamese=(v:string)=>v.normalize('NFD').replace(/\p{M}/gu,'').replace(/[đĐ]/g,'d').toLowerCase();
+/** Separate attached quantities while preserving compact units (5tr2), dates and short geography aliases (q1). */
+export const travelNumberSpacing=(v:string)=>v.replace(/\b([a-z]{2,})(?=\d)/g,'$1 ');
 
 /** Lexical normalization only. Raw text remains the source for model quotes; no raw text is retained. */
 export function normalizeVietnamese(message:string){
+ const scope=normalizationScope.getStore(),cached=scope?.get(message);if(cached)return{...cached};
  const raw=message.normalize('NFC').trim().replace(/\s+/g,' ');
- const aliases:Record<string,string>={ks:'khach san',ko:'khong',hong:'khong',hok:'khong',oto:'o to',moto:'xe may',xiu:'chut',tui:'toi',mik:'minh',mn:'moi nguoi',nhg:'nhung',dc:'duoc',nhe:'nha',tphcm:'tp hcm'};
+ const aliases:Record<string,string>={ks:'khach san',ko:'khong',hong:'khong',hok:'khong',oto:'o to',moto:'xe may',xiu:'chut',tui:'toi',mik:'minh',mn:'moi nguoi',nhg:'nhung',dc:'duoc',tphcm:'tp hcm'};
  const compounds:Record<string,string>={ngansach:'ngan sach',phuongtien:'phuong tien',lichtrinh:'lich trinh'};
- const vocabulary=['khach','nguoi','trieu','phuong','ngay','dem','ngan','sach','trinh','hang','phong','thich','thuan','chuyen'];
+ const vocabulary=['khach','nguoi','trieu','phuong','ngay','dem','thang','ngan','sach','trinh','hang','phong','thich','thuan','chuyen'];
  const near=(a:string,b:string)=>{if(Math.abs(a.length-b.length)>1)return false;let i=0,j=0,edits=0;while(i<a.length&&j<b.length){if(a[i]===b[j]){i++;j++;continue;}if(++edits>1)return false;if(a.length>=b.length)i++;if(b.length>=a.length)j++;}return edits+(i<a.length||j<b.length?1:0)<=1;};
- const word=(w:string)=>{if(aliases[w]||compounds[w])return aliases[w]||compounds[w];if(w.length<5||vocabulary.includes(w))return w;const alternatives=vocabulary.filter(v=>w.length===v.length+1&&near(w,v));return alternatives.length===1?alternatives[0]:w;};
+ const word=(w:string)=>{if(aliases[w]||compounds[w])return aliases[w]||compounds[w];const short=w.replace(/([a-z])\1{2,}/g,'$1');if(short!==w&&vocabulary.includes(short))return short;if(w.length<5||vocabulary.includes(w))return w;const alternatives=vocabulary.filter(v=>w.length===v.length+1&&near(w,v));return alternatives.length===1?alternatives[0]:w;};
  // Preserve decimals, dates and compact numeric units. Do not fuzzy-rewrite places or numbers.
- const normalized=raw.normalize('NFD').replace(/\p{M}/gu,'').replace(/[đĐ]/g,'d').toLowerCase().replace(/\b[a-z]+\b/g,word).replace(/\s+/g,' ').replace(/[.!?]+$/,'').trim();
- return {raw,normalized};
+ const normalized=travelNumberSpacing(literalVietnamese(raw)).replace(/\b[a-z]+\b/g,word).replace(/\s+/g,' ').replace(/[.!?]+$/,'').trim();
+ const result={raw,normalized};if(scope&&scope.size<128&&message.length<=2000)scope.set(message,Object.freeze({...result}));return result;
 }
 
 export function conversationalLocation(value:string,explicit:boolean):GeoLocation|undefined{
@@ -24,13 +35,14 @@ export function conversationalLocation(value:string,explicit:boolean):GeoLocatio
  return;
 }
 
+// Derived once from the sole shared static geography; no mutable/private retrieval is cached.
+const locationCandidates=[...DESTINATIONS,...PROVINCES].flatMap(g=>[g.name,g.catalogName,...g.aliases,...(g.kind==='destination'?[geoFold(g.name).split(' ').map(w=>w[0]).join('')]:[])].map(n=>({g,key:geoFold(n),canonical:geoFold(n)===geoFold(g.name)||geoFold(n)===geoFold(g.catalogName)}))).sort((a,b)=>b.key.length-a.key.length);
 export function travelLocations(text:string,awaiting?:string){
- const candidates=[...DESTINATIONS,...PROVINCES].flatMap(g=>[g.name,g.catalogName,...g.aliases,...(g.kind==='destination'?[geoFold(g.name).split(' ').map(w=>w[0]).join('')]:[])].map(n=>({g,key:geoFold(n)}))).sort((a,b)=>b.key.length-a.key.length);
  const hits:{geo:GeoLocation;start:number;end:number;role?:'departureCity'|'destinationCity'}[]=[];
- for(const {g,key}of candidates){if(!key||key.length<2)continue;let from=0,index:number;while((index=text.indexOf(key,from))>=0){from=index+key.length;if(index>0&&/[a-z0-9]/.test(text[index-1])||/[a-z0-9]/.test(text[from]||'')||hits.some(h=>index<h.end&&from>h.start))continue;
-   const prefix=text.slice(0,index),before=prefix.trim().split(/\s+/).at(-1),role=before==='tu'?'departureCity':/^(?:di|den|toi|ra|o|tai|qua)$/.test(before||'')||/\b(?:du lich|kham pha)\s*$/.test(prefix)?'destinationCity':undefined;
+ for(const {g,key,canonical}of locationCandidates){if(!key||key.length<2)continue;let from=0,index:number;while((index=text.indexOf(key,from))>=0){from=index+key.length;if(index>0&&/[a-z0-9]/.test(text[index-1])||/[a-z0-9]/.test(text[from]||'')||hits.some(h=>index<h.end&&from>h.start))continue;
+   const prefix=text.slice(0,index),before=prefix.trim().split(/\s+/).at(-1),role=/\b(?:xuat phat|khoi hanh)(?:\s+tu)?\s*$/.test(prefix)||before==='tu'?'departureCity':/^(?:di|den|toi|len|ra|o|tai|qua|sang)$/.test(before||'')||/\b(?:du lich|kham pha)\s*$/.test(prefix)?'destinationCity':undefined;
    const contextual=!!role||awaiting==='departure'||awaiting==='destination'||/\b(?:du lich|chuyen di|kham pha)\b/.test(prefix)||/^\s+(?:di|den|ra|toi)\b/.test(text.slice(from));
-   if(key.replace(/\s/g,'').length<=3&&!contextual)continue;
+   if(!canonical&&key.replace(/\s/g,'').length<=3&&!contextual)continue;
    hits.push({geo:g,start:index,end:from,role});
   }}
  hits.sort((a,b)=>a.start-b.start);

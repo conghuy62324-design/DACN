@@ -1,0 +1,62 @@
+{
+  "at": "2026-11-16T07:00:00.049Z",
+  "status": "PROPOSED_INPUTS_EXPECTED_FIXED_BEFORE_ANY_POST_NOT_A_FINAL_LIVE_MANIFEST",
+  "journeys": [
+    {
+      "id": "J1",
+      "input": "Lập lịch trình từ SG đến ĐL, 3n2đ, 2 đứa, ngân sách cả nhóm5 củ, đi10/12/2027-12/12/2027 bằng xe máy, thích thiên nhiên",
+      "expected": "SERVER_VERIFIED trip roles, two adults, 3days/2nights, group5M, motorbike, nature; real Planner/GROUP_VND_V1; no write or Booking; catalog explicitly DEMO"
+    },
+    {
+      "id": "J2",
+      "input": "Ngày thứ2 muốn đi ít chỗ thôi",
+      "expected": "Only day2 replanned, day1/day3 and lodging retained; oracle recomputed; draft only"
+    },
+    {
+      "id": "J3",
+      "input": "Thêm một ngày thì tốn bao nhiêu?",
+      "expected": "Hypothetical4days, immutable actual draft/verified context/mandatory selections; delta same catalog basis; no save"
+    },
+    {
+      "id": "J4",
+      "input": "Lưu lịch trình",
+      "expected": "CREATE preview of actual3day draft; no database Trip before explicit confirmation; expiry/reject/forgery guards"
+    },
+    {
+      "id": "J5",
+      "input": "Lưu lịch trình",
+      "expected": "A separately planned new preview after observing original expiry; no mutation retry; explicit browser confirmation commits exactly Trip1 once"
+    },
+    {
+      "id": "J6",
+      "input": "Xem Trip của tôi",
+      "expected": "After exact API restart, MyTrips/owned dropdown + separate context consent; reload committed3day context, sameTripID/lodging/selection without notes/private data"
+    },
+    {
+      "id": "J7",
+      "input": "Thêm một ngày vào lịch trình giúp tôi.",
+      "expected": "Explicit four-day draft; saved3day row unchanged until preview+confirmation"
+    },
+    {
+      "id": "J8",
+      "input": "Lưu lịch trình",
+      "expected": "UPDATE preview targets sameTripID and original loadedversion; valid confirmation changes actualTrip1 to4days; reload new browser and directDB proves persistence; no Trip2"
+    }
+  ],
+  "maxNormalChats": 8,
+  "maxValidConfirmations": 2,
+  "requiredRemaining": 20,
+  "reserve": 10,
+  "nonTurnGuards": [
+    "Other customer owned GET404",
+    "foreign/forged ticket409/400 before limiter",
+    "expired ticket409 before limiter",
+    "replayed consumed ticket409",
+    "double click UI emits at most one confirm"
+  ],
+  "oracle": "Independent sums from actual catalog rows and published Planner assumptions: adult1/child0.7; hotel priceFrom once per N-1 night (fallback400000 only if truly missing); sight priceFrom (fallback300000), lunch reference (fallback150000), dinner200000; no hotel activity double charge; no fabricated transport; compare actual stored canonical totals",
+  "finalSourceLockRequired": true,
+  "sourceCanChangeBeforeFinalLockOnly": true,
+  "Qwen": false,
+  "permissionRequired": "21.27"
+}

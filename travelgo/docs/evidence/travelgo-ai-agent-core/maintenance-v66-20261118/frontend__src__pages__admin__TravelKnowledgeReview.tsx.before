@@ -1,0 +1,21 @@
+import {safeWebLink} from '../../utils/webSourceCards';
+const when=(v:any)=>v?new Date(v).toLocaleString('vi-VN'):'chưa xác định';
+export function ReviewCenterSummary({data,filter,onFilter}:{data:any;filter:string;onFilter:(v:string)=>void}){
+ const rows=data?.candidates||[],knowledge=data?.knowledge||[];
+ return <section className="space-y-3 rounded border bg-white p-4" aria-label="Tổng quan duyệt kiến thức">
+  <h2 className="font-bold">Trung tâm duyệt kiến thức</h2>
+  <p>{rows.filter((c:any)=>c.status==='DRAFT').length} bài chờ duyệt · {knowledge.filter((k:any)=>k.status==='APPROVED').length} snapshot đã duyệt đang lưu · {data?.operation?.workerEnabled?'Worker được bật theo cấu hình phiên':'Worker nền đang tắt'}</p>
+  <p>Đọc bài gốc → kiểm quyền → chọn từng fact → sửa theo evidence nếu cần → xác nhận lý do và thời hạn → duyệt. Quyền giữ dữ liệu lâu dài là quyết định riêng; duyệt fact không tự cấp quyền chạy worker.</p>
+  {!data?.operation?.realOwnerReview&&<p className="rounded bg-amber-50 p-2">Chế độ này chưa cấp quyền owner duyệt kiến thức thật. Tài khoản nghiệm thu chỉ được duyệt dữ liệu SYNTHETIC trong scope riêng.</p>}
+  <label>Nhóm bài viết <select aria-label="Lọc hàng đợi kiến thức" className="rounded border p-2" value={filter} onChange={e=>onFilter(e.target.value)}><option value="ALL">Tất cả</option><option value="DRAFT">Chờ duyệt</option><option value="APPROVED">Đã duyệt</option><option value="REAL">Dữ liệu thật</option><option value="SYNTHETIC">Dữ liệu kiểm thử</option></select></label>
+ </section>;
+}
+export function CandidateFacts({candidate,selected,writable,busy,onToggle,onEdit}:{candidate:any;selected:string[];writable:boolean;busy:boolean;onToggle:(hash:string)=>void;onEdit:(fact:any)=>void}){
+ return <>{candidate.extraction.facts.filter((f:any)=>f.kind!=='REPORTED_COST').map((f:any,i:number)=><section className="space-y-1 rounded border p-3" key={f.evidenceHash}>
+  <label className="flex gap-2"><input type="checkbox" aria-label={'Chọn fact '+(i+1)+' '+candidate.extraction.title} disabled={!writable||busy} checked={selected.includes(f.evidenceHash)} onChange={()=>onToggle(f.evidenceHash)}/>{f.summary}</label>
+  {f.evidence?<><p>Vị trí trong bài: {f.evidence.locator}</p>{f.evidence.headings?.length>0&&<p>Mục: {f.evidence.headings.join(' › ')}</p>}<blockquote className="border-l-2 pl-3">{f.evidence.quote}</blockquote><button className="underline" disabled={!writable||busy} onClick={()=>onEdit(f)}>Sửa fact theo evidence</button></>:<p>Chưa có locator/quote riêng cho fact này. Cần đối chiếu bài gốc hoặc fresh-import; không tự bổ sung bằng suy đoán.</p>}
+ </section>)}</>;
+}
+export function StoredKnowledge({items}:{items:any[]}){
+ return <section className="space-y-3" aria-label="Kiến thức đang lưu"><h2 className="font-bold">Kiến thức đang lưu và thời hạn</h2>{!items.length&&<p>Chưa có kiến thức trong DB. Bài viết đã thu thập ngoài DB hoặc candidate chưa duyệt chưa được coi là kiến thức đang hoạt động.</p>}{items.map(k=><article key={k.id} className="space-y-1 rounded border bg-white p-3"><p className="font-semibold">{k.title}</p><p>{k.synthetic?'SYNTHETIC TEST DATA':'REAL KNOWLEDGE'} · {k.status==='APPROVED'?'đã duyệt':k.status==='REVOKED'?'đã thu hồi':'chưa duyệt'} · bản{k.version}</p><p>Duyệt lúc {when(k.reviewed_at)} · hết hạn {when(k.expires_at)}</p>{safeWebLink(k.source_url)&&<a className="block break-words underline" href={k.source_url} target="_blank" rel="noopener noreferrer">Mở nguồn của snapshot</a>}<p>Snapshot đang được lưu; khả năng retrieval còn phụ thuộc source approval, revision, public-use, thời hạn và thu hồi. Không tự gia hạn hoặc coi giá lịch sử là giá hiện tại.</p></article>)}</section>;
+}

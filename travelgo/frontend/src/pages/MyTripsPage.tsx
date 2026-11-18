@@ -204,6 +204,7 @@ export const MyTripsPage: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
+                      {trip.costBasis==='GROUP_VND_V1'&&<Link onClick={e=>e.stopPropagation()} to={'/assistant?trip='+encodeURIComponent(trip.id)} className="text-xs font-bold text-sky-700 underline">Tiếp tục với trợ lý</Link>}
                       <button
                         onClick={(e) => handleDeleteTrip(trip.id, e)}
                         className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"

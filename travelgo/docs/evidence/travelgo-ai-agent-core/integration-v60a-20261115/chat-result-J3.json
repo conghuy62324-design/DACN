@@ -1,0 +1,196 @@
+{
+  "id": "J3",
+  "input": "Chi phí lưu trú Đà Lạt mỗi phòng mỗi đêm, thuê 2 phòng trong 2 đêm?",
+  "expected": "ACCOMMODATION, historical room scenario 3200000 VND, not Booking",
+  "status": "PASS",
+  "quotaBefore": 18,
+  "httpStatus": 200,
+  "body": {
+    "success": true,
+    "data": {
+      "status": "completed",
+      "reply": "Đà Lạt: có 1 quan sát; mình giữ từng nguồn riêng vì chưa đủ bằng chứng tạo khoảng chi phí đại diện.\n\nKịch bản lưu trú theo mức phòng/đêm của nguồn lịch sử: 2 phòng × 2 đêm = 3.200.000 VND. Số phòng và đêm do bạn nêu; đây là ước tính theo giả định, không phải giá phòng hiện tại, dự toán Planner hay xác nhận Booking.\n\nSở thích chỉ giúp đối chiếu phương án; nguồn chi phí chưa chứng minh chất lượng, yên tĩnh hoặc tiện nghi. Giá nguồn không thay giá catalog hay ràng buộc đã xác nhận.\n\nGiá catalog chỉ là mức tham khảo riêng; chưa xác nhận đơn vị hoặc còn chỗ.\n\nCòn thiếu: Nơi xuất phát; Phương tiện/chi phí liên tỉnh.\n\nSố bài viết phản ánh đúng thời điểm và phạm vi nguồn, không phải giá hiện tại hoặc giá Booking đã xác nhận.\n\nNguồn SYNTHETIC chỉ để kiểm thử chức năng; không phải tư vấn chi phí ngoài đời.\n\nBạn xuất phát từ đâu để mình xác định phần chi phí di chuyển còn thiếu?",
+      "tool": "search_places",
+      "costIntelligence": {
+        "version": 1,
+        "criteria": {
+          "destinationIds": [
+            "destination:da-lat"
+          ],
+          "mode": "BUDGET",
+          "budgetScope": "UNKNOWN",
+          "category": "ACCOMMODATION",
+          "unit": "PER_ROOM_NIGHT",
+          "rooms": 2,
+          "nights": 2
+        },
+        "destinations": [
+          {
+            "locationId": "destination:da-lat",
+            "name": "Đà Lạt",
+            "aggregate": {
+              "status": "SINGLE_OBSERVATION",
+              "samples": 1,
+              "independentSources": 0,
+              "min": null,
+              "max": null,
+              "medianMin": null,
+              "medianMax": null,
+              "missing": [],
+              "comparisons": [],
+              "periods": [
+                "10/2026"
+              ]
+            },
+            "observations": [
+              {
+                "sourceIndex": 0,
+                "reported": {
+                  "unit": "PER_ROOM_NIGHT",
+                  "basis": "EXTERNAL_REPORTED_OBSERVATION",
+                  "amount": 800000,
+                  "category": "ACCOMMODATION",
+                  "currency": "VND",
+                  "excluded": [],
+                  "included": [],
+                  "sourceId": "cf49ed90-858a-4376-977a-59b03c2df1ba",
+                  "amountMax": 800000,
+                  "amountMin": 800000,
+                  "promotion": false,
+                  "validFrom": null,
+                  "valueKind": "REPORTED",
+                  "priceBound": "EXACT",
+                  "validUntil": null,
+                  "candidateId": "9d91b6fb-735e-4ad2-b025-7d131ccf0c42",
+                  "costCategory": "ACCOMMODATION",
+                  "evidenceHash": "d9ff3378fe3612477bf6a9709e5b5cc188ec840913a96fd863c374202f58fc64",
+                  "pricedObject": "ROOM_STAY",
+                  "unknownItems": [
+                    "INCLUDED_ITEMS",
+                    "EXCLUDED_ITEMS",
+                    "TRAVEL_PERIOD"
+                  ],
+                  "validityKind": "UNKNOWN",
+                  "observationId": "4d2ab4a9459330ef995d87fad7b1933b",
+                  "schemaVersion": 2,
+                  "evidenceLocator": "body:block:1:clause:0",
+                  "inclusionStatus": "UNKNOWN",
+                  "candidateVersion": 1
+                },
+                "normalized": {
+                  "kind": "DERIVED",
+                  "min": 1600000,
+                  "max": 1600000,
+                  "currency": "VND",
+                  "unit": "PER_GROUP",
+                  "formula": "reported_room_night * reported_rooms * reported_nights",
+                  "inputs": {
+                    "reportedRooms": 1,
+                    "reportedNights": 2,
+                    "reportedMin": 800000,
+                    "reportedMax": 800000
+                  },
+                  "assumptions": [
+                    "Làm tròn tới1 VND gần nhất; chỉ từ số nguồn công bố, không phải dự báo hay giá Booking."
+                  ],
+                  "originalObservationId": "4d2ab4a9459330ef995d87fad7b1933b"
+                },
+                "days": 3,
+                "nights": 2,
+                "party": 2,
+                "period": "10/2026"
+              }
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "title": "SYNTHETIC Đà Lạt lưu trú",
+            "href": "https://example.com/synthetic-v60a",
+            "license": "SYNTHETIC_TEST_PERMISSION_NOT_REAL",
+            "publishedAt": null,
+            "retrievedAt": "2026-11-15T01:34:00.084Z",
+            "synthetic": true
+          }
+        ],
+        "missing": [
+          "Nơi xuất phát",
+          "Phương tiện/chi phí liên tỉnh"
+        ],
+        "claims": [
+          "Sở thích chỉ giúp đối chiếu phương án; nguồn chi phí chưa chứng minh chất lượng, yên tĩnh hoặc tiện nghi. Giá nguồn không thay giá catalog hay ràng buộc đã xác nhận.",
+          "Giá catalog chỉ là mức tham khảo riêng; chưa xác nhận đơn vị hoặc còn chỗ."
+        ],
+        "question": "Bạn xuất phát từ đâu để mình xác định phần chi phí di chuyển còn thiếu?",
+        "executionAuthority": false,
+        "priceBasis": "EXTERNAL_HISTORICAL_REFERENCE_ONLY",
+        "allocations": [
+          {
+            "category": "ACCOMMODATION",
+            "min": 1600000,
+            "max": 1600000,
+            "kind": "SOURCE_DERIVED",
+            "sourceIndex": 0
+          }
+        ],
+        "budgetComparison": {
+          "status": "INSUFFICIENT_DATA",
+          "groupMin": null,
+          "groupMax": null,
+          "difference": null,
+          "sufficientCurrentBudget": false
+        },
+        "accommodationScenario": {
+          "kind": "ESTIMATED",
+          "currency": "VND",
+          "min": 3200000,
+          "max": 3200000,
+          "rooms": 2,
+          "nights": 2,
+          "sourceIndex": 0,
+          "formula": "historical_room_night * customer_rooms * customer_nights"
+        },
+        "preferenceLabels": [
+          "Khách sạn yên tĩnh"
+        ]
+      },
+      "sourceInfo": {
+        "label": "Quan sát chi phí đã duyệt, tách khỏi catalog/Planner/Booking",
+        "retrievedAt": "2026-11-15T01:37:33.868Z",
+        "externalKnowledgeIntegrated": true
+      },
+      "languageFeedback": {
+        "id": "eb951d40-aa33-423b-8c28-cd9db93c35a7",
+        "revision": 3
+      },
+      "dialogue": {
+        "deferredGoals": [],
+        "activeConstraints": {},
+        "softPreferences": {},
+        "pendingQuestion": "CRITERIA",
+        "mutationAuthority": false
+      },
+      "conversation": {
+        "id": "2fb07115-0c99-40ff-9c4f-da1144c10098",
+        "revision": 3,
+        "expiresAt": "2026-11-15T01:52:32.023Z",
+        "mode": "CORE_VERIFIED",
+        "persisted": false
+      },
+      "model": {
+        "invoked": false,
+        "rawNlu": "NOT_EVALUATED"
+      },
+      "intent": {
+        "version": "NATURAL_CHAT_V3",
+        "authority": "SERVER_VERIFIED"
+      },
+      "languageStatus": "disabled",
+      "verifiedTravel": {}
+    }
+  },
+  "latencyMs": 99.90079999999944,
+  "sqlDelta": 18,
+  "dmlDelta": 0,
+  "responseBytes": 5008
+}

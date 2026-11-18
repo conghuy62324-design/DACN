@@ -1,0 +1,350 @@
+{
+  "at": "2026-11-16T13:42:00.093Z",
+  "methodology": {
+    "tier": "OFFLINE_SYNTHETIC_IN_MEMORY_NOT_POSTGRES_OR_HTTP",
+    "warmupPerFamily": 2,
+    "measuredPerFamily": 8,
+    "rows": 130,
+    "concurrency": 1,
+    "model": "OFF",
+    "timings": "End-to-end Core method incl test instrumentation; semantic/render sync timings inclusive, cannot be added; retrieval is instrumented double time; SQL calls instrumented separately in bounded real PG read-only snapshot benchmark",
+    "percentiles": "8 observations/family; p95 exploratory max-like, not production SLA. Warmups excluded. Same Node flags/harness/fixtures baseline/final. CPU/JIT/system scheduling not controlled.",
+    "resources": "Own Node heapUsed/RSS only; not Windows RAM/Qwen readiness. Peak sampled at request boundaries, not continuous allocation profiling.",
+    "holdout": "12 authored synthetic cases locked before source edits; final run once after source lock; H03/H13 known regressions excluded from new holdout count"
+  },
+  "scenarios": [
+    {
+      "id": "P01",
+      "family": "greeting",
+      "seeds": [],
+      "input": "Xin chào",
+      "expected": {
+        "noTool": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "P02",
+      "family": "thanks",
+      "seeds": [],
+      "input": "Cảm ơn bạn",
+      "expected": {
+        "noTool": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "P03",
+      "family": "verified-context",
+      "seeds": [
+        "Đi Đà Lạt từ SG,2 người,ngân sách cả nhóm5tr bằng xe máy"
+      ],
+      "input": "Ngân sách cả nhóm hiện tại của tôi là bao nhiêu?",
+      "expected": {
+        "noPlanner": true,
+        "preserve": true
+      }
+    },
+    {
+      "id": "P04",
+      "family": "hotel-search",
+      "seeds": [],
+      "input": "Tìm khách sạn ở Đà Lạt",
+      "expected": {
+        "tool": "search_registered_hotels",
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "P05",
+      "family": "review-advice",
+      "seeds": [
+        "Tìm khách sạn ở Đà Lạt"
+      ],
+      "input": "So sánh khách sạn thứ1 và thứ2, ưu tiên yên tĩnh",
+      "expected": {
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "P06",
+      "family": "historical-cost",
+      "seeds": [],
+      "input": "Giá xe đưa đón sân bay Đà Lạt bao nhiêu?",
+      "expected": {
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "P07",
+      "family": "compound",
+      "seeds": [],
+      "input": "Tìm khách sạn dưới800k và nhà hàng dưới200k ở Đà Lạt, tổng chuyến không vượt6tr",
+      "expected": {
+        "tool": "search_registered_hotels",
+        "budget": 6000000,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "P08",
+      "family": "qualified-reference",
+      "seeds": [
+        "Tìm khách sạn ở Đà Lạt",
+        "Tìm nhà hàng ở Đà Lạt"
+      ],
+      "input": "Khách sạn thứ2",
+      "expected": {
+        "noPlanner": true,
+        "listingCategory": "hotel"
+      }
+    },
+    {
+      "id": "P09",
+      "family": "learned-reuse",
+      "seeds": [],
+      "input": "Tìm vulapa có Wi-Fi ở Đà Lạt",
+      "expected": {
+        "tool": "search_registered_hotels",
+        "type": "homestay",
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "P10",
+      "family": "listing-price-correction",
+      "seeds": [
+        "Đi Đà Lạt từ SG,2 người,ngân sách cả nhóm5tr bằng xe máy",
+        "Tìm khách sạn ở Đà Lạt"
+      ],
+      "input": "550k là tiền phòng, không phải tổng chuyến",
+      "expected": {
+        "budget": 5000000,
+        "noPlanner": true,
+        "cap": 550000
+      }
+    },
+    {
+      "id": "P11",
+      "family": "party-correction",
+      "seeds": [
+        "Đi Đà Lạt từ SG,2 người,ngân sách cả nhóm5tr bằng xe máy"
+      ],
+      "input": "Không phải2 người, là3 người",
+      "expected": {
+        "adults": 3,
+        "budget": 5000000,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "P12",
+      "family": "known-geography-H03",
+      "seeds": [
+        "Đi Đà Lạt từ SG,2 người,ngân sách cả nhóm5tr bằng xe máy"
+      ],
+      "input": "Đổi điểm đến từ Nha Trang sang Huế, vẫn khởi hành Hà Nội",
+      "expected": {
+        "destination": "Huế",
+        "departure": "Hà Nội",
+        "budget": 5000000,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "P13",
+      "family": "planner-preview",
+      "seeds": [],
+      "input": "Lập lịch trình từ SG đến Đà Lạt,3n2đ,2 người,ngân sách cả nhóm5tr,đi10/12/2027-12/12/2027 bằng xe máy",
+      "expected": {
+        "tool": "plan_trip",
+        "plannerExactly": 1
+      }
+    },
+    {
+      "id": "P14",
+      "family": "what-if",
+      "seeds": [
+        "Lập lịch trình từ SG đến Đà Lạt,3n2đ,2 người,ngân sách cả nhóm5tr,đi10/12/2027-12/12/2027 bằng xe máy"
+      ],
+      "input": "Nếu tăng ngân sách thêm500k thì sao?",
+      "expected": {
+        "hypothetical": true,
+        "preserve": true,
+        "plannerExactly": 1
+      }
+    },
+    {
+      "id": "P15",
+      "family": "unknown-expression",
+      "seeds": [],
+      "input": "Tìm navula ở Đà Lạt",
+      "expected": {
+        "noTool": true,
+        "noPlanner": true,
+        "clarification": true
+      }
+    },
+    {
+      "id": "P16",
+      "family": "ambiguous-destination",
+      "seeds": [
+        "Đi Đà Lạt từ SG,2 người,ngân sách cả nhóm5tr bằng xe máy"
+      ],
+      "input": "Có lẽ đi Hội An hoặc Nha Trang, tầm7tr",
+      "expected": {
+        "noTool": true,
+        "noPlanner": true,
+        "preserve": true
+      }
+    },
+    {
+      "id": "P17",
+      "family": "optional-review-error",
+      "seeds": [],
+      "input": "Tìm khách sạn ở Đà Lạt",
+      "expected": {
+        "tool": "search_registered_hotels",
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "P18",
+      "family": "meaning-only",
+      "seeds": [
+        "Từ giờ mình gọi homestay là ravula"
+      ],
+      "input": "Ý mình là homestay",
+      "expected": {
+        "noTool": true,
+        "noPlanner": true
+      }
+    }
+  ],
+  "holdout": [
+    {
+      "id": "U01",
+      "input": "Chuyển nơi đến qua Huế, vẫn xuất phát SG",
+      "patch": {
+        "destinationCity": "Huế",
+        "departureCity": "Thành phố Hồ Chí Minh"
+      },
+      "expected": {
+        "preserveUnrelated": true
+      }
+    },
+    {
+      "id": "U02",
+      "input": "Đổi điểm đến từ Hội An sang Sa Pa, giữ nơi khởi hành Hà Nội",
+      "patch": {
+        "destinationCity": "Sa Pa"
+      },
+      "expected": {
+        "preserveUnrelated": true
+      }
+    },
+    {
+      "id": "U03",
+      "input": "Doi diem den tu Da Lat sang Hue van xuat phat Ha Noi",
+      "patch": {
+        "destinationCity": "Huế",
+        "departureCity": "Hà Nội"
+      },
+      "expected": {
+        "preserveUnrelated": true
+      }
+    },
+    {
+      "id": "U04",
+      "input": "Không đi Hội An mà đi Nha Trang, vẫn xuất phát SG",
+      "patch": {
+        "destinationCity": "Nha Trang",
+        "departureCity": "Thành phố Hồ Chí Minh"
+      },
+      "expected": {
+        "preserveUnrelated": true
+      }
+    },
+    {
+      "id": "U05",
+      "input": "Giữ nơi xuất phát, đổi điểm đến sang Quy Nhơn",
+      "patch": {
+        "destinationCity": "Quy Nhơn"
+      },
+      "expected": {
+        "preserveUnrelated": true
+      }
+    },
+    {
+      "id": "U06",
+      "input": "Nếu chuyển điểm đến sang Huế thì sao?",
+      "patch": {},
+      "expected": {
+        "question": true,
+        "emptyPatch": true,
+        "noOperation": true,
+        "preserveUnrelated": true
+      }
+    },
+    {
+      "id": "U07",
+      "input": "Tìm nhà hàng ở Huế, chuyến này vẫn đi Hội An",
+      "patch": {},
+      "expected": {
+        "noDestinationUpdate": true,
+        "preserveUnrelated": true
+      }
+    },
+    {
+      "id": "U08",
+      "input": "Chưa chắc chọn Huế hoặc Hà Nội",
+      "patch": {},
+      "expected": {
+        "question": true,
+        "emptyPatch": true,
+        "noOperation": true,
+        "preserveUnrelated": true
+      }
+    },
+    {
+      "id": "U09",
+      "input": "Không phải4 người, là5 người",
+      "patch": {
+        "adults": 5
+      },
+      "expected": {
+        "preserveUnrelated": true
+      }
+    },
+    {
+      "id": "U10",
+      "input": "750k là tiền phòng, không phải tổng chuyến",
+      "patch": {},
+      "expected": {
+        "noBudgetUpdate": true,
+        "hotelCap": 750000,
+        "preserveUnrelated": true
+      }
+    },
+    {
+      "id": "U11",
+      "input": "Tìm vulapa ở Đà Lạt nhưng đừng đặt phòng",
+      "patch": {},
+      "expected": {
+        "operation": "search_registered_hotels",
+        "type": "homestay",
+        "preserveUnrelated": true
+      }
+    },
+    {
+      "id": "U12",
+      "input": "Tìm khách sạn dưới900k và nhà hàng dưới180k ở Đà Lạt, tổng không vượt7tr",
+      "patch": {
+        "totalBudget": 7000000
+      },
+      "expected": {
+        "preserveUnrelated": true
+      }
+    }
+  ]
+}

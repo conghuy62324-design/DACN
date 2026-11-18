@@ -1,0 +1,15 @@
+import {Router} from 'express';
+import {authenticate,requireRoles,type AuthenticatedRequest} from '../middlewares/authMiddleware.js';
+import {LanguageMemoryService} from '../services/languageMemoryService.js';
+const router=Router(),service=new LanguageMemoryService();router.use(authenticate,requireRoles('CUSTOMER'));
+const route=(f:(r:AuthenticatedRequest)=>Promise<any>)=>async(req:any,res:any,next:any)=>{try{res.setHeader('Cache-Control','no-store');res.json({success:true,data:await f(req)});}catch(e){next(e);}};
+router.get('/',route(r=>service.list(r.user!.id)));
+router.put('/settings',route(r=>service.settings(r.user!.id,r.body)));
+router.post('/mappings',route(r=>service.save(r.user!.id,r.body)));
+router.patch('/mappings/:id',route(r=>service.save(r.user!.id,r.body,String(r.params.id))));
+router.delete('/mappings/:id',route(r=>service.remove(r.user!.id,String(r.params.id))));
+router.post('/mappings/:id/contribute',route(r=>service.contribute(r.user!.id,String(r.params.id),r.body)));
+router.get('/feedback-metrics',route(r=>service.feedbackMetrics(r.user!.id)));
+router.post('/prune-expired',route(r=>service.prune(r.user!.id)));
+router.delete('/',route(r=>service.remove(r.user!.id)));
+export default router;

@@ -1,0 +1,127 @@
+{
+  "status": "PROPOSED_NOT_APPROVED_NOT_RUN",
+  "at": "2026-11-15T02:57:37.101Z",
+  "sourceFreeze": "source-freeze-final-v3.json",
+  "sourceFreezeSha256": "0ccf1532b1592e5b9105844fbc215a25a939c9cc0c4e5ed37794e08f54042181",
+  "model": {
+    "tag": "qwen3:4b-instruct-2507-q4_K_M",
+    "digest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+    "temperature": 0,
+    "num_ctx": 16384,
+    "num_predict": 2048,
+    "deadlineMs": 15000,
+    "concurrency": 1
+  },
+  "proposedBudget": {
+    "conditionalWarmLoadMax": 1,
+    "inferenceMax": 4,
+    "nativePostMax": 5,
+    "metadataGetMaxProposed": 18,
+    "approval": "NONE_NEW_OWNER_APPROVAL_REQUIRED",
+    "retry": 0
+  },
+  "caseIds": [
+    "B1",
+    "B2",
+    "B3",
+    "B4"
+  ],
+  "inputs": {
+    "B1": "Tui tính lên đờ lạt nghỉ ngơi vài bữa, chưa chốt ngày.",
+    "B2": "Cái mức tiền nãy nhích lên nhẹ xíu nha, còn đi xe gì thì để mình tính sau.",
+    "B3": "Chi phí vé vào này tính mỗi vé hay mỗi người; có cộng thành tiền cả chuyến được không?",
+    "B4": "Theo ưu tiên đã lưu, so sánh hai chỗ ở và lưu ý tại Đà Lạt; còn điều gì chưa rõ?"
+  },
+  "semanticExpected": {
+    "B1": {
+      "operation": "plan_trip",
+      "destinationCity": "Đà Lạt",
+      "quote": "đờ lạt",
+      "forbidden": [
+        "invented dates",
+        "budget/transport without evidence",
+        "whole sentence preferences",
+        "direct execution"
+      ],
+      "requiresConfirmation": true
+    },
+    "B2": {
+      "operation": "chat",
+      "updates": [],
+      "preserveVerified": true,
+      "forbidden": [
+        "new/inherited budget as current update",
+        "choose car/motorbike",
+        "mutation"
+      ]
+    },
+    "B3": {
+      "kind": "grounded",
+      "mustSelect": "Offered ticket/person cost IDs supporting unit distinction; never infer one ticket equals one person or a whole-trip price.",
+      "forbidden": [
+        "unit conversion",
+        "new amount",
+        "market average",
+        "Booking availability"
+      ],
+      "renderer": "Amount/range/bound +unit+source/version/period+inclusions/unknowns/caveats"
+    },
+    "B4": {
+      "kind": "grounded",
+      "mustSelect": "Relevant option/review/unknownPrice/knowledge IDs; quieter B must keep missing price and opinion/sample limits; acknowledge A cleanliness versus noise trade-off.",
+      "forbidden": [
+        "invent reviews/rating/price",
+        "quality guarantee",
+        "raw reviewer prose",
+        "private identity"
+      ],
+      "scope": "SEMANTIC_ON_SYNTHETIC_FIXTURE_ONLY_NOT_REAL_REVIEW_INTEGRATION"
+    }
+  },
+  "serializedTemplates": "proposed-serialized-payloads-v3.json",
+  "payloadSizes": {
+    "B1": {
+      "nativeBodyBytes": 10563,
+      "contextBytes": 1232,
+      "factsBytes": 0
+    },
+    "B2": {
+      "nativeBodyBytes": 10502,
+      "contextBytes": 1187,
+      "factsBytes": 0
+    },
+    "B3": {
+      "nativeBodyBytes": 5635,
+      "contextBytes": 1413,
+      "factsBytes": 2732
+    },
+    "B4": {
+      "nativeBodyBytes": 6749,
+      "contextBytes": 1599,
+      "factsBytes": 3617
+    }
+  },
+  "scoring": {
+    "rawOutput": true,
+    "schema": true,
+    "semantic": true,
+    "grounding": true,
+    "rendererSeparately": true,
+    "parserFallbackNeverModelPass": true,
+    "stopOnFirstSemanticFailure": true,
+    "neverChangeExpectedAfterOutput": true
+  },
+  "requiredBeforeNative": [
+    "New explicit approval for exact source/input/budget",
+    "Fresh existing RAM/VRAM/ownership/local-runtime/quota guards; no context/model/deadline/concurrency changes",
+    "Same approved model and Agent principals, cap20/hour and reserve10, enough conservative operator+4 inference entries",
+    "Fresh-bind valid facts and actual metadata; this synthetic offline template is not approved real knowledge",
+    "Lock exact native bodies/expected/source hashes before POST; no reuse of V60A approval/manifest",
+    "No private input/profile/raw comments/web HTML/transcript; one call per turn, fact IDs<=3"
+  ],
+  "historicalFailures": "Unchanged, not regraded",
+  "ollamaGet": 0,
+  "ollamaPost": 0,
+  "warmLoad": 0,
+  "inference": 0
+}

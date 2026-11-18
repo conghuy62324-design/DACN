@@ -51,6 +51,7 @@ export interface TripSession {
   updatedAt: string;
   costBasis?: string;
   nightsCount?: number;
+  lodgingPlaceId?: string;
   costAssumptions?: string[];
   transportation?: 'car' | 'motorbike' | 'flight' | 'train';
   adults?: number;
@@ -90,8 +91,10 @@ const serialize = (model: any): TripSession => {
     updatedAt: new Date(value.updatedAt).toISOString(),
     // Read without upgrading legacy units, changing modes or repricing old JSON.
     ...(value.plannerMetadata && typeof value.plannerMetadata === 'object' ? {
+      ...(value.plannerMetadata.planningVersion?{planningVersion:value.plannerMetadata.planningVersion,planning:value.plannerMetadata.planning}:{}),
       costBasis: value.plannerMetadata.costBasis,
       nightsCount: value.plannerMetadata.nightsCount,
+      ...(value.plannerMetadata.lodgingPlaceId?{lodgingPlaceId:value.plannerMetadata.lodgingPlaceId}:{}),
       costAssumptions: value.plannerMetadata.costAssumptions,
       transportation: value.plannerMetadata.transportation,
       adults: value.plannerMetadata.adults,

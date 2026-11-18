@@ -1,3 +1,4 @@
+import {validTimeAwarePlan} from '../utils/plannerContract';
 import { api } from './api';
 import { TourPackage, PlannerInput, GeneratedItinerary } from '../types';
 
@@ -21,6 +22,7 @@ export const TourService = {
 
   async planItinerary(input: PlannerInput): Promise<GeneratedItinerary> {
     const res: any = await api.post('/tours/plan', input);
+    if(!validTimeAwarePlan(res.data))throw Error('Lịch trình trả về chưa khớp hợp đồng thời gian.');
     return res.data;
   },
 

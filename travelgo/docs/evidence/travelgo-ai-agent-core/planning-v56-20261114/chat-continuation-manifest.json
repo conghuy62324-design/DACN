@@ -1,0 +1,68 @@
+{
+  "at": "2026-11-14T08:46:29.888Z",
+  "parentManifestSha256": "996ed0b1956e9dcc7f3b77e3b1329a70298bc8c393d0d8c5769f27820b6e332f",
+  "sourceUnchanged": true,
+  "remainingAlreadyLockedCasesOnly": true,
+  "skippedFailedCaseNotRetried": true,
+  "alreadyConsumed": 3,
+  "additionalCap": 7,
+  "totalTaskCap": 10,
+  "scenarios": [
+    {
+      "input": "Lập lịch trình từ Hà Nội đến Đà Lạt, đi10/12/2026-11/12/2026 bằng xe máy,2 người,ngân sách cả nhóm7tr, muốn khám phá nhiều chỗ",
+      "expected": {
+        "tool": "plan_trip",
+        "pace": "packed",
+        "days": 2
+      }
+    },
+    {
+      "input": "Ngày thứ2 muốn đi ít chỗ thôi",
+      "expected": {
+        "tool": "plan_trip",
+        "local": true,
+        "unchanged": true
+      }
+    },
+    {
+      "input": "Nếu chuyển lịch trình sang cân bằng thì sao?",
+      "expected": {
+        "tool": "plan_trip",
+        "pace": "balanced",
+        "scenario": true,
+        "unchanged": true
+      }
+    },
+    {
+      "input": "Đổi lịch trình sang nghỉ dưỡng",
+      "viewport": "mobile",
+      "expected": {
+        "tool": "plan_trip",
+        "pace": "relaxed"
+      }
+    },
+    {
+      "input": "Lập lại lịch trình, muốn khám phá nhiều chỗ",
+      "expected": {
+        "tool": "plan_trip",
+        "pace": "packed"
+      }
+    },
+    {
+      "input": "Nếu đi thêm một ngày thì dự toán tăng bao nhiêu?",
+      "expected": {
+        "tool": "plan_trip",
+        "scenario": true,
+        "days": 3,
+        "unchanged": true
+      }
+    },
+    {
+      "input": "Ngày cuối muốn về sớm",
+      "expected": {
+        "clarify": true,
+        "unchanged": true
+      }
+    }
+  ]
+}

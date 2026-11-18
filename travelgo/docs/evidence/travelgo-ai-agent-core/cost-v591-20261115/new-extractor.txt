@@ -1,0 +1,51 @@
+﻿export function publicCostObservation(o:CostObservation){const {sourceContext,...publicFields}=o;return publicFields;}
+/** Context never crosses a paragraph. Heading/table context only supplies category; units need literal evidence. */
+export function extractCostObservations(lines:Array<string|CostDocumentSegment>,tripPeriod:string|null):CostObservation[]{
+ const out:CostObservation[]=[];
+ for(const [lineIndex,input]of lines.slice(0,400).entries()){
+  const segment:CostDocumentSegment=typeof input==='string'?{text:input,locator:'segment:'+lineIndex}:input;
+  if(!segment||!safeKnowledgeText(segment.text,6000)||typeof segment.locator!=='string'||segment.locator.length>70)continue;
+  const raw=segment.text,headings=(segment.headings||[]).filter(h=>safeKnowledgeText(h.text,90)).slice(-6),headers=(segment.tableHeaders||[]).filter(h=>safeKnowledgeText(h,90)).slice(0,12);
+  if(/\b(?:tong von|du an dau tu|thu nhap xa hoi|luong khach|trieu luot|million visitors|investment|tourism revenue|GDP)\b/i.test(literalVietnamese(raw)))continue;
+  const clauses=raw.split(/[;!?]|\.(?!\d)/).map(x=>x.trim()).filter(Boolean).slice(0,80);
+  for(const[clauseIndex,clause]of clauses.entries()){
+   if(out.length>=12)break;const text=literalVietnamese(clause).replace(/(\d+(?:[.,]\d+)*)\s*(k|trieu|nghin|dong|vnd|usd|eur)\s*(?:[–—-]|den|to)\s*(\d+(?:[.,]\d+)*)\s*\2\b/g,'$1–$3$2');
+   const matches=[...text.matchAll(/(?:(US\$|VND|USD|EUR|GBP|€|£|\$)\s*)?([+-]?\d{1,3}(?:[.,]\d{3})+(?:[.,]\d{1,2})?|[+-]?\d+(?:[.,]\d+)?)(?:\s*(?:–|—|-|den|to)\s*([+-]?\d+(?:[.,]\d+)*))?\s*(trieu|tr|cu|nghin|ngan|k|dong|vnd|usd|eur|gbp|d(?![a-z]))?(\d{1,2})?(?![a-z0-9])/gi)];
+   for(const[matchIndex,m]of matches.entries()){
+    if(out.length>=12)break;if(m.index!>0&&/[a-z0-9]/.test(text[m.index!-1]))continue;
+    const previousMatch=matches[matchIndex-1],nextMatch=matches[matchIndex+1],before=text.slice(Math.max(previousMatch?previousMatch.index!+previousMatch[0].length:0,m.index!-240),m.index),after=text.slice(m.index!+m[0].length,Math.min(nextMatch?.index??text.length,m.index!+m[0].length+120)),suffix=m[4]?.toLowerCase(),tableText=literalVietnamese(headers.join(' ')),currencyHeader=/\b(?:vnd|usd|eur|gbp)\b/.test(tableText),header=currencyHeader||/\b(?:vnd|usd|eur|gbp)\b[^;|]{0,35}:\s*$/.test(before),costCue=/\b(?:chi phi|tong|gia|tien|ve|phi|ngan sach|cost|price|fare|ticket|room|food|meal|hire)\b/.test(text);
+    if(!suffix&&!m[1]&&!header||!costCue&&!m[1]&&!['vnd','dong','d','usd','eur','gbp'].includes(suffix||'')&&!/(?:\/|moi|per)\s*(?:nguoi|person|phong|room|luot)/.test(after))continue;
+    const currencyRaw=(m[1]||(['vnd','usd','eur','gbp'].includes(suffix||'')?suffix:undefined)||(/\b(USD|EUR|GBP|VND)\b/i.exec(header?before+' '+tableText:'')?.[1]))?.toUpperCase(),currency:CostCurrency=currencyRaw==='US$'?'USD':currencyRaw==='€'?'EUR':currencyRaw==='£'?'GBP':currencyRaw==='$'?'UNKNOWN':(currencyRaw as CostCurrency)||(['trieu','tr','cu','nghin','ngan','k','dong','d'].includes(suffix||'')?'VND':'UNKNOWN'),factor=['trieu','tr','cu'].includes(suffix||'')?1e6:['nghin','ngan','k'].includes(suffix||'')?1000:1;
+    let lo=moneyNumber(m[2],factor,currency),hi=m[3]?moneyNumber(m[3],factor,currency):lo;if(m[5]&&suffix==='tr'&&lo!==null&&!m[3])lo=hi=lo+Number(m[5])/10**m[5].length*1e6;if(lo===null||hi===null||lo>hi)continue;
+    const scope=after+(header?' '+before+' '+tableText:''),tripScope=before+' '+after;let unit:CostUnit='UNKNOWN_UNIT';
+    if(/(?:\/|moi|per)\s*(?:nguoi|person)\s*(?:\/|moi|per)\s*(?:ngay|day)/.test(scope))unit='PER_PERSON_DAY';
+    else if(/(?:\/|moi|per)\s*(?:phong|room)\s*(?:\/|moi|per)\s*(?:dem|night)/.test(scope))unit='PER_ROOM_NIGHT';
+    else if(/(?:\/|moi|per)\s*(?:nguoi lon|adult)/.test(scope)||/\badult\s*$/.test(before))unit='PER_ADULT';
+    else if(/(?:\/|moi|per)\s*(?:tre em|child)/.test(scope)||/\bchildren?\s*$/.test(before))unit='PER_CHILD';
+    else if(/(?:\/|moi|per|cho mot)\s*(?:nguoi|person)/.test(scope))unit=/khu hoi|round.?trip|return fare|both ways/.test(tripScope)?'PER_PERSON_ROUND_TRIP':/mot chieu|one.?way/.test(tripScope)?'PER_PERSON_ONE_WAY':'PER_PERSON';
+    else if(/ca nhom|tong nhom|\/nhom|for (?:the )?group/.test(tripScope))unit='PER_GROUP';
+    else if(/(?:\/|moi|per)\s*(?:luot|visit|entry)/.test(scope))unit='PER_VISIT';
+    else if(/(?:\/|moi|per)\s*(?:ve|ticket)/.test(scope))unit='PER_TICKET';
+    else if(/(?:\/|moi|per)\s*(?:dem|night)/.test(scope))unit='PER_NIGHT';
+    else if(/(?:\/|moi|per)\s*(?:ngay|day)/.test(scope))unit='PER_DAY';
+    else if(/(?:\/|moi|per)\s*km\b/.test(scope))unit='PER_KM';
+    else if(/(?:\/|moi|per)\s*(?:gio|hour|hr)\b/.test(scope))unit='PER_HOUR';
+    else if(/(?:\/|moi|per)\s*(?:xe|bike|vehicle)\b/.test(scope))unit='PER_VEHICLE';
+    else if(/\bhop\s*$/.test(before)||/(?:\/|moi|per)\s*(?:hop|goi|package|box)\b/.test(scope))unit='PER_PACKAGE';
+    else if(/khu hoi|round.?trip|both ways/.test(tripScope)||/\breturn\s*$/.test(before))unit='PER_ROUND_TRIP';else if(/mot chieu|one.?way/.test(tripScope))unit='PER_ONE_WAY';
+    let cat=category(before),basis:CostSourceContext['categoryBasis']='LOCAL_CLAUSE';const nextCategory=category(after);if(cat==='OTHER')cat=nextCategory;
+    // A destination hotel in a transport clause is not a hotel price. Keep the transport subject.
+    if(cat==='ACCOMMODATION'&&/\b(?:bus|buses|shuttle|taxi)\b/.test(before)&&!/(?:hotel price|room price|tien phong)/.test(before))cat='TRANSPORT';
+    const previous=clauseIndex?clauses[clauseIndex-1]:null,following=clauses[clauseIndex+1]||null;
+    if(cat==='OTHER'&&previous&&/^(?:gia|tien|ve|cost|price|tickets?|fares?|it|this|these|they|using)\b/.test(text)){const c=category(literalVietnamese(previous));if(c!=='OTHER'){cat=c;basis='SAME_PARAGRAPH';}}
+    if(cat==='OTHER'&&following&&/^(?:ve nay|gia nay|this ticket|this fare|this price)\b/.test(literalVietnamese(following))){cat=category(literalVietnamese(following));basis='SAME_PARAGRAPH';}
+    if(cat==='OTHER'&&headers.length){const c=category(tableText+' '+literalVietnamese(raw.split(';')[0]));if(c!=='OTHER'){cat=c;basis='TABLE_HEADER';}}
+    if(cat==='OTHER'&&headings.length){const c=category(literalVietnamese(headings.at(-1)!.text));if(c!=='OTHER'){cat=c;basis='HEADING';}}
+    if(cat==='OTHER')basis='UNKNOWN';
+    const parts=inclusions(clause),unknownItems=[...(unit==='UNKNOWN_UNIT'?['PRICE_UNIT']:[]),...(!parts.included.length?['INCLUDED_ITEMS']:[]),...(!parts.excluded.length?['EXCLUDED_ITEMS']:[]),...(!tripPeriod?['TRAVEL_PERIOD']:[])],bound:CostObservation['priceBound']=m[3]?'RANGE':/khong qua|toi da|no (?:more|[^.]{0,35}more) than|up to/.test(before)?'AT_MOST':/it nhat|toi thieu|gia tu|at least|from/.test(before)||/^\s*\+/.test(after)?'AT_LEAST':'EXACT';
+    const reason=basis==='LOCAL_CLAUSE'?'Category từ chủ thể cùng mệnh đề giá.':basis==='SAME_PARAGRAPH'?'Câu liền kề cùng paragraph có tham chiếu tới khoản giá.':basis==='TABLE_HEADER'?'Header và nhãn của cùng hàng bảng.':basis==='HEADING'?'Heading gần nhất trong cùng section; không suy đơn vị.':'Chưa có bằng chứng category đủ rõ; giữ OTHER.',transportText=literalVietnamese(clause+' '+(basis==='SAME_PARAGRAPH'?previous||following||'':'')),transportKind:CostSourceContext['transportKind']=cat!=='TRANSPORT'?null:/thue|hire|rent/.test(transportText)?'RENTAL':/xe buyt|\bbus(?:es)?\b|shuttle/.test(transportText)?'BUS':/taxi/.test(transportText)?'TAXI':/may bay|flight/.test(transportText)?'FLIGHT':/tau|train/.test(transportText)?'TRAIN':'OTHER';
+    out.push({schemaVersion:2,observationId:digest(segment.locator+'#'+raw+'#'+clauseIndex+'#'+m.index).slice(0,32),category:legacyCategory(cat),costCategory:cat,amount:bound==='EXACT'?lo:null,amountMin:bound==='AT_MOST'?null:lo,amountMax:bound==='AT_LEAST'?null:hi,priceBound:bound,currency,unit,...parts,inclusionStatus:parts.included.length||parts.excluded.length?'EXPLICIT':'UNKNOWN',unknownItems,evidenceHash:digest(raw),evidenceLocator:segment.locator+':clause:'+clauseIndex,valueKind:'REPORTED',basis:'EXTERNAL_REPORTED_OBSERVATION',promotion:/khuyen mai|giam gia|promotion|discount/.test(text),validityKind:tripPeriod?'HISTORICAL_EXPERIENCE':'UNKNOWN',validFrom:null,validUntil:null,sourceContext:{locator:segment.locator,clause:clauseIndex,quote:clause.slice(0,500),preceding:previous?.slice(0,240)||null,following:following?.slice(0,240)||null,headings:headings.map(h=>h.text),tableHeaders:headers,categoryBasis:basis,rationale:reason,transportKind}});
+   }
+  }
+ }return out;
+}

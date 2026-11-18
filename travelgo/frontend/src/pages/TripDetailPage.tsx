@@ -339,6 +339,7 @@ export const TripDetailPage: React.FC = () => {
 
             {/* Status & Control Actions */}
             <div className="flex flex-wrap items-center gap-3">
+              {trip.costBasis==='GROUP_VND_V1'&&<Link to={'/assistant?trip='+encodeURIComponent(trip.id)} className="rounded-xl border border-sky-300 bg-white px-4 py-2.5 font-bold text-sky-800">Tiếp tục với trợ lý</Link>}
               {trip.costBasis === 'GROUP_VND_V1' && <button type="button" data-testid="edit-trip-itinerary" disabled={editingItinerary || actionBusy || isSavingPreferences} onClick={() => { setItineraryMessage(null); setEditingItinerary(true); }} className="bg-white border border-sky-300 text-sky-800 font-bold px-4 py-2.5 rounded-xl disabled:opacity-50">Chỉnh sửa lịch trình</button>}
               {trip.status === 'upcoming' && (
                 <button

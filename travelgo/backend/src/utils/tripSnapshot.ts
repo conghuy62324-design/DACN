@@ -1,3 +1,4 @@
+import {TIME_AWARE_V2,timeMinute,validCoordinate} from './plannerScheduling.js';
 import type { TripSessionAttributes } from '../models/TripSession.js';
 import { calculatePlannerDays } from './plannerValidation.js';
 import { HttpError } from './httpError.js';
@@ -56,7 +57,15 @@ export type SnapshotFields = Pick<TripSessionAttributes, 'name' | 'departureCity
 /** Accept an explicit, versioned group estimate; never upgrade an unversioned snapshot. */
 export function prepareTripSnapshot(value: unknown): SnapshotFields {
   const input = record(value, 'itinerary');
-  fields(input, snapshotFields, 'itinerary');
+  const timed=input.planningVersion===TIME_AWARE_V2;
+  fields(input,timed?[...snapshotFields,'planningVersion','planning']:snapshotFields,'itinerary');
+  if(timed){const m=record(input.planning,'planning');fields(m,['requestedPace','effectivePace','feasibility','warnings','route','catalogFingerprint','mandatoryIds','replanning'],'planning');
+    if(!['relaxed','balanced','packed'].includes(m.requestedPace)||!['relaxed','balanced','packed'].includes(m.effectivePace)||!['FEASIBLE_UNDER_ASSUMPTIONS','PARTIALLY_FEASIBLE','INFEASIBLE','DATA_INSUFFICIENT'].includes(m.feasibility))fail('Planning metadata invalid.');
+    if(!Array.isArray(m.warnings)||m.warnings.length>50||m.warnings.some((w:unknown)=>typeof w!=='string'||! /^[A-Z0-9_]{1,100}$/.test(w)))fail('Planning warnings invalid.');
+    if(typeof m.catalogFingerprint!=='string'||! /^[a-f0-9]{64}$/.test(m.catalogFingerprint)||!Array.isArray(m.mandatoryIds)||m.mandatoryIds.length>10||m.mandatoryIds.some((v:unknown)=>typeof v!=='string'||!uuid.test(v)))fail('Planning provenance invalid.');
+    const route=record(m.route,'route');fields(route,['beforeKm','afterKm','basis'],'route');if(!(route.beforeKm===null&&route.afterKm===null)){finite(route.beforeKm,'beforeKm',0,500000);finite(route.afterKm,'afterKm',0,500000);}if(route.basis!=='HAVERSINE_SAME_CANDIDATES'||route.afterKm>route.beforeKm)fail('Planning route invalid.');
+    if(m.replanning){fields(m.replanning,['changedDays','unchangedDays'],'replanning');for(const k of ['changedDays','unchangedDays'])if(!Array.isArray(m.replanning[k])||m.replanning[k].length>10||m.replanning[k].some((v:unknown)=>!Number.isSafeInteger(v)||Number(v)<1||Number(v)>10))fail('Replanning metadata invalid.');}
+  }
   if (input.costBasis !== 'GROUP_VND_V1') {
     throw new HttpError(422, 'Chưa thể lưu mới itinerary không có GROUP_VND_V1. Hãy tạo lịch mới; không tự chuyển đơn vị dữ liệu cũ.', 'UNVERSIONED_TRIP_SNAPSHOT');
   }
@@ -94,12 +103,13 @@ export function prepareTripSnapshot(value: unknown): SnapshotFields {
   const ids = new Set<string>();
   const activityIds = new Set<string>();
   const days = input.days.map((raw: unknown, index: number) => {
-    const day = record(raw, 'day'); fields(day, dayFields, 'day');
+    const day = record(raw, 'day'); fields(day,timed?[...dayFields,'travelWindow']:dayFields,'day');
     const expectedDate = new Date(`${input.startDate}T00:00:00Z`); expectedDate.setUTCDate(expectedDate.getUTCDate() + index);
     if (day.dayNumber !== index + 1 || day.date !== expectedDate.toISOString().slice(0, 10)) fail('dayNumber/date phải liên tục và khớp startDate.');
     text(day.themeTitle, 'themeTitle', 255);
     const centroid = record(day.centroid, 'centroid'); fields(centroid, ['latitude', 'longitude'], 'centroid');
-    finite(centroid.latitude, 'centroid.latitude', -90, 90); finite(centroid.longitude, 'centroid.longitude', -180, 180);
+    if(!(timed&&centroid.latitude===null&&centroid.longitude===null)){finite(centroid.latitude,'centroid.latitude',-90,90);finite(centroid.longitude,'centroid.longitude',-180,180);}
+    if(timed){fields(day.travelWindow,['start','end'],'travelWindow');integer(day.travelWindow.start,'window.start',0,1439);integer(day.travelWindow.end,'window.end',1,1440);if(day.travelWindow.start>=day.travelWindow.end)fail('Travel window invalid.');}
     const lodgingNights = index < daysCount - 1 ? 1 : 0;
     if (day.lodgingNights !== lodgingNights) fail('lodgingNights không khớp quy tắc N−1 đêm.');
     const lodgingEstimatedCostVND = cents(day.lodgingEstimatedCostVND, 'lodgingEstimatedCostVND') / 100;
@@ -108,7 +118,7 @@ export function prepareTripSnapshot(value: unknown): SnapshotFields {
     if (day.lodgingCostSource !== undefined) text(day.lodgingCostSource, 'lodgingCostSource', 1000);
     if (!Array.isArray(day.activities) || day.activities.length > MAX_TRIP_ACTIVITIES_PER_DAY) fail('activities phải là mảng từ 0 đến 20 hoạt động/ngày.');
     const activities = day.activities.map((rawActivity: unknown) => {
-      const activity = record(rawActivity, 'activity'); fields(activity, activityFields, 'activity');
+      const activity = record(rawActivity, 'activity'); fields(activity,timed?[...activityFields,'startMinute','endMinute','expectedStart','expectedEnd','schedulingSource','transitBeforeMinutes','transitBasis','bufferBeforeMinutes','openingHoursStatus']:activityFields,'activity');
       const id = text(activity.id, 'activity.id', 120);
       if (!/^[A-Za-z0-9_-]+$/.test(id) || activityIds.has(id)) fail('activity.id phải duy nhất và chỉ chứa chữ/số/_/-.');
       activityIds.add(id);
@@ -123,17 +133,24 @@ export function prepareTripSnapshot(value: unknown): SnapshotFields {
       const estimatedCostVND = cents(activity.estimatedCostVND, 'activity.estimatedCostVND') / 100;
       if (activity.costSource !== undefined) text(activity.costSource, 'costSource', 1000);
       if (activity.category === 'hotel' && estimatedCostVND !== 0) fail('Phí hotel nằm ở lodging; activity hotel phải là 0đ để tránh tính trùng.');
-      finite(activity.latitude, 'latitude', -90, 90); finite(activity.longitude, 'longitude', -180, 180);
+      if(!(timed&&activity.latitude===null&&activity.longitude===null)){finite(activity.latitude,'latitude',-90,90);finite(activity.longitude,'longitude',-180,180);}
+      if(timed){integer(activity.startMinute,'startMinute',day.travelWindow.start,day.travelWindow.end);integer(activity.endMinute,'endMinute',day.travelWindow.start,day.travelWindow.end);
+        if(activity.endMinute-activity.startMinute!==activity.durationMinutes||activity.durationMinutes<=0||timeMinute(activity.expectedStart)!==activity.startMinute||timeMinute(activity.expectedEnd)!==activity.endMinute)fail('Activity timing invalid.');
+        text(activity.schedulingSource,'schedulingSource',100);for(const k of ['transitBeforeMinutes','bufferBeforeMinutes'])if(activity[k]!==undefined)integer(activity[k],k,0,1440);for(const k of ['transitBasis','openingHoursStatus'])if(activity[k]!==undefined)text(activity[k],k,100);
+      }
       if (activity.imageUrl !== undefined) text(activity.imageUrl, 'imageUrl', 2048, true);
       if (activity.recommendationReason !== undefined) text(activity.recommendationReason, 'recommendationReason', 1000, true);
       if (activity.aerialDistanceToNextKm !== undefined) finite(activity.aerialDistanceToNextKm, 'aerialDistanceToNextKm', 0, 50_000);
       if (activity.estimatedTransitMinutes !== undefined) finite(activity.estimatedTransitMinutes, 'estimatedTransitMinutes', 0, 525_600);
       return { ...activity, ...(activity.placeId === undefined ? {} : { placeId: activity.placeId.toLowerCase() }), estimatedCostVND };
     });
+    if(timed&&activities.some((a,i)=>i>0&&a.startMinute<activities[i-1].endMinute))fail('Overlapping activities.');
     return { ...day, centroid: { ...centroid }, activities, lodgingNights, lodgingEstimatedCostVND,
       dayEstimatedCostVND: sumMoney([...activities.map((activity) => activity.estimatedCostVND), lodgingEstimatedCostVND], 'day total') };
   });
-  const plannerMetadata = { schemaVersion: 1, costBasis: 'GROUP_VND_V1', nightsCount: daysCount - 1,
+  const lodgingPlaceId=input.hotelSuggestion?.id;
+  if(lodgingPlaceId!==undefined&&(typeof lodgingPlaceId!=='string'||!uuid.test(lodgingPlaceId)))fail('Lodging ID invalid.');
+  const plannerMetadata = { schemaVersion: timed?2:1,...(lodgingPlaceId?{lodgingPlaceId}:{}),...(timed?{planningVersion:TIME_AWARE_V2,planning:structuredClone(input.planning)}:{}), costBasis: 'GROUP_VND_V1', nightsCount: daysCount - 1,
     costAssumptions, adults, children, ...(input.transportation === undefined ? {} : { transportation: input.transportation }) };
   if (Buffer.byteLength(JSON.stringify(plannerMetadata), 'utf8') > 32768) fail('Metadata Trip vượt 32 KiB UTF-8.', 'TRIP_METADATA_TOO_LARGE');
   return {
@@ -145,7 +162,7 @@ export function prepareTripSnapshot(value: unknown): SnapshotFields {
   };
 }
 
-const snapshotUpdates = ['days', 'itinerary', 'startDate', 'endDate', 'daysCount', 'nightsCount', 'adults', 'children', 'costBasis', 'costAssumptions', 'transportation', 'pacing', 'totalBudgetUserVND', 'totalEstimatedCostVND'];
+const snapshotUpdates = ['days', 'itinerary', 'startDate', 'endDate', 'daysCount', 'nightsCount', 'adults', 'children', 'costBasis', 'costAssumptions', 'transportation', 'pacing', 'totalBudgetUserVND', 'totalEstimatedCostVND','planningVersion','planning','hotelSuggestion'];
 const editable = ['name', 'title', 'notes', 'actualSpentVND', 'isPublic', 'preferences', ...snapshotUpdates];
 export function prepareTripUpdate(value: unknown, existing: TripSessionAttributes): Partial<TripSessionAttributes> {
   const input = record(value, 'Trip update'); fields(input, editable, 'Trip update');
@@ -169,10 +186,12 @@ export function prepareTripUpdate(value: unknown, existing: TripSessionAttribute
   const merged: any = {
     title: updates.name ?? existing.name, departureCity: existing.departureCity, destinationCity: existing.destinationCity,
     startDate: existing.startDate, endDate: existing.endDate, daysCount: existing.daysCount,
+    ...(metadata.planningVersion?{planningVersion:metadata.planningVersion,planning:metadata.planning}:{}),
     costBasis: metadata.costBasis, costAssumptions: metadata.costAssumptions, transportation: metadata.transportation,
     adults: metadata.adults, children: metadata.children, pacing: existing.pacing,
     totalBudgetUserVND: Number(existing.totalBudgetVND), preferences: updates.preferences ?? existing.preferences,
     days: input.itinerary !== undefined ? input.itinerary : input.days !== undefined ? input.days : existing.itinerary,
+    ...(metadata.lodgingPlaceId?{hotelSuggestion:{id:metadata.lodgingPlaceId}}:{}),
   };
   for (const key of snapshotUpdates.filter((key) => key !== 'days' && key !== 'itinerary')) {
     if (input[key] !== undefined) merged[key] = input[key];

@@ -1,0 +1,22 @@
+{
+  "at": "2026-11-14T04:39:48.341Z",
+  "corrections": [
+    {
+      "artifact": "reset-language-committed.json",
+      "field": "usersRemoved",
+      "recorded": 3,
+      "actual": 0,
+      "reason": "Shared helper printed owners.length for both reset-language and cleanup. SQL branch deletes users only in cleanup; same fixture accounts successfully used by subsequent PostgreSQL/HTTP tests without recreation.",
+      "rawPreserved": true
+    },
+    {
+      "artifact": "scoped-audit-final.json plus scoped-audit-before-reload.json",
+      "metric": "languageWrites",
+      "interpretation": "Counts allowed DML statements, including stale zero-row attempts/rolled-back transactions; not committed row count."
+    },
+    {
+      "artifact": "quality-criteria.json",
+      "issue": "Initial PowerShell pipe lost Vietnamese characters; corrected UTF-8 inputs in v2 lock with every expected/type/location field unchanged; initial FAIL preserved."
+    }
+  ]
+}

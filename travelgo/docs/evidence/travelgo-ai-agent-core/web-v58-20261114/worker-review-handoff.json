@@ -1,0 +1,29 @@
+{
+  "status": "PROPOSED_OPERATOR_REVIEW_NOT_STARTED",
+  "component": "backend/dist/services/travelWebWorker.js:TravelWebWorker.runOnce(2)",
+  "defaultFlags": {
+    "TRAVEL_WEB_ENABLED": false,
+    "TRAVEL_WEB_WRITES_ENABLED": false,
+    "TRAVEL_WEB_WORKER_ENABLED": false,
+    "TRAVEL_SEARCH_ENABLED": false
+  },
+  "reviewOnlyEnablement": [
+    "Use a separate isolated worker process, never change Agent API READ ONLY connection/flags or default .env",
+    "Fresh staging identity15452/catalog_runtime/sentinel,17 migration checksums and cleaned40-table baseline",
+    "Register real sources through SUPER_ADMIN with fresh license/identity/robots verification; no task fixture admin survives",
+    "Enforce exact source/domain/URL and source/job/candidate SQL-only write fence like actual-worker-v2.cjs; bind NEW approved source IDs, do not replay old task fixture IDs",
+    "Set task-owned TRAVEL_WEB_ENABLED/TRAVEL_WEB_WRITES_ENABLED true, ADVISORY_STAGING_READ_ONLY false only for that worker, CATALOG_METADATA_ENABLED true; all Qwen/Maps/Trip write approvals false",
+    "Call new TravelWebWorker().runOnce(2) once with audited shared HTTP budget; stop() then close sequelize; do not keep scheduler alive without explicit operating scope",
+    "For reviewed continuous operation only, TRAVEL_WEB_WORKER_ENABLED=true starts bounded60s polling; discovery6h, article24h, cost7d and per-source limits determine due jobs; stopTravelWebWorker on shutdown"
+  ],
+  "networkCapsPerRun": {
+    "attempts": 8,
+    "articles": 2,
+    "concurrency": 1,
+    "redirects": 2,
+    "bytes": 524288,
+    "deadlineMs": 10000
+  },
+  "taskAcceptanceAlreadyStopped": true,
+  "oldTaskRunners": "Historical evidence only; their exact source/actor IDs were cleaned and must not be reused as fresh authorization."
+}

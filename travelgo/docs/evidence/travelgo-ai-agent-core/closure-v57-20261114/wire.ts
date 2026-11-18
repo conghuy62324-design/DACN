@@ -1,0 +1,4 @@
+import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';import {readCoreResponse} from '../../../../frontend/src/services/agentCoreClient.ts';
+const dir=path.resolve('docs/evidence/travelgo-ai-agent-core/closure-v57-20261114'),data=JSON.parse(fs.readFileSync(path.join(dir,'integration-development-07.json'),'utf8')),sessions=new Map<string,any>();let parsed=0;
+for(const p of data.payloads){const d=p.response,previous=sessions.get(d.conversation.id),request=previous?{action:'continue',id:previous.id,revision:previous.revision}:{action:'start'};readCoreResponse({success:true,data:d},request,previous);sessions.set(d.conversation.id,d.conversation);parsed++;}
+const out={at:new Date().toISOString(),tier:'ACTUAL_FRONTEND_PARSER_ON_OFFLINE_CORE_OUTPUT_NOT_HTTP',parsed,status:'PASS',native:0};fs.writeFileSync(path.join(dir,'wire-before-browser.json'),JSON.stringify(out,null,2),{flag:'wx'});console.log(JSON.stringify(out));
