@@ -1,0 +1,10 @@
+const fs=require('fs'),path=require('path'),assert=require('assert/strict');
+module.exports=async({client,lock,root,save})=>{
+ const before=JSON.parse(fs.readFileSync(path.join(__dirname,'native-before-cleanup.json'))),mediaRoot=path.resolve(root,lock.mediaDirectory);
+ const tables=(await client.query("SELECT count(*)::int n FROM pg_tables WHERE schemaname='public'")).rows[0].n,migrations=(await client.query('SELECT filename,checksum FROM schema_migrations ORDER BY filename')).rows;assert.equal(tables,40);assert.equal(migrations.length,17);for(const m of migrations)assert.equal(m.checksum,lock.baselineMigrationHashes[m.filename]);
+ for(const table of ['users','places','businesses','bookings','reviews'])assert.equal((await client.query('SELECT count(*)::int n FROM '+table)).rows[0].n,0);
+ save('cleanup-filesystem-initial-failure.json',{status:'FILESYSTEM_EBUSY_AFTER_SUCCESSFUL_DB_ROLLBACK',dbTables:40,dbMigrations:17,taskRowsRemoved:true,cause:'Task harness sharp(file).metadata() retains libvips file cache on Windows; release this session-owned cache before unlink',originalDataAffected:false});
+ require(root+'/backend/node_modules/sharp').cache(false);
+ const directories=new Set();for(const m of before.media){assert.equal(m.storage_key,`hotels/${m.place_id}/${m.id}.webp`);const file=path.resolve(mediaRoot,m.storage_key);assert(file.startsWith(mediaRoot+path.sep));if(fs.existsSync(file)){assert(fs.lstatSync(file).isFile()&&!fs.lstatSync(file).isSymbolicLink());fs.unlinkSync(file);}directories.add(path.dirname(file));}for(const d of directories)if(fs.existsSync(d))fs.rmdirSync(d);if(fs.existsSync(path.join(mediaRoot,'hotels')))fs.rmdirSync(path.join(mediaRoot,'hotels'));if(fs.existsSync(mediaRoot))fs.rmdirSync(mediaRoot);
+ save('native-cleanup-rollback.json',{status:'NATIVE_CLEANUP_AND_FINAL_EMPTY_ROLLBACK_PASS',taskFixturesRemoved:true,mediaObjectsRemoved:before.media.length,mediaRootRemoved:!fs.existsSync(mediaRoot),tables,migrations,baseline17ChecksumsUnchanged:true,windowsCacheReleased:true,originalDbAccess:0,existingStagingDml:0});
+};

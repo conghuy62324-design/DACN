@@ -2,12 +2,15 @@ import React, { Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 
+const PhotoCreditsPage=React.lazy(()=>import('../pages/PhotoCreditsPage'));
+
 const CustomerLayout=React.lazy(()=>import('../layouts/CustomerLayout').then(m=>({default:m.CustomerLayout})));
 const AdminLayout=React.lazy(()=>import('../layouts/AdminLayout').then(m=>({default:m.AdminLayout})));
 const PartnerLayout=React.lazy(()=>import('../layouts/PartnerLayout').then(m=>({default:m.PartnerLayout})));
 const HomePage=React.lazy(()=>import('../pages/HomePage').then(m=>({default:m.HomePage})));
 const ExplorePage=React.lazy(()=>import('../pages/ExplorePage').then(m=>({default:m.ExplorePage})));
 const TicketsPage=React.lazy(()=>import('../pages/TicketsPage').then(m=>({default:m.TicketsPage})));
+const HotelSearchPage=React.lazy(()=>import('../pages/HotelSearchPage').then(m=>({default:m.HotelSearchPage})));
 const HotelsPage=React.lazy(()=>import('../pages/HotelsPage').then(m=>({default:m.HotelsPage})));
 const RestaurantsPage=React.lazy(()=>import('../pages/RestaurantsPage').then(m=>({default:m.RestaurantsPage})));
 const PlaceDetailPage=React.lazy(()=>import('../pages/PlaceDetailPage').then(m=>({default:m.PlaceDetailPage})));
@@ -42,18 +45,20 @@ const PartnerSectionPage=React.lazy(()=>import('../pages/partner/PartnerSectionP
 const PartnerResourceListPage=React.lazy(()=>import('../pages/partner/PartnerResourceListPage').then(m=>({default:m.PartnerResourceListPage})));
 const PartnerResourceFormPage=React.lazy(()=>import('../pages/partner/PartnerResourceFormPage').then(m=>({default:m.PartnerResourceFormPage})));
 const PartnerBookingsPage=React.lazy(()=>import('../pages/partner/PartnerBookingsPage').then(m=>({default:m.PartnerBookingsPage})));
+const HotelCheckoutPage=React.lazy(()=>import('../pages/HotelCheckoutPage'));
+const HotelManagementPage=React.lazy(()=>import('../pages/partner/HotelManagementPage'));
 
 const Loading=()=> <div className="grid min-h-[45vh] place-items-center text-sm font-bold text-slate-500">Đang tải module…</div>;
 
 export const AppRouter:React.FC=()=> <Suspense fallback={<Loading/>}><Routes>
   <Route path="/" element={<CustomerLayout/>}>
-    <Route index element={<HomePage/>}/><Route path="explore" element={<ExplorePage/>}/><Route path="tours" element={<ToursPage/>}/><Route path="tours/:id" element={<TourDetailPage/>}/><Route path="tour-planner" element={<TourPlannerPage/>}/><Route path="tickets" element={<TicketsPage/>}/><Route path="hotels" element={<HotelsPage/>}/><Route path="hotels/:id" element={<PlaceDetailPage/>}/><Route path="restaurants" element={<RestaurantsPage/>}/><Route path="restaurants/:id" element={<PlaceDetailPage/>}/><Route path="places/:id" element={<PlaceDetailPage/>}/><Route path="blog" element={<BlogPage/>}/><Route path="blog/create" element={<BlogCreatePage/>}/><Route path="blog/:id" element={<BlogDetailPage/>}/><Route path="login" element={<LoginPage/>}/><Route path="register" element={<RegisterPage/>}/>
+    <Route index element={<HomePage/>}/><Route path="explore" element={<ExplorePage/>}/><Route path="tours" element={<ToursPage/>}/><Route path="tours/:id" element={<TourDetailPage/>}/><Route path="tour-planner" element={<TourPlannerPage/>}/><Route path="tickets" element={<TicketsPage/>}/><Route path="photo-credits" element={<PhotoCreditsPage/>}/><Route path="hotels" element={<HotelsPage/>}/><Route path="hotels/search" element={<HotelSearchPage/>}/><Route path="hotels/:id/checkout" element={<HotelCheckoutPage/>}/><Route path="hotels/:id" element={<PlaceDetailPage/>}/><Route path="restaurants" element={<RestaurantsPage/>}/><Route path="restaurants/:id" element={<PlaceDetailPage/>}/><Route path="places/:id" element={<PlaceDetailPage/>}/><Route path="blog" element={<BlogPage/>}/><Route path="blog/create" element={<BlogCreatePage/>}/><Route path="blog/:id" element={<BlogDetailPage/>}/><Route path="login" element={<LoginPage/>}/><Route path="register" element={<RegisterPage/>}/>
     <Route element={<ProtectedRoute roles={['CUSTOMER','PARTNER','SUPER_ADMIN']}/>}><Route path="favorites" element={<FavoritesPage/>}/><Route path="my-trips" element={<MyTripsPage/>}/><Route path="my-trips/:id" element={<TripDetailPage/>}/><Route path="profile" element={<ProfilePage/>}/><Route path="bookings" element={<BookingsPage/>}/><Route path="become-partner" element={<BecomePartnerPage/>}/></Route>
     <Route element={<ProtectedRoute roles={['CUSTOMER']}/>}><Route path="assistant" element={<AssistantPage/>}/><Route path="google-explore" element={<GoogleExplorePage/>}/><Route path="assistant-public" element={<PublicAssistantPage/>}/></Route>
     <Route path="privacy" element={<IntegrationPolicyPage/>}/><Route path="terms" element={<IntegrationPolicyPage/>}/>
     <Route path="*" element={<NotFoundPage/>}/>
   </Route>
-  <Route element={<ProtectedRoute roles={['SUPER_ADMIN']}/>}><Route path="/admin" element={<AdminLayout/>}><Route index element={<AdminDashboardPage/>}/><Route path="travel-web" element={<TravelWebPage/>}/><Route path="language-lexicon" element={<LanguageLexiconPage/>}/><Route path="partner-applications" element={<PartnerApplicationsPage/>}/><Route path="places" element={<AdminModerationPage/>}/><Route path="places/:id" element={<AdminModerationPage/>}/><Route path="tours" element={<AdminModerationPage/>}/><Route path="tours/:id" element={<AdminModerationPage/>}/><Route path="blogs" element={<AdminModerationPage/>}/><Route path="blogs/:id" element={<AdminModerationPage/>}/><Route path=":section" element={<AdminSectionPage/>}/></Route></Route>
-  <Route element={<ProtectedRoute roles={['PARTNER']}/>}><Route path="/partner" element={<PartnerLayout/>}><Route index element={<PartnerDashboardPage/>}/><Route path="bookings" element={<PartnerBookingsPage/>}/><Route path="bookings/:id" element={<PartnerBookingsPage/>}/><Route path=":resource/new" element={<PartnerResourceFormPage/>}/><Route path=":resource/:id/edit" element={<PartnerResourceFormPage/>}/><Route path=":resource/:id" element={<PartnerResourceFormPage/>}/><Route path=":resource" element={<PartnerResourceListPage/>}/><Route path="workspace/:section" element={<PartnerSectionPage/>}/></Route></Route>
+  <Route element={<ProtectedRoute roles={['SUPER_ADMIN']}/>}><Route path="/admin" element={<AdminLayout/>}><Route index element={<AdminDashboardPage/>}/><Route path="hotels" element={<HotelManagementPage admin/>}/><Route path="travel-web" element={<TravelWebPage/>}/><Route path="language-lexicon" element={<LanguageLexiconPage/>}/><Route path="partner-applications" element={<PartnerApplicationsPage/>}/><Route path="places" element={<AdminModerationPage/>}/><Route path="places/:id" element={<AdminModerationPage/>}/><Route path="tours" element={<AdminModerationPage/>}/><Route path="tours/:id" element={<AdminModerationPage/>}/><Route path="blogs" element={<AdminModerationPage/>}/><Route path="blogs/:id" element={<AdminModerationPage/>}/><Route path=":section" element={<AdminSectionPage/>}/></Route></Route>
+  <Route element={<ProtectedRoute roles={['PARTNER']}/>}><Route path="/partner" element={<PartnerLayout/>}><Route index element={<PartnerDashboardPage/>}/><Route path="hotels" element={<HotelManagementPage/>}/><Route path="bookings" element={<PartnerBookingsPage/>}/><Route path="bookings/:id" element={<PartnerBookingsPage/>}/><Route path=":resource/new" element={<PartnerResourceFormPage/>}/><Route path=":resource/:id/edit" element={<PartnerResourceFormPage/>}/><Route path=":resource/:id" element={<PartnerResourceFormPage/>}/><Route path=":resource" element={<PartnerResourceListPage/>}/><Route path="workspace/:section" element={<PartnerSectionPage/>}/></Route></Route>
   <Route path="/403" element={<ForbiddenPage/>}/>
 </Routes></Suspense>;

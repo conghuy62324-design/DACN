@@ -1,0 +1,8 @@
+import {useEffect,useId,useRef} from 'react';
+import {createPortal} from 'react-dom';
+import {X} from 'lucide-react';
+export function HotelDialog({title,onClose,children,wide=false}:{title:string;onClose:()=>void;children:React.ReactNode;wide?:boolean}){
+ const id=useId(),ref=useRef<HTMLDivElement>(null),closeRef=useRef(onClose);closeRef.current=onClose;
+ useEffect(()=>{const previous=document.activeElement as HTMLElement|null,overflow=document.body.style.overflow;document.body.style.overflow='hidden';ref.current?.querySelector<HTMLElement>('button')?.focus();return()=>{document.body.style.overflow=overflow;previous?.focus();};},[]);
+ return createPortal(<div className="hotel-ui hd-dialog-layer"><button type="button" className="hd-dialog-shade" aria-label="Đóng hộp thoại" onClick={onClose}/><div role="dialog" aria-modal="true" aria-labelledby={id} ref={ref} className={'hd-dialog '+(wide?'hd-dialog-wide':'')} onKeyDown={e=>{if(e.key==='Escape'){e.stopPropagation();closeRef.current();}if(e.key==='Tab'){const items=Array.from(ref.current!.querySelectorAll<HTMLElement>('button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea,[tabindex="0"]')).filter(x=>x.offsetParent!==null);if(e.shiftKey&&document.activeElement===items[0]){e.preventDefault();items[items.length-1]?.focus();}else if(!e.shiftKey&&document.activeElement===items[items.length-1]){e.preventDefault();items[0]?.focus();}}}}><header><h2 id={id}>{title}</h2><button type="button" aria-label="Đóng" onClick={onClose}><X size={22}/></button></header><div className="hd-dialog-body">{children}</div></div></div>,document.body);
+}

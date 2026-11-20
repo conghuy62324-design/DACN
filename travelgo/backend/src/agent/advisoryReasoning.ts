@@ -17,7 +17,7 @@ export function advisoryGoal(message:string,hasShown=false):AdvisoryGoal{
  if(/\b(?:so sanh|dang tien|tot hon|nen chon|chon cho nao)\b/.test(s)||hasShown&&/\b(?:yen tinh|sach se) hon\b/.test(s))return'COMPARE';
  if(/\b(?:qua mac|mac qua|qua dat|gia cao|dat qua)\b/.test(s)&&!/\b(?:doi|tim|re hon)\b/.test(s))return'COMMENT';
  if(hasShown&&/\bgia\b/.test(s)&&!/\b(?:tim|kiem|doi|re hon|tiet kiem)\b/.test(s))return'PRICE';
- if(hasShown&&/\b(?:phu hop|sach khong|yen tinh khong|co sach|co yen tinh)\b/.test(s))return'FIT';
+ if(hasShown&&/\b(?:phu hop|sach khong|yen tinh khong|co sach|co yen tinh|co chac.*(?:yen tinh|sach se)|chac chan.*(?:yen tinh|sach se))\b/.test(s))return'FIT';
  if(/\b(?:doi|thay)\b.*\b(?:khach san|nha hang|cho o)\b|\bre hon\b/.test(s))return'REPLACE';
  if(/\b(?:chua (?:biet|ro).*(?:bat dau|chuan bi)|chang biet.*chuan bi|bat dau tu dau)\b/.test(s))return'START';
  if(/\b(?:nen di dau|goi y diem den|di dau|cho nao)\b/.test(s)&&!hasShown)return'DESTINATION';

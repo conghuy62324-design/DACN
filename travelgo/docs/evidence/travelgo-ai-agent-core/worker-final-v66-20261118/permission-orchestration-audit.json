@@ -1,0 +1,70 @@
+{
+  "at": "2026-11-18T07:37:57.717Z",
+  "task": "21.34",
+  "historicalOutcome": "WEB_ABORTED_AFTER_HOMEPAGE301",
+  "receipts": [
+    {
+      "attempt": 2,
+      "url": "https://vi.wikivoyage.org/robots.txt",
+      "at": "2026-11-18T04:54:33.366Z",
+      "status": 200,
+      "bytes": 15598
+    },
+    {
+      "attempt": 5,
+      "url": "https://vi.wikivoyage.org/",
+      "at": "2026-11-18T04:54:43.397Z",
+      "status": 301,
+      "bytes": 0
+    },
+    {
+      "attempt": 6,
+      "url": "https://vi.wikivoyage.org/wiki/Trang_Ch%C3%ADnh",
+      "at": "2026-11-18T04:54:48.602Z",
+      "error": "WEB_ABORTED"
+    }
+  ],
+  "requestBoundaries": [
+    {
+      "kind": "node:https.request",
+      "protocol": "https:",
+      "host": "vi.wikivoyage.org",
+      "port": 443,
+      "path": "/robots.txt",
+      "at": "2026-11-18T04:54:38.276Z",
+      "approvedResearch": true,
+      "nativeModelOrExternalEndpoint": false
+    },
+    {
+      "kind": "node:https.request",
+      "protocol": "https:",
+      "host": "vi.wikivoyage.org",
+      "port": 443,
+      "path": "/",
+      "at": "2026-11-18T04:54:48.199Z",
+      "approvedResearch": true,
+      "nativeModelOrExternalEndpoint": false
+    },
+    {
+      "kind": "node:https.request",
+      "protocol": "https:",
+      "host": "vi.wikivoyage.org",
+      "port": 443,
+      "path": "/wiki/Trang_Ch%C3%ADnh",
+      "at": "2026-11-18T04:54:53.201Z",
+      "approvedResearch": true,
+      "nativeModelOrExternalEndpoint": false
+    }
+  ],
+  "productionDeadlineMs": 10000,
+  "productionRateSeconds": 5,
+  "sourceCodeFacts": [
+    "AbortSignal.timeout10s is created before publisherWait",
+    "Same bound covers every redirect hop",
+    "Homepage301 creates additional same-publisher wait inside that bound"
+  ],
+  "correction": "Orchestrate serial publisher pacing before get(); use already known canonical Main Page for metadata, no homepage hop. Keep internal rate guard and10s deadline.",
+  "limits": "Does not prove remote origin responsiveness; any fresh error stops domain, no retry or guard relaxation",
+  "newInternetRequests": 0,
+  "wikitravel": "EXCLUDED_HISTORICAL403_NO_RETRY"
+}

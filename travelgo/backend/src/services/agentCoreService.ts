@@ -14,7 +14,7 @@ import { LocalVerifiedHistoryStore, readG2Envelope } from '../agent/verifiedHist
 import { coreInterpretation, mergeCorePlanProof } from '../agent/coreInput.js';
 import { configuredCoreProvider,serializeCoreRequest } from '../agent/coreProvider.js';
 import { CORE_INTENT_V2, CORE_CLARIFICATION_SYSTEM, CORE_OPERATION_DESCRIPTIONS, readCoreOperationSuggestion } from '../agent/coreIntent.js';
-import { NATURAL_CHAT_V3, NATURAL_RESPONSE_SCHEMA, NATURAL_UNDERSTANDING_SYSTEM, naturalAcknowledgement, accountGreeting, socialSpeechAct, readVietnameseConversation, naturalQuestion, naturalProposal, validateNaturalPatch, type NaturalState } from '../agent/vietnameseConversation.js';
+import { NATURAL_CHAT_V3, NATURAL_RESPONSE_SCHEMA, NATURAL_UNDERSTANDING_SYSTEM, naturalAcknowledgement, affirmativeTravelConfirmation, accountGreeting, socialSpeechAct, readVietnameseConversation, naturalQuestion, naturalProposal, validateNaturalPatch, type NaturalState } from '../agent/vietnameseConversation.js';
 import { GROUNDED_RESPONSE_SCHEMA, groundedFacts,groundedEvidenceAuthorities, renderGrounded,boundedGroundingFacts,catalogCostFacts } from '../agent/naturalGrounding.js';
 import type { CurrentTurnProof } from '../agent/currentTurnProof.js';
 import { validateCurrentTurnProof } from '../agent/currentTurnProof.js';
@@ -25,7 +25,7 @@ import { withinDeadline } from '../agent/provider.js';
 import { AgentLimits } from '../agent/limits.js';
 import { agentRequestLimits } from '../agent/requestLimits.js';
 import {matchesLocation,resolveLocation,PROVINCES,DESTINATIONS} from '../geography/vietnam.js';
-import {geographicEvidence,transportEvidence,ambiguousBudgetQuestion} from '../agent/geographicEvidence.js';
+import {geographicEvidence,transportEvidence,ambiguousBudgetQuestion,unsupportedTransportEvidence,unsupportedTransportAnswer} from '../agent/geographicEvidence.js';
 import {moneyMentions,normalizeVietnamese,withVietnameseNormalizationScope} from '../agent/vietnameseNormalizer.js';
 import {verifiedTravelQuestion,travelLabels} from '../agent/vietnameseConversation.js';
 import {understandConsultation,consultantMemory,catalogContextFilters,attributeAnswer,comparisonExplanation,type ConsultantMemory} from '../agent/travelConsultant.js';
@@ -65,6 +65,7 @@ type Ticket = {
     used: boolean;
 };
 type State = {
+    memoryOfferKey?:string;
     costCriteria?:CostCriteria;
     costFocus?:CostReference[];
     language?: {session:LanguageMapping[];pending?:{id:string;expression:string;span:LanguageSpan;revision:number;expires:number;locationId?:string;meaningOnly?:boolean};confirmed?:{id:string;expression:string;conceptId:string;revision:number;expires:number;used:boolean;priorId?:string;priorVersion?:number};last?:LanguageResolution;lastRevision?:number;feedback?:{id:string;revision:number;expires:number;used:boolean}};
@@ -170,12 +171,15 @@ export class AgentCoreService {
         let preferenceFollowUp=false;
         let languageSnapshot:LanguageSnapshot|undefined,languageResolution:LanguageResolution={status:'NONE',evidence:[]},adaptiveRead:ReturnType<typeof languageInterpretation>;
         const natural = s.intentVersion === NATURAL_CHAT_V3;
+        const candidate=s.natural?.proposal?.candidate;
+        if(natural&&candidate&&(candidate.revision!==s.revision-1||candidate.expires<=this.now()||!affirmativeTravelConfirmation(body.message)||body.selection||body.selectedIds||body.tripId)){s.natural!.proposal=undefined;s.natural!.awaiting=undefined;}
         const advanced=natural&&conversationalIntelligenceEnabled();
         const decisionMode=natural&&decisionIntelligenceEnabled();
         const planningMode=natural&&intelligentPlanningEnabled();
         let semantic:ReturnType<typeof composeConversation>|undefined;
         const compose=()=>composeConversation(body.message,s!.consultant?.dialogue,s!.proof?.values||{},s!.natural||{},languageResolution,adaptiveRead?.filters?.locationId||adaptiveRead?.filters?.city||s!.filters.locationId||s!.filters.city);
         const rememberSemantic=()=>{if(semantic){(s!.consultant||=consultantMemory()).dialogue=semantic.memory;if(semantic.memory.durationDays)(s!.natural||={}).durationDays=semantic.memory.durationDays;}};
+        let pendingMemoryOffer:any[]|undefined;
         let modelRole: 'nlu_proposal' | 'grounded_response' | undefined;
         const intentContext=()=>({awaiting:s!.natural?.awaiting,selected:{hotel:!!s!.hotel||s!.consultant?.shown.some(p=>p.id===s!.consultant?.focus&&p.category==='hotel'),restaurant:!!s!.restaurant||s!.consultant?.shown.some(p=>p.id===s!.consultant?.focus&&p.category==='restaurant'),comparisonCount:s!.ids.length}});
         const current = () => { outer.throwIfAborted(); turn.assertCurrent(); if (this.states.get(meta.id) !== s)
@@ -192,7 +196,7 @@ export class AgentCoreService {
                 Promise.resolve().then(()=>{requestSignal.throwIfAborted();return work();}).then(value=>{cleanup();try{current();resolve(value);}catch(e){reject(e);}},error=>{cleanup();reject(error);});
             });
         };
-        const reply = (status: string, text: string, extra: any = {}) => { current();if(natural)text=text.replace(/(?:destination:[a-z0-9-]+|area:\d{2}:[a-z0-9-]+)/g,id=>resolveLocation(id)?.catalogName||'địa điểm chưa xác minh').replace(/priceFrom/g,'giá tham khảo').replace(/planner T11-B/g,'lập kế hoạch TravelGo').replace(/GROUP_VND_V1/g,'dự toán VND cho cả nhóm').replace(/\b[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\b/gi,'mã đã ẩn'); const languageExtra:any={};if(natural&&adaptiveLanguageEnabled()){const l=s.language||={session:[]};l.feedback={id:randomUUID(),revision:s.revision,expires:s.expires,used:false};languageExtra.languageFeedback={id:l.feedback.id,revision:s.revision};if(l.confirmed&&l.confirmed.revision===s.revision&&!l.confirmed.used)languageExtra.languageLearning={candidateId:l.confirmed.id,expression:l.confirmed.expression,conceptId:l.confirmed.conceptId,label:languageConcept(l.confirmed.conceptId)!.label,purpose:'SAVE_PERSONAL',expiresAt:new Date(l.confirmed.expires).toISOString(),policyVersion:LANGUAGE_POLICY};if(languageResolution.evidence.length)languageExtra.languageUnderstanding={status:languageResolution.status,evidence:controlledLanguageEvidence(languageResolution)};}return { status, reply: text, ...extra,...(s.boundTrip?{editingTrip:{id:s.boundTrip.id,title:s.boundTrip.title}}:{}),...languageExtra,...(advanced&&s.consultant?.dialogue?{dialogue:dialogueSummary(s.consultant.dialogue)}:{}), conversation: { ...turn.metadata(), mode: 'CORE_VERIFIED' }, model: { invoked: modelInvoked, role:modelRole, rawNlu: modelInvoked && (!natural || modelRole==='nlu_proposal') ? 'REQUIRES_INDEPENDENT_SCORING' : 'NOT_EVALUATED' }, ...(s.intentVersion ? { intent: { version: s.intentVersion, authority: modelInvoked && (!natural || modelRole==='nlu_proposal') ? 'MODEL_SUGGESTION_ONLY' : 'SERVER_VERIFIED' } } : {}), ...(natural?{languageStatus:this.provider.configured?'configured_not_health_checked':'disabled',verifiedTravel:Object.fromEntries([...Object.entries(s.proof?.values||{}).filter(([k])=>s.proof?.states[k]==='SET'),...Object.entries(s.proof?.optionalValues||{}).filter(([k])=>s.proof?.optionalStates?.[k]==='SET')])}:{}) }; };
+        const reply = (status: string, text: string, extra: any = {}) => { current();if(natural)text=text.replace(/(?:destination:[a-z0-9-]+|area:\d{2}:[a-z0-9-]+)/g,id=>resolveLocation(id)?.catalogName||'địa điểm chưa xác minh').replace(/priceFrom/g,'giá tham khảo').replace(/planner T11-B/g,'lập kế hoạch TravelGo').replace(/GROUP_VND_V1/g,'dự toán VND cho cả nhóm').replace(/\b[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\b/gi,'mã đã ẩn'); const languageExtra:any={};if(natural&&adaptiveLanguageEnabled()){const l=s.language||={session:[]};l.feedback={id:randomUUID(),revision:s.revision,expires:s.expires,used:false};languageExtra.languageFeedback={id:l.feedback.id,revision:s.revision};if(l.confirmed&&l.confirmed.revision===s.revision&&!l.confirmed.used)languageExtra.languageLearning={candidateId:l.confirmed.id,expression:l.confirmed.expression,conceptId:l.confirmed.conceptId,label:languageConcept(l.confirmed.conceptId)!.label,purpose:'SAVE_PERSONAL',expiresAt:new Date(l.confirmed.expires).toISOString(),policyVersion:LANGUAGE_POLICY};if(languageResolution.evidence.length)languageExtra.languageUnderstanding={status:languageResolution.status,evidence:controlledLanguageEvidence(languageResolution)};}return { status, reply: text, ...extra,...(pendingMemoryOffer?{memoryCandidates:pendingMemoryOffer}:{}),...(s.boundTrip?{editingTrip:{id:s.boundTrip.id,title:s.boundTrip.title}}:{}),...languageExtra,...(advanced&&s.consultant?.dialogue?{dialogue:dialogueSummary(s.consultant.dialogue)}:{}), conversation: { ...turn.metadata(), mode: 'CORE_VERIFIED' }, model: { invoked: modelInvoked, role:modelRole, rawNlu: modelInvoked && (!natural || modelRole==='nlu_proposal') ? 'REQUIRES_INDEPENDENT_SCORING' : 'NOT_EVALUATED' }, ...(s.intentVersion ? { intent: { version: s.intentVersion, authority: modelInvoked && (!natural || modelRole==='nlu_proposal') ? 'MODEL_SUGGESTION_ONLY' : 'SERVER_VERIFIED' } } : {}), ...(natural?{languageStatus:this.provider.configured?'configured_not_health_checked':'disabled',verifiedTravel:Object.fromEntries([...Object.entries(s.proof?.values||{}).filter(([k])=>s.proof?.states[k]==='SET'),...Object.entries(s.proof?.optionalValues||{}).filter(([k])=>s.proof?.optionalStates?.[k]==='SET')])}:{}) }; };
         const languageFence=async()=>{if(languageSnapshot){const fresh=await read(()=>this.language.snapshot(user.id,body.message));current();if(fresh.stamp!==languageSnapshot.stamp)throw new HttpError(409,'Quyền hoặc cách diễn đạt vừa thay đổi; bạn gửi lại yêu cầu nhé.','AGENT_LANGUAGE_CHANGED');}};
         let earlyCostCriteria=natural&&costIntelligenceEnabled()?readCostCriteria(body.message,s!.proof?.values||{},s!.costCriteria):undefined;
         if(earlyCostCriteria?.query?.referential&&!earlyCostCriteria.query.category){
@@ -304,6 +308,7 @@ export class AgentCoreService {
                 }
             }
             if(natural&&s.consultant?.useSavedPreferences!==false)allowedPreferences=await read(()=>CustomerMemoryService.forAdvice(user.id).catch(()=>[]));current();
+            if(natural&&planningHypothesis(body.message)&&unsupportedTransportEvidence(body.message)&&!body.selection&&!body.selectedIds&&!body.tripId)return reply('needs_input','Mình giữ nguyên chuyến hiện tại, chưa tính giả định phương tiện này. '+unsupportedTransportAnswer(unsupportedTransportEvidence(body.message)!));
             if(planningMode&&planningAct&&!body.selection&&!body.selectedIds&&!body.tripId){
                 if(planningAct.question)return reply('needs_input',planningAct.question);
                 if(planningAct.hypothetical||planningAct.dayNumber!==undefined||planningAct.removeIndex||planningAct.activityIndex||planningAct.departureTime){
@@ -385,9 +390,10 @@ export class AgentCoreService {
                 }
                 if(languageResolution.evidence.length){l.last=languageResolution;l.lastRevision=s.revision;}
             }
-            if(advanced){semantic ||= compose();rememberSemantic();if(earlyCostCriteria&&semantic.handled&&!earlyCostCriteria.query&&!/\b(?:bao nhieu|het nhieu|du khong|du ko|chi phi|gia ve)\b|\?/.test(normalizeVietnamese(body.message).normalized))earlyCostCriteria=undefined;if(semantic.question&&!earlyCostCriteria){if(semantic.memory.pendingQuestion==='CORRECTION'&&s.natural){s.natural.proposal=undefined;s.natural.awaiting=undefined;}return reply('needs_input',semantic.question);}}
+            if(advanced){semantic ||= compose();rememberSemantic();if(earlyCostCriteria&&semantic.handled&&!earlyCostCriteria.advisoryOnly&&earlyCostCriteria.mode!=='COMPARE_DESTINATIONS'&&!earlyCostCriteria.query&&!/\b(?:bao nhieu|het nhieu|du khong|du ko|chi phi|gia ve)\b|\?/.test(normalizeVietnamese(body.message).normalized))earlyCostCriteria=undefined;if(semantic.question&&!earlyCostCriteria){if(semantic.memory.pendingQuestion==='CORRECTION'&&s.natural){s.natural.proposal=undefined;s.natural.awaiting=undefined;}return reply('needs_input',semantic.question);}}
             if(natural){
                 const memory=s.consultant||=consultantMemory(),message=fold(body.message);
+                const composedTask=!!(semantic?.interpretation||adaptiveRead||understandConsultation(body.message,memory).operation||/\b(?:lap|len|tao|sua|dieu chinh|tiep tuc) (?:lich trinh|chuyen di)\b/.test(message));
                 if(memory.pendingPreferenceQuestion){
                     if(/^(?:dung roi|ok|dong y|vang|uh|u)$/.test(message))return reply('needs_input','Bạn muốn ưu tiên giá tham khảo thấp hơn hay yên tĩnh? Mình cần bạn chọn rõ một tiêu chí.');
                     if(/^(?:uu tien )?(?:yen tinh|gia|gia thap|gia thap hon|re hon)$/.test(message)){memory.advisoryPriority=message.includes('yen tinh')?'quiet':'price';memory.qualityOverride={preferred:memory.advisoryPriority==='quiet'?['quiet']:[],deprioritized:memory.advisoryPriority==='price'?['quiet']:[]};preferenceFollowUp=true;}
@@ -397,23 +403,46 @@ export class AgentCoreService {
                 memory.pendingAdvisoryChoice=false;
                 if(/\blan nay\b/.test(message)&&/\b(?:soi dong|nhon nhip)\b/.test(message))memory.useSavedPreferences=false;
                 const qualityRequest=currentQualityRequest(body.message);if(qualityRequest){memory.qualityOverride={preferred:[...new Set([...(memory.qualityOverride?.preferred||[]).filter(q=>!qualityRequest.deprioritized.includes(q)),...qualityRequest.preferred])],deprioritized:[...new Set([...(memory.qualityOverride?.deprioritized||[]).filter(q=>!qualityRequest.preferred.includes(q)),...qualityRequest.deprioritized])]};if(!preferenceFollowUp)memory.advisoryPriority=undefined;if(memory.qualityOverride.deprioritized.includes('quiet'))memory.needs=memory.needs.filter(n=>n!=='ưu tiên yên tĩnh');}
-                if(/\b(?:dung|khong) dung so thich cu\b/.test(message)){memory.useSavedPreferences=false;allowedPreferences=[];if(!earlyCostCriteria?.query)return reply('completed','Mình sẽ không dùng sở thích đã lưu cho chuyến này. Bộ nhớ dài hạn của bạn vẫn giữ nguyên; bạn có thể quản lý hoặc xóa trong Sở thích AI ghi nhớ.');}
+                if(/\b(?:dung|khong) dung so thich cu\b/.test(message)){memory.useSavedPreferences=false;allowedPreferences=[];if(!earlyCostCriteria?.query&&!composedTask)return reply('completed','Mình sẽ không dùng sở thích đã lưu cho chuyến này. Bộ nhớ dài hạn của bạn vẫn giữ nguyên; bạn có thể quản lý hoặc xóa trong Sở thích AI ghi nhớ.');}
                 if(/\blan nay\b.*\b(?:hon la|thay vi)\b/.test(message))memory.useSavedPreferences=false;
                 if(memory.useSavedPreferences!==false)allowedPreferences=await read(()=>CustomerMemoryService.forAdvice(user.id).catch(()=>[]));else allowedPreferences=[];
-                current();const candidates=memoryCandidates(body.message);if(candidates.length&&!earlyCostCriteria)return reply('needs_input','Bạn có muốn TravelGo ghi nhớ các sở thích này cho lần tư vấn sau không? Chỉ lưu khi bạn bật nhớ dài hạn riêng và bấm xác nhận; đồng ý ngữ cảnh 15 phút không bật tính năng này.',{memoryCandidates:candidates.map(p=>({...p,label:MEMORY_VALUES[p.type][p.value]}))});
+                current();const candidates=memoryCandidates(body.message),offerKey=hash(candidates);
+                if(candidates.length&&!earlyCostCriteria&&s.memoryOfferKey!==offerKey){s.memoryOfferKey=offerKey;pendingMemoryOffer=candidates.map(p=>({...p,label:MEMORY_VALUES[p.type][p.value]}));if(!composedTask)return reply('needs_input','Bạn có muốn TravelGo ghi nhớ các sở thích này cho lần tư vấn sau không? Chỉ lưu khi bạn bật nhớ dài hạn riêng và bấm xác nhận; đồng ý ngữ cảnh 15 phút không bật tính năng này.');}
 
+            }
+            // Resume only an explicit unchanged preview. Catalog browsing owns filters, not the saved plan.
+            const explainBudget=!!s.lastPlan&&!/\d|\b(?:neu|gia su|dat|luu|doi|chuyen)\b/.test(normalizeVietnamese(body.message).normalized)&&/\b(?:khoan|chi phi|ngan sach)\b/.test(fold(body.message))&&/\b(?:lon nhat|khong du|vuot|giam o dau)\b/.test(fold(body.message));
+            if(natural&&!body.selection&&!body.selectedIds&&!body.tripId&&(explainBudget||/^(?:tiep tuc|quay lai|tro lai)(?: (?:voi|ban|phan))? (?:lap |len )?(?:lich trinh|ke hoach)(?: dang lam| cu| truoc| vua roi)?$/.test(normalizeVietnamese(body.message).normalized))){
+                const p=s.lastPlan;
+                if(!p)return reply('needs_input','Mình chưa có bản dự tính còn hiệu lực để tiếp tục. Bạn muốn lập lịch từ thông tin chuyến đi đã xác nhận không?');
+                const catalog=await read(()=>this.catalog.eligible());current();
+                if(!s.sourceIds?.length||this.catalogProof(catalog,s.sourceIds)!==s.sourceProof)throw new HttpError(409,'Nguồn dự toán đã đổi; cần lập lại lịch.','AGENT_COST_SOURCE_CHANGED');
+                const freshPreferences=s.consultant?.useSavedPreferences===false?[]:await read(()=>CustomerMemoryService.forAdvice(user.id).catch(()=>[]));current();
+                if(hash(freshPreferences)!==hash(allowedPreferences)||s.planningMemoryProof&&s.planningMemoryProof!==hash(freshPreferences))throw new HttpError(409,'Sở thích hoặc quyền ghi nhớ vừa thay đổi; cần kiểm tra lại bản dự tính.','AGENT_MEMORY_CHANGED');
+                const result={type:'itinerary',source:'TourPlannerService',itinerary:structuredClone(p),cost:{currency:'VND',basis:p.costBasis,estimated:p.totalEstimatedCostVND,budget:p.totalBudgetUserVND,budgetStatus:p.budgetStatus,overBudget:p.overBudgetVND},warnings:['Đây là bản dự tính trong phiên, chưa lưu Trip hoặc đặt dịch vụ. Đơn vị giá và tình trạng còn chỗ chưa được xác minh.',...(p.costAssumptions||[]),...(p.constraintViolations||[])]};
+                if(catalog.some(x=>s.sourceIds!.includes(x.id)&&this.catalog.publicListing(x).isDemo))result.warnings.unshift('DEMO: dữ liệu và giá mô phỏng cho kiểm thử; không phải báo giá Booking thật.');
+                return await toolReply('completed','Mình quay lại đúng bản dự tính đang làm, giữ thông tin đã xác nhận. Chưa lưu Trip hoặc đặt dịch vụ.',{tool:'plan_trip',result,selected:{hotelId:s.hotel,restaurantId:s.restaurant}});
             }
             const pendingQuestion=s.natural?.awaiting;
             const geoEvidence=natural?geographicEvidence(body.message,pendingQuestion):undefined;
             const fuzzyProposal=()=>{const hint=geoEvidence?.candidates.find(c=>c.match==='fuzzy'&&s.proof?.values[c.role]!==c.name);if(!hint||geoEvidence?.ambiguous||geoEvidence?.uncertain)return;const updates={[hint.role]:hint.name};s.natural={...s.natural,awaiting:'proposal',proposal:{operation:'plan_trip',updates,summary:hint.name}};return reply('needs_input',`Bạn muốn nói ${hint.role==='departureCity'?'nơi xuất phát':'điểm đến'} là ${hint.name} đúng không? Mình sẽ giữ các thông tin còn lại và chờ bạn xác nhận.`);};
             const advisor=natural?understandConsultation(body.message,s.consultant||=consultantMemory()):undefined;
+            if(natural&&advisor?.operation&&geoEvidence?.candidates.some(c=>c.match==='fuzzy')&&!geoEvidence.candidates.some(c=>c.match==='exact')&&!body.selection&&!body.selectedIds&&!body.tripId){const clarification=fuzzyProposal();if(clarification){if(s.natural&&['search_registered_hotels','search_registered_restaurants','search_places'].includes(advisor.operation))s.natural.catalogOperation=advisor.operation as NaturalState['catalogOperation'];return clarification;}}
             if(decisionMode&&advisor&&s.consultant?.shown.length&&/\b(?:ban chon|chon giup|nghieng ve|dang tien|nen chon)\b/.test(fold(body.message))){advisor.reference={kind:'compare'};}
             if(advisor&&currentQualityRequest(body.message)&&s.consultant?.shown.length&&!advisor.operation&&!advisor.reference)advisor.reference={kind:s.consultant.shown.length>1?'compare':'details'};
             const authoritativeReading=natural?readVietnameseConversation(body.message,s.proof?.values||{},s.proof?.optionalValues||{},s.natural||{},this.now()):undefined;
-            if(earlyCostCriteria&&authoritativeReading?.interpretation.canonical&&!earlyCostCriteria.query&&!/\b(?:bao nhieu|het nhieu|du khong|du ko|chi phi|gia ve)\b|\?/.test(normalizeVietnamese(body.message).normalized))earlyCostCriteria=undefined;
+            if(earlyCostCriteria&&authoritativeReading?.interpretation.canonical&&!earlyCostCriteria.advisoryOnly&&earlyCostCriteria.mode!=='COMPARE_DESTINATIONS'&&!earlyCostCriteria.query&&!/\b(?:bao nhieu|het nhieu|du khong|du ko|chi phi|gia ve)\b|\?/.test(normalizeVietnamese(body.message).normalized))earlyCostCriteria=undefined;
+            const unsupported=unsupportedTransportEvidence(body.message),planningRequest=/\b(?:lap|len|tao|doi|chuyen)\b.{0,45}\b(?:lich|ke hoach|chuyen di)\b/.test(fold(body.message));
+            if(natural&&!body.selection&&!body.selectedIds&&!body.tripId&&(unsupported||authoritativeReading?.state.unsupportedTransport)&&(planningRequest||authoritativeReading?.interpretation.operation==='plan_trip')&&!/\b(?:neu|gia su|can nhac)\b/.test(fold(body.message))){
+                const before=hash(s.proof||null),reading=authoritativeReading;
+                if(reading&&!reading.interpretation.error)s.proof=mergeCorePlanProof(s.proof,reading.interpretation.canonical);
+                s.natural={...(reading?.state||s.natural||{}),unsupportedTransport:unsupported||reading?.state.unsupportedTransport,awaiting:'transport'};
+                if(before!==hash(s.proof||null))s.lastPlan=undefined;
+                return reply('needs_input',unsupportedTransportAnswer(s.natural.unsupportedTransport!));
+            }
             const explicitCatalogIntent=['search_registered_hotels','search_registered_restaurants'].includes(authoritativeReading?.interpretation.operation||'');
             if(earlyCostCriteria&&(!explicitCatalogIntent||!!earlyCostCriteria.query)&&!body.selection&&!body.selectedIds&&!body.tripId){
-                const preview=authoritativeReading!,previewProof=mergeCorePlanProof(s.proof,preview.interpretation.canonical),full=!earlyCostCriteria.query&&!earlyCostCriteria.category&&!earlyCostCriteria.question&&!preview.interpretation.error&&AGENT_TOOLS.find(t=>t.name==='plan_trip')!.parameters.required.every(k=>previewProof?.states[k]==='SET');
+                const preview=authoritativeReading!,previewProof=mergeCorePlanProof(s.proof,preview.interpretation.canonical),full=!earlyCostCriteria.advisoryOnly&&earlyCostCriteria.mode!=='COMPARE_DESTINATIONS'&&!earlyCostCriteria.query&&!earlyCostCriteria.category&&!earlyCostCriteria.question&&!preview.interpretation.error&&AGENT_TOOLS.find(t=>t.name==='plan_trip')!.parameters.required.every(k=>previewProof?.states[k]==='SET');
                 if(!full||s.lastPlan){
                     const query=earlyCostCriteria.query;
                     if(query?.tripRequest&&!query.hypothetical){const roles=costNumericRoles(body.message),patch:TravelPatch={};if(roles.party&&roles.party<=100)patch.adults=roles.party;if(earlyCostCriteria.budgetScope==='GROUP'&&roles.amounts.some(m=>m.amount===earlyCostCriteria!.budget))patch.totalBudget=earlyCostCriteria.budget;if(earlyCostCriteria.destinationIds.length===1)patch.destinationCity=resolveLocation(earlyCostCriteria.destinationIds[0])!.catalogName;s.proof=mergeCorePlanProof(s.proof,patchCanonical(patch));if(roles.days&&roles.days<=10)(s.natural||={}).durationDays=roles.days;}
@@ -460,6 +489,8 @@ export class AgentCoreService {
             if(adaptiveRead)parsed=adaptiveRead;
             if(advanced&&semantic?.interpretation){parsed=semantic.interpretation;if(decisionMode&&reading){const naturalProof=mergeCorePlanProof(undefined,reading.interpretation.canonical),extraDates:any={};for(const key of ['startDate','endDate','transportation'])if(naturalProof?.states[key]==='SET')extraDates[key]=naturalProof.values[key];parsed.canonical=patchCanonical({...extraDates,...semantic.patch});}if(reading)reading.question=undefined;}
             if(advanced&&semantic?.reference&&advisor){advisor.reference={kind:advisor.reference?.kind==='cheaper'?'cheaper':'details',indices:[semantic.reference.index]};s.consultant!.shown=semantic.memory.lists[semantic.reference.category]||[];}
+            // A bounded quality comparison reads the existing list; it cannot execute a negated price/transport update.
+            if(advisor?.reference?.kind==='compare'&&currentQualityRequest(body.message)&&s.consultant?.shown.length&&!/\d/.test(body.message)&&!travelLocations(normalizeVietnamese(body.message).normalized).length&&!/\b(?:dat|luu|doi xe|phuong tien|lap lich trinh)\b/.test(fold(body.message))){parsed={operation:'compare_travel_options',canonical:''};if(reading)reading.question=undefined;}
             if(advisor?.question&&!semantic?.interpretation&&!semantic?.reference&&!(planningMode&&planningAct?.pace)){if(advisoryGoal(body.message,true)==='COMMENT')s.consultant!.pendingAdvisoryChoice=true;return reply('needs_input',advisor.question);}
             if(advisor?.needs){const needs=advisor.needs.filter(n=>n!=='ưu tiên yên tĩnh'||!s.consultant?.qualityOverride||s.consultant.qualityOverride.preferred.includes('quiet'));s.consultant!.needs=[...new Set([...s.consultant!.needs,...needs])].slice(0,12);}
             if(advisor?.pace)s.consultant!.pace=advisor.pace;
@@ -480,7 +511,7 @@ export class AgentCoreService {
                 if(!ref.indices&&ref.kind==='details'){
                     const named=(await read(()=>this.catalog.eligible())).filter(p=>normalizeVietnamese(body.message).normalized.includes(normalizeVietnamese(p.name).normalized));current();if(named.length===1)ids=[named[0].id];else if(named.length>1)return reply('needs_input','Bạn đang nhắc nhiều dịch vụ. Bạn muốn xem thông tin lựa chọn nào trước?');
                 }
-                if(!ids.length||ids.some(id=>!id)||ref.kind==='compare'&&ids.length<2)return reply('needs_input','Bạn muốn nói lựa chọn nào trong danh sách vừa hiển thị? Hãy cho mình thứ tự hoặc chọn trên thẻ dịch vụ; mình chưa tự chọn thay bạn.');
+                if(!ids.length||ids.some(id=>!id)||ref.kind==='compare'&&ids.length<2)return reply('needs_input',(currentQualityRequest(body.message)||questionGoal==='FIT'?'Mình chưa thể bảo đảm yên tĩnh hoặc vệ sinh; cần đối chiếu đánh giá của đúng dịch vụ. ':'')+'Bạn muốn nói lựa chọn nào trong danh sách vừa hiển thị? Hãy cho mình thứ tự hoặc chọn trên thẻ dịch vụ; mình chưa tự chọn thay bạn.');
                 if(ref.kind==='compare'){s.ids=ids as string[];parsed={operation:'compare_travel_options',canonical:''};}
                 else{
                     let listing;try{listing=await read(()=>this.catalog.details(ids[0]));}catch(e){if(e instanceof HttpError&&e.statusCode===404){memory.focus=undefined;return reply('needs_input','Lựa chọn đó không còn đủ điều kiện hiển thị. Bạn muốn mình tìm lại trong cùng điểm đến không?');}throw e;}current();memory.focus=listing.id;
@@ -550,7 +581,7 @@ export class AgentCoreService {
                 if(advanced){s.ids=[];s.replacedIds=[];if(s.natural)s.natural.catalogOperation=undefined;}
                 if(s.consultant){s.consultant.shown=[];s.consultant.focus=undefined;s.consultant.knowledgeLocationId=undefined;s.consultant.filters={};}
             }
-            if (oldFilters !== JSON.stringify(s.filters))
+            if (oldFilters !== JSON.stringify(s.filters)&&(!natural||parsed.operation==='plan_trip'))
                 s.lastPlan = undefined;
             if(reading?.question)return reply('needs_input',naturalAcknowledgement(s.proof?.values||{},s.natural||{})+reading.question);
             if(natural&&parsed.operation==='plan_trip'&&geoEvidence?.candidates.some(c=>c.match==='fuzzy'&&s.proof?.values[c.role]!==c.name)){const clarification=fuzzyProposal();if(clarification)return clarification;}
@@ -597,6 +628,14 @@ export class AgentCoreService {
             if (parsed.operation === 'plan_trip') {
                 s.lastPlan = undefined;
                 if(natural){
+                    if(s.proof?.states.destinationCity!=='SET'&&!/\b(?:khong|chua|dung|neu|gia su|can nhac)\b/.test(fold(body.message))){
+                        const memory=s.consultant,ids=[...new Set(Object.values(memory?.filters||{}).map(f=>resolveLocation(f.locationId||f.city)?.id).filter(Boolean))];
+                        if(ids.length===1){const city=resolveLocation(ids[0])!.catalogName;
+                            s.natural={...s.natural,awaiting:'proposal',proposal:{operation:'plan_trip',updates:{destinationCity:city},summary:city,candidate:{revision:s.revision,expires:Math.min(s.expires,this.now()+300000)}}};
+                            const values=s.proof?.values||{};return reply('needs_input','Bạn muốn lập chuyến đi '+city+(values.totalBudget?' với ngân sách '+Number(values.totalBudget).toLocaleString('vi-VN')+' VND cho cả nhóm':'')+(values.adults?', '+values.adults+' người lớn':'')+' đúng không? Mình chưa xác nhận điểm đến từ khu vực vừa tìm dịch vụ.');
+                        }
+                        if(ids.length>1)return reply('needs_input','Bạn muốn lập chuyến đi tại '+ids.map(id=>resolveLocation(id)!.catalogName).join(' hay ')+'? Mình chưa chọn một khu vực tìm kiếm thành điểm đến chuyến đi.');
+                    }
                     const question=naturalQuestion(s.natural||={},s.proof?.values||{},s.proof?.optionalValues||{},this.now());
                     if(question)return reply('needs_input',naturalAcknowledgement(s.proof?.values||{},s.natural||{})+question);
                     try{validateNaturalPatch({...s.proof?.values,...s.proof?.optionalValues},this.now());}catch{return reply('needs_input','Ngày hoặc thông tin chuyến đi chưa hợp lệ. Bạn kiểm tra ngày đi/ngày về giúp mình; mình chưa lập lịch trình.');}
@@ -626,7 +665,15 @@ export class AgentCoreService {
                     }
                     if(s.filters.sort==='approvedDesc')result.warnings.push('Sắp theo thời điểm được duyệt đã ghi nhận; đây không phải thời điểm đăng ký. Bản ghi cũ chưa có approvedAt không được gọi là mới.');
                     if(reading?.nearHotel||advisor?.nearHotel)result.warnings.push('Xếp hạng xét vị trí khách sạn đã chọn theo khoảng cách đường chim bay; đây không phải đường đi hoặc thời gian di chuyển thực tế.');
-                    return await toolReply(result.items.length ? 'completed' : 'no_results', result.items.length ? 'Mình tìm được các lựa chọn từ TravelGo. Bạn xem thông tin và giới hạn giá ở từng kết quả nhé.' : 'TravelGo hiện chưa có lựa chọn phù hợp với yêu cầu này.', { tool: parsed.operation, result });
+                    let noResultsAdvice='TravelGo hiện chưa có lựa chọn phù hợp với yêu cầu này.';
+                    if(natural&&!result.items.length&&category!=='places'){
+                        const cap=searchFilters.maxPriceFrom;
+                        if(cap!==undefined){const all=await read(()=>this.catalog.eligible());current();const candidates=all.filter(p=>p.category===category&&this.catalog.matchesClassification(p,searchFilters)&&(!searchFilters.city||matchesLocation(p,searchFilters.locationId||searchFilters.city))&&(!searchFilters.amenities?.length||searchFilters.amenities.every(a=>(p.amenities||[]).some((v:string)=>fold(v)===fold(a))))&&!searchFilters.verifiedAvailabilityRequired&&(!searchFilters.excludedKeywords?.length||!searchFilters.excludedKeywords.some(k=>fold([p.name,p.summary,p.description,...(p.amenities||[])].join(' ')).includes(fold(k))))).map(p=>({p,price:this.catalog.publicListing(p).priceFrom})).filter(v=>v.price!==null&&v.price!>cap).sort((a,b)=>a.price!-b.price!);
+                            const next=candidates[0];if(next){const fresh=await read(()=>this.catalog.eligible());current();if(this.catalogProof(all,[next.p.id])!==this.catalogProof(fresh,[next.p.id]))throw new HttpError(409,'Nguồn giá vừa thay đổi; mình chưa đề xuất nới điều kiện.','AGENT_COST_SOURCE_CHANGED');noResultsAdvice+=' Cùng loại dịch vụ và tiện ích bắt buộc, dữ liệu'+(this.catalog.publicListing(next.p).isDemo?' DEMO':'')+' hiện ghi nhận giá tham khảo từ '+next.price!.toLocaleString('vi-VN')+' VND; đơn vị giá và còn chỗ chưa xác minh.';}
+                        }
+                        noResultsAdvice+=' Mình giữ nguyên yêu cầu. Bạn muốn cân nhắc nới một điều kiện giá hoặc loại dịch vụ, hay giữ các điều kiện hiện tại?';
+                    }
+                    return await toolReply(result.items.length ? 'completed' : 'no_results', result.items.length ? 'Mình tìm được các lựa chọn từ TravelGo. Bạn xem thông tin và giới hạn giá ở từng kết quả nhé.' : noResultsAdvice, { tool: parsed.operation, result,...(natural&&advisor?.pace==='relaxed'&&result.items.length?{consultantAnswer:'Mình ghi nhận ưu tiên nghỉ ngơi. Tiện ích đã ghi nhận không chứng minh cơ sở yên tĩnh; bạn cần đối chiếu đánh giá hoặc hỏi cơ sở trước khi chọn.'}:{}) });
                 }
                 case 'get_listing_details': {
                     if (s.ids.length !== 1)

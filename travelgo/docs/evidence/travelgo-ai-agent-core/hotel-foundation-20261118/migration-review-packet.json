@@ -1,0 +1,168 @@
+{
+  "task": "21.38-A",
+  "at": "2026-11-18T15:39:06.436Z",
+  "status": "PROPOSED_NOT_APPROVED_NOT_EXECUTED",
+  "scope": "NEW_ISOLATED_HOTEL_FOUNDATION_TEST_ONLY",
+  "existingStagingMigrationAuthorized": false,
+  "originalDatabaseAccessAuthorized": false,
+  "existingBaseline": {
+    "identity": {
+      "db": "travelgo_staging_catalog_20261112",
+      "role": "catalog_runtime",
+      "rolsuper": false,
+      "rolcreatedb": false,
+      "rolcreaterole": false,
+      "sentinel": "travelgo-public-staging:catalog-20261112"
+    },
+    "publicTables": 40,
+    "columns": 520,
+    "migrations": 17,
+    "places": 130,
+    "businesses": 20,
+    "fingerprintEvidence": "physical-schema-before.json"
+  },
+  "target": {
+    "container": "hugotravel_hotel_foundation_test_20261118",
+    "database": "hugotravel_hotel_test_20261118",
+    "role": "hotel_test_admin",
+    "sentinel": "hugotravel-isolated-test-database-v1",
+    "cachedImage": "sha256:d96be3a9c16d44e22d34d5c7b6e85be8875addf672672c6cd38171ea6055a94a",
+    "network": "none",
+    "publishedPorts": [],
+    "existingVolumes": [],
+    "pgdata": "new ephemeral tmpfs",
+    "imagePullAllowed": false,
+    "existingContainerMayNotBeModified": "travelgo_catalog_staging_20261112_db",
+    "credentials": "crypto-random temporary password in process environment/RAM only; never evidence"
+  },
+  "operations": {
+    "baseline": "Apply unchanged migrations 1-17 only to the new empty test database with existing checksum runner semantics; no source/staging data copy",
+    "extension": {
+      "migration": "database/migrations/20261118_18_hotel_domain_foundation.sql",
+      "sha256": "d5f6cf068c60c9c2dabe2d67dc067ac6ff64a68928590da7974b601c87882b87",
+      "rollback": "database/rollback/20261118_18_hotel_domain_foundation.sql",
+      "rollbackSha256": "f03b382235cda83bde41435259bfd63025866f19711b7a978a4b54fb3f3c9d73",
+      "newTables": [
+        "hotel_profiles",
+        "hotel_addresses",
+        "hotel_room_types",
+        "hotel_media",
+        "hotel_rate_plans",
+        "hotel_rate_calendar",
+        "hotel_room_inventory",
+        "hotel_promotions",
+        "hotel_booking_stays",
+        "hotel_booking_items",
+        "hotel_room_allocations",
+        "hotel_review_stays"
+      ],
+      "existingColumnsAdded": [],
+      "existingColumnsAltered": [],
+      "existingTablesNewTriggers": [
+        "places:hotel_place_identity",
+        "bookings:hotel_existing_booking_complete"
+      ],
+      "existingRowBackfill": 0,
+      "expectedPublicTablesAfter": 52,
+      "expectedMigrationsAfter": 18
+    },
+    "fixtures": "SYNTHETIC only: one customer, one partner/membership, two Business/Place scopes, two room types/rates, three stay dates and exact Booking/Review links; final fixture IDs and executor hashes must be frozen before approval",
+    "caps": {
+      "containers": 1,
+      "workerCycles": 0,
+      "nativeModelPosts": 0,
+      "aiChats": 0,
+      "internetRequests": 0,
+      "testBookingTransactions": 4,
+      "concurrentConnections": 2,
+      "dmlIncludingTriggersAndCleanup": 300,
+      "durationHours": 2
+    },
+    "checks": [
+      "migration apply/track/checksum",
+      "physical FK/types/generated keys/indexes",
+      "wrong Place/Business/room/rate FK denial",
+      "all-night shortage and partial allocation rollback",
+      "two concurrent reservations cannot oversell",
+      "idempotent cancellation and all-night release",
+      "review only actual owned completed stay",
+      "content/commercial revision changes rollback atomically",
+      "empty rollback and nonempty rollback refusal"
+    ]
+  },
+  "dataImpact": {
+    "existingStagingExpectedFingerprintDeltas": 0,
+    "originalDbConnections": 0,
+    "newTestDataRetention": "none",
+    "ownerCredentialsAccess": false
+  },
+  "backupRestore": {
+    "existingStaging": "No writes; baseline plus after 40-table read-only equality",
+    "newTarget": "Disposable SYNTHETIC only; capture evidence then remove ONLY exact task-owned container ID; never existing volumes",
+    "persistentMigration": "Separate explicit target approval + encrypted pg_dump/roles/volume backup + verified restore rehearsal required"
+  },
+  "compatibility": {
+    "featureDefault": "OFF",
+    "applicationRoutesMounted": false,
+    "existingBookingEngine": "unchanged; HotelStay V1 strategy and legacy bypass gate required before any hotel publication",
+    "runtimeGuards": "existing 40-table/17-migration guard must not be widened by this task"
+  },
+  "expectedFingerprintDeltas": {
+    "existing40Tables": "0/40",
+    "existing17MigrationChecksums": "0/17",
+    "newTestTables": "SYNTHETIC fixture deltas only",
+    "newTestSchemaMigrations": "one row per unchanged baseline file plus migration18",
+    "persistentTargetIfSeparatelyApproved": {
+      "nonTrackerBaselineTables": "39/39 unchanged",
+      "schema_migrations": "exactly one added row for migration18",
+      "newHotelTables": "12 empty tables before separately authorized fixtures"
+    }
+  },
+  "rollbackRecovery": {
+    "artifact": "database/rollback/20261118_18_hotel_domain_foundation.sql",
+    "emptyOnly": true,
+    "nonempty": "BLOCK; export and reviewed recovery, no CASCADE or automatic data loss",
+    "destroyOnlyNewTargetAfterEvidence": true
+  },
+  "approvalBoundary": "This packet does not authorize staging/production migration. Do not execute it until exact fixture IDs and runner/source hashes are completed and user approval covers this new target.",
+  "fixturePlan": {
+    "status": "PROPOSED_IDS_ONLY_EXECUTOR_NOT_PREPARED_OR_AUTHORIZED",
+    "ids": {
+      "customer": "18380000-0000-4000-8000-000000000001",
+      "partner": "18380000-0000-4000-8000-000000000002",
+      "customerRole": "18380000-0000-4000-8000-000000000003",
+      "partnerRole": "18380000-0000-4000-8000-000000000004",
+      "businessA": "18380000-0000-4000-8000-000000000005",
+      "businessB": "18380000-0000-4000-8000-000000000006",
+      "membership": "18380000-0000-4000-8000-000000000007",
+      "placeA": "18380000-0000-4000-8000-000000000008",
+      "placeB": "18380000-0000-4000-8000-000000000009",
+      "roomA": "18380000-0000-4000-8000-000000000010",
+      "roomB": "18380000-0000-4000-8000-000000000011",
+      "rateA": "18380000-0000-4000-8000-000000000012",
+      "rateB": "18380000-0000-4000-8000-000000000013",
+      "promotion": "18380000-0000-4000-8000-000000000014",
+      "media": "18380000-0000-4000-8000-000000000015",
+      "bookingA": "18380000-0000-4000-8000-000000000016",
+      "bookingB": "18380000-0000-4000-8000-000000000017",
+      "itemA": "18380000-0000-4000-8000-000000000018",
+      "itemB": "18380000-0000-4000-8000-000000000019",
+      "reviewA": "18380000-0000-4000-8000-000000000020",
+      "allocations": [
+        "18380000-0000-4000-8000-000000000021",
+        "18380000-0000-4000-8000-000000000022",
+        "18380000-0000-4000-8000-000000000023",
+        "18380000-0000-4000-8000-000000000024",
+        "18380000-0000-4000-8000-000000000025",
+        "18380000-0000-4000-8000-000000000026"
+      ]
+    },
+    "localStayDates": [
+      "2028-02-28",
+      "2028-02-29",
+      "2028-03-01"
+    ],
+    "realDataCopyAllowed": false,
+    "newOwnerAllowed": false
+  }
+}

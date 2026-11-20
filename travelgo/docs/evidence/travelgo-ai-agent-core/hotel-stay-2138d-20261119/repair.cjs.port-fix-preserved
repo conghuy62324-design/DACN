@@ -1,0 +1,11 @@
+const fs=require('fs'),path=require('path'),assert=require('assert/strict');
+module.exports=async({migration,db,lock,root,env,save})=>{
+ assert.equal((await db.query('SELECT count(*)::int n FROM hotel_profiles')).rows[0].n,0);assert.equal((await db.query('SELECT count(*)::int n FROM bookings')).rows[0].n,0);
+ save('port-correction-before',{apiPort:lock.ports.api,reason:'5060 is a forbidden SIP port in WHATWG fetch and browsers; API and PostgreSQL were healthy. No successful Booking request occurred.'});
+ const p=path.join(__dirname,'execution-lock.json');fs.copyFileSync(p,path.join(__dirname,'execution-lock-v1-preserved.json'),fs.constants.COPYFILE_EXCL);lock.ports.api=5062;env.PORT='5062';fs.writeFileSync(p,JSON.stringify(lock,null,2));
+ for(const t of ['bookings','booking_status_history','audit_logs','places','tickets','tours'])await migration.query('DROP TRIGGER hotel_d_scope ON '+t);
+ await migration.query(fs.readFileSync(root+'/database/rollback/20261118_18_hotel_domain_foundation.sql','utf8'));await migration.query('DROP FUNCTION hotel_d_scope_guard()');
+ for(const[t,n]of[['tours',60],['tickets',61]])await db.query('DELETE FROM '+t+' WHERE id=$1',[lock.fixtureIds['f'+n]]);await db.query('DELETE FROM places WHERE id=ANY($1::uuid[])',[[62,63].map(n=>lock.fixtureIds['f'+n])]);
+ assert.equal((await db.query("SELECT count(*)::int n FROM pg_tables WHERE schemaname='public'")).rows[0].n,40);assert.equal((await db.query('SELECT count(*)::int n FROM schema_migrations')).rows[0].n,17);
+ save('readiness-correction',{status:'PASS',apiPort:5062,targetCount:1,emptyExtensionRolledBackUsingApprovedNativeArtifact:true,physicalTables:40,migrations:17,priorFailurePreserved:true});
+};

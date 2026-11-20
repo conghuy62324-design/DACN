@@ -6,7 +6,7 @@ import { validateTravelPreferences } from '../utils/travelPreferences.js';
 import { HttpError } from '../utils/httpError.js';
 import { catalogLanguage } from './catalogLanguage.js';
 import {normalizeVietnamese,conversationalLocation,travelLocations,moneyMentions} from './vietnameseNormalizer.js';
-import {currentGeographicRoles,geographicEvidence,transportEvidence,uncertainTravelEdit} from './geographicEvidence.js';
+import {currentGeographicRoles,geographicEvidence,transportEvidence,uncertainTravelEdit,unsupportedTransportEvidence,unsupportedTransportAnswer} from './geographicEvidence.js';
 import {NATURAL_RESPONSE_SCHEMA} from './naturalContract.js';
 import {assertStructuredOutput} from './structuredOutput.js';
 import {naturalIntentEvidence,changeSupported,type IntentContext} from './naturalIntent.js';
@@ -14,14 +14,18 @@ import {naturalIntentEvidence,changeSupported,type IntentContext} from './natura
 /** Whole social utterances only; a greeting followed by a travel request keeps its intent. */
 export function socialSpeechAct(message:string):'GREETING'|'THANKS'|undefined{
     const s=normalizeVietnamese(message).normalized;
+    const clauses=s.split(/[,;.!?]+/).map(c=>c.trim()).filter(Boolean);
+    if(clauses.length>1&&clauses.every(c=>/^(?:(?:xin )?chao(?: ban)?|hello|hi|alo|cam on(?: ban)?|thanks|thank you)(?: (?:nhe|nha|a)){0,2}$/.test(c)))return clauses.some(c=>/cam on|thank/.test(c))?'THANKS':'GREETING';
     if(/^(?:(?:xin )?chao(?: ban)?|hello|hi|alo)(?: (?:nhe|nha|a)){0,2}$/.test(s))return 'GREETING';
     if(/^(?:cam on(?: ban)?|thanks|thank you)(?: (?:nhe|nha|a)){0,2}$/.test(s))return 'THANKS';
 }
 export {NATURAL_RESPONSE_SCHEMA} from './naturalContract.js';
 
+export function affirmativeTravelConfirmation(message:string){const raw=message.trim(),s=normalizeVietnamese(raw).normalized;return (/^(?:dung roi|chinh xac|dong y|vang|uh|u|ok|okay|xac nhan|phai)$/.test(s)||raw.toLowerCase()==='đúng')&&!/^(?:đừng|dừng)(?:\s|$)/iu.test(raw);}
 export const NATURAL_CHAT_V3 = 'NATURAL_CHAT_V3';
 export type TravelPatch = Record<string, any>;
 export type NaturalState = {
+    unsupportedTransport?: string;
     durationDays?: number;
     childAges?: number[];
     datesWithoutYear?: { day: number; month: number; endDay?: number; endMonth?: number };
@@ -31,7 +35,7 @@ export type NaturalState = {
     totalParty?:number;
     catalogOperation?: 'search_registered_hotels'|'search_registered_restaurants'|'search_places';
     yearSuggestion?: number;
-    proposal?: { operation: CoreOperation | 'chat'; updates: TravelPatch; summary: string; change?: 'hotel_cheaper'|'hotel_other'|'restaurant_other'|'exclude_seafood' };
+    proposal?: { operation: CoreOperation | 'chat'; updates: TravelPatch; summary: string; candidate?:{revision:number;expires:number}; change?: 'hotel_cheaper'|'hotel_other'|'restaurant_other'|'exclude_seafood' };
 };
 export type NaturalRead = { interpretation: CoreInterpretation; state: NaturalState; social?: string; nearHotel?: boolean; question?:string };
 export const travelLabels: Record<string, string> = {
@@ -88,7 +92,10 @@ export function readVietnameseConversation(message: string, values: TravelPatch,
         try { validateNaturalPatch(patch, now); } catch { return answer('Mình chưa thể xác nhận số khách, ngân sách hoặc ngày này. Bạn kiểm tra lại giúp mình nhé; ngày đi cần từ hôm nay trở đi.'); }
         return { interpretation: { operation, canonical: patchCanonical(patch) }, state, ...extras };
     };
-    const yes = (/^(?:dung roi|chinh xac|dong y|vang|uh|u|ok|okay|xac nhan|phai)$/.test(s) || raw.toLowerCase()==='đúng') && !/^(?:đừng|dừng)(?:\s|$)/iu.test(raw);
+    const transportAction=s.replace(/\bkhong\s+(?:di|dung|chon)(?: bang)?\s+(?:xe khach|xe buyt|may bay|tau hoa)\b/g,'');
+    const unsupported=unsupportedTransportEvidence(message);
+    if(unsupported&&!/\b(?:neu|gia su|can nhac)\b/.test(s)&&(/\b(?:di|bang|chon|doi|chuyen|lap|len)\b/.test(s)||previous.awaiting==='transport'))state.unsupportedTransport=unsupported;
+    const yes = affirmativeTravelConfirmation(message);
     if (raw.includes(':')) {
         const canonicalInput=process.env.PERSONALIZED_DECISION_ENABLED==='true'?raw.split(';').map(part=>{const m=/^(\s*[^:]+:\s*)(.+)$/u.exec(part),key=m&&normalizeVietnamese(m[1].replace(':','')).normalized;const geo=m&&['noi xuat phat','xuat phat','diem den'].includes(key!)&&resolveLocation(m[2].trim());return geo?m![1]+geo.catalogName:part;}).join(';'):raw;
         const legacy = coreInterpretation(canonicalInput, values, true);
@@ -105,7 +112,7 @@ export function readVietnameseConversation(message: string, values: TravelPatch,
     if(previous.awaiting==='budget_scope'&&previous.scopedBudget&&/^(?:ca nhom|cho ca nhom|tong ca nhom)$/.test(s)){patch.totalBudget=previous.scopedBudget.amount;state.scopedBudget=undefined;}
     if (socialSpeechAct(message)==='GREETING') return { interpretation: { canonical: '' }, state, social: values.destinationCity ? `Chào bạn! Mình vẫn đang ghi nhớ chuyến đi ${values.destinationCity}. Bạn muốn mình giúp tiếp phần nào?` : 'Chào bạn! Bạn muốn đi đâu trong chuyến sắp tới?' };
     if (socialSpeechAct(message)==='THANKS') return { interpretation: { canonical: '' }, state, social: 'Rất vui được giúp bạn! Nếu muốn đổi kế hoạch hay xem thêm lựa chọn, cứ nhắn mình nhé.' };
-    if (!yes && (/\b(?:neu|gia su|co le|hay la|dung|khong doi|bo qua he thong|sql|system|delete|insert)\b/.test(s)||/\b(?:khong|chua)\s+(?:di|den|toi|doi|chuyen|muon|lay|dat|luu|tang|giam|bot|them)\b/.test(s))) return answer('Mình chưa thay đổi thông tin khi yêu cầu còn phủ định hoặc có điều kiện. Bạn muốn đổi chính xác phần nào?');
+    if (!yes && (/\b(?:neu|gia su|co le|hay la|dung|khong doi|bo qua he thong|sql|system|delete|insert)\b/.test(transportAction.replace(/\b(?:dung|khong) dung so thich cu(?: nua)?\b/g,''))||/\b(?:khong|chua)\s+(?:di|den|toi|doi|chuyen|muon|lay|dat|luu|tang|giam|bot|them)\b/.test(transportAction))) return answer('Mình chưa thay đổi thông tin khi yêu cầu còn phủ định hoặc có điều kiện. Bạn muốn đổi chính xác phần nào?');
     const catalogRequest=catalogLanguage(s,values);
     const directSearch=coreInterpretation(s,values,true);
     const searchIntent=catalogRequest|| (directSearch.operation?.startsWith('search_')?directSearch:undefined);
@@ -123,10 +130,10 @@ export function readVietnameseConversation(message: string, values: TravelPatch,
         patch.startDate = start; if (end) patch.endDate = end;
         state.datesWithoutYear = undefined;
     }
-    const roleEvidence=process.env.PERSONALIZED_DECISION_ENABLED==='true'?currentGeographicRoles(message,previous.awaiting):undefined;
+    const roleEvidence=process.env.PERSONALIZED_DECISION_ENABLED==='true'?currentGeographicRoles(transportAction,previous.awaiting):undefined;
     if(roleEvidence?.ambiguous)return answer('Bạn muốn dùng địa điểm nào cho từng vai trò xuất phát và điểm đến?');
     const locations=roleEvidence?roleEvidence.mentions.filter(m=>(m.role==='departureCity'||m.role==='destinationCity')&&!m.keep).map(m=>({geo:resolveLocation(m.id)!,role:m.role as 'departureCity'|'destinationCity'})):travelLocations(s,previous.awaiting);
-    if(locations.length>1&&/\b(?:hay|hoac)\b/.test(s))return answer('Bạn muốn chọn địa điểm nào trong những nơi vừa nhắc? Mình chưa tự chọn thay bạn.');
+    if(!roleEvidence&&locations.length>1&&/\b(?:hay|hoac)\b/.test(s))return answer('Bạn muốn chọn địa điểm nào trong những nơi vừa nhắc? Mình chưa tự chọn thay bạn.');
     for(const role of ['departureCity','destinationCity'] as const){const found=locations.filter(g=>g.role===role);if(new Set(found.map(g=>g.geo.id)).size>1)return answer('Bạn muốn chọn điểm đến hoặc nơi xuất phát nào trong những nơi vừa nhắc? Mình chưa tự chọn thay bạn.');if(found.length)patch[role]=found[0].geo.catalogName;}
     if(!patch.departureCity&&/^(?:hcm|sg|sai gon)(?:[,;]|$)/.test(s))patch.departureCity=normalizeTravelCity(s.split(/[,;]/)[0],true);
     if(['departure','destination'].includes(previous.awaiting||'')&&/^[\p{L}\s.-]+$/u.test(raw)&&!locations.length&&!roleEvidence?.mentions.length&&!geographicEvidence(raw,previous.awaiting).candidates.some(c=>c.match==='fuzzy')&&!/\b(?:xe|ngan|trieu|nguoi|toi|minh|doi|khong)\b/.test(s)&&s.split(' ').length<=5){const city=normalizeTravelCity(raw,true);if(city)patch[previous.awaiting==='departure'?'departureCity':'destinationCity']=city;}
@@ -146,7 +153,7 @@ export function readVietnameseConversation(message: string, values: TravelPatch,
     }
     const durationEdit=s.replace(/\b(mot|hai|ba)\s+ngay\b/g,(_,word)=>({mot:'1',hai:'2',ba:'3'}[word as 'mot'])+' ngay').match(/\b(them|bot|rut con|rut xuong|con)\s+(\d{1,2})\s*ngay\b/);
     if(durationEdit){const base=state.durationDays||(values.startDate&&values.endDate?Math.round((Date.parse(values.endDate)-Date.parse(values.startDate))/86400000)+1:undefined),n=+durationEdit[2];if(/them|bot/.test(durationEdit[1])&&!base)return answer('Chuyến đi hiện dài bao nhiêu ngày để mình điều chỉnh cho đúng?');const next=durationEdit[1]==='them'?base!+n:durationEdit[1]==='bot'?base!-n:n;if(next<1||next>10)return answer('Chuyến đi cần từ1 đến10 ngày theo Planner hiện tại. Bạn muốn điều chỉnh còn bao nhiêu ngày?');state.durationDays=next;if(values.startDate)patch.endDate=addDays(values.startDate,next-1);}
-    const date = s.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(20\d\d))?(?:\s*[-–]\s*(\d{1,2})\/(\d{1,2})(?:\/(20\d\d))?)?/);
+    const date = s.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(20\d\d))?(?:\s*(?:[-–]|den|toi)\s*(\d{1,2})\/(\d{1,2})(?:\/(20\d\d))?)?/);
     if (date) {
         if (!date[3] && !date[6]) { state.datesWithoutYear = { day: +date[1], month: +date[2], ...(date[4] ? { endDay: +date[4], endMonth: +date[5] } : {}) }; }
         else {
@@ -169,7 +176,7 @@ export function readVietnameseConversation(message: string, values: TravelPatch,
       if(m.scope==='listing')continue;
       if(m.relative){if(!Number.isFinite(values.totalBudget))return answer('Mình chưa có ngân sách cả nhóm đã xác nhận để cộng/trừ. Ngân sách ban đầu là bao nhiêu?');patch.totalBudget=values.totalBudget+m.relative*m.amount;}else patch.totalBudget=m.amount;
     }
-    const transports=[...s.matchAll(/\b(xe may|o to)\b/g)];if(new Set(transports.map(m=>m[1])).size>1)return answer('Bạn muốn chọn xe máy hay ô tô cho chuyến này?');if(transports.length)patch.transportation=transports[0][1]==='xe may'?'motorbike':'car';
+    const transports=[...s.matchAll(/\b(xe may|o to)\b/g)];if(new Set(transports.map(m=>m[1])).size>1)return answer('Bạn muốn chọn xe máy hay ô tô cho chuyến này?');if(transports.length&&!unsupported){patch.transportation=transports[0][1]==='xe may'?'motorbike':'car';state.unsupportedTransport=undefined;}
     const preferenceEvidence:Record<string,string>={bien:'bien','thien nhien':'thien-nhien','van hoa':'van-hoa','am thuc':'am-thuc','nghi duong':'nghi-duong','check in':'check-in','phieu luu':'phieu-luu','mua sam':'mua-sam'};
     const preferred=Object.entries(preferenceEvidence).filter(([words])=>new RegExp('\\b(?:thich|uu tien)\\s+'+words+'\\b').test(s)).map(([,key])=>key);
     if(preferred.length)patch.preferences=[...new Set([...(optional.preferences||[]),...preferred])];
@@ -204,6 +211,7 @@ export function readVietnameseConversation(message: string, values: TravelPatch,
 }
 
 export function naturalQuestion(state: NaturalState, values: TravelPatch, optional: TravelPatch, now: number): string | undefined {
+    if(state.unsupportedTransport){state.awaiting='transport';return unsupportedTransportAnswer(state.unsupportedTransport);}
     if (state.datesWithoutYear) {
         const d = state.datesWithoutYear; state.awaiting = 'year';
         const suggested=isoDate(d.day,d.month,+vietnamToday(now).slice(0,4));

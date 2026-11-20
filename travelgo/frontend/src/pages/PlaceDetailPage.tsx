@@ -1,3 +1,4 @@
+import {HotelPublicDetail} from './HotelPublicDetail';
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { 
@@ -31,6 +32,14 @@ import {ReviewInsightsPanel} from '../components/common/ReviewInsightsPanel';
 import {api} from '../services/api';
 
 export const PlaceDetailPage: React.FC = () => {
+ const {id}=useParams();const enabled=import.meta.env.VITE_HOTEL_DOMAIN_ENABLED==='true';
+ const explicit=new URLSearchParams(window.location.search).get('hotel')==='1'||window.location.pathname.startsWith('/hotels/');
+ const [native,setNative]=useState<boolean|null>(null);
+ useEffect(()=>{if(!enabled||explicit)return;const c=new AbortController();setNative(null);void api.get('/hotels/'+id,{signal:c.signal}).then(()=>{if(!c.signal.aborted)setNative(true);}).catch(e=>{if(!c.signal.aborted)setNative(e.code!=='HOTEL_NOT_FOUND');});return()=>c.abort();},[id,enabled,explicit]);
+ if(enabled&&!explicit&&native===null)return <div className="pt-28 pb-16 text-center" role="status">Đang kiểm tra thông tin nơi lưu trú…</div>;
+ return enabled&&(explicit||native)?<HotelPublicDetail/>:<LegacyPlaceDetailPage/>;
+};
+const LegacyPlaceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();

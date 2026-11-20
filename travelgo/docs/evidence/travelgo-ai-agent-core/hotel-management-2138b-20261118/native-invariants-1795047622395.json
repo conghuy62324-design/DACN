@@ -1,0 +1,1125 @@
+{
+  "at": "2026-11-19T00:20:22.396Z",
+  "status": "FAIL",
+  "results": [
+    {
+      "name": "Cross-hotel rate FK",
+      "status": "PASS",
+      "rejectedCode": "23503",
+      "reason": "insert or update on table \"hotel_rate_plans\" violates foreign key constraint \"hotel_rate_plans_room_type_id_place_id_fkey\""
+    },
+    {
+      "name": "Cross-hotel media FK",
+      "status": "PASS",
+      "rejectedCode": "23503",
+      "reason": "insert or update on table \"hotel_media\" violates foreign key constraint \"hotel_media_room_type_id_place_id_fkey\""
+    },
+    {
+      "name": "Invalid civil date",
+      "status": "PASS",
+      "rejectedCode": "22008",
+      "reason": "date/time field value out of range: \"2027-02-29\""
+    },
+    {
+      "name": "Reversed rate dates",
+      "status": "PASS",
+      "rejectedCode": "23514",
+      "reason": "new row for relation \"hotel_rate_plans\" violates check constraint \"hotel_rate_plans_check\""
+    },
+    {
+      "name": "Negative price",
+      "status": "PASS",
+      "rejectedCode": "23514",
+      "reason": "new row for relation \"hotel_rate_plans\" violates check constraint \"hotel_rate_plans_base_amount_vnd_check\""
+    },
+    {
+      "name": "Allocated cannot exceed sellable",
+      "status": "PASS",
+      "rejectedCode": "23514",
+      "reason": "new row for relation \"hotel_room_inventory\" violates check constraint \"hotel_room_inventory_check\""
+    },
+    {
+      "name": "Duplicate allocation",
+      "status": "PASS",
+      "rejectedCode": "23505",
+      "reason": "duplicate key value violates unique constraint \"hotel_room_allocations_booking_item_id_stay_date_key\""
+    },
+    {
+      "name": "Missing final night",
+      "status": "FAIL",
+      "code": "P0001",
+      "error": "HOTEL_BOOKING_ALLOCATION_INCOMPLETE"
+    },
+    {
+      "name": "Complete all-night stay and rollback",
+      "status": "PASS"
+    },
+    {
+      "name": "Review attribution requires completed stay",
+      "status": "PASS",
+      "rejectedCode": "P0001",
+      "reason": "HOTEL_REVIEW_STAY_NOT_VERIFIED"
+    },
+    {
+      "name": "Price and revision roll back atomically",
+      "status": "PASS"
+    },
+    {
+      "name": "Rollback refuses populated extension",
+      "status": "PASS"
+    },
+    {
+      "name": "Concurrent allocation: one winner, no overselling",
+      "status": "PASS"
+    },
+    {
+      "name": "Cancellation releases all nights exactly once",
+      "status": "PASS"
+    }
+  ],
+  "physicalColumns": [
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "place_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "house_number",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "street_name",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "ward_or_commune",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "administrative_area",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "province_code",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "province_or_city",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "tourism_destination_id",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "full_address",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "normalized_address",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "street_key",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "ward_key",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "search_document",
+      "data_type": "tsvector",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "latitude",
+      "data_type": "double precision",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "longitude",
+      "data_type": "double precision",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "location",
+      "data_type": "USER-DEFINED",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "coordinate_status",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "coordinate_verified_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "coordinate_evidence",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "source",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "version",
+      "data_type": "bigint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_addresses",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_items",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_items",
+      "column_name": "booking_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_items",
+      "column_name": "place_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_items",
+      "column_name": "room_type_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_items",
+      "column_name": "rate_plan_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_items",
+      "column_name": "quantity",
+      "data_type": "integer",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_items",
+      "column_name": "occupancy",
+      "data_type": "jsonb",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_items",
+      "column_name": "total_vnd",
+      "data_type": "bigint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_items",
+      "column_name": "quote_snapshot",
+      "data_type": "jsonb",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_stays",
+      "column_name": "booking_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_stays",
+      "column_name": "place_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_stays",
+      "column_name": "business_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_stays",
+      "column_name": "contract",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_stays",
+      "column_name": "currency",
+      "data_type": "character",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_stays",
+      "column_name": "check_in",
+      "data_type": "date",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_stays",
+      "column_name": "check_out",
+      "data_type": "date",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_stays",
+      "column_name": "total_vnd",
+      "data_type": "bigint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_stays",
+      "column_name": "source_version",
+      "data_type": "character",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_stays",
+      "column_name": "quote_snapshot",
+      "data_type": "jsonb",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_booking_stays",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_media",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_media",
+      "column_name": "place_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_media",
+      "column_name": "room_type_id",
+      "data_type": "uuid",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_media",
+      "column_name": "storage_key",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_media",
+      "column_name": "mime_type",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_media",
+      "column_name": "size_bytes",
+      "data_type": "bigint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_media",
+      "column_name": "checksum_sha256",
+      "data_type": "character",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_media",
+      "column_name": "rights",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_media",
+      "column_name": "rights_evidence",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_media",
+      "column_name": "status",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_media",
+      "column_name": "position",
+      "data_type": "integer",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_media",
+      "column_name": "alt_text",
+      "data_type": "character varying",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_media",
+      "column_name": "version",
+      "data_type": "bigint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_media",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_profiles",
+      "column_name": "place_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_profiles",
+      "column_name": "business_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_profiles",
+      "column_name": "content_version",
+      "data_type": "bigint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_profiles",
+      "column_name": "approved_content_version",
+      "data_type": "bigint",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_profiles",
+      "column_name": "commercial_version",
+      "data_type": "bigint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_profiles",
+      "column_name": "check_in_time",
+      "data_type": "time without time zone",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_profiles",
+      "column_name": "check_out_time",
+      "data_type": "time without time zone",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_profiles",
+      "column_name": "time_zone",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_profiles",
+      "column_name": "services",
+      "data_type": "jsonb",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_profiles",
+      "column_name": "policies",
+      "data_type": "jsonb",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_profiles",
+      "column_name": "published_snapshot",
+      "data_type": "jsonb",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_profiles",
+      "column_name": "star_rating",
+      "data_type": "smallint",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_profiles",
+      "column_name": "star_verified_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_profiles",
+      "column_name": "star_evidence",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_profiles",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_profiles",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_promotions",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_promotions",
+      "column_name": "place_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_promotions",
+      "column_name": "room_type_id",
+      "data_type": "uuid",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_promotions",
+      "column_name": "rate_plan_id",
+      "data_type": "uuid",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_promotions",
+      "column_name": "name",
+      "data_type": "character varying",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_promotions",
+      "column_name": "description",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_promotions",
+      "column_name": "currency",
+      "data_type": "character",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_promotions",
+      "column_name": "kind",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_promotions",
+      "column_name": "value",
+      "data_type": "bigint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_promotions",
+      "column_name": "max_discount_vnd",
+      "data_type": "bigint",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_promotions",
+      "column_name": "booking_starts_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_promotions",
+      "column_name": "booking_ends_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_promotions",
+      "column_name": "stay_from",
+      "data_type": "date",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_promotions",
+      "column_name": "stay_until",
+      "data_type": "date",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_promotions",
+      "column_name": "min_nights",
+      "data_type": "smallint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_promotions",
+      "column_name": "status",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_promotions",
+      "column_name": "version",
+      "data_type": "bigint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_promotions",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_calendar",
+      "column_name": "rate_plan_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_calendar",
+      "column_name": "room_type_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_calendar",
+      "column_name": "place_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_calendar",
+      "column_name": "stay_date",
+      "data_type": "date",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_calendar",
+      "column_name": "amount_vnd",
+      "data_type": "bigint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_calendar",
+      "column_name": "closed",
+      "data_type": "boolean",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_calendar",
+      "column_name": "version",
+      "data_type": "bigint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_calendar",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "place_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "room_type_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "name",
+      "data_type": "character varying",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "currency",
+      "data_type": "character",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "price_basis",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "base_amount_vnd",
+      "data_type": "bigint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "valid_from",
+      "data_type": "date",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "valid_until",
+      "data_type": "date",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "min_nights",
+      "data_type": "smallint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "max_nights",
+      "data_type": "smallint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "included_adults",
+      "data_type": "smallint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "extra_adult_vnd_per_night",
+      "data_type": "bigint",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "child_policy",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "child_bands",
+      "data_type": "jsonb",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "meal_plan",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "cancellation",
+      "data_type": "jsonb",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "tax",
+      "data_type": "jsonb",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "fees",
+      "data_type": "jsonb",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "mandatory_fees_known",
+      "data_type": "boolean",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "status",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "version",
+      "data_type": "bigint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_rate_plans",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_review_stays",
+      "column_name": "review_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_review_stays",
+      "column_name": "booking_item_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_review_stays",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_allocations",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_allocations",
+      "column_name": "booking_item_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_allocations",
+      "column_name": "room_type_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_allocations",
+      "column_name": "stay_date",
+      "data_type": "date",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_allocations",
+      "column_name": "quantity",
+      "data_type": "integer",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_allocations",
+      "column_name": "state",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_allocations",
+      "column_name": "released_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_room_allocations",
+      "column_name": "release_reason",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_room_inventory",
+      "column_name": "room_type_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_inventory",
+      "column_name": "place_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_inventory",
+      "column_name": "stay_date",
+      "data_type": "date",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_inventory",
+      "column_name": "sellable_quantity",
+      "data_type": "integer",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_inventory",
+      "column_name": "allocated_quantity",
+      "data_type": "integer",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_inventory",
+      "column_name": "closed",
+      "data_type": "boolean",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_inventory",
+      "column_name": "version",
+      "data_type": "bigint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_inventory",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "place_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "name",
+      "data_type": "character varying",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "description",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "area_m2",
+      "data_type": "numeric",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "bedrooms",
+      "data_type": "smallint",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "bathrooms",
+      "data_type": "smallint",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "beds",
+      "data_type": "jsonb",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "extra_bed_available",
+      "data_type": "boolean",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "max_occupancy",
+      "data_type": "smallint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "max_adults",
+      "data_type": "smallint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "max_children",
+      "data_type": "smallint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "view",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "balcony",
+      "data_type": "boolean",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "has_window",
+      "data_type": "boolean",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "kitchen",
+      "data_type": "boolean",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "private_bathroom",
+      "data_type": "boolean",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "amenities",
+      "data_type": "ARRAY",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "status",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "version",
+      "data_type": "bigint",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "hotel_room_types",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO"
+    }
+  ],
+  "migrations": [
+    {
+      "filename": "20261010_01_init_travelgo_schema.sql",
+      "checksum": "fe7defe5c3c47c9230fe7c43fc301255a6bc0e998da71aba0fe2f747f9e52d50"
+    },
+    {
+      "filename": "20261011_02_rbac_partner_foundation.sql",
+      "checksum": "df7fd60cccf17d3f8a73f711825bb1e82a4606a17c42fce4c7fa214548c2cecd"
+    },
+    {
+      "filename": "20261011_03_persistent_travel_resources.sql",
+      "checksum": "1c4464625e57e27cadc560077fad83837b56c5385d8021e0592fdcb9039fabf7"
+    },
+    {
+      "filename": "20261011_04_hugo_intelligence_foundation.sql",
+      "checksum": "4f2519e0541bed02a5fd7811c1ef5f84be49e37dd0dc81d16c033c22a805b69d"
+    },
+    {
+      "filename": "20261012_05_user_behavior_telemetry.sql",
+      "checksum": "477200cecf2f7e8135c4473b901ae11237222083cb7fd4b9af900d2cb2bbbece"
+    },
+    {
+      "filename": "20261012_06_recommendation_exposure.sql",
+      "checksum": "9f90d12a55a57799977115b4b8922b70cba3d02649f48e4e08d54b2913a536cb"
+    },
+    {
+      "filename": "20261012_07_recommendation_booking_retention.sql",
+      "checksum": "bf885a9161b6420e096c10a3cc37de6a45715ffc2b375e38a8ec8104998cc3de"
+    },
+    {
+      "filename": "20261012_08_server_side_favorites.sql",
+      "checksum": "87980fcdf39c7fbf7e6641bb0219f64c727605ea8f8127f2ad6f62d4107d75f8"
+    },
+    {
+      "filename": "20261012_09_verified_reviews.sql",
+      "checksum": "8842947ab9cd52890cc371bf75877e191f801fd12bedb19c5c06d46080c1670e"
+    },
+    {
+      "filename": "20261012_10_review_account_deletion_privacy.sql",
+      "checksum": "4219afac618257e7970f878b83b30c72eb2fe0fe106af04e81c5083e8bc48c52"
+    },
+    {
+      "filename": "20261028_11_trip_planner_metadata.sql",
+      "checksum": "90c42676606d4d5e7458edde139b9c5b945dd3ca0d574490a581ad6bcd98a034"
+    },
+    {
+      "filename": "20261030_12_booking_request_fingerprint.sql",
+      "checksum": "09465ec9a3d3c3de1215ad6eaa1d1cf4e8d18aed43423ce6c7b4feea817e9bc5"
+    },
+    {
+      "filename": "20261112_13_catalog_metadata.sql",
+      "checksum": "d239a6fc360ddb73954f9568bc182e8956b41c0d396ebea647153b3b3e9d4e07"
+    },
+    {
+      "filename": "20261113_14_review_insights_customer_memory.sql",
+      "checksum": "36a6c539224ed3967a8770dbd83508e1b7159ffa1c6c561adb913b4ed9ccc437"
+    },
+    {
+      "filename": "20261113_15_verified_travel_knowledge.sql",
+      "checksum": "1b22f64d72eb9ee85fba5700a4f5141251409cd3d0aa1a41998b2d55d76a818a"
+    },
+    {
+      "filename": "20261114_16_adaptive_language.sql",
+      "checksum": "c4b54171ab7a3db66a786dfed6c99490e1e5ac2e2f13500d5e51a163db74ea92"
+    },
+    {
+      "filename": "20261114_17_web_travel_intelligence.sql",
+      "checksum": "47028a1d573dda3f6ef03e00b25c2d02b74b00cca8ea991292ea9192c75620b3"
+    },
+    {
+      "filename": "20261118_18_hotel_domain_foundation.sql",
+      "checksum": "553d0b6f23955cce8633b25447b4bb47d3c073e0194ac5b33367ea9009f09d19"
+    }
+  ],
+  "publicTables": 52,
+  "reviewRows": 0,
+  "modelCalls": 0
+}

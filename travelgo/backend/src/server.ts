@@ -15,7 +15,7 @@ const startServer = async () => {
   }
   if (!connected) throw new Error('PostgreSQL không khả dụng');
 
-  const server = app.listen(ENV.PORT, () => {
+  const server = app.listen(ENV.PORT, process.env.HOTEL_DOMAIN_ENABLED==='true'?'127.0.0.1':'0.0.0.0', () => {
     console.log(`=======================================================`);
     console.log(`🚀 HuGo Travel API Server đang chạy tại: http://localhost:${ENV.PORT}`);
     console.log(`📡 Health Check: http://localhost:${ENV.PORT}/api/health`);

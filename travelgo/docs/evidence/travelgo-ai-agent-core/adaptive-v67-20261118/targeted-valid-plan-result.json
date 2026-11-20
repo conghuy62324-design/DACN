@@ -1,0 +1,680 @@
+{
+  "id": "TARGET_VALID_TRANSPORT_RESUME",
+  "cohort": "TARGETED_NOT_HOLDOUT",
+  "status": "FAIL",
+  "errors": [
+    {
+      "check": "resume-itinerary",
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'itinerary'\n"
+    },
+    {
+      "check": "preserve-existing-plan",
+      "error": "setup must produce real Planner preview"
+    }
+  ],
+  "outputs": [
+    {
+      "phase": "SETUP",
+      "input": "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi ô tô. Lập lịch trình giúp tôi.",
+      "output": {
+        "status": "no_results",
+        "reply": "TravelGo hiện chưa có điểm tham quan hợp lệ cho điểm đến này nên mình chưa thể tạo lịch trình đầy đủ. Mình không tự thêm địa điểm; bạn vẫn có thể xem khách sạn hoặc nhà hàng đang có.",
+        "warningCode": "CATALOG_DATA_BLOCKED",
+        "languageFeedback": {
+          "id": "ec6c7ff4-b55c-4f93-b7d7-892029b32145",
+          "revision": 1
+        },
+        "dialogue": {
+          "deferredGoals": [],
+          "activeConstraints": {},
+          "softPreferences": {},
+          "mutationAuthority": false
+        },
+        "conversation": {
+          "id": "387ccbd1-f2e5-42b1-90bb-6498556b3b26",
+          "revision": 1,
+          "expiresAt": "2026-11-17T04:45:00.000Z",
+          "mode": "CORE_VERIFIED",
+          "persisted": false
+        },
+        "model": {
+          "invoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        },
+        "intent": {
+          "version": "NATURAL_CHAT_V3",
+          "authority": "SERVER_VERIFIED"
+        },
+        "languageStatus": "disabled",
+        "verifiedTravel": {
+          "departureCity": "Thành phố Hồ Chí Minh",
+          "destinationCity": "Đà Lạt",
+          "startDate": "2026-11-25",
+          "endDate": "2026-11-27",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      }
+    },
+    {
+      "phase": "SETUP",
+      "input": "Giá xe shuttle sân bay Đà Lạt tháng 02/2026?",
+      "output": {
+        "status": "completed",
+        "reply": "Nguồn ghi nhận 150.000 VND mỗi người; thời điểm 02/2026. Nguồn: https://source1.example.org/travel. Chưa xác nhận giá hiện tại hoặc tình trạng còn chỗ.\n\nSYNTHETIC: dữ liệu kiểm thử, không phải báo giá ngoài đời.",
+        "tool": "search_places",
+        "costIntelligence": {
+          "version": 1,
+          "criteria": {
+            "destinationIds": [
+              "destination:da-lat"
+            ],
+            "mode": "BUDGET",
+            "budgetScope": "GROUP",
+            "origin": "Thành phố Hồ Chí Minh",
+            "party": 2,
+            "budget": 5000000,
+            "query": {
+              "kind": "PRICE",
+              "referential": false,
+              "category": "TRANSPORT",
+              "pricedObject": "TRANSPORT_FARE",
+              "airport": true,
+              "requestedPeriod": "02/2026",
+              "requestedYear": 2026,
+              "hypothetical": false,
+              "tripRequest": false,
+              "subgoals": []
+            },
+            "category": "TRANSPORT",
+            "travelPeriod": "02/2026"
+          },
+          "destinations": [
+            {
+              "locationId": "destination:da-lat",
+              "name": "Đà Lạt",
+              "aggregate": {
+                "status": "SINGLE_OBSERVATION",
+                "samples": 1,
+                "independentSources": 0,
+                "min": null,
+                "max": null,
+                "medianMin": null,
+                "medianMax": null,
+                "missing": [],
+                "comparisons": [],
+                "periods": [
+                  "02/2026"
+                ]
+              },
+              "observations": [
+                {
+                  "sourceIndex": 0,
+                  "reported": {
+                    "schemaVersion": 2,
+                    "pricedObject": "TRANSPORT_FARE",
+                    "observationId": "faac461ce0ccc0a8d78a1bb7408a27b4",
+                    "category": "TRANSPORT",
+                    "costCategory": "TRANSPORT",
+                    "amount": 150000,
+                    "amountMin": 150000,
+                    "amountMax": 150000,
+                    "priceBound": "EXACT",
+                    "currency": "VND",
+                    "unit": "PER_PERSON",
+                    "included": [],
+                    "excluded": [],
+                    "inclusionStatus": "UNKNOWN",
+                    "unknownItems": [
+                      "INCLUDED_ITEMS",
+                      "EXCLUDED_ITEMS",
+                      "TRAVEL_PERIOD"
+                    ],
+                    "evidenceHash": "30369a422d694258eea4bb98973dfc3457458ed435023c1924f89677daec3804",
+                    "evidenceLocator": "body:block:0:clause:0",
+                    "valueKind": "REPORTED",
+                    "basis": "EXTERNAL_REPORTED_OBSERVATION",
+                    "promotion": false,
+                    "validityKind": "UNKNOWN",
+                    "validFrom": null,
+                    "validUntil": null
+                  },
+                  "normalized": {
+                    "kind": "REPORTED",
+                    "min": 150000,
+                    "max": 150000,
+                    "currency": "VND",
+                    "unit": "PER_PERSON",
+                    "formula": null,
+                    "inputs": {},
+                    "assumptions": [],
+                    "originalObservationId": "faac461ce0ccc0a8d78a1bb7408a27b4"
+                  },
+                  "days": null,
+                  "nights": null,
+                  "party": null,
+                  "period": "02/2026"
+                }
+              ]
+            }
+          ],
+          "sources": [
+            {
+              "title": "SYNTHETIC Đà Lạt observation",
+              "href": "https://source1.example.org/travel",
+              "license": "SYNTHETIC_PERMISSION",
+              "publishedAt": null,
+              "retrievedAt": "2026-11-17T04:30:00.000Z",
+              "reviewedAt": "2026-11-16T00:00:00.000Z",
+              "expiresAt": "2026-12-15T00:00:00.000Z",
+              "version": 2,
+              "synthetic": true
+            }
+          ],
+          "missing": [
+            "Phương tiện/chi phí liên tỉnh"
+          ],
+          "claims": [],
+          "question": null,
+          "executionAuthority": false,
+          "priceBasis": "EXTERNAL_HISTORICAL_REFERENCE_ONLY",
+          "allocations": [],
+          "budgetComparison": {
+            "status": "INSUFFICIENT_DATA",
+            "groupMin": null,
+            "groupMax": null,
+            "difference": null,
+            "sufficientCurrentBudget": false
+          },
+          "verification": {
+            "status": "HISTORICAL_ONLY",
+            "currentPriceConfirmed": false,
+            "requestedPeriod": "02/2026",
+            "observedPeriods": [
+              "02/2026"
+            ]
+          },
+          "preferenceLabels": []
+        },
+        "sourceInfo": {
+          "label": "Quan sát chi phí đã duyệt, tách khỏi catalog/Planner/Booking",
+          "retrievedAt": "2026-11-17T04:30:00.000Z",
+          "externalKnowledgeIntegrated": true
+        },
+        "evidenceAuthority": {
+          "facts": [
+            {
+              "factId": "cost.17cfef603b9fb99f",
+              "authority": "APPROVED_WEB_KNOWLEDGE",
+              "version": 2,
+              "demo": true,
+              "currentPriceConfirmed": false
+            }
+          ],
+          "currentRequest": "CURRENT_REQUEST",
+          "verifiedConversation": [
+            "departureCity",
+            "destinationCity",
+            "startDate",
+            "endDate",
+            "adults",
+            "totalBudget",
+            "transportation"
+          ],
+          "personalMemoryAllowed": false,
+          "bookingConfirmationAvailable": false
+        },
+        "languageFeedback": {
+          "id": "cb3fca55-dc3e-4b49-b14a-73e151a6ab04",
+          "revision": 2
+        },
+        "dialogue": {
+          "deferredGoals": [],
+          "activeConstraints": {},
+          "softPreferences": {},
+          "mutationAuthority": false
+        },
+        "conversation": {
+          "id": "387ccbd1-f2e5-42b1-90bb-6498556b3b26",
+          "revision": 2,
+          "expiresAt": "2026-11-17T04:45:00.000Z",
+          "mode": "CORE_VERIFIED",
+          "persisted": false
+        },
+        "model": {
+          "invoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        },
+        "intent": {
+          "version": "NATURAL_CHAT_V3",
+          "authority": "SERVER_VERIFIED"
+        },
+        "languageStatus": "disabled",
+        "verifiedTravel": {
+          "departureCity": "Thành phố Hồ Chí Minh",
+          "destinationCity": "Đà Lạt",
+          "startDate": "2026-11-25",
+          "endDate": "2026-11-27",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      }
+    },
+    {
+      "phase": "SETUP",
+      "input": "Tìm homestay ở Đà Lạt.",
+      "output": {
+        "status": "completed",
+        "reply": "SYNTHETIC65 Hotel 1: giá tham khảo 300.000 VND.\n\nSYNTHETIC65 Hotel 2: giá tham khảo 500.000 VND.\n\nĐơn vị giá và tình trạng còn chỗ chưa được xác minh; chưa thể kết luận chi phí thực tế hoặc giá trị thực tế.\n\nBạn muốn ưu tiên giá tham khảo, tiện ích bắt buộc hay tín hiệu từ nhận xét?",
+        "tool": "search_registered_hotels",
+        "result": {
+          "type": "registered_options",
+          "category": "hotel",
+          "source": "TRAVELGO_REGISTERED_CATALOG",
+          "filters": {
+            "city": "Đà Lạt",
+            "locationId": "destination:da-lat",
+            "accommodationType": "homestay"
+          },
+          "weights": {
+            "quality": 0.35,
+            "preference": 0.25,
+            "budget": 0.25,
+            "distance": 0.15
+          },
+          "ranking": "Existing deterministic RecommendationService; no new weights; budget cap/area/amenities/exclusions are hard filters, preferences soft.",
+          "items": [
+            {
+              "id": "65000000-0000-4000-8000-000000000001",
+              "name": "SYNTHETIC65 Hotel 1",
+              "category": "hotel",
+              "city": "Đà Lạt",
+              "province": "Đà Lạt",
+              "openingHours": {},
+              "heroImage": null,
+              "amenities": [
+                "Wi-Fi"
+              ],
+              "priceFrom": 300000,
+              "priceUnit": "CATALOG_FROM_PRICE_UNIT_UNVERIFIED",
+              "currency": "VND",
+              "rating": 0,
+              "reviewCount": 0,
+              "status": "APPROVED",
+              "businessStatus": "PLATFORM_OWNED",
+              "source": "TRAVELGO_REGISTERED_CATALOG",
+              "href": "/places/65000000-0000-4000-8000-000000000001",
+              "availability": "NOT_VERIFIED",
+              "capacity": "NOT_MANAGED_FOR_PLACES",
+              "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+              "bookingEligible": false,
+              "geography": {
+                "locationId": "destination:da-lat",
+                "provinceCode": "68",
+                "provinceName": "Lâm Đồng",
+                "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+              },
+              "catalogMetadata": {
+                "accommodationType": "homestay"
+              },
+              "approvedAt": null,
+              "isDemo": false,
+              "score": 0.794,
+              "scoreBreakdown": {
+                "qualityScore": 0.84,
+                "preferenceScore": 0.6,
+                "budgetScore": 0.8,
+                "distanceScore": 1
+              },
+              "reasons": [
+                "Đúng khu vực Đà Lạt"
+              ],
+              "matchedPreferences": [],
+              "reviewInsights": null
+            },
+            {
+              "id": "65000000-0000-4000-8000-000000000002",
+              "name": "SYNTHETIC65 Hotel 2",
+              "category": "hotel",
+              "city": "Đà Lạt",
+              "province": "Đà Lạt",
+              "openingHours": {},
+              "heroImage": null,
+              "amenities": [
+                "Wi-Fi"
+              ],
+              "priceFrom": 500000,
+              "priceUnit": "CATALOG_FROM_PRICE_UNIT_UNVERIFIED",
+              "currency": "VND",
+              "rating": 0,
+              "reviewCount": 0,
+              "status": "APPROVED",
+              "businessStatus": "PLATFORM_OWNED",
+              "source": "TRAVELGO_REGISTERED_CATALOG",
+              "href": "/places/65000000-0000-4000-8000-000000000002",
+              "availability": "NOT_VERIFIED",
+              "capacity": "NOT_MANAGED_FOR_PLACES",
+              "roomsMenu": "NO_SEPARATE_ROOM_OR_MENU_TABLE",
+              "bookingEligible": false,
+              "geography": {
+                "locationId": "destination:da-lat",
+                "provinceCode": "68",
+                "provinceName": "Lâm Đồng",
+                "version": "VN_ADMIN34_2025_CODES_REVIEWED_20261112"
+              },
+              "catalogMetadata": {
+                "accommodationType": "homestay"
+              },
+              "approvedAt": null,
+              "isDemo": false,
+              "score": 0.794,
+              "scoreBreakdown": {
+                "qualityScore": 0.84,
+                "preferenceScore": 0.6,
+                "budgetScore": 0.8,
+                "distanceScore": 1
+              },
+              "reasons": [
+                "Đúng khu vực Đà Lạt"
+              ],
+              "matchedPreferences": [],
+              "reviewInsights": null
+            }
+          ],
+          "warnings": [
+            "Giá từ catalog chưa xác minh đơn vị phòng/đêm hoặc món/phần. Ngày/khách không xác nhận còn phòng, bàn hay sức chứa.",
+            "Không có dữ liệu thực đơn đầy đủ; loại trừ từ khóa không là cam kết an toàn dị ứng."
+          ]
+        },
+        "sourceInfo": {
+          "label": "Dữ liệu TravelGo được phép hiển thị",
+          "retrievedAt": "2026-11-17T04:30:00.000Z",
+          "externalKnowledgeIntegrated": false
+        },
+        "advisory": {
+          "version": "ADVISORY_V51",
+          "goal": "SEARCH",
+          "options": [
+            {
+              "index": 0,
+              "id": "65000000-0000-4000-8000-000000000001",
+              "name": "SYNTHETIC65 Hotel 1",
+              "price": 300000,
+              "claims": [
+                {
+                  "kind": "UNKNOWN",
+                  "text": "Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét.",
+                  "factIds": []
+                }
+              ],
+              "fit": "UNKNOWN",
+              "reviewCount": 0,
+              "sourceHref": "/places/65000000-0000-4000-8000-000000000001"
+            },
+            {
+              "index": 1,
+              "id": "65000000-0000-4000-8000-000000000002",
+              "name": "SYNTHETIC65 Hotel 2",
+              "price": 500000,
+              "claims": [
+                {
+                  "kind": "UNKNOWN",
+                  "text": "Chưa có đủ bình luận công khai được cho phép phân tích để nêu ưu/nhược điểm; mình không tự tạo nhận xét.",
+                  "factIds": []
+                }
+              ],
+              "fit": "UNKNOWN",
+              "reviewCount": 0,
+              "sourceHref": "/places/65000000-0000-4000-8000-000000000002"
+            }
+          ],
+          "recommendationIndex": null,
+          "preferenceSource": "NONE",
+          "quality": [],
+          "tradeoffs": [
+            {
+              "kind": "CONDITION",
+              "text": "SYNTHETIC65 Hotel 1 có giá tham khảo catalog thấp nhất trong các lựa chọn có giá, thấp hơn SYNTHETIC65 Hotel 2. TravelGo chưa xác minh đơn vị giá nên chưa thể kết luận lựa chọn nào đáng tiền hơn hoặc tổng chi phí thấp hơn.",
+              "factIds": [
+                "price.0",
+                "price.1"
+              ]
+            }
+          ],
+          "warnings": [
+            "Đây là ý kiến khách hàng, không phải cam kết chất lượng hoặc tiện ích do cơ sở xác minh.",
+            "Giá được ghi từ TravelGo; đơn vị giá và tình trạng còn chỗ chưa được xác minh."
+          ],
+          "mutationAuthority": false,
+          "decisionProfile": {
+            "hard": {
+              "locationId": "destination:da-lat",
+              "tripBudget": 5000000,
+              "accommodationType": "homestay",
+              "excludedIds": []
+            },
+            "soft": [],
+            "flexible": [],
+            "unresolved": [],
+            "source": "NONE"
+          },
+          "decisionEvidence": {
+            "options": [
+              {
+                "index": 0,
+                "eligibility": "ELIGIBLE",
+                "hardReasons": [],
+                "criteria": []
+              },
+              {
+                "index": 1,
+                "eligibility": "ELIGIBLE",
+                "hardReasons": [],
+                "criteria": []
+              }
+            ],
+            "recommendationIndex": null,
+            "priceComparability": "REFERENCE_FIELD_ONLY",
+            "priority": [],
+            "uncertainty": [
+              "PRICE_UNIT_UNVERIFIED",
+              "AVAILABILITY_UNVERIFIED"
+            ],
+            "advisoryOnly": true
+          },
+          "question": "Bạn muốn ưu tiên giá tham khảo, tiện ích bắt buộc hay tín hiệu từ nhận xét?"
+        },
+        "evidenceAuthority": {
+          "facts": [
+            {
+              "factId": "option.0",
+              "authority": "CATALOG_DATA",
+              "demo": false,
+              "currentPriceConfirmed": false
+            },
+            {
+              "factId": "option.1",
+              "authority": "CATALOG_DATA",
+              "demo": false,
+              "currentPriceConfirmed": false
+            }
+          ],
+          "currentRequest": "CURRENT_REQUEST",
+          "verifiedConversation": [
+            "departureCity",
+            "destinationCity",
+            "startDate",
+            "endDate",
+            "adults",
+            "totalBudget",
+            "transportation"
+          ],
+          "personalMemoryAllowed": false,
+          "bookingConfirmationAvailable": false
+        },
+        "languageFeedback": {
+          "id": "59a9af36-0b32-4923-8124-0abd469abfe9",
+          "revision": 3
+        },
+        "dialogue": {
+          "currentGoal": "hotel",
+          "completedGoal": "hotel",
+          "deferredGoals": [],
+          "activeConstraints": {
+            "hotel": {}
+          },
+          "softPreferences": {},
+          "mutationAuthority": false
+        },
+        "conversation": {
+          "id": "387ccbd1-f2e5-42b1-90bb-6498556b3b26",
+          "revision": 3,
+          "expiresAt": "2026-11-17T04:45:00.000Z",
+          "mode": "CORE_VERIFIED",
+          "persisted": false
+        },
+        "model": {
+          "invoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        },
+        "intent": {
+          "version": "NATURAL_CHAT_V3",
+          "authority": "SERVER_VERIFIED"
+        },
+        "languageStatus": "disabled",
+        "verifiedTravel": {
+          "departureCity": "Thành phố Hồ Chí Minh",
+          "destinationCity": "Đà Lạt",
+          "startDate": "2026-11-25",
+          "endDate": "2026-11-27",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      }
+    },
+    {
+      "phase": "TEST",
+      "input": "Tiếp tục lập lịch trình đang làm.",
+      "output": {
+        "status": "needs_input",
+        "reply": "Mình chưa có bản dự tính còn hiệu lực để tiếp tục. Bạn muốn lập lịch từ thông tin chuyến đi đã xác nhận không?",
+        "languageFeedback": {
+          "id": "53e164d0-96c0-49b7-b5ca-4aa7a3d5e5fa",
+          "revision": 4
+        },
+        "dialogue": {
+          "currentGoal": "hotel",
+          "completedGoal": "hotel",
+          "deferredGoals": [],
+          "activeConstraints": {
+            "hotel": {}
+          },
+          "softPreferences": {},
+          "mutationAuthority": false
+        },
+        "conversation": {
+          "id": "387ccbd1-f2e5-42b1-90bb-6498556b3b26",
+          "revision": 4,
+          "expiresAt": "2026-11-17T04:45:00.000Z",
+          "mode": "CORE_VERIFIED",
+          "persisted": false
+        },
+        "model": {
+          "invoked": false,
+          "rawNlu": "NOT_EVALUATED"
+        },
+        "intent": {
+          "version": "NATURAL_CHAT_V3",
+          "authority": "SERVER_VERIFIED"
+        },
+        "languageStatus": "disabled",
+        "verifiedTravel": {
+          "departureCity": "Thành phố Hồ Chí Minh",
+          "destinationCity": "Đà Lạt",
+          "startDate": "2026-11-25",
+          "endDate": "2026-11-27",
+          "adults": 2,
+          "totalBudget": 5000000,
+          "transportation": "car"
+        }
+      }
+    }
+  ],
+  "proof": {
+    "departureCity": "Thành phố Hồ Chí Minh",
+    "destinationCity": "Đà Lạt",
+    "startDate": "2026-11-25",
+    "endDate": "2026-11-27",
+    "adults": 2,
+    "totalBudget": 5000000,
+    "transportation": "car"
+  },
+  "filters": {},
+  "calls": {
+    "knowledge": 3,
+    "catalog": 3,
+    "memory": 12,
+    "reviews": 2,
+    "planner": 1,
+    "mutations": 0,
+    "model": 0
+  },
+  "session": {
+    "needs": [],
+    "shown": [
+      {
+        "id": "65000000-0000-4000-8000-000000000001",
+        "category": "hotel"
+      },
+      {
+        "id": "65000000-0000-4000-8000-000000000002",
+        "category": "hotel"
+      }
+    ],
+    "filters": {
+      "hotel": {
+        "city": "Đà Lạt",
+        "locationId": "destination:da-lat",
+        "accommodationType": "homestay"
+      }
+    },
+    "dialogue": {
+      "frames": [],
+      "deferredGoals": [],
+      "constraints": {
+        "hotel": {}
+      },
+      "softPreferences": {},
+      "lists": {
+        "hotel": [
+          {
+            "id": "65000000-0000-4000-8000-000000000001",
+            "category": "hotel"
+          },
+          {
+            "id": "65000000-0000-4000-8000-000000000002",
+            "category": "hotel"
+          }
+        ]
+      },
+      "proposedChanges": {},
+      "rejectedOptions": [],
+      "currentGoal": {
+        "category": "hotel",
+        "locationId": "destination:da-lat"
+      },
+      "completedGoal": {
+        "category": "hotel",
+        "locationId": "destination:da-lat"
+      },
+      "lastAccommodationType": "homestay"
+    },
+    "pendingAdvisoryChoice": false,
+    "category": "hotel",
+    "pendingPreferenceQuestion": false
+  },
+  "modelCalls": 0
+}

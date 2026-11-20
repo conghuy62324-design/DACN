@@ -10,7 +10,7 @@ export function currentGeographicRoles(message:string,awaiting?:string):Geograph
  for(const hit of hits){const prefix=s.slice(0,hit.start),tail=s.slice(hit.end),last=[...prefix.matchAll(labels)].at(-1),local=prefix.slice(Math.max(prefix.lastIndexOf(';'),prefix.lastIndexOf(','))+1),search=/\b(?:tim|kiem|goi y|doi sang)\b/.test(local)||/\bco\b/.test(local)&&/\bkhong\b/.test(tail),comment=/\b(?:tung|hom truoc|hom qua|nhan xet|ke ve)\b/.test(s);
   let role:GeographicRoleEvidence['mentions'][number]['role']='REFERENCE',keep=false;
   const recent=last&&hit.start-(last.index!+last[0].length)<90&&!/\b(?:nhung|con|va)\b/.test(prefix.slice(last.index!+last[0].length));
-  if(/\b(?:khong|dung)\s+(?:di|den)\s*$/.test(prefix))role='REFERENCE';
+  if(/\b(?:(?:khong phai|chu khong phai)(?: di)?(?: tu)?|(?:khong|dung)\s+(?:di|den))\s*$/.test(prefix))role='REFERENCE';
   else if(search&&!comment&&!recent)role='SEARCH_AREA';
   else if(!blocked&&!comment){
    if(recent){role=/den|du lich/.test(last![1])?'destinationCity':'departureCity';keep=/\bgiu\s*$/.test(prefix.slice(0,last!.index));if(/\btu\s*$/.test(prefix)&&/^\s*sang\b/.test(tail))role='REFERENCE';}
@@ -23,7 +23,7 @@ export function currentGeographicRoles(message:string,awaiting?:string):Geograph
   if((role==='departureCity'||role==='destinationCity')&&!keep){if(result.patch[role]&&result.patch[role]!==hit.geo.catalogName)result.ambiguous=true;result.patch[role]=hit.geo.catalogName;}
  }
  // Alternatives are candidates even when only the first location has a travel verb.
- if(hits.length>1&&/\b(?:hoac|hay)\b/.test(s)&&!/\b(?:doi|chuyen).*\bsang\b/.test(s)){result.ambiguous=true;result.blocked=true;result.patch={};}
+ if(hits.some((hit,i)=>i>0&&/\b(?:hoac|hay)\b/.test(s.slice(hits[i-1].end,hit.start)))&&!/\b(?:doi|chuyen).*\bsang\b/.test(s)){result.ambiguous=true;result.blocked=true;result.patch={};}
  if(result.ambiguous)result.patch={};
  return result;
 }
@@ -73,3 +73,11 @@ export function ambiguousBudgetQuestion(message:string):string|undefined{
  const s=normalizeVietnamese(message).normalized;
  if(!moneyMentions(s).length&&/\b(?:nhich|tang|them|giam|bot|dieu chinh)\b/.test(s)&&/\b(?:muc tien|ngan sach|kinh phi)\b/.test(s))return 'Bạn muốn ngân sách cả nhóm mới là bao nhiêu? Mình vẫn giữ mức đã xác nhận cho đến khi bạn nói rõ.';
 }
+
+/** Recognition only: these modes never enter the car/motorbike execution enum. */
+export function unsupportedTransportEvidence(message:string):string|undefined{
+ const s=normalizeVietnamese(message).normalized,labels:[RegExp,string][]=[[/\bxe khach\b/g,'xe khách'],[/\bxe buyt\b/g,'xe buýt'],[/\bmay bay\b/g,'máy bay'],[/\btau hoa\b/g,'tàu hỏa'],[/\bphuong tien cong cong\b/g,'phương tiện công cộng']];
+ const found:string[]=[];for(const [pattern,label]of labels)for(const m of s.matchAll(pattern)){const prefix=s.slice(Math.max(0,m.index!-45),m.index);if(/\b(?:khong|chua|dung)\s+(?:di|dung|chon)(?: bang)?\s*$/.test(prefix))continue;if(!found.includes(label))found.push(label);}
+ return found.length?found.join(' / '):undefined;
+}
+export const unsupportedTransportAnswer=(mode:string)=>'Hiện bộ lập lịch chưa hỗ trợ tính chi phí và thời gian di chuyển bằng '+mode+'. Mình vẫn có thể tư vấn lưu trú, ăn uống và tham quan từ dữ liệu đang có. Bạn muốn tiếp tục tư vấn các khoản này hay chọn ô tô hoặc xe máy để lập bản dự tính?';

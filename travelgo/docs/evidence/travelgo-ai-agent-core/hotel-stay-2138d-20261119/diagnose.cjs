@@ -1,0 +1,1 @@
+module.exports=async({save})=>{try{const r=await fetch('http://127.0.0.1:5060/api/health');save('readiness-diagnosis',{status:r.status,body:await r.json()});}catch(e){save('readiness-diagnosis',{message:e.message,cause:{code:e.cause?.code,message:e.cause?.message,stack:e.cause?.stack?.split('\n').slice(0,5)}});throw e;}};

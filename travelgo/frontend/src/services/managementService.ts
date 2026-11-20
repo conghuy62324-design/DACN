@@ -25,8 +25,8 @@ export const ManagementService = {
     const response: any = await api.post(`/partner/${resource}/${id}/submit`);
     return response.data;
   },
-  async partnerBookings(businessId: string): Promise<PagedResult> {
-    const response: any = await api.get('/partner/bookings', { params: { businessId } });
+  async partnerBookings(businessId: string, filters: Record<string,unknown> = {}): Promise<PagedResult> {
+    const response: any = await api.get('/partner/bookings', { params: { businessId, ...filters } });
     return response.data;
   },
   async partnerBooking(id: string): Promise<any> {

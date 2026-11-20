@@ -1,0 +1,32 @@
+{
+  "task": "21.37",
+  "cap": 20,
+  "reserve": 10,
+  "samePrincipal": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+  "mobile": {
+    "login": 1,
+    "chats": 5,
+    "applicableManagement": 0,
+    "required": 6,
+    "minimumRemaining": 16
+  },
+  "desktopAdditional": {
+    "chats": 4,
+    "loginReused": true,
+    "required": 4
+  },
+  "both": 10,
+  "sessionLifecycle": {
+    "method": "DELETE",
+    "path": "/api/agent/core/sessions",
+    "countsTowardAgentTurnCap": false,
+    "proof": "agentCoreRoutes invokes service.revoke; revoke only clears owned in-memory store/states, no limits.consume or PG write; existing lifecycle recorder retained before dispatch, max4",
+    "noNewExemption": true
+  },
+  "authBootstrapAndPrivacyGets": "Metadata GETs do not consume existing Agent turn limiter; unplanned POST/management blocked",
+  "sourceHashes": {
+    "routes": "3229512d4930ecdb0ecadbbc37705177af0eb06742f1f040e46e5779ded40393",
+    "core": "0792e11fd3fa6d90c11c09c33acd84d5fcced1618dc4f866fa9907ed48fa4baa"
+  },
+  "noBackfill": true
+}

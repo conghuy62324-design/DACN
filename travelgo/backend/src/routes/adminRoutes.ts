@@ -2,9 +2,11 @@ import { Router } from 'express';
 import { AdminController } from '../controllers/adminController.js';
 import { AdminResourceController } from '../controllers/adminResourceController.js';
 import { authenticate, requireRoles } from '../middlewares/authMiddleware.js';
+import {managementHotels} from './hotelRoutes.js';
 
 const router = Router();
 router.use(authenticate, requireRoles('SUPER_ADMIN'));
+router.use('/hotels',managementHotels(true));
 router.get('/dashboard', AdminController.dashboard);
 router.get('/partners/pending', AdminController.pendingPartnerApplications);
 router.get('/partner-applications', AdminController.partnerApplications);

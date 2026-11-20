@@ -54,6 +54,8 @@ export interface Ticket {
 }
 
 export interface Booking {
+  hotelStay?: any;
+  idempotentReplay?: boolean;
   id: string;
   bookingCode: string;
   serviceType: 'tour' | 'hotel' | 'restaurant' | 'ticket';

@@ -1,0 +1,182 @@
+{
+  "at": "2026-11-19T02:59:37.388Z",
+  "status": "LOCKED_BEFORE_GETS",
+  "base": {
+    "locationId": "destination:da-lat",
+    "checkIn": "2028-02-28",
+    "checkOut": "2028-03-01",
+    "rooms": [
+      {
+        "adults": 2,
+        "childAges": []
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "typed_property_and_room_amenities",
+      "query": {
+        "propertyAmenities": [
+          "POOL"
+        ],
+        "roomAmenities": [
+          "WIFI"
+        ]
+      },
+      "expectedIds": [
+        "2138c000-0000-4000-8000-000000000020",
+        "2138c000-0000-4000-8000-000000000021"
+      ]
+    },
+    {
+      "name": "same_room_kitchen_and_lake_reject",
+      "query": {
+        "roomAmenities": [
+          "KITCHEN"
+        ],
+        "view": "LAKE"
+      },
+      "expectedIds": []
+    },
+    {
+      "name": "kitchen_city_budget",
+      "query": {
+        "roomAmenities": [
+          "KITCHEN"
+        ],
+        "view": "CITY",
+        "maxPrice": 1100000
+      },
+      "expectedIds": [
+        "2138c000-0000-4000-8000-000000000020"
+      ]
+    },
+    {
+      "name": "declared_accommodation_type",
+      "query": {
+        "accommodationType": "resort"
+      },
+      "expectedIds": [
+        "2138c000-0000-4000-8000-000000000021"
+      ]
+    },
+    {
+      "name": "verified_star_only",
+      "query": {
+        "stars": 4
+      },
+      "expectedIds": [
+        "2138c000-0000-4000-8000-000000000021"
+      ]
+    },
+    {
+      "name": "no_reviews_no_fabricated_rating",
+      "query": {
+        "minRating": 1
+      },
+      "expectedIds": []
+    },
+    {
+      "name": "bedroom_bathroom_min",
+      "query": {
+        "bedrooms": 1,
+        "bathrooms": 1
+      },
+      "expectedIds": [
+        "2138c000-0000-4000-8000-000000000020",
+        "2138c000-0000-4000-8000-000000000021"
+      ]
+    },
+    {
+      "name": "no_room_with_two_bedrooms",
+      "query": {
+        "bedrooms": 2
+      },
+      "expectedIds": []
+    },
+    {
+      "name": "breakfast_refundable_same_rate",
+      "query": {
+        "breakfast": true,
+        "refundable": true
+      },
+      "expectedIds": [
+        "2138c000-0000-4000-8000-000000000021"
+      ]
+    },
+    {
+      "name": "eligible_promotion_only",
+      "query": {
+        "promotion": true
+      },
+      "expectedIds": [
+        "2138c000-0000-4000-8000-000000000021"
+      ]
+    },
+    {
+      "name": "capacity_each_room_no_inference",
+      "query": {
+        "rooms": [
+          {
+            "adults": 4,
+            "childAges": []
+          }
+        ]
+      },
+      "expectedIds": []
+    },
+    {
+      "name": "same_type_two_room_occupancy",
+      "query": {
+        "rooms": [
+          {
+            "adults": 2,
+            "childAges": []
+          },
+          {
+            "adults": 1,
+            "childAges": [
+              5
+            ]
+          }
+        ]
+      },
+      "expectedIds": [
+        "2138c000-0000-4000-8000-000000000020",
+        "2138c000-0000-4000-8000-000000000021"
+      ]
+    },
+    {
+      "name": "price_lower_bound_stay_total",
+      "query": {
+        "minPrice": 1500000
+      },
+      "expectedIds": [
+        "2138c000-0000-4000-8000-000000000020",
+        "2138c000-0000-4000-8000-000000000021"
+      ]
+    },
+    {
+      "name": "price_desc_consistent_basis",
+      "query": {
+        "sort": "price_desc"
+      },
+      "expectedIds": [
+        "2138c000-0000-4000-8000-000000000021",
+        "2138c000-0000-4000-8000-000000000020"
+      ]
+    },
+    {
+      "name": "legacy_name_sort_alias",
+      "query": {
+        "sort": "name"
+      },
+      "expectedIds": [
+        "2138c000-0000-4000-8000-000000000021",
+        "2138c000-0000-4000-8000-000000000020"
+      ]
+    }
+  ],
+  "mutations": 0,
+  "modelCalls": 0
+}

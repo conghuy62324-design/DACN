@@ -1,0 +1,157 @@
+{
+  "task": "21.35",
+  "at": "2026-11-18T12:34:59.350Z",
+  "expiresAt": "2026-11-18T14:34:59.351Z",
+  "scope": "USER_AUTHORIZED_READ_ONLY_MODEL_OFF_BROWSER_ACCEPTANCE",
+  "principalId": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+  "principalHash": "856f41c9ad2ffc1e3f467eeb45f0069a943196101062d0e3ab3927bec64b95c5",
+  "cap": 20,
+  "reserve": 10,
+  "allEntriesMax": 10,
+  "loginMax": 1,
+  "chatMax": 9,
+  "postgresWrites": 0,
+  "persistentLearningWrites": 0,
+  "modelNativePosts": 0,
+  "api": 5057,
+  "frontend": 5177,
+  "hashes": {
+    "backend/src/services/agentCoreService.ts": "eec0edfff4623dc067101d587a812441603f1a35c7f71282aef5250a675c4fae",
+    "backend/dist/services/agentCoreService.js": "7926b77732df290231ab6b582c6a9b1acb6fd3cc553e520627cf035ae05d4833",
+    "backend/src/agent/conversationSemantics.ts": "9fd848dc4d4f85c6c0d17b30b842703dfa102d14017e30c9fdb6dc5a9543a25f",
+    "backend/dist/agent/conversationSemantics.js": "5dd4243f5c107159f8b4fe5576dc1486128768a90b95cc3f7e50abb69f5c7774",
+    "backend/src/agent/geographicEvidence.ts": "d207862185fe0b8d297914c9c3e852dad8f4afe5c87bba08e063fc3cbd0fd8a5",
+    "backend/dist/agent/geographicEvidence.js": "25b1c5a36c9cea6534bc4a60dd0bbb2db4f3c2935b1ff738f3096dce5794eece",
+    "backend/src/agent/travelConsultant.ts": "5c30e23ccf613f88160e0338c27a4826ee1ab9a0ee778f76a494d578169c6275",
+    "backend/dist/agent/travelConsultant.js": "2f2761db5f4e83dc65d1ce31bac46b011e442d2d34ca4ef1be0df04916eef86a",
+    "backend/src/agent/vietnameseConversation.ts": "b98d284a61e5eec96a471be4552937cc96e183548641091f513569796c0846a4",
+    "backend/dist/agent/vietnameseConversation.js": "a1c1d9ce4ce354ed08d4e4148a84f2868f659b08553a07523b4e1a18efca01c4",
+    "backend/src/agent/costIntelligence.ts": "dee1042e0a011a16c47467c509e990a843d19212217acb43d3898bc8e5d4fc01",
+    "backend/dist/agent/costIntelligence.js": "68e5944f3fc799c0c56afcff8eb77c5c848afa7d3026876bd8e855444c28bf40",
+    "backend/scripts/agent-staging-profile.cjs": "24cda4b54585ef35c4085cc98501d9f8f5ae0c1312e2c9e421107138296a8b1c",
+    "backend/scripts/model-off-isolation.cjs": "e2c89eb8b65e3de73e09fd494695f7a7519f5310613626bc4010d5a947979beb",
+    "docs/evidence/travelgo-ai-agent-core/knowledge-v64-resume-20261118/strict-recorder.cjs": "16212ea00028b17ee02581c662e9769da487b72f958d7688d9b5009ab81edb85",
+    "docs/evidence/travelgo-ai-agent-core/adaptive-v67-20261118/benchmark-lock.json": "98b6d45d254f8308d665ea67a4c7b0c742f1a7ea9d00fd5b42934d0778fcb41c"
+  },
+  "journeys": [
+    {
+      "id": "A",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "entriesIncludingSharedLogin": 5,
+      "cases": [
+        {
+          "id": "A1",
+          "message": "Tìm homestay ở Đà Lạt cho 2 người, ngân sách 5 triệu cả nhóm, cần Wi-Fi, ưu tiên sạch sẽ và yên tĩnh.",
+          "expected": {
+            "type": "registered_options",
+            "kind": "hotel",
+            "accommodationType": "homestay",
+            "wifi": true,
+            "adults": 2,
+            "budget": 5000000,
+            "qualityUnknown": true
+          }
+        },
+        {
+          "id": "A2",
+          "message": "Tìm chỗ rẻ hơn homestay thứ nhất, vẫn giữ Wi-Fi.",
+          "expected": {
+            "cheaper": true,
+            "keepProof": true,
+            "wifi": true,
+            "noInventedAlternatives": true
+          }
+        },
+        {
+          "id": "A3",
+          "message": "Ý tôi là 6 triệu cho cả hai người, không phải mỗi người.",
+          "expected": {
+            "budget": 6000000,
+            "adults": 2
+          }
+        },
+        {
+          "id": "A4",
+          "message": "Đừng dùng sở thích cũ, lần này tìm khách sạn ở Đà Lạt có Wi-Fi.",
+          "expected": {
+            "type": "registered_options",
+            "kind": "hotel",
+            "accommodationType": "hotel",
+            "wifi": true,
+            "budget": 6000000,
+            "adults": 2,
+            "memoryOff": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "entriesIncludingSharedLogin": 6,
+      "cases": [
+        {
+          "id": "B1",
+          "message": "Giá xe shuttle sân bay Đà Lạt tháng 02/2026 là bao nhiêu?",
+          "expected": {
+            "historical": true,
+            "amount": 150000,
+            "unit": "PER_PERSON",
+            "period": "02/2026",
+            "version": 2,
+            "noPlanner": true
+          }
+        },
+        {
+          "id": "B2",
+          "message": "Tìm homestay ở Đà Lạt; tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi ô tô.",
+          "expected": {
+            "type": "registered_options",
+            "kind": "hotel",
+            "accommodationType": "homestay",
+            "adults": 2,
+            "budget": 5000000,
+            "startDate": "2026-11-25",
+            "endDate": "2026-11-27",
+            "transportation": "car"
+          }
+        },
+        {
+          "id": "B3",
+          "message": "Lập lịch trình từ thông tin đã xác nhận.",
+          "expected": {
+            "type": "itinerary",
+            "adults": 2,
+            "budget": 5000000,
+            "previewOnly": true
+          }
+        },
+        {
+          "id": "B4",
+          "message": "Tìm nhà hàng ở Đà Lạt.",
+          "expected": {
+            "type": "registered_options",
+            "kind": "restaurant",
+            "keepProof": true
+          }
+        },
+        {
+          "id": "B5",
+          "message": "Tiếp tục lập lịch trình đang làm.",
+          "expected": {
+            "type": "itinerary",
+            "samePreview": true,
+            "keepProof": true,
+            "previewOnly": true
+          }
+        }
+      ]
+    }
+  ]
+}

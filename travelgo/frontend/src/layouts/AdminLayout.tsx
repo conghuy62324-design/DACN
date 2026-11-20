@@ -4,6 +4,7 @@ import { BookOpen, Building2, Compass, FileCheck2, LayoutDashboard, LogOut, MapP
 import { useAuth } from '../context/AuthContext';
 
 const primaryNavigation = [
+  { to: '/admin/hotels', label: 'Kiểm duyệt khách sạn', icon: Building2 },
   { to: '/admin', label: 'Tổng quan', icon: LayoutDashboard, end: true },
   { to: '/admin/partner-applications', label: 'Duyệt hồ sơ đối tác', icon: FileCheck2 },
   { to: '/admin/places', label: 'Duyệt địa điểm', icon: MapPinned },
@@ -28,7 +29,7 @@ export const AdminLayout: React.FC = () => {
           <button className="lg:hidden" onClick={() => setOpen(false)} aria-label="Đóng menu"><X /></button>
         </div>
         <nav className="p-4 space-y-1" aria-label="Điều hướng quản trị">
-          {primaryNavigation.map(({ to, label, icon: Icon, end }) => (
+          {primaryNavigation.filter(item=>!item.to.endsWith('/hotels')||import.meta.env.VITE_HOTEL_DOMAIN_ENABLED==='true').map(({ to, label, icon: Icon, end }) => (
             <NavLink key={to} to={to} end={end} onClick={() => setOpen(false)} className={({ isActive }) => `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition ${isActive ? 'bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-950/20' : 'text-slate-300 hover:bg-white/10 hover:text-white'}`}>
               <Icon className="h-4 w-4" />{label}
             </NavLink>

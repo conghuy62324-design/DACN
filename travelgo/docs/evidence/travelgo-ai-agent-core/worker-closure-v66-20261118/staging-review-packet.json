@@ -1,0 +1,136 @@
+{
+  "task": "21.33",
+  "status": "PREPARED_REQUIRES_FRESH_WRITE_RUNTIME_APPROVAL",
+  "database": {
+    "host": "127.0.0.1",
+    "port": 15452,
+    "name": "travelgo_staging_catalog_20261112",
+    "role": "catalog_runtime",
+    "sentinel": "travelgo-public-staging:catalog-20261112"
+  },
+  "actorId": "bae330d6-c3cb-462e-839e-cf07d73a64d2",
+  "actorClass": "REAL_OWNER_SUPER_ADMIN",
+  "principalId": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+  "principalHash": "856f41c9ad2ffc1e3f467eeb45f0069a943196101062d0e3ab3927bec64b95c5",
+  "sources": [
+    {
+      "id": "3317939d-ca1d-4509-98e4-c1573ea6ab69",
+      "domain": "worker-closure.invalid",
+      "synthetic": true,
+      "urls": [
+        "https://worker-closure.invalid/article",
+        "https://worker-closure.invalid/alias",
+        "https://worker-closure.invalid/failure"
+      ]
+    },
+    {
+      "id": "b5f0fcf9-14f9-4416-8f69-b152bb28d858",
+      "domain": "vi.wikivoyage.org",
+      "synthetic": false,
+      "urls": [
+        "https://vi.wikivoyage.org/wiki/%C4%90%C3%A0_L%E1%BA%A1t",
+        "https://vi.wikivoyage.org/wiki/Hu%E1%BA%BF"
+      ]
+    }
+  ],
+  "jobs": [
+    {
+      "id": "24312e35-13f0-4059-a685-f84b0072ffe6",
+      "sourceId": "3317939d-ca1d-4509-98e4-c1573ea6ab69",
+      "url": "https://worker-closure.invalid/article"
+    },
+    {
+      "id": "3e6de787-c954-4aa5-a9ed-15ebb48e4665",
+      "sourceId": "3317939d-ca1d-4509-98e4-c1573ea6ab69",
+      "url": "https://worker-closure.invalid/alias"
+    },
+    {
+      "id": "7a64138c-e16a-4d7a-9c22-94fabfb643bc",
+      "sourceId": "3317939d-ca1d-4509-98e4-c1573ea6ab69",
+      "url": "https://worker-closure.invalid/failure"
+    },
+    {
+      "id": "ffff4554-c7fa-4a77-b13d-50d930507576",
+      "sourceId": "b5f0fcf9-14f9-4416-8f69-b152bb28d858",
+      "url": "https://vi.wikivoyage.org/wiki/%C4%90%C3%A0_L%E1%BA%A1t"
+    },
+    {
+      "id": "6e62835d-3b25-4abf-966e-8d9199a09f8d",
+      "sourceId": "b5f0fcf9-14f9-4416-8f69-b152bb28d858",
+      "url": "https://vi.wikivoyage.org/wiki/Hu%E1%BA%BF"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "123be790-3c63-473b-80a7-264769e6c06b",
+      "sourceId": "3317939d-ca1d-4509-98e4-c1573ea6ab69",
+      "url": "https://worker-closure.invalid/article"
+    },
+    {
+      "id": "f1997ace-de4d-4969-9220-e7769e918b42",
+      "sourceId": "3317939d-ca1d-4509-98e4-c1573ea6ab69",
+      "url": "https://worker-closure.invalid/failure"
+    },
+    {
+      "id": "b77c629a-91ab-4100-8118-7a204185ef34",
+      "sourceId": "b5f0fcf9-14f9-4416-8f69-b152bb28d858",
+      "url": "https://vi.wikivoyage.org/wiki/%C4%90%C3%A0_L%E1%BA%A1t"
+    },
+    {
+      "id": "a82d78c7-1156-40c3-a668-c9cd0eaf3c6c",
+      "sourceId": "b5f0fcf9-14f9-4416-8f69-b152bb28d858",
+      "url": "https://vi.wikivoyage.org/wiki/Hu%E1%BA%BF"
+    }
+  ],
+  "allowedTables": [
+    "travel_web_sources",
+    "travel_web_jobs",
+    "travel_web_candidates"
+  ],
+  "maxSourceRows": 2,
+  "maxJobRows": 5,
+  "maxCandidateRows": 4,
+  "maxApiSourceDml": 4,
+  "maxSchemaProbeDml": 2,
+  "maxWorkerDmlIncludingCleanup": 80,
+  "maxCycles": 4,
+  "maxJobsPerCycle": 2,
+  "sourceLifecycle": "Existing authenticated saveSource: disabled UNKNOWN UNREVIEWED reviewerNULL v1; only real Owner manually approves through existing UI/moderateSource to v2; no forged actor or direct approval SQL",
+  "sourceReviewAudit": "Current production service stores actor/reason/date/version in history; source table has no reviewed_at and service does not write AuditLog",
+  "schemaProbe": "Exact SYN source ID only; transaction inserts disabled source using production create defaults, checks NULL-reviewer enable rejected 23514 inside savepoint, full ROLLBACK; no source approval",
+  "workerPlan": "Cycle1 SYN article+real article; cycle2 SYN alias duplicate+second real article; cycle3 predefined SYN failure; cycle4 only after actual job next_due to test predefined one-time SYN recovery. No real-source retry or forced due times.",
+  "realSourceConditional": "Only if fresh vi.wikivoyage permission verified; source creation/approval optional skipped if denied; no Wikitravel requests",
+  "retainedSource": {
+    "id": "3c427f07-c1e2-42eb-b380-42e46c28a2ca",
+    "operations": "READ_ONLY_METADATA_OR_DECLARED_DA_LAT_FETCH_ONLY_NO_WORKER_OR_ROW_WRITES"
+  },
+  "retainedKnowledge": {
+    "id": "467bd60b-27ab-42ad-a450-b3076a4215c3",
+    "version": 2,
+    "expiresAt": "2026-12-15T00:00:00.000Z"
+  },
+  "retainNewRows": false,
+  "factApproval": "NOT_AUTHORIZED; prepare exact review packet after real DRAFT only if sufficient evidence, otherwise cleanup all task rows",
+  "knowledgeWrites": 0,
+  "auditLogWrites": 0,
+  "ownerCredentials": "NOT_READ_OR_CHANGED; human login only; auth request body/token not inspected",
+  "runtime": "Scoped source-review API5057 + frontend5177 at most2h; activate current locked source; standalone bounded worker; restore owned protected READ ONLY. No global worker/model/search.",
+  "agentBudget": {
+    "maxEntries": 7,
+    "ownerLogin": 1,
+    "sourceCreate": 2,
+    "humanSourceApproval": 2,
+    "customerLogin": 1,
+    "hybridChat": 1,
+    "requiredInitialRemaining": 17,
+    "reserve": 10,
+    "cap": 20,
+    "freshScanOnce": true,
+    "samePrincipalConservativeLedger": true,
+    "testCustomerLogin": "Existing dedicated staging CUSTOMER A credentials used in RAM by established helper only; never printed/saved; no Owner/DPAPI credentials access",
+    "memorySessionLifecycle": "At most3 pre-reserved DELETE /api/agent/core/sessions; in-memory cleanup only, not chat/management/PostgreSQL write"
+  },
+  "windowMinutes": 120,
+  "cleanup": "Exact new candidates/jobs/sources only; verify ownership/reviewer/source versions and all40 fingerprints equal baseline; no retained knowledge deletion or expiry extension",
+  "cleanupOnStopOrExpiry": "On STOP/producer expiry, only exact task-owned cleanup DELETEs remain authorized; never source/API/worker production writes after scope expiry."
+}

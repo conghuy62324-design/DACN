@@ -1,3 +1,3 @@
 @echo off
-node "%~dp0open-secure-owner-login.cjs"
+node "%~dp0..\..\..\..\backend\scripts\open-staging-owner-login.cjs"
 if errorlevel 1 pause

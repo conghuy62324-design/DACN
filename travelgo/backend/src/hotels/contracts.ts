@@ -1,0 +1,206 @@
+/** Hotel foundation V1. Not mounted into the application until schema/publication/Booking gates pass. */
+export const HOTEL_SCHEMA_VERSION = 18;
+export const HOTEL_CONTRACT = 'HOTEL_ROOM_NIGHT_V1' as const;
+export const HOTEL_DOMAIN_ENABLED = () => process.env.HOTEL_DOMAIN_ENABLED === 'true';
+export const ROOM_AMENITIES = ['WIFI', 'TV', 'AIR_CONDITIONING', 'REFRIGERATOR', 'MINIBAR', 'BATHTUB', 'SHOWER', 'HAIR_DRYER', 'KITCHEN', 'BALCONY', 'WORK_DESK', 'PRIVATE_POOL', 'SAFE', 'TOWELS', 'ACCESSIBLE_BATHROOM'] as const;
+export const ROOM_VIEWS = ['SEA', 'MOUNTAIN', 'CITY', 'GARDEN', 'LAKE', 'POOL', 'NONE', 'UNKNOWN'] as const;
+export type RoomAmenity = typeof ROOM_AMENITIES[number];
+export type RoomView = typeof ROOM_VIEWS[number];
+export type CivilDate = string;
+export type Version = number;
+export type AddressInput = {
+    houseNumber?: string;
+    streetName?: string;
+    wardOrCommune?: string;
+    administrativeArea?: string;
+    provinceOrCity: string;
+    tourismDestination?: string;
+    latitude?: number | null;
+    longitude?: number | null;
+    coordinateStatus?: 'UNKNOWN' | 'PARTNER_PROVIDED';
+    source: string;
+};
+export type HotelAddress = {
+    houseNumber: string | null;
+    streetName: string | null;
+    wardOrCommune: string | null;
+    administrativeArea: string | null;
+    provinceCode: string;
+    provinceOrCity: string;
+    tourismDestinationId: string | null;
+    fullAddress: string;
+    normalizedAddress: string;
+    streetKey: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    coordinateStatus: 'UNKNOWN' | 'PARTNER_PROVIDED' | 'VERIFIED';
+    source: string;
+    updatedAt: string;
+};
+export type Bed = {
+    type: 'SINGLE' | 'DOUBLE' | 'QUEEN' | 'KING' | 'BUNK' | 'SOFA' | 'OTHER';
+    quantity: number;
+};
+export type RoomType = {
+    id: string;
+    placeId: string;
+    name: string;
+    description: string;
+    areaM2: number | null;
+    bedrooms: number | null;
+    bathrooms: number | null;
+    beds: Bed[];
+    extraBedAvailable: boolean | null;
+    maxOccupancy: number;
+    maxAdults: number;
+    maxChildren: number;
+    view: RoomView;
+    balcony: boolean | null;
+    hasWindow: boolean | null;
+    kitchen: boolean | null;
+    privateBathroom: boolean | null;
+    amenities: RoomAmenity[];
+    status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
+    version: Version;
+};
+export type ChildBand = {
+    minAge: number;
+    maxAge: number;
+    amountVndPerNight: number;
+};
+export type MandatoryFee = {
+    code: string;
+    amountVnd: number;
+    basis: 'PER_ROOM_NIGHT' | 'PER_ROOM_STAY' | 'PER_BOOKING';
+    included: boolean;
+};
+export type RatePlan = {
+    id: string;
+    roomTypeId: string;
+    placeId: string;
+    name: string;
+    currency: 'VND';
+    priceBasis: 'PER_ROOM_NIGHT';
+    baseAmountVnd: number;
+    validFrom: CivilDate;
+    validUntil: CivilDate;
+    minNights: number;
+    maxNights: number;
+    includedAdults: number;
+    extraAdultVndPerNight: number | null;
+    childPolicy: 'NOT_ALLOWED' | 'INCLUDED' | 'BANDS_REQUIRED' | 'UNKNOWN';
+    childBands: ChildBand[];
+    mealPlan: 'ROOM_ONLY' | 'BREAKFAST_INCLUDED';
+    cancellation: {
+        kind: 'FREE_UNTIL_CUTOFF' | 'NON_REFUNDABLE' | 'CONDITIONAL';
+        cutoffHours: number | null;
+        terms: string;
+    };
+    tax: {
+        mode: 'INCLUDED' | 'EXCLUDED' | 'UNKNOWN';
+        basisPoints: number | null;
+    };
+    fees: MandatoryFee[];
+    mandatoryFeesKnown: boolean;
+    status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
+    version: Version;
+};
+export type RateNight = {
+    ratePlanId: string;
+    stayDate: CivilDate;
+    amountVnd: number;
+    closed: boolean;
+    version: Version;
+};
+export type InventoryDay = {
+    roomTypeId: string;
+    stayDate: CivilDate;
+    sellableQuantity: number;
+    allocatedQuantity: number;
+    closed: boolean;
+    version: Version;
+};
+export type Promotion = {
+    id: string;
+    placeId: string;
+    roomTypeId: string | null;
+    ratePlanId: string | null;
+    name: string;
+    currency: 'VND';
+    kind: 'PERCENT_BPS' | 'FIXED_STAY';
+    value: number;
+    maxDiscountVnd: number | null;
+    bookingStartsAt: string;
+    bookingEndsAt: string;
+    stayFrom: CivilDate;
+    stayUntil: CivilDate;
+    minNights: number;
+    status: 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
+    version: Version;
+};
+export type StayRequest = {
+    checkIn: CivilDate;
+    checkOut: CivilDate;
+    rooms: {
+        adults: number;
+        childAges: number[];
+    }[];
+    promotionId?: string;
+};
+export type HotelAuthority = {
+    placeId: string;
+    businessId: string;
+    placeStatus: string;
+    businessStatus: string;
+    contentVersion: Version;
+    approvedContentVersion: Version | null;
+    commercialVersion: Version;
+    isDemo: boolean;
+};
+export type QuoteInput = {
+    authority: HotelAuthority;
+    room: RoomType;
+    rate: RatePlan;
+    nightly: RateNight[];
+    inventory: InventoryDay[];
+    promotions: Promotion[];
+    request: StayRequest;
+    asOf: string;
+};
+export type HotelQuote = {
+    contract: typeof HOTEL_CONTRACT;
+    currency: 'VND';
+    priceBasis: 'PER_ROOM_NIGHT';
+    binding: false;
+    placeId: string;
+    roomTypeId: string;
+    ratePlanId: string;
+    checkIn: CivilDate;
+    checkOut: CivilDate;
+    nights: number;
+    roomCount: number;
+    adults: number;
+    children: number;
+    nightly: {
+        stayDate: CivilDate;
+        basePerRoomVnd: number;
+        roomBaseVnd: number;
+        extraGuestsVnd: number;
+    }[];
+    baseVnd: number;
+    extraGuestsVnd: number;
+    extraAdultsVnd: number;
+    childrenVnd: number;
+    discountVnd: number;
+    taxVnd: number;
+    feesVnd: number;
+    totalVnd: number;
+    promotionId: string | null;
+    minimumAvailableRooms: number;
+    asOf: string;
+    expiresAt: string;
+    sourceVersion: string;
+    cancellation: RatePlan['cancellation'];
+    caveats: string[];
+    isDemo: boolean;
+};

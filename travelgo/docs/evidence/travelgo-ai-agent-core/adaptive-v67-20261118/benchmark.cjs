@@ -1,0 +1,51 @@
+// Reuses V6.5 production Core/catalog/history harness; fixtures below are isolated, never PostgreSQL.
+const fs=require('fs'),path=require('path'),assert=require('assert/strict'),crypto=require('crypto');
+const root=path.resolve(__dirname,'../../../..'),base=require('../hybrid-v65-20261117/benchmark.cjs');
+const {RegisteredCatalogService}=require(root+'/backend/dist/services/registeredCatalogService.js');
+const {TourPlannerService}=require(root+'/backend/dist/services/tourPlannerService.js');
+const {CustomerMemoryService}=require(root+'/backend/dist/services/customerMemoryService.js');
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const rows=[...base.rows,...[3,4,5,6].map(n=>({...base.rows[0],id:'67000000-0000-4000-8000-'+String(n).padStart(12,'0'),name:'SYNTHETIC67 '+n,category:n===3?'hotel':n===6?'attraction':'restaurant',priceFrom:n===3?400000:100000,catalogMetadata:n===3?{accommodationType:'hotel'}:{},cuisine:n===4?'local':undefined,duration:'60 phút'}))];
+const readProof=h=>Object.fromEntries(Object.entries(h.state?.proof?.values||{}).filter(([k])=>h.state.proof.states[k]==='SET'));
+async function evaluate(t){const h=base.harness({fixture:'transport'}),outputs=[];h.service.catalog=new RegisteredCatalogService(async()=>{h.calls.catalog++;return structuredClone(rows);},new Set(rows.map(p=>p.id)));
+ h.service.planner=async(...args)=>{h.calls.planner++;return TourPlannerService.generatePersonalizedItinerary(...args);};
+ if(t.expected.memoryFixture)CustomerMemoryService.forAdvice=async()=>{h.calls.memory++;return[{type:'quality',value:'value',status:'ACTIVE'}];};
+ if(t.expected.fixture==='expired')for(const k of h.source)k.expiresAt='2026-11-01T00:00:00Z';
+ try{for(const m of t.setup){const r=await h.send(m);outputs.push({phase:'SETUP',input:m,output:r});}
+ const before={proof:readProof(h),plan:structuredClone(h.state?.lastPlan),planner:h.calls.planner};let last;
+ for(const m of t.messages){last=await h.send(m);outputs.push({phase:'TEST',input:m,output:last});}
+ const proof=readProof(h),e=t.expected,errors=[],check=(name,f)=>{try{f();}catch(err){errors.push({check:name,error:err.message});}};
+ const filters=last?.result?.filters||last?.filters||{},items=last?.result?.items||[],obs=last?.costIntelligence?.destinations?.flatMap(d=>d.observations)||[];
+ check('model-off',()=>assert.equal(h.calls.model,0));check('no-mutation',()=>assert.equal(h.calls.mutations,0));check('no-internal-labels',()=>assert(!/\b(?:GROUP_VND_V1|CATALOG_REFERENCE|CURRENT_TRIP|USER_PROVIDED|priceFrom)\b|\b[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\b/i.test(last.reply)));
+ if(e.clarify)check('specific-clarification',()=>{assert.equal(last.status,'needs_input');assert(/\?|bạn (?:ghi|cho|nói|xác nhận|kiểm tra)|giúp mình/i.test(last.reply));});
+ if(e.preserve)check('preserve-verified-context',()=>assert.deepEqual(proof,before.proof));
+ for(const [key,expectKey]of[['totalBudget','budget'],['adults','adults'],['destinationCity','destination'],['departureCity','departure']])if(e[expectKey]!==undefined)check('verified-'+key,()=>assert.equal(key.endsWith('City')?require(root+'/backend/dist/geography/vietnam.js').resolveLocation(proof[key])?.id:proof[key],key.endsWith('City')?require(root+'/backend/dist/geography/vietnam.js').resolveLocation(e[expectKey])?.id:e[expectKey]));
+ if(e.category)check('catalog-goal',()=>{assert.equal(last.result?.type,'registered_options');assert(items.length>0,'eligible options must be presented');assert(items.every(p=>p.category===e.category));});
+ if(e.accommodationType)check('accommodation-type',()=>assert.equal(filters.accommodationType,e.accommodationType));
+ if(e.amenity)check('retained-amenity',()=>assert(filters.amenities?.includes(e.amenity)));
+ if(e.notAmenity)check('negative-amenity',()=>assert(!filters.amenities?.includes(e.notAmenity)));
+ if(e.deferred)check('deferred-goal',()=>assert(h.state.consultant?.dialogue?.deferredGoals.some(g=>g.category===e.deferred)));
+ if(e.memoryOff)check('memory-optout',()=>assert.equal(h.state.consultant?.useSavedPreferences,false));
+ if(e.noPlanner||e.noExtraPlanner)check('no-unrequested-planner',()=>assert.equal(h.calls.planner,before.planner));
+ if(e.proposalCleared)check('discard-wrong-proposal',()=>assert.equal(h.state.natural?.proposal,undefined));
+ if(e.maxPrice!==undefined)check('cheaper-options',()=>{assert.equal(filters.maxPriceFrom,e.maxPrice);assert(items.every(p=>p.priceFrom<=e.maxPrice));});
+ if(e.notId)check('exclude-referenced-option',()=>assert(!items.some(p=>p.id===rows[e.notId-1].id)));
+ if(e.qualityUnknown)check('quality-grounding',()=>assert(/chưa|không đủ|không có/.test(last.reply)&&/yên tĩnh|vệ sinh|đánh giá/.test(last.reply)));
+ if(e.qualityCurrent)check('current-quality-over-memory',()=>{const q=h.state.consultant?.qualityOverride;assert(q?.preferred.includes('quiet')&&q?.preferred.includes('clean'));});
+ if(e.landmark)check('distance-not-invented',()=>assert(/địa điểm|mốc/.test(last.reply)));
+ if(e.sessionMapping)check('session-only-learning',()=>{assert(h.state.language.session.some(m=>m.normalizedExpression==='zelvoro'&&m.scope==='SESSION'));assert(last.languageUnderstanding?.evidence.length);});
+ if(e.notVerifiedAmount)check('user-price-not-approved',()=>assert(!obs.some(o=>o.reported.amount===e.notVerifiedAmount)));
+ if(e.historical)check('historical-warning',()=>assert(/02\/2026|lịch sử|chưa.*hiện/.test(last.reply)));
+ if(e.observations!==undefined)check('source-expiry',()=>assert.equal(obs.length,e.observations));
+ if(e.amount)check('grounded-cost',()=>{assert.equal(obs.length,1);assert.equal(obs[0].reported.amount,e.amount);assert.equal(obs[0].reported.unit,e.unit);assert.equal(obs[0].period,e.period);assert(last.reply.includes('https://source1.example.org/travel'));});
+ if(e.locationClarification)check('typo-clarification',()=>{assert.equal(last.status,'needs_input');assert(/Đà Lạt/.test(last.reply));});
+ if(e.itinerary)check('resume-itinerary',()=>{assert.equal(last.result?.type,'itinerary');assert(!last.confirmation);});
+ if(e.samePlan||e.planPreserved)check('preserve-existing-plan',()=>{assert(before.plan,'setup must produce real Planner preview');assert.deepEqual(h.state.lastPlan,before.plan);});
+ if(e.onePlanner)check('no-planner-recomputation',()=>assert.equal(h.calls.planner,1));
+ if(e.confirmationRequired)check('save-explicit-confirmation',()=>assert(last.confirmation||last.status==='needs_input'));
+ if(e.noServices)check('selective-retrieval',()=>assert.equal(h.calls.knowledge+h.calls.catalog+h.calls.memory+h.calls.reviews,0));
+ if(e.simple)check('concise-response',()=>assert(last.reply.length<500));
+ return{id:t.id,cohort:t.cohort,status:errors.length?'FAIL':'PASS',errors,outputs,proof,filters,calls:h.calls,session:structuredClone(h.state?.consultant),modelCalls:0};
+ }catch(err){return{id:t.id,cohort:t.cohort,status:'FAIL',errors:[{check:'execution',error:err.stack}],outputs,calls:h.calls};}finally{h.dispose();}}
+async function run(stage,cohort){const lockBytes=fs.readFileSync(__dirname+'/benchmark-lock.json');assert.equal(sha(lockBytes),fs.readFileSync(__dirname+'/benchmark-lock.sha256','utf8').trim());const lock=JSON.parse(lockBytes),results=[];for(const t of lock.cases.filter(c=>!cohort||c.cohort===cohort))results.push(await evaluate(t));const out={task:'21.35',stage,at:new Date().toISOString(),tier:'OFFLINE_SYNTHETIC',lockSha256:sha(lockBytes),passed:results.filter(r=>r.status==='PASS').length,total:results.length,results,postgres:0,model:0,productionAccuracy:'NOT_MEASURED'};fs.writeFileSync(__dirname+'/benchmark-'+stage+(cohort?'-'+cohort:'')+'.json',JSON.stringify(out,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify({stage,passed:out.passed,total:out.total,failures:results.filter(r=>r.status==='FAIL').map(r=>({id:r.id,checks:r.errors.map(e=>e.check+': '+e.error.slice(0,160))}))}));}
+module.exports={evaluate,rows,run};if(require.main===module)run(process.argv[2],process.argv[3]).catch(e=>{console.error(e.stack);process.exitCode=1;});

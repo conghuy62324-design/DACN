@@ -1,0 +1,72 @@
+{
+  "task": "21.34",
+  "actorId": "bae330d6-c3cb-462e-839e-cf07d73a64d2",
+  "principalId": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+  "principalHash": "856f41c9ad2ffc1e3f467eeb45f0069a943196101062d0e3ab3927bec64b95c5",
+  "database": {
+    "host": "127.0.0.1",
+    "port": 15452,
+    "name": "travelgo_staging_catalog_20261112",
+    "role": "catalog_runtime",
+    "sentinel": "travelgo-public-staging:catalog-20261112"
+  },
+  "allowedTables": [
+    "travel_web_sources",
+    "travel_web_jobs",
+    "travel_web_candidates"
+  ],
+  "retainRows": false,
+  "factApproval": false,
+  "windowMinutes": 120,
+  "cleanup": "Exact task-owned rows only; cleanup on STOP/expiry; preserve Owner/retained KB/catalog; restore protected READONLY, keep pre-existing frontend running",
+  "phase": "REAL",
+  "sources": [
+    {
+      "id": "e8c6bf16-dd01-471f-901c-b86411a768d1",
+      "domain": "vi.wikivoyage.org",
+      "synthetic": false,
+      "urls": [
+        "https://vi.wikivoyage.org/wiki/%C4%90%C3%A0_L%E1%BA%A1t",
+        "https://vi.wikivoyage.org/wiki/Hu%E1%BA%BF"
+      ]
+    }
+  ],
+  "jobs": [
+    {
+      "id": "589266d6-67c5-466a-b295-3d3767e9947e",
+      "sourceId": "e8c6bf16-dd01-471f-901c-b86411a768d1",
+      "url": "https://vi.wikivoyage.org/wiki/%C4%90%C3%A0_L%E1%BA%A1t"
+    },
+    {
+      "id": "3ef452fc-ea36-423c-9336-f3372e50bdc6",
+      "sourceId": "e8c6bf16-dd01-471f-901c-b86411a768d1",
+      "url": "https://vi.wikivoyage.org/wiki/Hu%E1%BA%BF"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "f1b07ff3-2c98-4000-8394-043e2c0fa670",
+      "sourceId": "e8c6bf16-dd01-471f-901c-b86411a768d1",
+      "url": "https://vi.wikivoyage.org/wiki/%C4%90%C3%A0_L%E1%BA%A1t"
+    },
+    {
+      "id": "8d14124a-b8cd-4451-b1d0-68f8f8c57307",
+      "sourceId": "e8c6bf16-dd01-471f-901c-b86411a768d1",
+      "url": "https://vi.wikivoyage.org/wiki/Hu%E1%BA%BF"
+    }
+  ],
+  "maxWorkerDmlIncludingCleanup": 40,
+  "maxCycles": 2,
+  "maxJobsPerCycle": 2,
+  "apiSourceDml": 2,
+  "revocationAllowed": false,
+  "conditional": "Only after fresh permission and same Owner session verification; remaining derived >=12 before2entry complete source journey. No quota rescan/polling to recover; otherwise BLOCKED_QUOTA.",
+  "agentBudget": {
+    "additionalEntries": 2,
+    "sourceCreate": 1,
+    "humanApprove": 1,
+    "requiredDerivedRemaining": 12,
+    "reserve": 10
+  },
+  "approvedKnowledgeWrites": 0
+}

@@ -1,0 +1,70 @@
+{
+  "task": "21.34",
+  "actorId": "bae330d6-c3cb-462e-839e-cf07d73a64d2",
+  "principalId": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+  "principalHash": "856f41c9ad2ffc1e3f467eeb45f0069a943196101062d0e3ab3927bec64b95c5",
+  "database": {
+    "host": "127.0.0.1",
+    "port": 15452,
+    "name": "travelgo_staging_catalog_20261112",
+    "role": "catalog_runtime",
+    "sentinel": "travelgo-public-staging:catalog-20261112"
+  },
+  "allowedTables": [
+    "travel_web_sources",
+    "travel_web_jobs",
+    "travel_web_candidates"
+  ],
+  "retainRows": false,
+  "factApproval": false,
+  "windowMinutes": 120,
+  "cleanup": "Exact task-owned rows only; cleanup on STOP/expiry; preserve Owner/retained KB/catalog; restore protected READONLY, keep pre-existing frontend running",
+  "status": "PREPARED_REQUIRES_FRESH_APPROVAL",
+  "sources": [
+    {
+      "id": "2d92c623-d7c2-467e-8042-abf6ab5390ad",
+      "domain": "worker-final.invalid",
+      "synthetic": true,
+      "urls": [
+        "https://worker-final.invalid/article",
+        "https://worker-final.invalid/alias",
+        "https://worker-final.invalid/failure"
+      ]
+    }
+  ],
+  "synthetic": {
+    "plan": "synthetic-plan.json",
+    "rows": {
+      "source": 1,
+      "jobs": 3,
+      "candidates": 2
+    },
+    "maxWorkerDml": 57,
+    "apiSourceDml": 3,
+    "cycles": 4,
+    "entries": 4,
+    "initialRequired": 14
+  },
+  "realConditional": {
+    "authorization": "NOT_GRANTED_IN_THIS_PACKET",
+    "plan": "real-plan.json",
+    "requires": "Separate fresh real-source write authorization after permission metadata and derived quota gate"
+  },
+  "allAuthEntriesMax": 5,
+  "newAccounts": 0,
+  "ownerCredentialsChanged": false,
+  "sourceHumanDecisionsOnly": true,
+  "knowledgeAuditWrites": 0,
+  "retention": "NONE; separate exact authorization required for any fact approval/retention",
+  "runtime": "Owned API5057 scoped profile <=2h, current frontend5177 reuse via existing DPAPI launcher; no second login tool, no worker daemon, Qwen/searchOFF",
+  "scopeExtension": {
+    "previousRun": "worker-final-v66-20261118",
+    "previousEntries": 1,
+    "newEntriesMax": 4,
+    "wholeTaskEntriesMax": 5,
+    "previousWorkerCleanupDml": 3,
+    "newWorkerDmlMax": 57,
+    "wholeTaskWorkerDmlMax": 60,
+    "originalRuntimeDeadline": "2026-11-18T11:03:46.713Z"
+  }
+}

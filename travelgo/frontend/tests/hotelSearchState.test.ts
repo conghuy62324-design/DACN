@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {readSearch,searchParams,searchDefaults,stayError,detailHref} from '../src/utils/hotelSearchState.ts';
+const s={...searchDefaults(),locationId:'destination:da-lat',checkIn:'2028-02-28',checkOut:'2028-03-01',rooms:[{adults:2,childAges:[5]},{adults:1,childAges:[12]}],view:'LAKE',page:'2'};
+assert.deepEqual(readSearch('?'+searchParams(s)),s);assert.equal(stayError(s),'');
+assert.match(stayError({...s,rooms:[{adults:2,childAges:[null]}]}),/tuổi/);
+assert.match(stayError({...s,checkIn:'2020-01-01'}),/quá khứ/);
+assert.match(stayError({...s,checkOut:s.checkIn}),/sau ngày/);
+assert.match(stayError({...s,checkOut:''}),/đủ ngày/);
+assert.match(stayError({...s,rooms:[]}),/phòng/);
+assert.equal(searchParams({...s,token:'secret',customerId:'private'}).has('token'),false);
+assert.equal(searchParams({...s,token:'secret',customerId:'private'}).has('customerId'),false);
+assert.equal(readSearch('?city=Đà+Lạt&search=thong+xanh').locationId,'Đà Lạt');
+assert.equal(readSearch('?locationId=all').locationId,'');
+const detail=new URL(detailHref('2138c000-0000-4000-8000-000000000021',{...s,promotionId:'2138c000-0000-4000-8000-000000000130'}),'http://local');assert.deepEqual(JSON.parse(detail.searchParams.get('rooms')!),s.rooms);assert(detail.searchParams.get('promotionId'));
+console.log(JSON.stringify({status:'OFFLINE_FRONTEND_SEARCH_STATE_PASS',assertions:13,scope:'URL privacy, per-room ages, date guards and legacy links; no browser/DB/model'}));

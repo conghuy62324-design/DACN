@@ -1,0 +1,722 @@
+{
+  "task": "21.36",
+  "at": "2026-11-18T12:56:04.750Z",
+  "productionEditsYet": false,
+  "holdoutPolicy": "Baseline counts only; holdout diagnostics opened only after final source freeze.",
+  "inputsExpectedImmutable": true,
+  "global": {
+    "model": 0,
+    "postgres": 0,
+    "mutations": 0
+  },
+  "cases": [
+    {
+      "id": "D01",
+      "kind": "candidate",
+      "cohort": "DEVELOPMENT",
+      "setup": [
+        "Tìm homestay ở Đà Lạt dưới 800k có Wi-Fi."
+      ],
+      "messages": [
+        "Lập lịch trình cho 2 người, ngân sách 6 triệu cả nhóm."
+      ],
+      "expected": {
+        "candidate": "Đà Lạt",
+        "budget": 6000000,
+        "adults": 2,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D02",
+      "kind": "candidate-confirm",
+      "cohort": "DEVELOPMENT",
+      "setup": [
+        "Tìm homestay ở Đà Lạt dưới 800k có Wi-Fi.",
+        "Lập lịch trình cho 2 người, ngân sách 6 triệu cả nhóm."
+      ],
+      "messages": [
+        "Đúng rồi."
+      ],
+      "expected": {
+        "destination": "Đà Lạt",
+        "budget": 6000000,
+        "adults": 2,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D03",
+      "kind": "verified",
+      "cohort": "DEVELOPMENT",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi ô tô."
+      ],
+      "messages": [
+        "Lập lịch trình từ thông tin đã xác nhận."
+      ],
+      "expected": {
+        "itinerary": true,
+        "destination": "Đà Lạt",
+        "plannerDelta": 1
+      }
+    },
+    {
+      "id": "D04",
+      "kind": "competing",
+      "cohort": "DEVELOPMENT",
+      "setup": [],
+      "messages": [
+        "Tìm homestay ở Đà Lạt hoặc Nha Trang.",
+        "Lập chuyến đi cho 2 người, ngân sách 6 triệu cả nhóm."
+      ],
+      "expected": {
+        "noDestination": true,
+        "clarify": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D05",
+      "kind": "hypothetical-candidate",
+      "cohort": "DEVELOPMENT",
+      "setup": [
+        "Tìm homestay ở Đà Lạt dưới 800k có Wi-Fi.",
+        "Nếu đi Nha Trang thì sao?"
+      ],
+      "messages": [
+        "Lập lịch trình cho 2 người, ngân sách 6 triệu cả nhóm."
+      ],
+      "expected": {
+        "candidate": "Đà Lạt",
+        "budget": 6000000,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D06",
+      "kind": "negated-candidate",
+      "cohort": "DEVELOPMENT",
+      "setup": [
+        "Tìm homestay ở Đà Lạt dưới 800k có Wi-Fi."
+      ],
+      "messages": [
+        "Không lập chuyến Đà Lạt, tôi chưa chọn điểm đến."
+      ],
+      "expected": {
+        "noDestination": true,
+        "clarify": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D07",
+      "kind": "complex",
+      "cohort": "DEVELOPMENT",
+      "setup": [],
+      "messages": [
+        "Muốn đi Đà Lạt nghỉ ngơi, không thích lịch trình chạy nhiều, tìm homestay có Wi-Fi dưới 800k."
+      ],
+      "expected": {
+        "options": "hotel",
+        "type": "homestay",
+        "wifi": true,
+        "cap": 800000,
+        "pace": "relaxed",
+        "qualityUnknown": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D08",
+      "kind": "bus",
+      "cohort": "DEVELOPMENT",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi ô tô."
+      ],
+      "messages": [
+        "Lập lịch trình nhưng đi xe khách."
+      ],
+      "expected": {
+        "unsupported": "xe khách",
+        "preserve": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D09",
+      "kind": "plane",
+      "cohort": "DEVELOPMENT",
+      "setup": [],
+      "messages": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi máy bay. Lập lịch trình giúp tôi."
+      ],
+      "expected": {
+        "unsupported": "máy bay",
+        "budget": 5000000,
+        "adults": 2,
+        "start": "2026-11-25",
+        "noPlanner": true,
+        "noTransport": true
+      }
+    },
+    {
+      "id": "D10",
+      "kind": "train",
+      "cohort": "DEVELOPMENT",
+      "setup": [],
+      "messages": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi tàu hỏa. Lập lịch trình giúp tôi."
+      ],
+      "expected": {
+        "unsupported": "tàu hỏa",
+        "budget": 5000000,
+        "adults": 2,
+        "noPlanner": true,
+        "noTransport": true
+      }
+    },
+    {
+      "id": "D11",
+      "kind": "negated-mode",
+      "cohort": "DEVELOPMENT",
+      "setup": [],
+      "messages": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, không đi xe khách, đi ô tô. Lập lịch trình giúp tôi."
+      ],
+      "expected": {
+        "itinerary": true,
+        "transport": "car",
+        "plannerDelta": 1
+      }
+    },
+    {
+      "id": "D12",
+      "kind": "supported-after-bus",
+      "cohort": "DEVELOPMENT",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi xe khách. Lập lịch trình giúp tôi."
+      ],
+      "messages": [
+        "Tôi chọn đi ô tô, lập lịch trình nhé."
+      ],
+      "expected": {
+        "itinerary": true,
+        "transport": "car",
+        "plannerDelta": 1
+      }
+    },
+    {
+      "id": "D13",
+      "kind": "unsupported-preserve-preview",
+      "cohort": "DEVELOPMENT",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi ô tô. Lập lịch trình giúp tôi."
+      ],
+      "messages": [
+        "Đổi lịch sang đi máy bay."
+      ],
+      "expected": {
+        "unsupported": "máy bay",
+        "preserve": true,
+        "planPreserved": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D14",
+      "kind": "budget-whatif",
+      "cohort": "DEVELOPMENT",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi ô tô. Lập lịch trình giúp tôi."
+      ],
+      "messages": [
+        "Nếu tăng ngân sách thêm 1 triệu thì sao?"
+      ],
+      "expected": {
+        "hypothetical": true,
+        "preserve": true,
+        "planPreserved": true,
+        "budget": 5000000,
+        "scenarioBudget": 6000000,
+        "plannerDelta": 1
+      }
+    },
+    {
+      "id": "D15",
+      "kind": "destination-comparison",
+      "cohort": "DEVELOPMENT",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi ô tô."
+      ],
+      "messages": [
+        "Đà Lạt với Nha Trang thì đi đâu hợp ngân sách 6 triệu hơn?"
+      ],
+      "expected": {
+        "comparison": true,
+        "preserve": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D16",
+      "kind": "no-results",
+      "cohort": "DEVELOPMENT",
+      "setup": [],
+      "messages": [
+        "Tìm homestay ở Đà Lạt dưới 200k có Wi-Fi."
+      ],
+      "expected": {
+        "empty": true,
+        "wifi": true,
+        "cap": 200000,
+        "type": "homestay",
+        "relaxation": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D17",
+      "kind": "decision",
+      "cohort": "DEVELOPMENT",
+      "setup": [
+        "Tìm khách sạn ở Đà Lạt."
+      ],
+      "messages": [
+        "So sánh hai lựa chọn đầu, ưu tiên yên tĩnh và giá tham khảo."
+      ],
+      "expected": {
+        "decision": true,
+        "qualityUnknown": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D18",
+      "kind": "overbudget",
+      "cohort": "DEVELOPMENT",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 1 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi ô tô. Lập lịch trình giúp tôi."
+      ],
+      "messages": [
+        "Ngân sách không đủ thì khoản nào lớn nhất và nên giảm ở đâu?"
+      ],
+      "expected": {
+        "budgetAdvice": true,
+        "preserve": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D19",
+      "kind": "historical-authority",
+      "cohort": "DEVELOPMENT",
+      "setup": [],
+      "messages": [
+        "Giá xe shuttle sân bay Đà Lạt tháng 02/2026 là bao nhiêu?",
+        "Khoản đó tính cho một người hay cả nhóm?"
+      ],
+      "expected": {
+        "historical": true,
+        "amount": 150000,
+        "unit": "PER_PERSON",
+        "period": "02/2026",
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D20",
+      "kind": "comparator",
+      "cohort": "DEVELOPMENT",
+      "setup": [],
+      "messages": [],
+      "expected": {
+        "comparator": true
+      }
+    },
+    {
+      "id": "H01",
+      "kind": "candidate-rephrased",
+      "cohort": "HOLDOUT",
+      "setup": [
+        "Kiếm homestay tại Huế có Wi-Fi."
+      ],
+      "messages": [
+        "Lên kế hoạch cho 3 người với 7 triệu cho cả nhóm."
+      ],
+      "expected": {
+        "candidate": "Huế",
+        "budget": 7000000,
+        "adults": 3,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "H02",
+      "kind": "bus-rephrased",
+      "cohort": "HOLDOUT",
+      "setup": [],
+      "messages": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi xe buýt. Lên lịch trình nhé."
+      ],
+      "expected": {
+        "unsupported": "xe buýt",
+        "budget": 5000000,
+        "noTransport": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "H03",
+      "kind": "unknown-public",
+      "cohort": "HOLDOUT",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi ô tô."
+      ],
+      "messages": [
+        "Lên lịch bằng phương tiện công cộng."
+      ],
+      "expected": {
+        "unsupported": "phương tiện công cộng",
+        "preserve": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "H04",
+      "kind": "budget-only",
+      "cohort": "HOLDOUT",
+      "setup": [],
+      "messages": [
+        "Đi Đà Lạt 6 triệu cho 2 người có ổn không?"
+      ],
+      "expected": {
+        "budgetOnly": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "H05",
+      "kind": "duration-whatif",
+      "cohort": "HOLDOUT",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi ô tô. Lập lịch trình giúp tôi."
+      ],
+      "messages": [
+        "Nếu đi 4 ngày thay vì 3 ngày thì sao?"
+      ],
+      "expected": {
+        "hypothetical": true,
+        "preserve": true,
+        "planPreserved": true,
+        "plannerDelta": 1,
+        "scenarioDays": 4
+      }
+    },
+    {
+      "id": "H06",
+      "kind": "local-edit-ambiguous",
+      "cohort": "HOLDOUT",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi ô tô. Lập lịch trình giúp tôi."
+      ],
+      "messages": [
+        "Ngày 2 đi nhiều quá, bỏ bớt một chỗ nhưng giữ chỗ ăn."
+      ],
+      "expected": {
+        "clarify": true,
+        "planPreserved": true,
+        "preserve": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "H07",
+      "kind": "review-uncertainty",
+      "cohort": "HOLDOUT",
+      "setup": [
+        "Tìm homestay ở Đà Lạt."
+      ],
+      "messages": [
+        "Chỗ đó có chắc yên tĩnh và sạch sẽ không?"
+      ],
+      "expected": {
+        "qualityUnknown": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "H08",
+      "kind": "expired-source",
+      "cohort": "HOLDOUT",
+      "setup": [],
+      "messages": [
+        "Giá shuttle sân bay Đà Lạt tháng 02/2026 là bao nhiêu?"
+      ],
+      "expected": {
+        "expired": true,
+        "observations": 0,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "H09",
+      "kind": "current-memory",
+      "cohort": "HOLDOUT",
+      "setup": [
+        "Tìm homestay ở Đà Lạt."
+      ],
+      "messages": [
+        "Không dùng sở thích cũ, lần này kiếm khách sạn có Wi-Fi tại Đà Lạt."
+      ],
+      "expected": {
+        "options": "hotel",
+        "type": "hotel",
+        "wifi": true,
+        "memoryOff": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "H10",
+      "kind": "comparator-review",
+      "cohort": "HOLDOUT",
+      "setup": [],
+      "messages": [],
+      "expected": {
+        "comparatorHistorical": true
+      }
+    }
+  ],
+  "sources": [
+    {
+      "file": "backend/src/services/agentCoreService.ts",
+      "sha256": "eec0edfff4623dc067101d587a812441603f1a35c7f71282aef5250a675c4fae",
+      "exports": [
+        "CORE_CONSENT",
+        "CORE_NOTICE",
+        "AgentCoreService"
+      ],
+      "sourceRead": true
+    },
+    {
+      "file": "backend/src/agent/vietnameseConversation.ts",
+      "sha256": "b98d284a61e5eec96a471be4552937cc96e183548641091f513569796c0846a4",
+      "exports": [
+        "socialSpeechAct",
+        "NATURAL_CHAT_V3",
+        "travelLabels",
+        "verifiedTravelQuestion",
+        "vietnamToday",
+        "normalizeTravelCity",
+        "patchCanonical",
+        "validateNaturalPatch",
+        "readVietnameseConversation",
+        "naturalQuestion",
+        "naturalAcknowledgement",
+        "NATURAL_UNDERSTANDING_SYSTEM",
+        "accountGreeting",
+        "naturalProposal"
+      ],
+      "sourceRead": true
+    },
+    {
+      "file": "backend/src/agent/conversationSemantics.ts",
+      "sha256": "9fd848dc4d4f85c6c0d17b30b842703dfa102d14017e30c9fdb6dc5a9543a25f",
+      "exports": [
+        "conversationalIntelligenceEnabled",
+        "dialogueMemory",
+        "composeConversation",
+        "recordDialogueResult",
+        "invalidateDialogueLocation",
+        "dialogueSummary",
+        "controlledDialogue"
+      ],
+      "sourceRead": true
+    },
+    {
+      "file": "backend/src/agent/travelConsultant.ts",
+      "sha256": "5c30e23ccf613f88160e0338c27a4826ee1ab9a0ee778f76a494d578169c6275",
+      "exports": [
+        "consultantMemory",
+        "CONSULTATION_CONCEPTS",
+        "understandConsultation",
+        "catalogContextFilters",
+        "attributeAnswer",
+        "comparisonExplanation"
+      ],
+      "sourceRead": true
+    },
+    {
+      "file": "backend/src/agent/decisionIntelligence.ts",
+      "sha256": "0a47d3e1582cf4f0cc1674ef1cc1e6071650efb037cd6b8900a4d1e3c9216528",
+      "exports": [
+        "decisionIntelligenceEnabled",
+        "createDecisionProfile",
+        "analyzeDecision",
+        "controlledDecisionContext",
+        "renderDecision",
+        "readDecisionAct",
+        "plannerBudgetAdvice"
+      ],
+      "sourceRead": true
+    },
+    {
+      "file": "backend/src/agent/advisoryReasoning.ts",
+      "sha256": "f2b3afaa21ae7b3c7b0c917ddfe221a03ff61de138d5d6a7e46873f231a429b4",
+      "exports": [
+        "advisoryGoal",
+        "advisoryDecision",
+        "composeAdvisory"
+      ],
+      "sourceRead": true
+    },
+    {
+      "file": "backend/src/agent/costIntelligence.ts",
+      "sha256": "dee1042e0a011a16c47467c509e990a843d19212217acb43d3898bc8e5d4fc01",
+      "exports": [
+        "costIntelligenceEnabled",
+        "COST_UNITS",
+        "COST_CATEGORIES",
+        "PRICED_OBJECTS",
+        "typedCostObservation",
+        "pricedObjectFor",
+        "publicCostObservation",
+        "extractCostObservations",
+        "normalizeCost",
+        "eligibleCostEvidence",
+        "compareCosts",
+        "deduplicateCosts",
+        "independentCostSources",
+        "aggregateCosts",
+        "costNumericRoles",
+        "readCostQuestion",
+        "readCostCriteria",
+        "buildCostAdvice",
+        "costAdviceReferences",
+        "reportedCostLabel",
+        "unitLabel",
+        "renderCostAdvice",
+        "costFactPool",
+        "renderCostFact"
+      ],
+      "sourceRead": true
+    },
+    {
+      "file": "backend/src/agent/naturalGrounding.ts",
+      "sha256": "ade5ecf583dcaf35709cd7db6aabbd8436fd35a8edafaa8d334e564e34592dee",
+      "exports": [
+        "GROUNDED_RESPONSE_SCHEMA",
+        "groundedEvidenceAuthorities",
+        "groundedFacts",
+        "renderGrounded",
+        "boundedGroundingFacts",
+        "catalogCostFacts"
+      ],
+      "sourceRead": true
+    },
+    {
+      "file": "backend/src/agent/personalizedGrounding.ts",
+      "sha256": "b97ed24b4277355a1fd4ffaa58f436d7e82b5264b44166c28cfd815e11f3c515",
+      "exports": [
+        "currentQualityRequest",
+        "safeCurrentRequest",
+        "personalizedGroundingContext",
+        "assembleModelContext"
+      ],
+      "sourceRead": true
+    },
+    {
+      "file": "backend/src/agent/adaptiveLanguage.ts",
+      "sha256": "5a3d1e8e7a8a7a6d64f6084445974768a12b5d827b3b5d2f496a8e4cc41822f1",
+      "exports": [
+        "LANGUAGE_POLICY",
+        "CONTRIBUTION_POLICY",
+        "FEEDBACK_KINDS",
+        "LANGUAGE_CONCEPTS",
+        "languageConcept",
+        "languageExpression",
+        "languageSpans",
+        "correctionConcept",
+        "languageDomain",
+        "discoverExpression",
+        "resolveLanguage",
+        "languageInterpretation",
+        "controlledLanguageEvidence",
+        "confirmedLanguageSearch"
+      ],
+      "sourceRead": true
+    },
+    {
+      "file": "backend/src/services/travelKnowledgeService.ts",
+      "sha256": "5ec27aea3392410e11eeeba65081ccb8e17e448e01b58fb1812a8c28ddcf724e",
+      "exports": [
+        "knowledgeDraft",
+        "TravelKnowledgeService"
+      ],
+      "sourceRead": true
+    },
+    {
+      "file": "backend/src/services/reviewInsightService.ts",
+      "sha256": "bb4f62dad465f94088f498b9b1c1ade97c88ec884dcb33cfddd1013331ad3415",
+      "exports": [
+        "reviewInsightsEnabled",
+        "ReviewInsightService",
+        "startReviewInsightWorker",
+        "stopReviewInsightWorker"
+      ],
+      "sourceRead": true
+    },
+    {
+      "file": "backend/src/services/customerMemoryService.ts",
+      "sha256": "cfbe5207ee8e9db27c7929beaf150bfd4fc76c463da914d73623b20a5e88c412",
+      "exports": [
+        "MEMORY_POLICY",
+        "MEMORY_VALUES",
+        "memoryEnabled",
+        "preferenceInput",
+        "CustomerMemoryService"
+      ],
+      "sourceRead": true
+    },
+    {
+      "file": "backend/src/services/registeredCatalogService.ts",
+      "sha256": "4c5b5feb7aa0d19e7a70b2fb9d1cff9e2649558b110f81bc700adc22403304e8",
+      "exports": [
+        "fold",
+        "validateCatalogFilters",
+        "RegisteredCatalogService"
+      ],
+      "sourceRead": true
+    },
+    {
+      "file": "backend/src/services/recommendationService.ts",
+      "sha256": "4c807c8e5bfac966c15f970c2cf331a8df20b49c4e5cb3e39fed3331629712ef",
+      "exports": [
+        "DEFAULT_RECOMMENDATION_WEIGHTS",
+        "RecommendationService"
+      ],
+      "sourceRead": true
+    },
+    {
+      "file": "backend/src/services/tourPlannerService.ts",
+      "sha256": "e2abe1d3bc97f8a645d2a03c0390dd16d3a460bc4a3cf8ae26bdde90f8eac9e9",
+      "exports": [
+        "TourPlannerService"
+      ],
+      "sourceRead": true
+    },
+    {
+      "file": "backend/src/agent/planningIntelligence.ts",
+      "sha256": "6cb59458312317e953fd7a2c54305ad694c9acc1aea731f36bd059ce04ff9297",
+      "exports": [
+        "intelligentPlanningEnabled",
+        "planningHypothesis",
+        "readPlanningAct",
+        "renderPlanningSummary",
+        "controlledPlanningContext"
+      ],
+      "sourceRead": true
+    }
+  ]
+}

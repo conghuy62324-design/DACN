@@ -2,9 +2,11 @@ import { Router } from 'express';
 import { PartnerController } from '../controllers/partnerController.js';
 import { PartnerResourceController } from '../controllers/partnerResourceController.js';
 import { authenticate, requireRoles } from '../middlewares/authMiddleware.js';
+import {managementHotels} from './hotelRoutes.js';
 
 const router = Router();
 router.use(authenticate, requireRoles('PARTNER'));
+router.use('/hotels',managementHotels(false));
 router.get('/dashboard', PartnerController.dashboard);
 router.get('/businesses', PartnerController.businesses);
 router.get('/businesses/:businessId/bookings', PartnerController.bookings);

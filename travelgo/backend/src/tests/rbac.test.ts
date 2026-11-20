@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {Op} from 'sequelize';
 import { BlogPost, Booking, Place, Ticket, Tour } from '../models/index.js';
 import { BusinessMember } from '../models/BusinessMember.js';
 import { authenticate, requireRoles } from '../middlewares/authMiddleware.js';
@@ -70,7 +71,16 @@ async function run() {
   const publicFilters: Record<string, string> = {};
   const originals = [Place, Tour, Ticket, BlogPost].map((model) => model.findAndCountAll);
   for (const [name, model] of [['place', Place], ['tour', Tour], ['ticket', Ticket], ['blog', BlogPost]] as const) {
-    (model.findAndCountAll as any) = async (options: any) => { publicFilters[name] = options.where.status; return { rows: [], count: 0 }; };
+    (model.findAndCountAll as any) = async (options: any) => {
+      if(name==='place'){
+        const parts=options.where[Op.and];assert(Array.isArray(parts));
+        publicFilters[name]=parts.find((p:any)=>p.status)?.status;
+        assert(parts.some((p:any)=>p[Op.or]?.some((v:any)=>v['$business.status$']==='ACTIVE')));
+        assert(parts.some((p:any)=>p.slug?.[Op.notILike]==='demo-%'));
+        assert(parts.some((p:any)=>p.name?.[Op.notIRegexp]==='\\mDEMO\\M'));
+      }else publicFilters[name]=options.where.status;
+      return { rows: [], count: 0 };
+    };
   }
   await PlaceRepository.list({}, { publicOnly: true });
   await TourRepository.list({}, { publicOnly: true });

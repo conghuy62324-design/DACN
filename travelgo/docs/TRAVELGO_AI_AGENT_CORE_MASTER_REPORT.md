@@ -4510,3 +4510,1044 @@ Protected API SQLDML0; model/search/worker/webwritesOFF, ADVISORY_STAGING_READ_O
 
 Các phần chưa khép: final-source hybrid cần đợt fresh quota/authorization riêng; actual worker cần source fixture/reviewer workflow hợp lệ với existing DB contract và nguồn thực sự cho phép fetch. Không dùng OWNER reviewer giả, không yêu cầu duyệt lại retained knowledge, không tái chạy run đã FAIL hoặc dùng cap còn lại. Một review packet tương lai cần giải quyết source-review identity và permission trước actual, không phải nới guard. **Dừng sau TASK21.32; không khởi động21.33.**
 
+
+## 21.33 — V6.6 ACTUAL WORKER CLOSURE, SOURCE REVIEW INTEGRITY & REAL KNOWLEDGE ACQUISITION
+
+### A. Technical closure preparation —18/11/2026, trước fresh approval/actual
+
+Trạng thái **OFFLINE PREPARATION PASS — PENDING FRESH AUTHORIZATION**. Chưa tuyên bố actual worker hoặc real knowledge acquisition PASS. Evidence: [worker-closure-v66-20261118](evidence/travelgo-ai-agent-core/worker-closure-v66-20261118/offline-preparation-result.json). Phần actual được bổ sung riêng khi có quyền/gates đạt; không ghi đè historical21.32 FAIL.
+
+**Workspace/machine/database.** Máy DESKTOP-KU5UHNI, Git HEAD9af594d58a328557fe53a30e46b31b01f51646be. Commit title TASK21.42 không được dùng làm chứng cứ hoàn thành21.33–21.42. Trước sửa,768source/build hashes khớp21.32. Fresh READONLY staging đúng15452/travelgo_staging_catalog_20261112/catalog_runtime non-super/no-createdb/no-createrole/sentinel travelgo-public-staging:catalog-20261112;40tables/17migration checksums/130Place/20Business/1realOwner/1retained approved knowledge. Fingerprints khớp post21.32. Không BLOCKED_DATABASE_TRANSFER, không seed/reset/recreate/migrate. Initial os.userInfo unavailable trong sandbox chỉ là identity-helper issue, đã dùng environment/hostname và giữ note; không đo RAM/VRAM hoặc suy luận resource readiness.
+
+**Source lifecycle/root cause.** Physical schema có21constraints cho source/job/candidate, source UNIQUE(domain), reviewer FK→users(id), NOTNULL/defaults/version/size checks. travel_web_sources_check giữ nguyên: enabled chỉ khi ALLOWED+APPROVED+reviewed_by nonNULL. Existing source service saveSource tạo disabled/UNKNOWN/UNREVIEWED/reviewerNULL/v1. Existing moderateSource yêu cầu SUPER_ADMIN, scoped actor, current version, reason, confirmed, license/robots; transaction ghi enabled/ALLOWED/APPROVED/reviewed_by/v2 và history có actor/reason/at/version. Source table không có reviewed_at riêng; source service không ghi AuditLog, khác knowledge approval service có AuditLog. Không thêm reviewer ID thủ công hoặc fake reviewer account. Historical source setup FAIL/rollback21.32 giữ nguyên.
+
+**Existing-source audit.** Retained en.wikivoyage.org source3c427f07-c1e2-42eb-b380-42e46c28a2ca v2 chỉ khai báo exact URL/wiki/Da_Lat. Fresh Internet rights có thể cho read-only fetch URL này; không mở rộng sang mọi article cùng domain. Worker refresh trên source hiện có có thể stale linked approved candidate khi nội dung đổi, nên exclude source đó khỏi mọi worker/source writes để bảo vệ historical shuttle snapshot. UNIQUE(domain) cũng chặn tạo source en.wikivoyage.org thứ hai. Packet mới đề xuất vi.wikivoyage.org, vẫn cùng1publisher family, không gọi là2nguồn độc lập. Không yêu cầu Owner duyệt lại source/fact retained.
+
+**Fix helper/launcher.** Added backend/scripts/source-review-scope.cjs và restricted sourceReviewOnly branch trong existing agent-staging-profile.cjs. Chỉ existing scoped-knowledge-write mode; exact actor/IDs/domains/config hashes, source-create SQL dùng production defaults và bind random allocation vào exact approved ID, moderation đúng actor/version/history, cap2DML/source. API scope không cho job/candidate/knowledge/audit/user/catalog writes. Worker helper không được INSERT hoặc tự duyệt source; chờ actual human UI→API→PG commit rồi kiểm reviewer/version/config/history trước claim. Existing production Agent/Planner/Booking/RecommendationService/geography/schema không đổi. model-off-isolation.cjs chỉ thêm exact task21.33 Internet authorization status, không mở PG cho collection capability hoặc đổi default website.
+
+**Schema-aware preflight.** Existing harness được extend với physical schema metadata check, source/default/FK/unique/lifecycle/identity/version/exact scope/cleanup checks. Separate actual rollback probe đã chuẩn bị, chưa chạy: exact SYN source ID, INSERT disabled bằng production create defaults, thử invalid reviewerNULL enable trong savepoint để nhận23514, toàn transaction ROLLBACK. Probe có exact2DML fence; không phải source approval. Mocked SQL/helper tests không thay actual integration proof.
+
+**Tests/build/source freeze.** Targeted spec10case khóa trước helper changes; final10/10, gồm production service với explicit offline SQL double, và READONLY physical metadata riêng. Worker SQL capability fence6/6 offline: deny self-approval/source insert, exact job/candidate+nested IDs, block retained source/knowledge writes, reserve3cleanup DML. Backend fresh tsc build PASS; frontend source/build hashes unchanged, không rerun frontend build hoặc18development/10holdout. Không cộng targeted rerun thành20independent cases. Historical WebV58 W06 FAIL giữ nguyên. Current final-source-lock.json769hashes, chỉ2existing CJS helpers đổi và1new restricted guard; tools-lock.json khóa17tool/packet/plan files trước native collection. Hybrid input/expected khóa trước actual, được ghi là CURRENT_V66_SUCCESSOR, không hồi tố V6.5 frozen-source PASS.
+
+**Fresh packet đang chờ quyết định.** authorization-review-packet.json revision2 tách Internet, staging/runtime, source approval và fact approval. Internet≤30GET/3domains/3articles/concurrency1/search0/120phút; en/vi.wikivoyage.org +creativecommons.org metadata. Exact homepage→Trang Chính redirects cho license footer được liệt kê trước approval/network; không Wikitravel, proxy/mirror/bypass hoặc retry domain bị chặn. Hai bản ngôn ngữ vẫn1publisher; CC không phải travel evidence. Giữ attributed typed excerpts/receipts, không full raw article HTML.
+
+Staging dự kiến exact2source mới UNREVIEWED/disabled (1SYNTHETIC,1viWikivoyage nếu rights đạt),5jobs,4DRAFT candidates; chỉ3tables source/job/candidate. Cap4DML source API +2DML rollback probe +80worker/cleanup DML, tối đa4bounded cycles. W1 realPG/SYN transport; W2 realHTTPS/typed DRAFT/readback nếu quyền/source review đạt; W3 SYN alias canonical dedup, actual same-real-URL revisit NOT RUN nếu chưa due; W4 predefined single SYN failure/recovery chờ đúng actual next_due, không sửa thời gian/source interval. Không real-source retry hoặc fake price change. Exact rows temporary/cleanup40/40; không retention hoặc fact approval trong packet này. Nếu actual DRAFT đủ evidence, chuẩn bị exact fact review packet riêng; Owner tự quyết định, không approval thay họ hoặc sửa fact shuttle cũ.
+
+Runtime5057/5177≤2giờ, không daemon/search/model/default config; existing Owner tự đăng nhập/duyệt source qua UI, assistant chỉ technical draft preparation. Không đọc Owner credentials/DPAPI, không auto tick/approval click. Dedicated CUSTOMER test login chỉ trong RAM qua existing helper nếu được duyệt. Whole-task budget tối đa7conservative entries cùng principal A57e6e64a-9dac-43af-bcf0-5f2c992a423a:1human Owner login+2draft creates+2human source decisions+1customer login+1hybrid chat. Chỉ bắt đầu nếu một fresh scan sau approval≥17/20, reserve10; model quota không kiểm. In-memory session lifecycle DELETE được pre-record riêng, tối đa3, không chat hoặc PostgreSQL mutation. Không polling/reset/đổi principal/backfill. On STOP/expiry chỉ exact cleanup DELETE còn quyền, không operational/API/worker writes; restore owned protected READONLY/model-search-worker-webwritesOFF.
+
+**Snapshot actual tại thời điểm chờ approval:** Internet0/article0/worker0/source create0/source approval0/candidate0/newknowledge0/hybridNOT RUN/Agent entries0/quota scans0/DML0/runtime activation0. Current protected runtime chưa thay; retained source/Owner/knowledge467bd60b-27ab-42ad-a450-b3076a4215c3 v2 historical150000VND/PER_PERSON/02-2026/expiry2026-12-15T00:00Z giữ nguyên. Source setup contract offlinePASS/physical metadataPASS; source review authority actualNOT RUN; worker/persistence/idempotence/extraction/newapproval/retrieval/current-final-source hybrid actualNOT RUN. REAL MULTI-SOURCE CORPUS NOT PROVEN; continuous production workerOFF; QWEN DEFERRED; weights trainingNOT PERFORMED; **LIVE READY NO**.
+
+Không truy cập DB gốc/27Trip, không Owner reset/credentials changes, không catalog/Trip/Booking/payment/review/memory giả, Maps/GPS/VPS/paidAPI/commit/push/deploy. Chỉ tiếp tục actual21.33 sau fresh approval và gates; không bắt đầu21.34.
+
+
+### B. Fresh approved actual preflight —18/11/2026, chờ Owner UI
+
+User đã phê duyệt bounded packet21.33 revision2. Source769/769 và17tools/packet hashes khớp trước native; current HEAD/machine vẫn khớp. Execution window bắt đầu11:54:09 ICT, hết hạn **13:54:09 ICT18/11/2026**. Đây là fresh authorization mới, không reuse quyền21.32. Fact approval/retention không được cấp.
+
+Một fresh Agent quota scan sau approval **PASS20/20**, required17 cho tối đa7entries/reserve10; không model quota hoặc scan lại. Native execution đã bắt đầu đúng gates, không chỉ viết plan. READONLY staging identity/fingerprint/schema/migrations được đối chiếu lại trước probe. **Actual schema probe PASS**: INSERT exact SYN source disabled/UNKNOWN/UNREVIEWED/reviewerNULL/v1 qua2DML-fenced rollback test; thử enable+APPROVED với reviewerNULL nhận đúng23514/travel_web_sources_check trong savepoint; toàn transactionROLLBACK,0committed rows. Không source approval/Owner impersonation trong probe.
+
+Internet tới snapshot này **8/30counted GET attempts**,6HTTP200+1HTTP301+1WEB_ABORTED; article0. Production transport và permanent guard ghi8HTTPS request boundaries (24hook events ở HTTPS/TLS/socket), không double-count thành24GET. English Wikivoyage copyleft vàCC3/4 metadata đạt. Vietnamese homepage301→exact allowed Trang Chính redirect; request tiếp theo bịWEB_ABORTED trong10s operation deadline gồm rate-wait/redirect/transport. License/permission phía vi chưa xác minh đủ nên domainSTOP, không retry/đổi URL/transport hoặc tạo real source. Historical Wikitravel403 không được gọi lại. Raw permission receipts/proof giữ nguyên.
+
+Do real source bịskip, source-review-manifest chỉ chứa **1SYNTHETIC source3317939d-ca1d-4509-98e4-c1573ea6ab69 / worker-closure.invalid**, API sourceDML cap2 thay vì4. Existing Owner/retained source/knowledge không nằm trong write scope. Owned API5057 đã activate currentV6.6 scoped-knowledge-write PID23216, frontend5177 PID23860; model/search/background-workerOFF. Source guard chỉ cho legitimate source-create defaults và exact human moderation, không job/candidate/knowledge/audit writes.
+
+Edge thật đã mở /admin/travel-web và **đang chờ Owner tự đăng nhập**; helper sẽ tự điền/lưu DRAFT sau login. User được yêu cầu tự nhập reason/tick xác nhận và duyệt CHỈ sourceSYNTHETIC mới; assistant0approval click/không đọc credentials hoặcDPAPI. Snapshot pending-owner-status.json:0Agent entries,0source-create commit,0human approval,0worker cycle,0candidate,0newknowledge; schema probe2mutations đềurollback. Không chiếm quota bằng nửa hybrid journey hoặc tự gán reviewer. Standalone producer chờ actual UI action+independent PG commit proof mới claim. TrênSTOP/expiry: source-review window đóng, exact task-owned cleanup và owned protectedREADONLY restoration đã được lập trình, không giữ worker chạy dài hạn. Actual worker/hybrid/final data-integrity verdict cònPENDING; phầnA offline và historical21.32 FAIL giữ nguyên.
+
+### C. FINAL ACTUAL RESULT —18/11/2026: CURRENT V6.6 HYBRID PASS, WORKER BLOCKED
+
+Kết quả đóng TASK21.33: **PARTIAL**. **CURRENT FINAL-SOURCE HYBRID PASS** bằng browser thật/currentV6.6/API/PostgreSQL; **source review/worker closure còn BLOCKED** vì source-management login401 và Vietnamese permission metadata timeout. Không retry Owner login/worker, không chỉnh credentials hoặc expected để lấy PASS. Evidence chính: [result.json](evidence/travelgo-ai-agent-core/worker-closure-v66-20261118/result.json), [hybrid-score.json](evidence/travelgo-ai-agent-core/worker-closure-v66-20261118/hybrid-score.json), [post-actual-proof.json](evidence/travelgo-ai-agent-core/worker-closure-v66-20261118/post-actual-proof.json). Snapshot pending ở phầnB là trạng thái trước kết quả này.
+
+#### C1. Source review integrity và actual blocker
+
+Sau user báo đã thao tác, không lấy xác nhận trên chat thay PostgreSQL proof. Cửa sổ Edge thuộc task ghi **POST /api/auth/login HTTP401** lúc12:10:55 ICT. Attempt OWNER_LOGIN đã được reserve trước dispatch và vẫn tính quota dù thất bại. owner-login-proof.json chỉ lưu status/timestamp; không đọc request credentials hoặc response token. Existing authService.login trả401 khi không tìm được user theo input hoặc verifyPassword thất bại; không thể xác định trường nhập cụ thể sai từ opaque401, không kết luận RBAC/source CHECK gây lỗi. Schema baseline vẫn chứng minh existing Owner/SUPER_ADMIN có thật; không reset/tạo lại account hoặc đọcDPAPI.
+
+**0source-create request/commit,0source moderation request/commit,0human source approval verified.** Helper chưa được phép claim job, không tự gán reviewed_by hoặc gọi approval thay Owner. Source journey dừng05:10:56Z với OWNER_BROWSER_STOPPED/STOP_NO_RETRY. Raw401 giữ trong owner-login-proof.json và owner-window-authentication-failure-original.json; actual-failure.json giữ nguyên. Task-owned Owner browser helper được đóng sau guard stop; WMI exit proof không còn direct child, không chạm browser khác. Không thử lại login trong task.
+
+Source setup fix vẫn có chứng cứ đúng phạm vi: production-service offline regression10/10, READONLY physical schema và actual PG rollback probe PASS; source-create defaults disabled/UNKNOWN/UNREVIEWED/reviewerNULL/v1 được PostgreSQL chấp nhận, invalid enable+NULL reviewer nhận23514 đúng constraint, toàn transactionrollback. **Không gọi rollback probe hoặc mocked service là actual human approval PASS.** Historical21.32 setupFAIL và W06FAIL không đổi.
+
+#### C2. Internet, worker, extraction và corpus
+
+Actual Internet kết thúc **8counted GET attempts/30**,8HTTPS request boundaries;6HTTP200,1HTTP301,1WEB_ABORTED; **0article fetch/0article extraction**. Vietnamese homepage→canonical Trang Chính metadata bị operation deadline10s gồm publisher rate wait/redirect/transport; quyền sử dụng sourcevi chưa xác minh đủ, domainSTOP, không retry/đổiURL/transport/proxy/mirror hoặc giảm guard. English/CC permission metadata đạt nhưng extra article collection không chạy sau source journeySTOP. Không gọi Wikitravel trong task này; historical403 giữ nguyên.24boundary hook events HTTPS/TLS/socket không bị cộng thành24GET. Không full raw article HTML retained.
+
+Worker lifecycle code thực tế chưa được gọi sau source review gate: **W1SYNTHETIC PG NOT RUN; W2REAL INTERNET WORKER NOT RUN; W3actual idempotence NOT RUN; W4failure/recovery NOT RUN; cycles0**. Không mock successful transport để đổi verdict. New source/job/candidate/knowledge committed0. Không có real candidate đủ điều kiện tạo fact review packet hoặc mở quyền knowledge/audit/retention; không yêu cầu Owner duyệt lại shuttle cũ. Real source changeNOT OBSERVED, same-real-URL revisitNOT RUN; source intervals/time không chỉnh. Corpus cuối vẫn1retained Wikivoyage publisher family/1approved knowledge; vi/en không tính2independent families vàCC không phải travel publisher. **REAL MULTI-SOURCE CORPUS NOT PROVEN**, không aggregate range/market/current tariff từ1observation.
+
+#### C3. Independent current-contract hybrid actual PASS
+
+Trong fresh packet, hybrid đọc là journey độc lập đã khóa. Source login401 không được dùng làm source approval; worker không restart. Sau cleanup source journey, activate owned **integrated-review READONLY** runtime9256 với current lockedV6.6 source; không thay production/.env hoặc bật model. Existing dedicated CUSTOMER A login chỉ dùng RAM qua helper đã được duyệt, HTTP200, đúng principalA. Sau đó **đúng1browser desktop chat**, không retry, input đã khóa từ hybrid-plan.json:
+
+> Tim homestay o Da Lat yen tinh, dong thoi gia xe san bay bay gio bao nhieu?
+
+Browser thật kiểm Send disabled trước consent; click consent đúng1lần rồi Send enabled. Actual Browser→API→PostgreSQL responseHTTP200 hiển thị thành công trên current strict frontend renderer. Raw response/latency trong actual-hybrid.json, screenshot actual-hybrid-desktop.png; no API response mock. Server và DOM xác nhận:
+
+- 1eligible DEMO homestay items, destination:da-lat và accommodationType:homestay đúng filters.
+- Approved historical shuttle **150000VND/PER_PERSON/02-2026**, source https://en.wikivoyage.org/wiki/Da_Lat, knowledge/source cardversion2.
+- CurrentPriceConfirmed=false; evidenceAuthority có CATALOG_DATA vàAPPROVED_WEB_KNOWLEDGE, không BOOKING_AUTHORITY.
+- Renderer thực hiển thị150.000,02/2026 và đúng source link; desktop không horizontal overflow theo locked check.
+- model.invoked=false, no confirmation/Planner/Trip/Booking mutation; không claim real review/memory integration.
+
+Verdict **PASS_CURRENT_V66_SUCCESSOR_BROWSER_API_PG**. Đây là successor/current-contract acceptance trênV6.6, **không hồi tố rằng frozenV6.5 actual đãPASS**. Prior B2/PERSONAL/mobile lịch sử giữ nguyên; không chạy lại hoặc cấp current-mobile PASS trong taskdesktop này. Không dùng service-level proof thay browser: lần này có actual browser/source screenshot/rawHTTP và frontend acceptance.
+
+#### C4. Quota, request audit và cleanup
+
+Duy nhất1fresh Agent scan trước execution:20/20, required17/reserve10. Tổng thực dùng **3entries** cùng approved principalA/hash: OWNER_LOGIN401 +CUSTOMER_LOGIN200 +HYBRID200. Mỗi request reserve trước dispatch, cảat/createdAt, không backfill/double-count/skipfailed. Remaining derived **17/20**, reserve10, không scan lại/model quota/đổi principal hoặc reset limiter để lấy capacity. Runtime handoff chỉ để activate source/restore, không cấp lại quota; local source-management auth của Owner vẫn charge vào same conservative principalA budget, không dùng principal khác để bypass.
+
+Source API23216 DML0; integrated hybridAPI9256 DML0. Standalone source runner chỉ thực hiện3exact cleanup DELETE đều0row; thêm2schema-probe mutations đãROLLBACK. Combined5SQLDMLattempts, **committed row delta0**, không source/job/candidate mới đểretain. Cleanup không phê duyệt hoặc sửa knowledge. cleanup-integrity.json40/40 khớp baseline sau sourceSTOP; **fresh post-actual-proof.json40/40 khớp lại sau hybrid**.40tables/17migrations/130Place/20Business/stagingTrip0 và existing Owner/hash-role/retained knowledge đều unchanged; DBgốc/27Trip không truy cập.
+
+Task-owned scoped/source và integrated runtime được dừng đúng owner/command checks. Final protected API **25164**, health200, SQLDML0, ADVISORY_STAGING_READ_ONLY=true; model/search/worker/webwritesOFF. Frontend source-phase23860 và hybrid-phase2060 đã đóng, trả5177 về trạng thái stopped trước task. Standalone parent/collection child/Owner browser/helper và hybrid browser đã kết thúc. All sampled task model-off audits nativeAttempts0/nativeDispatched0; không OllamaGET/POST/warm-load/inference/resource sampling hoặc paidAPI. post-actual-proof.json kiểm769source hashes/17lockedtools, raw prior failures giữ nguyên.
+
+#### C5. Final verdicts
+
+| Verdict | Kết quả21.33 |
+|---|---|
+| SOURCE SETUP CONTRACT |PASS offline+READONLY physical schema+actual rollback probe; legitimate UI create chưa chạy |
+| SOURCE REVIEW AUTHORITY |Guard preserved; actual reviewBLOCKED_AUTHENTICATION401, không giả danh Owner |
+| SYNTHETIC TRANSPORT PG WORKER |NOT RUN, source approval gate chưa đạt |
+| REAL INTERNET WORKER |NOT RUN, vi permission metadata aborted +source authblocked |
+| REAL ARTICLE EXTRACTION |NOT RUN;0article |
+| CANDIDATE PERSISTENCE |NOT RUN;0newcommitted candidate |
+| WORKER IDEMPOTENCE |Offline coverage giữ nguyên; actualNOT RUN |
+| ACTUAL CHANGE DETECTION |NOT OBSERVED |
+| REAL KNOWLEDGE APPROVAL |NOT RUN;0newknowledge,1retained approvedv2 unchanged |
+| REAL KNOWLEDGE RETRIEVAL |PASS existing retained historical observation trong actual successor hybrid; no newknowledge claim |
+| REAL MULTI-SOURCE CORPUS |NOT PROVEN |
+| CURRENT FINAL-SOURCE HYBRID |PASS_CURRENT_V66_SUCCESSOR_BROWSER_API_PG, desktop/1chat |
+| STRICT REQUEST AUDIT |PASS3pre-reserved entries, included401,derived17/reserve10,1fresh scan |
+| DATA INTEGRITY |PASS40/40 aftersourceSTOP vàafterhybrid;0rowdelta |
+| PRIVACY & AUTHORITY |Guards preserved; noOwner/DPAPI access/approval impersonation/DBroot writes |
+| CONTINUOUS PRODUCTION WORKER |NOT RUN/OFF |
+| QWEN REAL MODEL |DEFERRED, native0 |
+| MODEL WEIGHT TRAINING |NOT PERFORMED |
+| LIVE READY |NO |
+
+Remaining blockers có chứng cứ: source-management authentication401 trước source create/review; Vietnamese permission metadata deadline trước article. Không xác định credential nào sai và không đọc/đổi credentials để thử. Để tiếp tục source/worker trong một scope được duyệt sau này cần authenticated Owner workflow hợp lệ và fresh applicable source permission/authorization; không dùng lại run đãSTOP hoặc tự gia hạn window. Code10targeted/6fence/build kết quả phầnA giữ nguyên, không chạy18development/10holdout lại hoặc sửa historicalexpected. **TASK21.33 dừng sau kết quả/báo cáo này; không tự bắt đầu21.34.**
+
+### D. Owner login diagnosis/repair follow-up —18/11/2026, theo yêu cầu riêng của user
+
+**PASS actual5057 API200 + actual Edge200, không đổi mật khẩu/Owner/role.** Fresh identity xác nhận backendprotected25164→catalog staging15452 đúng database/role/sentinel. Frontend5177 đã stopped theo cleanup21.33, cần khởi động lại cho thao tác user. Existing OwnerID/SUPER_ADMIN, users/user_roles và production scrypt source khớp TASK21.30; không status/disabled/locked field trong current User schema. DPAPI đúng máy/Windows user, ACL CurrentUser-only, giải mã được và password khớp production hash. Không hash corruption hoặc cầnreset; legacy users.role=user không làm mất SUPER_ADMIN trong authoritative user_roles.
+
+Historical401 chỉ chứng minh pair gửi vào không khớp lookup/password verification; không lưu request credentials nên không xác định trường nào khác. Không gọi frontend stopped là nguyên nhân401 cũ. Pair DPAPI hiện tại được verify và đăng nhập API/Edge thật200, current owner/admin page xác nhận. Không đổi password/hash/email/role/OwnerID, không đọc/ghi secrets ra chat/log/report.
+
+Sửa live OPEN_OWNER_LOGIN.cmd→new backend/scripts/open-staging-owner-login.cjs (backupCMD trong evidence mới). Reuse existing DPAPI masked form filler; tự verify owned backend+staging+port, start frontend5177 explicitproxy5057/relative /api, kiểm ownership trước autofill; không edit.env/defaultproduction hoặc thayAuthService/scrypt. DefaultCMD autofill để user bấm login; lượt nghiệm thu mới submit đúng1lần trên Edge và giữ Edge signed-in cho user. Live Vite module xác nhận VITE_API_URL rỗng/VITE_PROXY_TARGET5057. Frontend2012 được để chạy theo yêu cầu truy cập website; backend vẫnprotectedREADONLY/model-search-worker-webwritesOFF.
+
+Fresh auth quota scan17, budget2/reserve10;2newpre-reserved auth entries directAPI+Edge, derived15, no retry/modelquota/chat/inference. Post-login40/40 fingerprints unchanged, SQLDML0, retained catalog/Owner/knowledge giữ nguyên, originalDB không truy cập. Không source/fact approval hoặc resume worker; historical21.33/source401/BLOCKED không bị ghi đè. Evidence [owner-login-diagnosis-20261118/REPORT.md](evidence/travelgo-ai-agent-core/owner-login-diagnosis-20261118/REPORT.md), actualproofs/screenshot và post-check.json. Đây là follow-up sửa đăng nhập được user yêu cầu, không tự khởi động21.34.
+
+## 21.34 — V6.6 FINAL WORKER ACCEPTANCE & CONTINUOUS KNOWLEDGE ACQUISITION
+
+### A. Fresh preflight / SYNTHETIC scope preparation
+
+18/11/2026. Workspace/machine/Git HEAD và769prior source/build hashes khớp; current Owner login helper đã PASS ở2133D. Fresh READONLY staging15452 đúng DB/role/non-super/sentinel,40tables/17migration checksums/130Place/20Business/Owner+retained approvedknowledge; fingerprints khớp post2133. Không transfer blocker, seed/reset/migrate hoặc Owner re-creation. Current hybrid/browser và ownerAuthPASS được giữ, không rerun benchmark.
+
+SYNTHETIC journey được tách khỏi Internet. Extend existing source-review-scope.cjs cho task21.34: exactSYNsource create disabled/v1→human approve/v2→human revoke/v3, cap3API DML; existing21.33 contract giữ tương thích. Existing OPEN_OWNER_LOGIN launcher thêm optional --review-dir; reuse same DPAPI form filler/login, source-review-browser.cjs chỉ nhận authenticated page, không có login/vault/browser thứ hai. Technical source draft tự điền/lưu; Owner vẫn tự nhập reason/consent và quyết định approve/revoke. Existing private Playwright pipe không cấp attach endpoint cho process mới, nên planned fresh automated DPAPI login được tính1entry; không đọc/copy token của session khác.
+
+Targeted6/6 (offline guards+fresh physical schema metadata), SQL helper fence6/6 offline. Old18development/10holdout/Hybrid case không rerun; production TypeScript/HTTP transport/Planner/cost/Trip/Booking/geography không đổi, prior build hashes verified. CJS syntaxPASS. Current source lock771hashes,14tool/packet locks; actual worker/PGwrites/Authentries/Internet mới0. Không gọi offlinePASS là actualPASS.
+
+Prepared fresh SYNpacket authorization-review-packet.json:1source2d92c623-d7c2-467e-8042-abf6ab5390ad /worker-final.invalid,3jobs/2DRAFT exactIDs,3API DML+60worker/cleanup DML,4cycles với declared single failure và recovery đúng next_due. Sauworker Owner tựREVOKE, production permission/claim gates được kiểm rồi exactcleanup40/40, restoreprotectedREADONLY, giữ frontendđãchạy trước task. Tối đa4management/login entries cùngprincipalA; chỉ sau fresh scan>=14/20/reserve10. Không dùng15/17lịch sử, không polling/reset/principal change. Approval21.33 khôngreuse. SYNpacket đang chờ approval; không Internet/real-source/knowledge/audit/retention rights.
+
+Permission audit riêng trong permission-orchestration-audit.json: oldvi homepage301+same-publisher rate wait tiêu thụ shared10s deadline trước/mỗi redirect. Proposed orchestration pre-pacing trước get() và directcanonicalMainPage; không đổi productionHTTP10s/rate5/robots/SSRF/caps. Chưa thực thi Internet; Wikitravel403 vẫn excluded. Separate fresh Internet/source/fact rights chỉ được xin khi concretephase tương ứng sẵn sàng. Không đểdomainfailure chặn SYNacceptance.
+
+Evidence: [worker-final-v66-20261118](evidence/travelgo-ai-agent-core/worker-final-v66-20261118/authorization-review-packet.json). QwenOFF, không resources/modelquota/Ollama/Maps/GPS/VPS/paidAPI/DBgốc27Trip/commit/push/deploy. Task đang chờ freshSYN authorization, chưa final worker verdict; không mở21.35.
+
+### B. First approved SYN run STOP / precise UI fix / extension pending
+
+Fresh approval21.34 đã ghi09:03:46Z18/11, originaldeadline11:03:46Z (18:03ICT). Onefreshquota20/20>=14/reserve10 PASS. Existing DPAPI launcher actualOwnerloginHTTP200/SUPER_ADMIN, không đổicredentials. SourceUI prep sauauth bịTimeout trướccreate:0sourcePOST/0sourceDML/0approval/0worker. Driver dừngSOURCE_REVIEW_PHASE_STOP đúngpolicy,3cleanupDELETE0row,40/40 unchanged; protectedAPI24572 restored, existingfrontend được giữ. Actualfirst source-management entry OWNER_BROWSER_LOGIN đãcharge1, khôngbackfill hoặc gọi làlogin401.
+
+Exactcause là selector automation tôi viết: getByLabel('Loại nguồn',{exact:true}) vàgetByLabel('Phương thức',{exact:true}) khôngmatch vì accessiblelabel của wrappedselect gồmoptions. OfflineproductionReactDOM/realEdge probe xác minh haioldcount0, cácfieldkhác1. Prefixselectors saufix mỗi cái1 vàselectOption actionsPASS, HTTP/auth/DBwrites0. Không sửaappAuth/RBAC/consent/frontendhoặcWorker để épPASS. Errorclassification mới phânbiệtSOURCE_REVIEW_UI_FAILED_AFTER_AUTHENTICATION; historicalgenericlogin-helper marker/raw200/STOP giữnguyên, failedmodulecopySHAkhớpfreeze.
+
+Run cũ khôngrestart. Browser context đãđóng, khôngcóattach endpoint choexistingprivatePlaywrightpipe; correctedrun cần1newautomatedlogin+3sourceactions. WholeTask sẽ5entries (old1+new4), vượtoriginal4 nên **chờexplicit extension đúng1authentry**. Correctedpacket tại [worker-final-v66-ui-resume-20261118/authorization-review-packet.json](evidence/travelgo-ai-agent-core/worker-final-v66-ui-resume-20261118/authorization-review-packet.json). GiữsameActor/sourceIDs/rows/4cycles/original18:03ICTdeadline vàquota20/reserve10. NewworkerDMLcap57 đểold3cleanup+new<=60, APIcap3khôngđổi. NoInternet/real-source/knowledge/audit/retentionrights. Correctedcode/source771hashes/toolslocked, SQLfence6/6offline; actualcorrectedrunNOT RUN. Sauextension mớionefreshgate>=14, khôngpollingchờquota/đổiprincipal/resetlimiter hoặc reuse20lịch sử.
+
+### C. Production VPS GPU deployment requirements — yêu cầu kiến trúc dài hạn,18/11/2026
+
+Ghi nhận theo yêu cầu riêng của Owner. **Mục tiêu cuối:** toàn bộ TravelGo chạy độc lập24/7 trên VPS có GPU, tên miền riêng vàHTTPS, tiếp tục hoạt động khi máy cá nhân đã tắt. Đây là tiêu chí kiến trúc/nghiệm thu cho các task tiếp theo; hiện tại chỉ cập nhật Master, chưa thuê VPS/deploy/bậtQwen hoặc phát sinh chi phí. Không tự mở TASK21.35 hay thay phạm vi21.34.
+
+**Stack phải được hỗ trợ đầy đủ:** frontendReact; backendNode.js; PostgreSQL/PostGIS; Ollama/Qwen trên VPS; AI Agent Core; Recommendation/Planner; Adaptive Vietnamese Language; Customer Memory; Review Intelligence; Web Knowledge/Cost Intelligence; Knowledge Worker. Tận dụng kiến trúc hiện có, giữ PostgreSQL, không viết lại Agent hoặc tạo pipeline/store/worker trùng lặp.
+
+1. **Ubuntu/Linux vàDocker:** application/runtime, startup/shutdown và các dependency phải chạy được trên Ubuntu vàDocker. Config qua environment và đường dẫn portable; không hard-code đường dẫnWindows hoặc cần máy cá nhân. Windows/DPAPI Owner launchers hiện có là tiện ích vận hành local, không được trở thành dependency của website/Agent/worker production; cơ chế secrets/operator trênLinux phải được thiết kế và nghiệm thu riêng khi vào scope triển khai.
+2. **Ollama/GPU private:** Ollama chạy trực tiếp trênVPS hoặc trong privateDocker network. Không publish11434 hoặc PostgreSQL raInternet; chỉ các service/actor nội bộ được cấp quyền kết nối. Không biến private endpoint thành quyềnSSRF tổng quát hoặc tắt network guards để chạy được.
+3. **Model và hợp đồng:** giữ đúng Qwen tag/digest/context và structured-output/schema/semantic/grounding/authorization contracts đã khóa. Pin hiện hành: qwen3:4b-instruct-2507-q4_K_M; digest0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0; context16384. Các setting đã khóa như temperature0/num_predict2048/deadline15s/concurrency1 và quota/resource guards không tự nới trong quá trình port/deploy. Giữ contract không đồng nghĩa đã nghiệm thu reasoning trênLinux/GPU; nghiệm thu đó vẫn là gate riêng.
+4. **Public entry:** Nginx reverse proxy, tên miền riêng vàHTTPS; frontend/backend qua điểm vào được kiểm soát. Database vàOllama giữ private, không cho browser gọi trực tiếp. Quản lý chứng chỉ/renewal và kiểm HTTPS trong acceptance trước công bố.
+5. **Dữ liệu vàAdmin:** bảo toàn database, tài khoảnAdmin/Owner, ID/role/password hashing, knowledge/provenance/approval/version/retention và dữ liệuAI đã tích lũy. Transfer có inventory/checksum/fingerprint và xác minh readback; không seed/reset để thay dữ liệu hoặc tạo lạiOwner. Secrets không nằm trong source/image/log/report; cấu hình tách theo môi trường.
+6. **Persistence/khôi phục:** persistent volumes cho PostgreSQL và các state/model assets cần giữ. Có backup/restore và diễn tập restore kiểm toàn vẹn, tài khoản/quyền, knowledge linkage, retention và khả năng dùng lại dữ liệu sau restart/container replacement. Backup không thay thế nghiệm thu restore.
+7. **Vận hành:** health/readiness checks cho các service; logging có redaction và correlation phù hợp; resource limits; graceful shutdown/restart. Job lease, in-flight requests, connection pools và persistence phải giữ đúng contract khi service restart hoặc crash, không mất/nhân đôi mutation.
+8. **Fallback khi model lỗi:** Agent Core vẫn tư vấn khiOllama lỗi/mất kết nối, dùng verified context/facts và cơ chế fallback hiện có. Không bịa dữ liệu hoặc bỏ validation, consent, RBAC, confirmation/mutation authority để che lỗiLLM; không âm thầm chuyển sang paid provider.
+9. **Worker định kỳ:** Knowledge Worker có thể chạy theo lịch trênVPS, tuân thủ từng source permission/license/robots/rate limit/cap/refresh/lease/backoff/dedup/expiry/retention đã duyệt. Worker chỉ tạo candidate; source approval vàfact approval vẫn tách biệt, không tự gia hạn/duyệt. Yêu cầu vận hành định kỳ này chưa cấp quyền bật worker production24/7 hoặc thu thập nguồn mới trong task hiện tại.
+10. **Nhiều khách hàng:** hỗ trợ concurrent web/API sessions với isolation theo user/session/principal, privacy, memory consent/revocation, quota và backpressure. Không lẫn conversation/memory/cache/evidence hoặc quyền giữa khách. Nhiều HTTPclients không tự đồng nghĩa được tăng model inference concurrency; dùng scheduling/queue phù hợp với các giới hạn đã được duyệt.
+11. **Môi trường:** tách development/staging/production vềconfig, secrets, database/volumes, domain và quyền truy cập. Không dùng production làm fixture/test target hoặc reuse staging write authorization để cấp quyền production.
+12. **DEMO và dữ liệu doanh nghiệp:** không triển khai DEMOcatalog như doanh nghiệp thật, giá hiện hành hoặc availability/Booking quote. Có phân loại và kế hoạch chuyển dữ liệu được duyệt; chỉ dữ liệu doanh nghiệp có căn cứ mới được công bố theo đúng authority. Không xóa/sửa130Place/20Business staging chỉ vì ghi nhận yêu cầu này.
+13. **Nghiệm thu trước công bố:** audit và actual acceptance trênLinux/Docker/GPU runtime, network/security, model tag/digest/context và reasoning, database persistence/backup-restore, restart/recovery, multi-user isolation/quota và fullBrowserE2E. Tách offline/mock, stagingWindows, Linux/GPU actual, model semantic, worker actual và public production acceptance; không chuyển kết quả một tầng thànhPASS tầng khác.
+14. **Không phụ thuộcPC:** mọi service cần cho website/Agent/worker vàstate đã duyệt phải được vận hành trênVPS/infrastructure được cấp quyền; máy cá nhân không giữ vai trò server, model host, scheduler, database hoặc credential bridge bắt buộc sau triển khai. Kiểm chứng hoạt động khiPC đã tắt là một tiêu chí acceptance.
+15. **Scope hiện tại:** không thuê/mua dịch vụ, cấu hìnhDNS/HTTPS/Nginx thật, tạoVPS/GPU, mởport, deploy/commit/push, chạyOllama/Qwen, model/resource checks hoặc truy cập database vì ghi nhận này. Production GPU/runtime/security/reasoning/persistence/fullBrowser acceptance **NOT RUN**, Qwen **DEFERRED/OFF**, **LIVE READY:NO** cho đến khi có actual evidence và quyền phù hợp.
+
+**Liên hệ lộ trình hiện tại:** TASK21.34 tiếp tục ưu tiên corrected SYNTHETIC source/worker journey trước; source reviewer constraints, exact cohort, cap20/hour/reserve10, request/DML budget, cleanup và runtime deadline giữ nguyên. Extension thêm1authentry đang chờ quyết định riêng; yêu cầu kiến trúc dài hạn này không tự cấp extension, Internet/real-source/knowledge/audit/retention writes hoặc production deployment authorization. Không sửa historical failures hoặc gọi offline portability/code readiness làLinux/GPU LIVE PASS.
+
+### D. TASK21.34 explicitly deferred before independent21.35
+
+Theo task21.35 mới, **21.34 tạm hoãn rõ ràng**: firstapprovedrunSTOPtrướccreate doexactcomboboxselector, Ownerauth200; cleanup40/40/protectedREADONLY. Correctedselector vàcontrolledReactpayloadofflinePASS, nhưngextension thêm1authentry chưađượcduyệt vàcorrectedactualrunNOTRUN. Giữmọirawfailure/approval/budget/deadline/oldPASS; không autoextenddeadline hoặc diễn giải task21.35 là quyền source/worker/Internet. Các phần độc lập của21.35 được bắt đầu; không resume corrected worker.
+
+## 21.35 — V6.7 ADVANCED ADAPTIVE INTELLIGENCE, SELF-CORRECTION & PERSONALIZED CONVERSATION
+
+Ngày thực hiện: **18/11/2026, ICT**. Kết quả **PARTIAL**, Qwen OFF; **LIVE READY: NO**. Đã sửa các lỗi có baseline, chạy offline/compatibility/build và đúng hai hành trình Edge thật. Không mở TASK21.36. Evidence: [adaptive-v67-20261118](evidence/travelgo-ai-agent-core/adaptive-v67-20261118/), [final verdict](evidence/travelgo-ai-agent-core/adaptive-v67-20261118/final-verdict.json).
+
+### 21.35.1. Existing architecture và trạng thái nhiệm vụ trước
+
+TASK21.34 đã được **tạm hoãn rõ ràng** tại21.34D trước khi sửa V6.7. Run đầu dừng ở selector UI, chưa tạo source/chạy worker; corrected run chưa có approval bổ sung. Giữ nguyên historical STOP, quota, deadline và toàn bộ evidence;21.35 không mở rộng quyền worker/Internet hoặc tiếp tục run đó.
+
+Đối chiếu Master21.9,21.15–21.19,21.26–21.34 và Production VPS Requirements21.34C. Tiếp tục một AgentCoreService, các store/consent/validator, RegisteredCatalogService, RecommendationService và TourPlannerService hiện có. Không thêm Agent, bản đồ địa danh, memory/knowledge store hoặc Planner thứ hai.
+
+| Module thực tế | Phân loại trong phạm vi task |
+|---|---|
+| AgentCoreService | Sửa lỗi composition, lời mời memory và giữ/resume preview |
+| vietnameseNormalizer | Đang hoạt động, lexical rules có giới hạn; giữ shared geography/cache theo request |
+| vietnameseConversation | Sửa composition lời xã giao, khoảng ngày và directive optout |
+| conversationSemantics | Sửa phạm vi ngân sách nhóm, Wi-Fi và thay loại lưu trú |
+| adaptiveLanguage | Giữ typed SESSION/PERSONAL/SHARED; session reuse offline PASS, không nghiệm thu persistence mới |
+| travelConsultant | Sửa Wi-Fi; giữ feedback/reference/server filters |
+| advisoryReasoning | Compatibility PASS; review opinion không thành cam kết |
+| decisionIntelligence | Giữ current/hard/soft constraints; reasoning vẫn có giới hạn |
+| naturalGrounding | Giữ server facts/IDs/nguồn; freshness enrichment có computedAt thay đổi |
+| personalizedGrounding | Current quality override PASS offline; không có real-memory integration mới |
+| CustomerMemoryService | Giữ fresh consent/ownership; không sửa persistence |
+| ReviewInsightService | Đây là module Review Intelligence thực tế; giữ batch/revocation fences; không có review thật mới |
+| TravelKnowledgeService + travelKnowledge | Giữ approved/unexpired retrieval và source authority |
+| costIntelligence | Sửa câu nối tiếp hỏi đơn vị khoản giá; không sửa công thức chi phí |
+| geographicEvidence/correction hiện có | Sửa binding vai trò địa danh phủ định; giữ correction/confirmation guards |
+
+Chi tiết source/hash/exports và giới hạn: [intelligence-gap-audit.json](evidence/travelgo-ai-agent-core/adaptive-v67-20261118/intelligence-gap-audit.json). Năng lực Qwen, toàn bộ dialect/slang mở, real review/memory integration và Linux/GPU chưa được nghiệm thu trong task này.
+
+### 21.35.2. Confirmed intelligence gaps
+
+Baseline xác nhận: optout sở thích cũ làm mất yêu cầu tìm dịch vụ đi kèm; câu có thói quen bị lời mời lưu memory chặn; Wi-Fi bị mất khi semantic tokenizer chèn khoảng trắng quanh dấu gạch; geographic role trong “không phải đi từ…” vẫn ghi nơi xuất phát; số tiền “cho cả hai người” chưa gắn group scope; câu nối tiếp hỏi đơn vị khoản giá rơi về fallback; social clauses kết hợp gọi memory không cần thiết. Catalog side-goal thay filters còn làm mất lastPlan dù travel proof không đổi.
+
+Hai case Planner trong manifest có setup dùng **xe khách**, ngoài contract car/motorbike, nên không tạo preview. Giữ nguyên inputs/expected và strict FAIL của H03/H04; không đổi chúng thành PASS hoặc tự đổi xe của khách. Baseline còn phát hiện parser chỉ lấy ngày đầu của khoảng “25/11/2026 đến27/11/2026”; đã sửa riêng delimiter, không mở rộng transport enum.
+
+### 21.35.3. Source changes
+
+Chỉ sáu production files: `backend/src/services/agentCoreService.ts`, `backend/src/agent/conversationSemantics.ts`, `backend/src/agent/geographicEvidence.ts`, `backend/src/agent/travelConsultant.ts`, `backend/src/agent/vietnameseConversation.ts`, `backend/src/agent/costIntelligence.ts`.
+
+Memory offer trở thành metadata đi kèm read request, chống mời lặp theo tập typed preferences trong session; optout không còn kết thúc composed task. Resume dùng đúng lastPlan hiện có, đọc lại catalog/source proof và memory/consent trước publication, không gọi lại Planner hoặc cấp quyền save. Catalog browsing không tự vô hiệu preview; thay verified proof/selection hoặc yêu cầu lập lại vẫn vô hiệu như cũ. Không sửa Planner, RecommendationService, geographic34, migration, Trip/Booking, authentication hoặc .env mặc định.
+
+### 21.35.4. Conversational understanding
+
+Development bao phủ slang/typo, nhiều dịch vụ, phủ định tiện ích, tiền nhóm, câu sửa lời và hypothetical. Semantic spans tiếp tục dựa trên lời khách, không hard-code cả câu benchmark. Fuzzy địa danh trong catalog có một ứng viên rõ phải hỏi xác nhận thay vì tìm toàn quốc. Khoảng ngày dùng “đến/tới” được đọc theo parser ngày hiện có; phương tiện chưa hỗ trợ vẫn cần làm rõ, không ép kiểu thành ô tô.
+
+### 21.35.5. Goal switching
+
+Giữ deferred service goals hiện có. Bản dự tính được giữ qua knowledge/catalog side-goals và quay lại bằng yêu cầu resume rõ ràng; kiểm nguồn/consent mới trước render. Targeted offline dùng real Planner trên catalog SYNTHETIC đã PASS cho resume không recompute, từ chối catalog đổi giá và từ chối memory đổi giữa các lượt đọc. Các case “xe khách” không được dùng làm bằng chứng preview PASS.
+
+### 21.35.6. Self-correction
+
+Giữ các verified slots không liên quan; sửa ngân sách cả nhóm5→6triệu cho hai người; mệnh đề phủ định về nơi xuất phát không thành update. Lời sửa chưa rõ hỏi đúng phạm vi và bỏ pending proposal. Khách nêu200k/người không cập nhật knowledge150k hoặc catalog; authority/source lịch sử được giữ, không tự xác nhận giá hiện hành.
+
+### 21.35.7. Adaptive language
+
+Reuse discovery→typed explanation→SESSION mapping→dùng trong cấu trúc câu khác đã PASS offline. Giữ existing explicit PERSONAL consent, sửa/xóa/revocation và SHARED moderation; không lưu raw transcript, không học hệ số tiền hoặc tự nâng scope. Task này không có persistent-language write authorization và không ghi mapping thật: persistence acceptance mới **NOT RUN**, không gọi là Qwen training.
+
+### 21.35.8. Feedback adaptation
+
+Giữ amenity/type/price cap khi tìm rẻ hơn; chỉ trả alternative đủ điều kiện từ catalog. Actual A2 trả **no_results** vì không có homestay rẻ hơn đáp ứng điều kiện, không tự bỏ constraint. A4 sau khi khách đổi rõ sang khách sạn trả lựa chọn350.000VND, vẫn dưới cap749.999VND và có Wi-Fi. Chưa biết yên tĩnh/vệ sinh thì nói thiếu dữ liệu; không suy chất lượng, khoảng cách trung tâm, sức chứa/trẻ em hoặc availability từ tên cơ sở. Không đổi recommendation weights/cost formulas.
+
+### 21.35.9. Customer personalization
+
+Current quality/type thắng preference cũ; optout chỉ ngưng sử dụng trong phiên, không xóa memory hoặc tự bật/tắt consent lâu dài. Habit + current search vẫn thực hiện search; offer lưu preferences không thay quyền ghi. Task không tạo personal memory/review fixture trong PostgreSQL. Vì baseline memory thật không cung cấp preference cho hành trình này, không tuyên bố actual long-term memory conflict integration PASS.
+
+### 21.35.10. Natural response quality
+
+Actual A1 nêu tên DEMO homestay, giá tham khảo750.000VND, Wi-Fi và “Chưa đủ dữ liệu để đối chiếu yên tĩnh/vệ sinh”; không gọi đây là giá phòng/đêm hoặc Booking. A4 trả khách sạn350.000VND với cùng caveats. B1 trả trực tiếp150.000VND mỗi người,02/2026, link Wikivoyage và cảnh báo chưa xác nhận hiện tại. Social-only response tránh gọi catalog/knowledge/memory/reviews.
+
+Không thêm unrestricted model prose hoặc hiện UUID/internal enums trong reply CUSTOMER đã chấm. Một giới hạn UX vẫn thấy ở A3: catalog location và verified trip destination là hai scope; sau sửa group budget, Agent hỏi trip destination dù vừa biết khu vực search. Không bịa destination proof để che khác biệt này; đây là điểm cần xử lý goal-aware clarification có giới hạn trong21.36.
+
+### 21.35.11. Integrated reasoning
+
+Giữ selective retrieval V6.3, source freshness, fresh memory consent/ownership, review revocation và authority order. Booking chỉ có quyền xác nhận giao dịch từ dữ liệu Booking; historical source/catalog không được thay thế. Worker/private-data flow không thay đổi. Rule-based Agent OFF vẫn tư vấn/Planner bằng nguồn server; **không có bằng chứng model-level reasoning mới**.
+
+### 21.35.12. Before/after benchmark
+
+Khóa28case trước production edits: [manifest](evidence/travelgo-ai-agent-core/adaptive-v67-20261118/benchmark-lock.json), SHA256 `98b6d45d254f8308d665ea67a4c7b0c742f1a7ea9d00fd5b42934d0778fcb41c`. Inputs/expected không đổi sau kết quả. Dùng lại V6.5 production-Core/catalog/history harness và repository doubles SYNTHETIC, không PostgreSQL/model.
+
+| Cohort | Baseline | Final |
+|---|---:|---:|
+| Development | 7/18 | 18/18 |
+| Locked holdout | 4/10 | 8/10 |
+| Tổng | 11/28 | 26/28 |
+
+Kết luận benchmark **PARTIAL**, không phải28/28. H03/H04 giữ FAIL do chưa có preview với transport không hỗ trợ. Các lỗi adapter/checker được ghi riêng và giữ bản đầu: discriminator production là registered_options, HCM aliases so theo shared geography ID, lời yêu cầu làm rõ không nhất thiết kết thúc bằng “?”; fixture attraction phải dùng category thật thay vì sightseeing. Baseline và final được chạy cùng adapter/checker đã hiệu chỉnh, inputs/expected giữ nguyên. Mọi lần lỗi vẫn lưu. Xem [limitations](evidence/travelgo-ai-agent-core/adaptive-v67-20261118/benchmark-fixture-limitations.json).
+
+### 21.35.13. Independent locked holdout
+
+Mười input holdout khác development, expected khóa cùng manifest trước sửa. Baseline outputs đã được audit, vì vậy đây không phải đánh giá blind. Không đổi expected, không tuyên bố tỷ lệ hiểu tiếng Việt tổng quát từ26/28. Bổ sung targeted valid-transport Planner không thay hoặc cấp PASS hồi tố cho H03/H04.
+
+### 21.35.14. Targeted regression/build
+
+Targeted **6/6 OFFLINE PASS**: valid preview resume, stale catalog, fresh memory change, offer không chặn/lặp, injection không được mutation, negated service + Wi-Fi. Probe đầu có assertion sai vị trí đọc memory, đã giữ FAIL và sửa adapter sang lần fresh-read thật; không thay production consent guard để lấy PASS.
+
+Compatibility cuối **115/115 PASS**: conversationV54 10; conversationV62 20; agentAdvisoryV51 19; costContextV591 25; planningV56 23; performanceV63 18. Lần đầu hai suite có lỗi do ép mọi từ “khách sạn” thành subtype hotel, loại cả legacy rows thiếu metadata; đã thu hẹp đổi subtype vào ngữ cảnh đang có loại lưu trú cũ, rồi chạy lại hai suite bị ảnh hưởng. Giữ logs FAIL/PASS. Không chạy lại tất cả benchmark V4–V6.6. Backend `npm.cmd run build --prefix backend --silent` **PASS**; frontend build **NOT RUN**, không có frontend source change.
+
+### 21.35.15. Actual acceptance
+
+Fresh Agent scan một lần, đúng principal hiện có, đọc mọi historical attempts theo cả at/createdAt với timestamp muộn hơn: **20/20**, cap20/hour, reserve10. Pre-reserve capacity10 trước dispatch:1dedicated CUSTOMER login RAM-only +9chat; không scan lại để hồi quota, không đổi principal. [Locked actual manifest](evidence/travelgo-ai-agent-core/adaptive-v67-20261118/actual-manifest.json). Reuse existing strict recorder/Edge/controller send flow; không mock API hoặc dùng HTTP thay các hành động chat UI.
+
+| Hành trình | Actual result | Phạm vi |
+|---|---|---|
+| A desktop1440×1000 | **ACTUAL PASS** theo locked assertions |4chat: nhiều nhu cầu→rẻ hơn/no_results→sửa ngân sách→optout + khách sạn mới; consent/Gửi và response UI PASS |
+| B mobile390×844 | **FAIL_STOP_NO_RETRY** |5chat đều HTTP200; B1–B4 qua assertions/UI, B5 dừng khi so deep equality itinerary |
+
+B3/B5 chỉ khác `hotelSuggestion.reviewInsights.computedAt`: `2026-11-18T12:37:06.198Z` và `2026-11-18T12:37:06.530Z`. Đây là timestamp enrich review khi đọc mới; [independent diff](evidence/travelgo-ai-agent-core/adaptive-v67-20261118/B5-independent-diff-diagnosis.json) chứng minh không khác lịch/chi phí/lựa chọn. **Không sửa expected, không rescore thành PASS, không retry**. B5 có raw200 nhưng kiểm hiển thị cuối/screenshot hành trình B chưa hoàn tất sau khi scorer dừng. Giữ [actual failure](evidence/travelgo-ai-agent-core/adaptive-v67-20261118/actual-failure.json). Full two-journey acceptance **PARTIAL**; Browser→Qwen→Tools **NOT RUN**.
+
+Actual tổng1login +9chat =10conservative entries, remaining suy ra10/reserve10. API READ ONLY audit:296queries,12identity checks, **DML0/blocked0/originalDB0/native-model0**. Không gọi thêm inference, quota hoặc chat sau STOP.
+
+### 21.35.16. Privacy/data integrity
+
+Ban đầu staging ECONNREFUSED và Docker daemon không chạy. Đã mở đúng Docker Desktop hiện có, container/volume `travelgo_catalog_staging_20261112_db` tự khởi động lại; không tạo/reset/seed/migrate DB. Fresh identity xác nhận localhost15452, `travelgo_staging_catalog_20261112`, catalog_runtime non-super/non-createdb/non-createrole, đúng sentinel;17migrations/checksums,40tables,130Place/20Business, đúng Owner SUPER_ADMIN và retained knowledge v2.
+
+Actual API5057 dùng integrated-review READ ONLY tạm thời, frontend5177 task-owned proxy5057; default .env không đổi. **40/40 table fingerprints trước/sau khớp**, gồm users/user_roles, knowledge, memory/language và Trip/Booking. Owner ID/hash/role giữ nguyên, không đọc DPAPI/Owner credentials; original DB/27Trip không truy cập. Không có fixture row cần DELETE. Dừng API thử nghiệm và đúng frontend task-owned23364; khôi phục API **protected READ ONLY PID2124**, model/search/worker/webwrites OFF. [Post-actual proof](evidence/travelgo-ai-agent-core/adaptive-v67-20261118/post-actual-integrity.json).
+
+### 21.35.17. Remaining production blockers và backlog hữu hạn
+
+Portability audit sáu source thay đổi **PASS**: không Windows absolute path, DPAPI website runtime, machine credentials, staging DB hard-code, local browser hoặc Windows timezone dependency. Đây là static audit, chưa nghiệm thu Ubuntu/Docker/GPU. Giữ nguyên21.34C: private Ollama/PG, Qwen pin/contracts, Nginx/domain/HTTPS, volumes/backup/restore, health/log/resource/restart, multi-user privacy/quota, environment isolation và DEMO segregation; chưa deploy hoặc phát sinh chi phí.
+
+- **21.36 — Advanced Travel Consultant:** chỉ xử lý goal-aware clarification nêu ở A3 và các advisory gaps có bằng chứng; giữ unsupported transport clarification, không tự mở enum/công thức. Nếu cần persistent personalization phải có fresh exact write authorization.
+- **21.37 — V7.0 Final AI Agent Acceptance:** tạo manifest hợp contract trước dispatch, so stable itinerary business fields riêng với volatile review timestamp; không thay verdict21.35. Đóng actual worker blocker21.34 chỉ với fresh scope nếu còn cần, rồi bounded final browser/model acceptance khi có approval/guards thực. Không suy current tariffs/real businesses từ DEMO hoặc fact02/2026.
+- Sau21.37 chuyển ưu tiên sang toàn bộ UI website. Linux/GPU/model-reasoning/security/persistence/full browser production acceptance còn **NOT RUN**. Không tự bắt đầu21.36/21.37, không thêm vòng nghiên cứu hoặc triển khai VPS.
+
+**Task dừng tại21.35: code cải thiện và compatibility/build PASS; frozen benchmark26/28 PARTIAL; actual A PASS/B FAIL; Qwen OFF, model intelligence NOT VERIFIED, LIVE READY: NO.**
+
+## 21.36 — V6.8 ADVANCED TRAVEL CONSULTANT, DECISION INTELLIGENCE & PRODUCT FUNCTIONAL CLOSURE
+
+Thực hiện **18/11/2026, ICT**. **OFFLINE FUNCTIONAL PASS / ACTUAL BLOCKED_QUOTA / LIVE READY: NO.** Không chạy Qwen. Hoàn tất đợt sửa chức năng có giới hạn, không khởi động21.37 hoặc redesign website. Evidence: [consultant-v68-20261118](evidence/travelgo-ai-agent-core/consultant-v68-20261118/), [final verdict](evidence/travelgo-ai-agent-core/consultant-v68-20261118/final-verdict.json).
+
+### 21.36.1. Baseline và existing architecture
+
+Đã đối chiếu Master21.26–21.35,21.35.17, Production VPS Requirements21.34C và source của17module: AgentCoreService, VietnameseConversation, ConversationSemantics, TravelConsultant, DecisionIntelligence, AdvisoryReasoning, CostIntelligence, NaturalGrounding, PersonalizedGrounding, AdaptiveLanguage, TravelKnowledgeService, ReviewInsightService, CustomerMemoryService, RegisteredCatalogService, RecommendationService, TourPlannerService và planningIntelligence. Geographic evidence được audit/sửa tại tầng ngôn ngữ; không thay registry geographic34.
+
+Tiếp tục một Core, các store và services hiện có. TASK21.34 vẫn **DEFERRED**, corrected worker NOT RUN; không tái sử dụng authorization hết hạn. Historical21.35 H03/H04 và B5 tiếp tục FAIL. Các kết quả cũ không được đổi tên thành V6.8 actual PASS.
+
+### 21.36.2. Confirmed gaps
+
+Baseline mới10/30 xác nhận: thiếu câu hỏi xác nhận destination candidate từ catalog; phương tiện ngoài contract có thể không được chặn trước Planner dùng mode cũ; câu so sánh điểm đến có thể cập nhật ngân sách và gọi lại Planner; câu hỏi giảm chi phí bị hiểu thành yêu cầu nhập ngân sách mới; câu catalog có nghỉ ngơi/phủ định một phần bị chuyển sang thu thập Trip slots; no-results thiếu bước tiếp theo có căn cứ; câu so sánh dùng số đếm bằng chữ bị hiểu thành một ordinal.
+
+Targeted âm còn xác nhận proposal candidate sống qua câu hỏi giả định/hết hạn riêng, và hypothetical xe khách có thể chạy bằng car từ context. Đã sửa binding/guard. Rehearsal phát hiện ngày lịch25/11/2026 bị hiểu thành ngày thứ25 khi kèm pace; đã tách calendar date khỏi local day edit, giữ hành vi sửa ngày2 hiện có. Một probe mixed-mode trước sửa không dispatch hoặc đoán mode; gap thực tế là connector “hoặc” của phương tiện gây geographic ambiguity và mất các slots mới. Đã giới hạn connector theo span địa danh, đồng thời không cấp new car proof khi còn unsupported alternative.
+
+### 21.36.3. Production source changes
+
+Chín file: `services/agentCoreService.ts`; `agent/vietnameseConversation.ts`, `conversationSemantics.ts`, `travelConsultant.ts`, `advisoryReasoning.ts`, `costIntelligence.ts`, `geographicEvidence.ts`, `planningIntelligence.ts`; `utils/itineraryComparison.ts` dưới `backend/src`.
+
+Comparator mới chỉ là acceptance utility có version, không phải Planner/store/recommendation engine. Không thay TourPlannerService, RecommendationService/weights, GROUP_VND_V1/cost formulas, persistence services/schema/migrations, authentication, frontend source hoặc default .env. [Final offline source hashes/portability](evidence/travelgo-ai-agent-core/consultant-v68-20261118/source-final-offline-lock.json). Các manifest actual đã chuẩn bị bị chặn bởi quota; sau corrective offline cuối, không tái sử dụng chúng như quyền dispatch trên source mới.
+
+### 21.36.4. Goal-aware clarification
+
+Search area không tự thành VERIFIED destination. Ví dụ sau tìm homestay Đà Lạt, yêu cầu lập lịch cho2người/6triệu sẽ hỏi: “Bạn muốn lập chuyến đi Đà Lạt với ngân sách6.000.000VND cho cả nhóm,2người lớn đúng không?” Những giá trị số này được parse từ lời khách, không suy từ catalog.
+
+Chỉ khi khách xác nhận proposal hợp lệ mới merge destination qua existing typed proof. Candidate chỉ có hiệu lực đúng revision kế tiếp, tối đa5phút trong session TTL, bị hủy khi có turn xen giữa/selection/expiry. Dùng lại affirmative contract hiện có. Nhiều retained search areas hỏi rõ, không chọn thay; hypothetical/negated/comparison location không nâng authority. Destination đã VERIFIED không hỏi lại.
+
+### 21.36.5. Decision support
+
+Reuse AdvisoryReasoning/DecisionIntelligence, nhận số đếm bằng chữ trong yêu cầu so sánh và giữ referent clarification khi chưa biết dịch vụ nào. Nếu hỏi bảo đảm sạch/yên tĩnh mà referent chưa rõ, nói chưa thể bảo đảm rồi yêu cầu chỉ đúng listing để đối chiếu review. Không tự chọn một trong nhiều listing, tạo review/confidence/ranking số hoặc gọi giá thấp nhất là tốt nhất. Unknown price units không cho phép kết luận tổng chi phí dịch vụ nào thấp hơn.
+
+### 21.36.6. Budget intelligence
+
+Câu hỏi “ngân sách có ổn không” là advisory-only: trả phần chưa biết, nguồn phù hợp và một câu hỏi tiếp theo; không tạo Planner/Trip hay nâng hypothetical budget thành proof. Budget breakdown dùng totals thực của existing Planner: tổng cả nhóm, dư/thiếu và khoản lớn nhất. Không bắt khách nhập ngân sách mới khi chỉ hỏi nên giảm ở đâu.
+
+Historical range dùng `reportedCostLabel` hiện có, giữ lower/upper bounds và unit, không tự lấy midpoint. No-results có thể nêu mức giá tham khảo thấp nhất của candidate cùng type/amenities còn lại nếu có dữ liệu, recheck source proof trước publication. Không coi chênh lệch reference prices là tiền tiết kiệm Booking, không cộng historical shuttle vào Planner total hoặc double-count lodging/transport.
+
+### 21.36.7. Destination comparison
+
+Hai địa danh đã nêu không bị `đi đâu` xóa thành unknown destination. Comparison mode đi qua CostIntelligence, giữ party/days/nights/mode từ verified context và scope tiền hiện có; thiếu scope thì hỏi. Không cập nhật destination/ngân sách chính hoặc gọi hai Planner để trả một câu so sánh định tính.
+
+Nếu chỉ một nơi có approved historical observation, nơi kia thiếu dữ liệu thì giữ phần thiếu và không tuyên bố nơi nào rẻ/đủ ngân sách. Không thêm weather/crowd/safety/current-price facts. Geographic registry và dedup/source authority hiện có giữ nguyên.
+
+### 21.36.8. Itinerary intelligence
+
+Planner algorithm và relaxed/balanced/packed contract không đổi. Calendar dates không còn bị xem là local day number khi khách yêu cầu pace. Existing local replan vẫn giữ các ngày không liên quan, hotel/restaurant/mandatory constraints và báo delta/caveats; compatibility planningV56 cuối23/23 PASS.
+
+“Ngày2 bỏ bớt một chỗ nhưng giữ chỗ ăn” chưa xác định activity thì hỏi đúng phạm vi, không tự bỏ một điểm hoặc sửa ngày khác. Resume giữ existing preview, revalidate source/consent và không auto-save. Unsupported executable edits được giải thích bằng khả năng hiện có, không mở thuật toán/mode mới.
+
+### 21.36.9. Unsupported transport
+
+Nhận diện xe khách, xe buýt, máy bay, tàu hỏa, phương tiện công cộng tại tầng language; chúng không được thêm vào execution enum car/motorbike. Trả giới hạn tính chi phí/thời gian và khả năng tư vấn lưu trú/ăn uống/tham quan. Pending unsupported mode ngăn Planner dùng nhầm car cũ; giữ các slots hợp lệ khác. Mixed/undecided mode không sinh new car proof.
+
+Khách chọn rõ car/motorbike ở turn sau mới lập preview hợp contract. Unsupported hypothetical bị chặn trước Planner và không ghi main state. Valid car và motorbike, unsupported/negated/mixed mode, slot retention và resume được kiểm offline. H03/H0421.35 vẫn FAIL; không đổi inputs/expected lịch sử. New transport engine/ETA/ticketing là P2 riêng, không bắt buộc trước UI nếu công bố đúng giới hạn.
+
+### 21.36.10. What-if reasoning
+
+Reuse existing scenario proof/Planner, không tạo scenario store. Budget+1triệu và3→4ngày giữ main proof/preview, kiểm source và trả hypothetical result với authority không thực thi. Unknown unit hoặc unsupported mode không tự tạo khoản tiết kiệm/ETA. Không tự sửa saved Trip, Booking, payment hoặc memory. Việc áp dụng thay đổi vẫn đi qua workflow/revision/confirmation hiện có.
+
+### 21.36.11. Response quality và integration
+
+Multi-constraint search giữ homestay/type, hard Wi-Fi và price cap; nghỉ ngơi là preference, không phải bằng chứng cơ sở yên tĩnh. Current request/optout thắng stale memory; offer không spam ở mỗi turn, không tự persist. No-results giữ yêu cầu và hỏi khách có muốn nới một điều kiện; không tự tăng cap/chuyển type/destination.
+
+Short budget advice giữ source link/unit/period nếu có, không trả form tất cả slots. Review opinion không thành guarantee. Giữ selective retrieval, source expiry/revocation, memory ownership/consent và Booking authority; không nạp mọi service cho mọi turn. Không hiện UUID/internal enum/database terminology trong replies đã chấm; không giả vờ Qwen đang hoạt động.
+
+### 21.36.12. Current-contract comparator
+
+`compareItineraryBusinessFields`, version **ITINERARY_BUSINESS_V1**, chỉ tách `hotelSuggestion.reviewInsights.computedAt` khi cả hai là timestamp ISO hợp lệ. Missing/invalid timestamp không bị bỏ qua. Giữ nguyên toàn bộ các field khác, gồm dates/duration/destination, service IDs, activity/day order, prices/totals/breakdown, constraints, review evidence/revision và source metadata. Hàm không mutate inputs.
+
+Comparator PASS cho cặp raw B3/B5 cũ chỉ khác timestamp; đây là kiểm utility hiện hành, **không rescore21.35 mobile thành PASS**. Negative checks phát hiện đổi price, activity, selected listing, review/source revision, review evidence, cost total, timestamp bị xóa hoặc timestamp ngoài path đã chứng minh. Future actual dùng comparator version mới, không bỏ cả reviewInsights/metadata.
+
+### 21.36.13. Benchmark/holdout
+
+Khóa30case trước production edits,20development +10holdout: [lock](evidence/travelgo-ai-agent-core/consultant-v68-20261118/benchmark-lock.json), SHA256 `aba320f32af2e5e7ae8af61af0653e56a0af9e28e9f084aebe22ba7465ad77af`. Structured assertions kiểm proof/candidate, filters, typed scenarios, source authority, no mutation và ý nghĩa response. Không đổi inputs/expected sau output.
+
+| Phép đo | Development | Holdout | Tổng |
+|---|---:|---:|---:|
+| Baseline |6/20|4/10|10/30|
+| Sau sửa development, source khóa trước mở diagnostics holdout |20/20|**8/10 lần độc lập đầu**|28/30|
+| Regression cuối sau corrective fixes |20/20|10/10 đã quan sát|**30/30**|
+
+Giữ first holdout8/10 và hai FAIL H04/H07. Lần10/10 sau sửa là corrective regression, không phải independent holdout mới. Không cộng reruns thành coverage/độ chính xác AI tổng quát. Không dùng bộ mới xóa H03/H04/B5 lịch sử.
+
+### 21.36.14. Targeted regression/build
+
+Targeted **11/11 OFFLINE PASS**: candidate next-turn/expiry, unsupported hypothetical, stale alternative price rejection, comparator scope/input immutability, injection/no-mutation, motorbike preview, competing catalog areas, historical range, calendar-date/pace và mixed-mode scope. Repo/catalog/history/Planner harness cũ được reuse; fixtures/doubles SYNTHETIC chỉ trong process, PostgreSQL0/model0.
+
+Compatibility cuối **115/115**, sáu suite liên quan: conversationV54 10, conversationV62 20, agentAdvisoryV51 19, costContextV591 25, planningV56 23, performanceV63 18. Giữ các logs FAIL trước sửa: composed search thiếu local search-area fallback và bản sửa date/day đầu làm mất local edit; đã sửa đúng scope và kiểm lại. Backend build **PASS**. Frontend source không đổi, frontend build **NOT RUN**. Không chạy lại toàn bộ benchmark V4–V6.7, không cộng các lần rerun.
+
+### 21.36.15. Actual browser acceptance
+
+Chuẩn bị/reuse existing Edge + strict recorder + UI consent/Gửi flow. Mobile ưu tiên5chat: catalog→candidate confirmation→valid car preview→side-goal→resume/comparator/UI/screenshot. Desktop tùy capacity4chat: relaxed preview→budget breakdown→what-if→resume. Inputs/expected không đổi giữa các source-lock revisions trước dispatch. Offline rehearsal dùng explicit SYNTHETIC public DEMO-label double, **không phải actual browser PASS**; không ghi giả vào real corpus.
+
+Fresh Agent scan **một lần**, đúng approved principal A/hash hiện có, toàn bộ historical attempts theo cả at/createdAt và timestamp muộn hơn: remaining **10/20**, reserve **10**. Mobile cần1login +5chat =6entries, tức remaining≥16: **thiếu6**. Hai journeys cần10entries, remaining≥20. Vì vậy **BLOCKED_QUOTA**, login0/chat0/browser0; không kích hoạt API integrated-review/frontend, không polling/reset/switch principal hoặc chờ để scan lại. [Gate](evidence/travelgo-ai-agent-core/consultant-v68-20261118/fresh-agent-quota.json).
+
+Theo ledger tại thời điểm scan, sớm nhất đủ mobile là **20:37:05.812 ICT18/11/2026** nếu không có entry mới. Đây là dự báo có điều kiện, không phải quyền chạy/khẳng định quota ở thời điểm tương lai. Không tự chạy lại trong task. Sau gate chỉ hoàn tất offline corrective guards/report; final offline lock supersedes prepared actual manifests cho lần nghiệm thu tương lai, cần manifest/source lock và fresh gate mới ở21.37.
+
+### 21.36.16. Data integrity/quota/runtime
+
+Fresh staging15452 đúng `travelgo_staging_catalog_20261112`, catalog_runtime non-super/non-createdb/non-createrole, sentinel hợp lệ;40tables/17migration checksums,130Place/20Business, Owner/SUPER_ADMIN và retained approved knowledge v2 được xác minh. **40/40 fingerprints trước/sau khớp**. DML0, fixtures0, không cần DELETE cleanup. Không đọc/đổi Owner credentials/DPAPI/hash/role; không sửa catalog/reviews/memory/language/knowledge/Trip/Booking/schema. DB gốc27Trip không truy cập.
+
+Runtime cũ **protected READ ONLY PID2124** còn đúng ownership, model/search/worker/webwrites OFF; không restart hoặc đưa source V6.8 vào browser runtime khi quota bị chặn. Frontend không được task này khởi động. Source/build V6.8 trên disk không được trình bày như actual runtime đã nghiệm thu. Quota còn10 tại fresh scan, dùng0; không có scan mới. Ollama metadata/native/model quota/resource checks đều0; không Internet/Maps/GPS/paid API/VPS/commit/push/deploy. [Integrity](evidence/travelgo-ai-agent-core/consultant-v68-20261118/post-task-integrity.json).
+
+### 21.36.17. Capability readiness matrix A–T
+
+[Matrix đầy đủ](evidence/travelgo-ai-agent-core/consultant-v68-20261118/capability-readiness-matrix.json) ghi riêng **code, offline, real HTTP/PG, browser, model và exact blocker** cho từng capability. Tóm tắt:
+
+| ID | Capability | Code/offline | Real HTTP/PG và browser | Model/blocker |
+|---|---|---|---|---|
+|A|Natural language|Rule core cải thiện; corrective30/30|V6.8 NOT RUN/quota;21.35 A là lịch sử|Qwen NOT RUN;P1|
+|B|Context continuity|Candidate/TTL/revision/resume PASS|Mobile M chưa chạy; B5 cũ FAIL|OFF;P1 current browser|
+|C|Adaptive language|Existing SESSION/PERSONAL/SHARED giữ nguyên|Historical workflow; không PG write mới|OFF;P1 consent/reuse smoke|
+|D|Customer memory|Fresh consent/current override giữ nguyên|Không real-memory integration mới|OFF;P1 authorized data|
+|E|Review intelligence|Uncertainty/revision fences PASS|Không review corpus thật mới|OFF;P1 eligible review integration|
+|F|Approved knowledge|Expiry/authority PASS|Retained v2;21.35 B1 historical actual|OFF;P1 fresh permitted production sources|
+|G|Cost intelligence|Comparison/range/breakdown PASS|Current actual BLOCKED|OFF;P1 browser budget/what-if|
+|H|Recommendation|Engine/weights không đổi; fixture integration|130Place/20Business vẫn DEMO|OFF;P1 real partner data|
+|I|Decision support|Grounded qualitative tradeoffs PASS|Current browser BLOCKED|OFF;P1 real-data usefulness|
+|J|Planner|Existing engine; car/motorbike/local edits PASS|21.35 preview lịch sử; current NOT RUN|OFF;P1 preview/resume, modes mớiP2|
+|K|Trip integration|Existing save/update guards; no mutation mới|21.27-B actual persistence PASS lịch sử|OFF;P1 final smoke nếu cần, fresh write scope|
+|L|Booking navigation|Existing preview; không auto-book/payment|Current smoke NOT RUN; data unchanged|OFF;P1 navigation/auth/authority|
+|M|Self-correction|Typed slots/mode/candidate scope PASS|21.35 A lịch sử; current BLOCKED|OFF;P1 current browser|
+|N|What-if|Budget/duration isolation PASS|Current desktop D chưa chạy|OFF;P1 actual scenario|
+|O|Source authority|Exact business/review/source fields retained|40table/source versions unchanged|OFF;P0 before production correctness|
+|P|Worker|Code cũ;21.34 DEFERRED|Corrected worker NOT RUN|OFF;P1 before enabling periodic worker|
+|Q|Model reasoning|Bridge/contracts cũ, offline validation|Ollama GET/POST0|NOT RUN;P1 fresh real reasoning acceptance|
+|R|Desktop/mobile|UI/strict recorder reused; rehearsal offline|V6.8 BLOCKED_QUOTA|OFF;P1 mobile first|
+|S|Privacy/security|Auth/RBAC/TTL/fences giữ; targeted11/11|DML0,40/40; production NOT RUN|OFF;P0 multi-user/privacy/security acceptance|
+|T|Linux/GPU portability|Static9changed files/build PASS|Linux/Docker/GPU actual NOT RUN|OFF;P0 deployment acceptance|
+
+### 21.36.18. Remaining P0/P1/P2 blockers
+
+- **P0 trước production:** security/multi-user/session/privacy/quota acceptance; đúng quyền và freshness giá/data; Linux/Docker/GPU/private network, không public Ollama/PostgreSQL, HTTPS/domain, volumes/backup-restore/recovery và DEMO segregation. Đây là các điều kiện chưa nghiệm thu, không phải quyền thuê VPS/deploy trong task này.
+- **P1 trước public AI release:** current-source mobile/desktop acceptance bị quota chặn; Qwen real reasoning cần fresh approval/guards; authorized real review/memory/partner/source integration trong đúng feature sẽ công bố. Worker phải có fresh bounded actual acceptance trước khi bật định kỳ;21.34 không được tự resume. Có thể giữ worker/model OFF nhưng không tuyên bố chúng READY.
+- **P2 có thể sau demo/UI:** transport modes mới, routing/ticketing và những loại tư vấn vượt dữ liệu/contract hiện hành. Công bố giới hạn và hỏi làm rõ; không mở thêm phiên bản AI để nghiên cứu vô hạn.
+
+### 21.36.19. V7.0 final acceptance scope và freeze
+
+**Agent Core functional freeze candidate: YES trong supported model-OFF contracts; actual closure còn PENDING. Qwen LIVE readiness: NOT VERIFIED. Production readiness/LIVE READY: NO.** Đã hoàn tất sửa code của task; không tự mở capability mới hoặc21.37.
+
+21.37 chỉ khóa source cuối và manifest mới, fresh data identity/fingerprints, một fresh Agent gate cap20/reserve10 rồi ưu tiên mobile M trước; desktop nếu đủ capacity. Dùng ITINERARY_BUSINESS_V1 và kiểm UI/screenshot/overflow/không auto-save; không tái dùng manifest lệch source hoặc verdict21.35. Trip/persistent-learning writes chỉ khi có fresh exact authorization. Worker/model acceptance là scope có approval/guards riêng; không tự chạy Qwen bằng quyền task cũ. Bảo toàn dữ liệu và restore protected READ ONLY.
+
+Giữ Production VPS Requirements21.34C; static portability không thay actual Ubuntu/GPU/security/persistence acceptance. Sau21.37 chuyển ưu tiên sang hoàn thiện toàn bộ UI, rồi đóng gói Linux/Docker và deployment khi được cấp quyền hạ tầng/chi phí. **Dừng sau21.36.**
+
+## 21.37 — TRAVELGO AI AGENT V7.0 FINAL FUNCTIONAL ACCEPTANCE & RELEASE FREEZE
+
+Thực hiện **18/11/2026, ICT**. **CORE FUNCTIONAL FREEZE: PASS trong supported model-OFF contracts đã nghiệm thu. CURRENT MOBILE: PASS. CURRENT DESKTOP: PASS. REAL MODEL: NOT VERIFIED/OFF. WORKER: DEFERRED/OFF. PRODUCTION LIVE READY: NO.** Đây là closure chức năng Core để chuyển sang UI, không phải nghiệm thu Qwen hoặc public VPS. Evidence: [release-v70-20261118](evidence/travelgo-ai-agent-core/release-v70-20261118/), [final verdict](evidence/travelgo-ai-agent-core/release-v70-20261118/final-verdict.json).
+
+### 21.37.1. Final source/build identity
+
+Đã đọc21.34/21.34C,21.35,21.36 và matrix/blockers/freeze21.36.17–19. Machine `DESKTOP-KU5UHNI`, Windows/Node24.20.0, đúng workspace TravelGo hiện có. Git HEAD `9af594d58a328557fe53a30e46b31b01f51646be`;498working-tree entries trước task được ghi nhận, không reset/checkout/clean hoặc commit/tag/push. Final V6.8 TS/JS hashes khớp [offline lock21.36](evidence/travelgo-ai-agent-core/consultant-v68-20261118/source-final-offline-lock.json), historical evidence giữ nguyên. Backend build được reuse bằng hash identity, không build hoặc chạy lại30/30/115/115 để tăng PASS.
+
+Frontend source/build đã được capture. Lần gọi `npm build` đầu bị guard **REFUSE_EXISTING_AUDIT** vì npm truyền audit filename riêng của process cha vào child Node. Giữ FAIL/log; chạy lại compiler và Vite như hai process độc lập, mỗi process có model-off guard/audit riêng theo existing contract: **tsc PASS, vite build PASS**,132source/public/config files và106build files được hash. Không sửa hoặc tắt guard, không sửa source frontend. [Build receipt](evidence/travelgo-ai-agent-core/release-v70-20261118/frontend-build-identity-v2.json).
+
+Tạo **fresh execution manifest** từ final V6.8 source và prepared M/D inputs/expected21.36; không reuse prepared manifest đã lệch source. Hash26source/build/guard/UI files, source lock và frontend receipt, khóa trước dispatch. Browser dùng Vite source5177/proxy5057 cùng frozen revision; frontend dist build PASS không được diễn giải thành public production deployment acceptance.
+
+### 21.37.2. Current staging data identity
+
+Fresh READ ONLY preflight xác minh PostgreSQL127.0.0.1:15452, `travelgo_staging_catalog_20261112`, `catalog_runtime` non-super/non-createdb/non-createrole, sentinel `travelgo-public-staging:catalog-20261112`. Đúng40tables/17migration checksums/130Place/20Business, Owner/SUPER_ADMIN, retained approved knowledge v2 và baseline source/memory/language/catalog. Không database-transfer blocker; không seed/reset/recreate/migrate hoặc truy cập DB gốc27Trip. Không đọc Owner credentials/DPAPI hoặc hiển thị password hash/token.
+
+### 21.37.3. Fresh quota gate và request accounting
+
+Fresh scan **một lần** toàn bộ historical attempts theo cả at/createdAt, lấy timestamp muộn hơn, đúng approved CUSTOMER A/hash cũ: **20/20**, cap20/hour/reserve10. Dự báo20:37:05.812 của21.36 không được dùng thay measurement. Pre-reserve đủ10entries:1login dùng chung +5mobile chat +4desktop chat. Không polling, chờ scan lại, đổi principal/máy hoặc reset limiter.
+
+Đã audit existing ledger contract: `DELETE /api/agent/core/sessions` gọi `service.revoke` chỉ xóa owned in-memory store/states, không `limits.consume`/PG DML; lifecycle recorder trước dispatch vẫn giữ, không tạo exemption mới. Bootstrap/privacy GET không tiêu thụ Agent turn limiter. Management/confirmation POST ngoài plan bị strict recorder chặn. [Accounting contract](evidence/travelgo-ai-agent-core/release-v70-20261118/request-accounting-contract.json).
+
+Reload owned API chỉ để nạp source sau khi ledger gate PASS, không cấp thêm quota từ restart. Runtime cũ2124 được handoff sang **current V6.8 API18388**, owned frontend22704/Vite5177 proxy5057, cùng READ ONLY identity. Source/build hashes, direct API health/proxy health/frontend đều PASS200. Qwen/external search/worker/webwrites OFF; default .env không đổi.
+
+### 21.37.4. Current mobile acceptance
+
+**ACTUAL PASS**, Edge thật390×844, same approved authenticated CUSTOMER, no API doubles. Consent chưa tích thì Gửi disabled; tích session consent với message hợp lệ thì enabled, request thật và response hiện trong chat. M1–M5 đều HTTP200:
+
+| Turn | Kiểm chứng current source |
+|---|---|
+|M1|Homestay Đà Lạt dưới800k/Wi-Fi từ catalog; chưa nâng search area thành verified destination|
+|M2|Lập lịch cho2người/6triệu, ngày25–27/11/2026, car, xuất phát HCM; hỏi xác nhận đúng candidate Đà Lạt|
+|M3|“Đúng rồi” xác nhận candidate; actual Planner preview3ngày với dates/party/budget/mode hợp contract|
+|M4|Hỏi nhà hàng trong cùng conversation; giữ verified Trip context và main preview|
+|M5|Resume đúng main preview; stable business fields bằng nhau theo comparator mới|
+
+`ITINERARY_BUSINESS_V1`: equal=true, changedPaths=[], chỉ ignored `hotelSuggestion.reviewInsights.computedAt`. UI latest reply và preview action hiển thị; final [mobile screenshot](evidence/travelgo-ai-agent-core/release-v70-20261118/actual-journey-M.png). Không horizontal page overflow ở các turn đã kiểm, page/React errors0. Có2console resource errors từ optional external CSS bị policy chủ động abort; unexpected console errors0, không gọi ra Internet để tải lại.
+
+Historical21.35 mobile B5 vẫn FAIL. M5 là current-contract acceptance mới, không rescore old run. [Mobile score](evidence/travelgo-ai-agent-core/release-v70-20261118/actual-journey-M-score.json).
+
+### 21.37.5. Current desktop acceptance
+
+**ACTUAL PASS**, Edge thật1440×1000, context mới cùng principal; dùng lại login RAM-only,4chat đều200:
+
+| Turn | Kiểm chứng current source |
+|---|---|
+|D1|Current-source preview theo full verified car context và relaxed pace; calendar dates không bị hiểu thành local day edit|
+|D2|Giải thích ngân sách/khoản lớn nhất từ existing server-calculated breakdown, không nhập lại budget hoặc recompute Planner vô cớ|
+|D3|What-if budget7triệu trong result, main verified budget vẫn6triệu; không persist hoặc làm hỏng preview chính|
+|D4|Resume main preview; comparator equal=true, giữ prices/totals/IDs/dates/activities/review evidence/source revisions|
+
+Actual replies giữ reference-price assumptions, historical source link/period/unit, unknown availability và Booking caveats. [Desktop screenshot](evidence/travelgo-ai-agent-core/release-v70-20261118/actual-journey-D.png), [score](evidence/travelgo-ai-agent-core/release-v70-20261118/actual-journey-D-score.json). Page/React errors0, horizontal page overflow0;2expected CSS-abort console errors, unexpected0. Không click save/Booking hoặc dùng HTTP thay các thao tác chat UI.
+
+### 21.37.6. Production defects và targeted closure
+
+**Không phát hiện production bug cần sửa trong hai required journeys; production source edits0.** Không mở thêm intelligence/module/store/transport engine. Đã reuse assertions/strict recorder/comparator hiện có và frozen offline evidence21.36, không rerun full benchmark/regressions.
+
+Post-capture analysis chỉ đọc current raw responses:6Planner breakdown sums khớp totals; M3 đúng3ngày/2người/car; M2 chưa verified destination; M/D có hai conversation IDs độc lập. Retained source v2 vẫn150.000VND/PER_PERSON/02-2026, budget comparison không khẳng định đủ theo giá hiện hành, không tạo BOOKING_AUTHORITY.
+
+Một lỗi supplementary analysis adapter dùng `verification` vốn optional trên non-query CostAdvice được ghi riêng, rồi kiểm đúng contract `budgetComparison`/`evidenceAuthority`; không sửa production hoặc gửi lại request. Đây không phải actual journey failure/retry. Native10requests và các locked expected giữ nguyên. [Captured authority checks](evidence/travelgo-ai-agent-core/release-v70-20261118/captured-actual-authority-checks.json).
+
+### 21.37.7. Final capability matrix A–T
+
+[Release matrix đầy đủ](evidence/travelgo-ai-agent-core/release-v70-20261118/release-capability-matrix.json) ghi từng capability với **implementation, offline, real HTTP/PG, browser desktop, browser mobile, real model, data authority, remaining blocker, public eligibility**.
+
+| Capability group | Current evidence và giới hạn |
+|---|---|
+|A/B/M Natural language/context/correction|Current prepared supported requests, candidate confirmation và continuity PASS; không phải Vietnamese model reasoning tổng quát|
+|C/D Adaptive language/memory|Existing code/consent/ownership giữ; readonly integration, không tạo hoặc chấm lại persistent learning/memory writes|
+|E Review intelligence|Fresh empty/DEMO insights/caveats; không có real-review corpus integration mới|
+|F/O Knowledge/source authority|Actual retained historical source v2 và unit/period; không coi là current tariff hoặc Booking quote|
+|G/I/N Cost/decision/what-if|Actual breakdown/needs/budget scenario và main-context isolation PASS trong M/D|
+|H/J Recommendation/Planner|Actual staging DEMO catalog và existing Planner, valid car/pace/resume PASS; không đổi weights/formulas hoặc mở modes|
+|K Trip integration|Preview/no-auto-save PASS;21.27-B persistence PASS lịch sử giữ nguyên, không Trip write mới|
+|L Booking navigation|Existing code/authority giữ; full booking/checkout không chạy trong task|
+|P/Q Worker/model|OFF; worker DEFERRED và Qwen NOT VERIFIED, chỉ packet đề xuất|
+|R Desktop/mobile|Hai required current-source journeys PASS; không phải toàn bộ48route được browser-accept|
+|S Privacy/security|Single principal,2session contexts, consent/auth/DML0; không phải concurrent multi-user production security/load test|
+|T Linux/GPU|Source/build static readiness; Ubuntu/Docker/GPU/network/deployment actual NOT RUN|
+
+### 21.37.8. Data integrity và runtime restoration
+
+**40/40 table fingerprints trước/sau khớp**. API audit311queries/12identity checks, DML0/blocked0/originalDB0/native-model0. Không fixtures hoặc cleanup DELETE, không Trip/Booking/payment/memory/language/review/knowledge/catalog/Owner writes. Original DB27Trip không truy cập. Auth token và dedicated test credentials chỉ trong RAM, không copy vào evidence/Master/chat/log.
+
+Tổng actual1login +9chat =10conservative entries, remaining suy ra10/reserve10; không scan lại hoặc phát sinh chat sau completion. Latency9local sequential model-OFF turns88–309ms, không phải load benchmark/SLA hoặc model latency.
+
+Đóng Edge test contexts, dừng đúng frontend task-owned22704, handoff API18388 sang **protected READ ONLY11916**, owner/source/build identity khớp current build; model/search/worker/webwrites OFF. Không dừng unrelated processes. [Integrity receipt](evidence/travelgo-ai-agent-core/release-v70-20261118/post-actual-integrity.json).
+
+### 21.37.9. Core functional freeze verdict
+
+| Release gate độc lập | Kết quả |
+|---|---|
+|**AGENT CORE FUNCTIONAL FREEZE**|**PASS — supported model-OFF contracts, frozen V6.8 implementation accepted as V7.0 Core**|
+|**CURRENT MOBILE ACCEPTANCE**|**PASS — M1–M5 actual Edge/API/PostgreSQL**|
+|**CURRENT DESKTOP ACCEPTANCE**|**PASS — D1–D4 actual Edge/API/PostgreSQL**|
+|**QWEN LIVE READINESS**|**NOT VERIFIED / OFF**|
+|**KNOWLEDGE WORKER READINESS**|**DEFERRED / OFF**|
+|**PRODUCTION LIVE READY**|**NO**|
+
+Freeze được ghi bằng source/build/execution hashes và evidence, không commit/tag/push. Không gọi full AI V7.0 LIVE READY; không dùng Core fallback thành Qwen PASS hoặc current acceptance thành rescore historical H03/H04/B5/first-holdout/model failures. Core functional development kết thúc trong scope hiện tại; tiếp theo là UI/UX, chỉ sửa tiếp nếu có blocker thực tế được chứng minh.
+
+### 21.37.10. Qwen acceptance packet — đề xuất, chưa được duyệt/chạy
+
+Một [Qwen review packet](evidence/travelgo-ai-agent-core/release-v70-20261118/qwen-acceptance-review-packet.json), status **PROPOSED_NOT_APPROVED_NOT_EXECUTED**, dành cho giai đoạn model riêng. Source xác nhận tag `qwen3:4b-instruct-2507-q4_K_M`, digest `0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0`, context16384, temperature0, num_predict2048, inference deadline15giây, concurrency1. Đây là static source verification, không metadata/readiness/resource measurement.
+
+Đề xuất fresh resource/ownership/quota guards, metadata scope localhost, tối đa1warm-load nếu cần +3semantic inferences, không retry. Full bound pre-reserve4conservative entries/cap20/reserve10 trên đúng principal. Q1 natural Vietnamese/typo/typed quotes, Q2 ambiguous change giữ verified slots, Q3 select server fact IDs rồi grounded renderer với price-unit/period/review-opinion caveats. Facts fixture phải SYNTHETIC khi không có authorized real review, không private/raw untrusted reviews hoặc PG writes.
+
+Fresh builder phải khóa exact inputs/expected/source/fact pool trước native POST và có approval mới; thay source hoặc stale facts không được âm thầm dùng packet cũ. Chấm riêng raw output/schema/semantic, backend authority validation, grounding/renderer và fallback; fallback không được cấp Qwen PASS. Browser→Qwen→Tools không nằm trong3semantic cases. **Task21.37: model/resource/quota checks0, Ollama GET/POST0, warm-load0, inference0.** Không bật model mặc định.
+
+### 21.37.11. Knowledge worker packet — deferred, không thực thi
+
+[Worker review packet](evidence/travelgo-ai-agent-core/release-v70-20261118/worker-acceptance-review-packet.json) chỉ đề xuất fresh exact cohort/source/job/DRAFT candidate IDs, existing fence validation, Owner source-review COMMIT, lifecycle/idempotence/failure→actual next_due recovery/expiry/revoke/persistence/cleanup. SYNTHETIC transport + real PostgreSQL acceptance tách khỏi real Internet acquisition; source/fact approval không được Codex bấm thay Owner.
+
+Đề xuất ≤4cycles/60total DML including API/worker/cleanup,≤2giờ, fresh quota/scope và40/40 restoration; không chạy theo packet này nếu chưa fresh authorization/guard compatibility. Real Internet cần permission/robots/license/redirect/request budget manifest riêng. DRAFT không được public retrieval; retained approved knowledge chỉ đọc, không approve fact mới. TASK21.34/extension cũ không resume; worker cycles0/Internet0 và scheduled worker tiếp tục OFF. Việc này không chặn UI development, nhưng phải đóng gate trước khi bật production worker.
+
+### 21.37.12. UI route/page/component inventory
+
+Static TSX/import-graph audit xác nhận **48page route patterns,3layouts,34shared TSX components**. [Full inventory](evidence/travelgo-ai-agent-core/release-v70-20261118/ui-route-inventory.json) ghi component, API service modules/templates, roles, functionality, desktop/mobile findings, priority và evidence của từng route; không tạo route vì danh sách ý tưởng.
+
+- **CUSTOMER/public:** Home/Explore, hotels/restaurants/details, tours/details, tickets, Planner, blog/create/detail, auth, favorites, trips/details, profile/bookings/become-partner, Assistant/feature-gated routes, privacy/terms/error pages.
+- **PARTNER:** dashboard, bookings/details, existing places/tours/tickets/blogs list/create/edit/detail và workspace patterns; role PARTNER giữ nguyên.
+- **ADMIN:** dashboard, partner applications, place/tour/blog moderation, travel-web/source/candidate review, language lexicon và generic section route; role SUPER_ADMIN giữ nguyên.
+
+Không có dedicated `/attractions` hoặc CUSTOMER `/reviews` route: dùng existing Explore/category/detail/review components. Memory controls ở `/profile`, consent/privacy/language controls ở Assistant; không tự tạo trang mới. `/blog/create` được router khai báo public nhưng component/API còn auth/business checks; route inventory không cấp thêm quyền.
+
+**Confirmed placeholders:** AdminSectionPage labels businesses/bookings/users/content/reports/settings và PartnerSectionPage workspace labels chỉ render Construction/placeholder, không operational API UI. Không tuyên bố Users/RBAC/business/report/review-admin hoàn thiện chỉ vì có menu/route. Thiếu business UI phải scope riêng, không lén triển khai trong redesign.
+
+Chỉ Assistant có fresh desktop/mobile browser acceptance trong task. Screenshot cho thấy nested chat scroll, footer lớn và HuGoTravel branding cần thống nhất với direction TravelGo; các trang khác chưa được audit browser mới, không tự gán lỗi responsive. API templates từ static import graph không phải requests đã thực thi.
+
+### 21.37.13. Production blocker register
+
+[Register24items](evidence/travelgo-ai-agent-core/release-v70-20261118/production-blocker-register.json) giữ21.34C và gate cho environment/data separation, DEMO segregation, auth/RBAC, sessions/privacy/concurrency/quota, API errors, backup/restore/secrets, Linux/Docker/PostGIS volumes, private Ollama/GPU, health/recovery, Nginx/domain/HTTPS, logs/monitoring, rollback và external-browser E2E.
+
+Local model-OFF acceptance không đóng các gate hạ tầng/security/real-data/production. PostgreSQL/Ollama không được public trực tiếp; Owner/approved knowledge phải được bảo toàn qua backup/restore. Không thuê VPS, cấu hình DNS/HTTPS thật, deploy hoặc phát sinh chi phí trong task này.
+
+### 21.37.14. Remaining P0/P1/P2
+
+- **P0 trước production:** private network/TLS/secrets, đúng production data/DEMO separation, auth/privacy/session/quota trên deployed topology, backup/restore/recovery/rollback, Linux/Docker/PostGIS/runtime và external HTTPS E2E. Chưa nghiệm thu public production.
+- **P1 trước public feature tương ứng:** Qwen real semantic acceptance, scheduled worker acceptance/nguồn hợp lệ, authorized real review/memory/partner integration, load/error-state/UI acceptance. Không cần giữ UI development chờ model/worker; chúng vẫn OFF và không được quảng bá READY.
+- **P2 sau demo nếu có yêu cầu:** new transport modes/routing/ticketing hoặc intelligence vượt contract/data hiện có; không tạo thêm version/engine để kéo dài development.
+
+### 21.37.15. TASK21.38 UI/UX handoff — chưa bắt đầu
+
+[Handoff/design scope](evidence/travelgo-ai-agent-core/release-v70-20261118/ui-ux-handoff-2138.md): audit brand/assets/tokens, thống nhất typography/color/spacing/forms/cards/navigation; CUSTOMER journeys và responsive trước, rồi PARTNER/ADMIN; accessible loading/empty/error/disabled states và trạng thái provider OFF. Giữ API contracts, RBAC, consent/revocation, server authority, preview confirmation, DEMO labels và toàn bộ nghiệp vụ đã PASS.
+
+Không đổi frontend framework, thay business logic để làm đẹp, thêm trang/backend chỉ vì placeholder label, tự bật Qwen/Maps/worker hoặc deploy. Missing business functionality phải được mô tả và scope riêng. Mục tiêu tiếp theo là website du lịch thống nhất, responsive và dễ dùng; hạ tầng Ubuntu/Docker/VPS GPU/domain/HTTPS là giai đoạn có authorization/acceptance riêng sau UI.
+
+**Dừng sau21.37: Core functional freeze và hai current browser journeys PASS; Qwen NOT VERIFIED/OFF; worker DEFERRED/OFF; production LIVE READY:NO. TASK21.38 chỉ được chuẩn bị, không thực hiện.**
+
+
+## 21.38-A — HOTEL DOMAIN FOUNDATION, STRUCTURED LOCATION & AI-READY BUSINESS DATA
+
+Ngày thực hiện: **18/11/2026 ICT**. Đây là phase A theo roadmap mới: hoàn thiện nghiệp vụ website/dữ liệu trước, tích hợp AI đầy đủ sau. Giữ nhận diện **HuGo Travel**. Không thực hiện 21.38-B/C/D/E, 21.40 hoặc 21.41 trong task này.
+
+**Kết quả: domain foundation IMPLEMENTED / OFFLINE PASS; physical extension PROPOSED, migration và Hotel native integration NOT RUN. Compatibility Booking PASS; bộ RBAC cũ FAIL tại assertion visibility đã lỗi thời. Không kết luận toàn bộ Hotel platform hoặc toàn bộ regression PASS.**
+
+### 21.38-A.1. Baseline và kiến trúc thực tế
+
+Workspace TravelGo hiện có, HEAD `9af594d58a328557fe53a30e46b31b01f51646be`; giữ toàn bộ working tree đã có. Mục21.37 được giữ nguyên: Core model-OFF functional acceptance PASS trong phạm vi đã nghiệm thu, Qwen NOT VERIFIED/OFF, worker DEFERRED/OFF, production LIVE READY:NO. Evidence21.37 được kiểm lại **67/67** hash; 26 hash Core/compiled Core/guards/frontend liên quan không đổi.
+
+Audit READ ONLY PostgreSQL xác minh đúng staging `127.0.0.1:15452`, database `travelgo_staging_catalog_20261112`, role `catalog_runtime` không superuser/createdb/createrole và sentinel `travelgo-public-staging:catalog-20261112`. Physical baseline: **40 bảng public / 520 cột / 17 migration**, PostGIS3.4.3; không có bảng `hotel_*`. **130 Place/20 Business DEMO**. Không kết nối database gốc hoặc kiểm lại 27 Trip ở đó.
+
+Source được đối chiếu theo tên thật: Place/Business/BusinessMember; PlaceService/PlaceRepository và BusinessAccessService; BookingService/bookingValidation; RecommendationService/TourPlannerService/RegisteredCatalogService; ReviewService/ReviewInsightService và reviewAspects; CustomerMemoryService/LanguageMemoryService; TravelKnowledgeService/TravelWebService/TravelWebRetrieval/TravelWebWorker; AgentCoreService/coreProvider; partnerRoutes/adminRoutes và geographic registry. React18/Vite giữ nguyên, reuse inventory21.37 gồm48route/3layout/34shared component; không coi generic Partner/Admin placeholder là chức năng quản lý phòng đã có.
+
+[Audit, ERD, API và handoff chi tiết](HUGO_HOTEL_DOMAIN_FOUNDATION.md). [Physical baseline](evidence/travelgo-ai-agent-core/hotel-foundation-20261118/physical-schema-before.json) chứa actual columns/constraints/indexes/triggers/extensions, checksum migration và fingerprint.
+
+### 21.38-A.2. Những thiếu hụt đã xác minh
+
+- Place đã có public identity, mô tả, gallery, property amenities, moderation và subtype qua catalog metadata. Business là pháp nhân/quyền sở hữu; không tạo Hotel identity trùng Place hoặc thêm Business enum chỉ để biểu diễn Villa/Apartment.
+- Chưa có room type, rate plan, calendar price, tồn phòng theo local stay date hoặc promotion scoped theo room/rate. Booking hotel hiện resolve từ Place.priceFrom; không có đủ căn cứ coi đây là giá mỗi phòng/đêm hoặc bảo đảm tồn phòng.
+- Review/ReviewInsight có moderation/verification/consent/revision, nhưng chưa có booked-room attribution. Insight cache hiện có scope Place; không được dùng làm bằng chứng cho một room type cụ thể.
+- Chưa tìm thấy managed multipart upload/storage pipeline; URL/gallery JSON hiện có không tương đương hệ thống upload, kiểm quyền ảnh và persistent media hoàn chỉnh.
+- Place latitude/longitude hiện NOT NULL, serializer có đường chuyển null-like thành0. Đây là compatibility gate cần xử lý trước khi publish khách sạn mới chưa biết tọa độ; task A không sửa Planner/Place để vượt gate và không dùng tọa độ giả.
+
+### 21.38-A.3. Artifacts đã triển khai
+
+**IMPLEMENTED:**
+
+- `backend/src/hotels/contracts.ts`: HotelStay V1, giá VND **PER_ROOM_NIGHT**, Address/Room/Rate/Inventory/Promotion/Quote contracts; flag `HOTEL_DOMAIN_ENABLED` mặc định OFF.
+- `validation.ts`: strict fields/types, không ép chuỗi thành tiền/số khách; civil dates, occupancy và tuổi trẻ; dùng registry34 hiện có, phân biệt province và tourism destination; dấu/không dấu, Đ./Đường, P./Phường và X./Xã; coordinate pair/source/status và thời điểm cập nhật, không tự xác minh tọa độ.
+- `inventory.ts`: kiểm **mọi đêm**, checkout exclusive, missing=UNKNOWN, closed/shortage=unavailable; cộng nhu cầu các dòng cùng room/date trước khi lên kế hoạch khóa; lock order xác định. Không giữ phòng hoặc ghi DB.
+- `pricing.ts`: integer/BigInt, nightly overrides, từng phòng/từng tuổi, thuế/phí có đơn vị, một promotion hợp lệ, không stacking, expiry/version và quote không binding; không chuyển Place.priceFrom/review/web cost thành room price.
+- `readModel.ts`: parameterized identity/address search, required location scope cho tên đường/phường, fixed sorting/pagination, loại DEMO khỏi public mặc định. Filter giá/view/availability chưa có adapter thì không được giả vờ áp dụng.
+- `services/hotelReadService.ts`: shared read-service port cho website/AI sau này; kiểm eligibility/revision/scope, ẩn sao chưa xác minh, tách hotel/room amenities/media, giá không ngày chỉ tham khảo/availability null; fresh no-store/version/validUntil và lỗi giá/tồn thành NOT_A_QUOTE. **Chưa có PG adapter/controller/route thật, không có quyền tạo Booking/tool/mutation.**
+- `tests/hotelFoundation.test.ts`: fixtures SYNTHETIC trong RAM, không review/catalog thật hoặc PostgreSQL writes.
+
+Không đăng ký Sequelize model mới, `.sync`, automatic migration hoặc endpoint vào runtime hiện hành. Không đổi .env/default website config.
+
+### 21.38-A.4. ERD và migration đề xuất
+
+Artifact migration18 `20261118_18_hotel_domain_foundation.sql` và rollback riêng trong `database/rollback/`. **PROPOSED / NOT APPLIED / chưa có native SQL acceptance**.
+
+12 bảng mới: `hotel_profiles`, `hotel_addresses`, `hotel_room_types`, `hotel_media`, `hotel_rate_plans`, `hotel_rate_calendar`, `hotel_room_inventory`, `hotel_promotions`, `hotel_booking_stays`, `hotel_booking_items`, `hotel_room_allocations`, `hotel_review_stays`.
+
+Place/Business/Booking/Review hiện có giữ identity. Composite FK chống gắn room/rate/media khác khách sạn. Profile có content/approved-content/commercial revision; address có structured fields/source/update time, nullable coordinates, generated text search keys và PostGIS indexes. Booking extension dùng **Booking PK cũ**, immutable snapshots và allocation theo mọi đêm; proposed SQL có conditional inventory updates, release đúng trạng thái, deferred all-night/item-total checks và attribution vào room đã đặt. Đây chưa phải bằng chứng đã chạy concurrency/cancellation/PostgreSQL persistence.
+
+Không ALTER cột cũ, backfill, seed hoặc chuyển dữ liệu DEMO. Chỉ đề xuất narrow metadata triggers trên Place identity và Booking có extension. Nếu được áp dụng vào baseline tương ứng: **40→52 bảng, 17→18 migration**; row fingerprints của40bảng cũ dự kiến không đổi, ngoại trừ schema_migrations có đúng dòng tracker mới khi thực sự apply. 17checksum cũ không đổi. Existing protected launcher vẫn giữ guard40/17, không nới để chấp nhận schema mới.
+
+### 21.38-A.5. API, publication và AI freshness
+
+Contracts cho Hotel/Address/Room/Rate/calendar/inventory/Promotion/media/review linkage và Booking extension đã mô tả cụ thể trong tài liệu. Routes ghi rõ **PROPOSED, chưa mounted**; reuse auth/RBAC/membership/permissions và moderation/audit hiện có. Server kiểm If-Match/version và kiểm soát identity, verification, approved revision, rating và allocated stock; Partner không được sửa review khách hàng.
+
+Luồng thống nhất: authorized Partner update → validate/approval đúng revision khi cần → PostgreSQL commit → fresh read/no-store hoặc invalidation sau commit → website và future Agent cùng authorized HotelReadService. Không thêm Kafka/Redis/broker, bảng giá riêng cho AI hoặc retrain model theo giá. `asOf/sourceVersion/validUntil`, promotion boundaries/local midnight và DEMO labels đi cùng dữ liệu. Quote chưa giữ phòng; Booking confirmation phải khóa/revalidate lại trên transaction thật.
+
+Trước publish cần canonical address projection vào Place legacy cùng transaction và chặn đường sửa cũ làm hai nguồn dữ liệu lệch nhau. Trước bookable cần **strategy trong BookingService hiện có** và chặn legacy hotel request dùng Place.priceFrom cho room-enabled properties. Multi-line promotion allocation, room-specific review projection, media storage và date-aware search filter adapter còn là gate tích hợp.
+
+Review reuse method thật `BOUNDED_VI_ASPECT_RULES_V3`, scope public/AI-allowed/proven actual stay, review IDs/revision/computedAt/opinionOnly. Current keys chưa có các aspect chuyên biệt VIEW/BEACH_ACCESS/BED_COMFORT…; không tự tuyên bố hỗ trợ enum của roadmap hoặc tạo score. Chưa sửa review engine hoặc đưa raw/private/untrusted review vào model. Reviews về giá là ý kiến lịch sử, không current room rate.
+
+### 21.38-A.6. Kiểm thử và giới hạn bằng chứng
+
+| Kiểm tra | Kết quả | Phạm vi |
+|---|---|---|
+| Backend TypeScript build sau source cuối | **PASS** | Guard model-OFF preload; không native/network inference. |
+| Hotel domain/read-port targeted tests | **37/37 OFFLINE PASS** | SYNTHETIC in-memory; typed values, dates/ages, scopes, all nights, duplicate/overlap demand, money oracle, promo expiry, no stale stock promise, media isolation, default OFF. |
+| Independent cost oracle | **PASS** | 2phòng/3đêm: base6.400.000 + extra750.000 − discount640.000 + tax651.000 + fee230.000 = **7.391.000VND**, chỉ fixture. |
+| Existing Booking compatibility unit | **11/11 PASS** | Request validation, ownership/suspension boundary, idempotency payload conflict/fingerprint; DB NOT USED. |
+| Existing RBAC suite | **FAIL — assertion visibility cũ** | Test lấy `options.where.status`; PlaceRepository hiện dùng `{[Op.and]:parts}`, nên APPROVED nằm trong Op.and. Không chứng minh authorization production bị lỗi; cũng không được ghi suite PASS. Test/source production này không sửa trong task. |
+| Staging identity + protection | **ACTUAL READ ONLY PASS** | **40/40 fingerprint không đổi**, 17migration, Owner exact ID/SUPER_ADMIN và retained knowledge v2 đúng; DML0. |
+| Frontend build/browser | **NOT RUN trong A** | Frontend source/build giữ nguyên; reuse bằng chứng21.37, không chạy lại để tăng số PASS. |
+| Migration18 / native hotel FK/transaction/concurrency/rollback | **NOT RUN** | Chưa có fresh authorization cho migration/test target mới; không apply vào existing staging hoặc DB gốc. |
+| Browser→API→PG→Hotel AI / Qwen | **NOT RUN** | Không khẳng định Hotel integration hoặc model LIVE READY. |
+
+Evidence [offline-tests-final-v2.json](evidence/travelgo-ai-agent-core/hotel-foundation-20261118/offline-tests-final-v2.json), [verification-results.json](evidence/travelgo-ai-agent-core/hotel-foundation-20261118/verification-results.json), [physical-schema-after.json](evidence/travelgo-ai-agent-core/hotel-foundation-20261118/physical-schema-after.json). Lượt offline đầu34/36 được giữ nguyên; hai lỗi là assertion dùng slug trần thay canonical registry ID `destination:...`. Fixture được sửa theo registry thật; không sửa historical LIVE expected hoặc FAIL evidence. Các lượt36/36 trước bổ sung strict optional-field test cũng giữ nguyên.
+
+### 21.38-A.7. Data protection và migration review boundary
+
+**PostgreSQL DML0; existing migration apply0; original DB access0; Owner/credentials/DPAPI changes0; chat/quota scan0; Ollama GET/POST0; warm-load/inference0; worker cycles0.** Không kiểm RAM/GPU/VRAM. Không thay catalog/reviews/memory/language/knowledge/Trip/Booking/schema hiện hành. API protected READ ONLY PID11916 giữ nguyên, không restart. Không Google Maps/GPS/VPS/paid API/commit/push/deploy.
+
+[Migration review packet](evidence/travelgo-ai-agent-core/hotel-foundation-20261118/migration-review-packet.json) ghi target test mới cô lập, baseline/schema/DDL hashes/exact operations, expected tables/deltas, data impact, backup/restore/compatibility và rollback. Packet **PROPOSED_NOT_APPROVED_NOT_EXECUTED**, không mở quyền staging/production. Native executor/fixture lock cần chốt trước fresh approval/execution; không tái dùng approval task cũ. New isolated tests chưa tạo container/database.
+
+Với persistent target sau này: cần fresh target/role/sentinel và toàn bộ baseline, encrypted backup + verified restore, feature OFF/maintenance và riêng scope migration; không được nới protected40/17 chỉ để chạy. Rollback artifact chỉ hoạt động khi12bảng Hotel rỗng; có dữ liệu thì BLOCK/export/review recovery, không cascade-delete hoặc restore làm mất Booking mới.
+
+Chỉ xem hierarchy website tham khảo iVIVU; Booking.com bị challenge/JS, không bypass. Không scrape rates/reviews/images/counts; attachment task không có image riêng kèm theo. Điều này không chặn foundation, nhưng không tuyên bố đã audit đầy đủ mẫu hình ảnh.
+
+### 21.38-A.8. Handoff và phase gate
+
+Đã chuẩn bị inventory Partner profile/address/media/room/rate/inventory/promotion editors, Admin revision/moderation queue và shared search/results/detail/room/booking/review components. Dữ liệu chỉ từ backend chung, giữ HuGo navy/trắng/cam và existing phù hợp font; không hard-code số khách sạn, giá hoặc điều kiện ưu đãi.
+
+**Remaining blockers:** native migration/concurrency/rollback acceptance; RBAC test assertion cần cập nhật riêng giữ nguyên visibility checks; nullable-coordinate/legacy projection compatibility; concrete authorized PG/read/write/moderation adapters; legacy Booking bypass gate và HotelStay V1 strategy; managed media storage/rights; room review evidence projection và các aspect chưa có; date-aware search filters; actual Partner/Admin/Customer browser acceptance. Các phần này chưa được đánh dấu ACTUAL PASS.
+
+**Dừng sau21.38-A: deliver code/domain offline đã kiểm, schema/API/ERD và compatibility handoff; Hotel module chưa hoàn chỉnh, chưa mở phaseB hoặc redesign, AI integration/model/worker/deploy tiếp tục OFF/NOT RUN.**
+
+
+
+## 21.38-B — HOTEL NATIVE FOUNDATION, PARTNER MANAGEMENT & ADMIN PUBLICATION
+
+Thực hiện **18–19/11/2026 ICT**, tiếp tục cùng task khi người dùng gửi lại toàn bộ yêu cầu có cùng SHA256. Phiên19/11 có fresh scope/source lock và thời hạn2giờ; không tiếp tục dùng cửa sổ18/11 đã hết hạn. Chỉ nghiệm thu **môi trường Hotel cô lập**; không migrate hoặc bật tính năng trên catalog staging15452.
+
+**Verdict: HOTEL_NATIVE_PARTNER_ADMIN_ACCEPTANCE_PASS_ISOLATED_ONLY.** Native migration/constraints, HTTP và browser Partner/Admin PASS trong phạm vi SYNTHETIC đã kiểm. Backend/frontend build PASS; current-contract RBAC PASS. **Persistent staging migration NOT RUN; HotelStay Booking NOT IMPLEMENTED; new draft thiếu tọa độ BLOCKED422 theo contract Place hiện có; Qwen/worker OFF; production LIVE READY:NO.** Không kết luận toàn bộ Hotel platform hoàn thành.
+
+### 21.38-B.1. Authorization, isolation và baseline
+
+Đọc Master21.37/21.38-A, Hotel foundation và packetA; DDL/rollback ban đầu khớp hash. Người dùng đã cấp quyền mới cho tối đa1môi trường PostgreSQL/PostGIS test riêng, migrations/fixtures/native/backend/browser và cleanup. Không dùng quyền đó cho staging hiện có hoặc database gốc.
+
+[Execution lock](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/execution-lock.json) và [fresh resume lock19/11](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/renewed-source-lock-20261119.json) ghi exact target/sentinel/roles, cached image SHA, resource limits, UUID pool, ports và caps. Target `hugotravel_hotel_test_20261118`, container `hugotravel_hotel_foundation_test_20261118`; sentinel `hugotravel-isolated-test-database-v1`. Cached image `sha256:d96be3a9c16d44e22d34d5c7b6e85be8875addf672672c6cd38171ea6055a94a`, không pull image mới. CPU1/RAM container1024MiB/shm128MiB là giới hạn cấu hình, không đo hoặc đổi RAM/GPU/VRAM hệ thống.
+
+Migration role `hotel_test_admin` tách runtime `hotel_runtime`; runtime được xác minh **không superuser/createdb/createrole**, không quyền tạo Booking và không quyền trực tiếp sửa allocated quantity. Chỉ loopback15453/5058/5178. Dedicated network do task tạo, không ICC/masquerade; không chạm network/container/volume có trước task. PostgreSQL test dùng tmpfs, không dùng volume staging hoặc copy Owner/customer/knowledge/credentials thật.
+
+Docker internal network ban đầu không publish được loopback; đã ghi nhận lỗi và sửa đúng network task-owned. Khi Docker Desktop bị tắt giữa các lượt, dừng native; người dùng mở lại Docker. Phiên19/11 chỉ khởi động lại đúng container test đã tạo, kiểm trạng thái và dựng lại baseline SYNTHETIC trong target riêng khi tmpfs đã mất; không reset/reseed DB hiện có. Baseline thực đạt **40bảng/17migration** trước khi apply18; không sửa counter hoặc migrations1–17 để lấy PASS.
+
+### 21.38-B.2. Migration18 native verdict
+
+**NATIVE PASS** cho source18 cuối: **52bảng/18migration**, đủ12bảng Hotel đúng tên, actual columns/constraints/FK/indexes/tracker. `schema_migrations` được kiểm checksum với source; 17migration cũ không thay đổi.
+
+Migration18 chỉ áp dụng trên target test. Trong quá trình triển khai B bổ sung `hotel_media.alt_text` để quản lý mô tả ảnh và `hotel_profiles.published_snapshot` để so nội dung đã duyệt; snapshot approval được loại khỏi content-change comparison để approval không tự tạo revision mới. Đây là cập nhật artifact chưa từng apply vào persistent staging/production. BảnDDL v1/v2 và receipts native cũ được giữ; source cuối được khóa lại trước nghiệm thu.
+
+Các native invariant kiểm FK khác hotel/room/rate/media, ngày không tồn tại/rate period đảo, giá âm, allocated vượt sellable, duplicate allocation, đủ mọi đêm, rollback cùng revision, nonempty rollback refusal,2connection cạnh tranh có đúng1winner và cancellation trả mọi đêm đúng1lần. **14case PASS** sau một scoped recheck; original native FAIL không bị ghi đè. Ba case attribution bổ sung kiểm actual completed stay, sai author và sai Place; review fixtures luôn PENDING/AI-disabled và ROLLBACK, cuối cùng **reviews0** trong target. Không tạo corpus review thật/giả public.
+
+[Native acceptance](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/native-acceptance.json), [review attribution](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/native-review-attribution.json), [final schema/role proof](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/native-before-cleanup.json).
+
+Lỗi assertion “Missing final night” đầu tiên do deferred guard cấp Booking chặn trước với `HOTEL_BOOKING_ALLOCATION_INCOMPLETE`; vẫn không commit được partial stay. Recheck ép riêng `hotel_item_all_nights` immediate và nhận đúng expected ban đầu `HOTEL_ALLOCATION_ALL_NIGHTS_REQUIRED`. Không đổi expected hoặc nới SQL để che lỗi. Cleanup cuối đã kiểm rollback source18 cuối khi extension rỗng, trở về **40/17** với17checksum nguyên vẹn.
+
+### 21.38-B.3. RBAC current-contract closure
+
+Sửa đúng `rbac.test.ts`: PlaceRepository hiện dùng `where[Op.and]`; assertion không còn đọc `where.status` sai cấu trúc. Kiểm cả APPROVED, business ACTIVE clause, DEMO name/slug exclusion. **Current-contract suite PASS**, không thay production visibility để làm test xanh; FAIL lịch sử21.38-A vẫn giữ nguyên.
+
+Actual HTTP/PG xác nhận public APPROVED positive control, DRAFT/PENDING/REJECTED bị loại, business SUSPENDED bị loại trong khi business khác vẫn hiện, và nguồn DEMO không lọt dù tên/slug không có marker DEMO. Một assertion data-array trong dynamic probe đầu còn yếu; đã giữ receipt đó và chạy **ACTUAL_LEGACY_VISIBILITY** riêng với strict array shape/positive controls đúng response thật của PlaceController.
+
+Actual managed APIs từ chối PartnerB truy cập hotel/media PartnerA, CUSTOMER vào quản lý, roomID khác hotel, businessId giả quyền, approved revision và allocated quantity do client gửi. Admin test là tài khoản SUPER_ADMIN **SYNTHETIC trong DB test**, không phải Owner staging; không đọc Owner credentials/DPAPI hoặc đóng vai Owner duyệt facts thật.
+
+### 21.38-B.4. PostgreSQL adapter, API và guards
+
+**IMPLEMENTED:** `hotels/postgresStore.ts`, `hotels/management.ts`, `routes/hotelRoutes.ts`, tích hợp cùng `routes/api.ts`, `partnerRoutes.ts`, `adminRoutes.ts` và existing auth/BusinessAccessService. Không backend/auth system thứ hai, không `.sync(force/alter)`.
+
+Aggregate read dùng **REPEATABLE READ + READ ONLY**, DB time, explicit DATE/numeric mapping và scope. Managed media/audit/approved snapshot/owner data được đọc trong cùng transaction với aggregate. `HotelReadService` xuất current eligible data, content/commercial revision, sourceVersion/asOf/validUntil, provenance, price basis, promotion conditions và SYNTHETIC/DEMO status; no-store, booking/execution authority=false.
+
+Public: `GET /api/hotels`, `GET /api/hotels/:placeId`, `POST /api/hotels/:placeId/quotes`; quotes chỉ đọc/tính, không giữ phòng hoặc tạo Booking. Managed APIs nằm trong existing Partner/Admin routers. Hotel after-connect guard chỉ chấp nhận test target/sentinel/roleNOSUPERUSER đúng52/18 và exact migration18 digest. Existing environment và frontend flag mặc định OFF; protected launcher40/17 không nới.
+
+Lỗi production code thực tế do browser phát hiện: `SELECT *,stay_date::text ... ORDER BY stay_date` có tên output trùng gây ambiguous column. Đã qualify physical table columns trong ORDER BY; transaction tạo hotel lỗi trước đó ROLLBACK toàn bộ, không có row tạo dở. Raw500/API log và screenshot/FAIL receipt được giữ trước lượt PASS.
+
+### 21.38-B.5. Structured address và compatibility
+
+Lưu house/street/ward/admin/province/tourism/full/normalized address, nguồn/thời điểm và coordinate status. Reuse duy nhất registry34 và `locationsWithCatalog`, kể cả dynamic area IDs như Vũng Tàu trong tỉnh/thành tương ứng; không thêm registry thứ hai. Dấu/không dấu, Đ./Đường, P./Phường và X./Xã được xử lý theo field; full street query bỏ road-prefix lexical, không dùng AI để đoán vị trí.
+
+Actual hai hotel eligible cùng Bùi Thị Xuân ở Đà Lạt/Đà Nẵng chỉ xuất hiện trong đúng destination, không lẫn nhau. Khi publish, canonical address/location được project vào Place **cùng transaction**. Partner content changes chuyển draft, giữ Admin suspension; old Place edit/submit/moderation contract bị chặn cho Hotel-managed records, kể cả khi feature OFF nhưng extension tồn tại.
+
+Audit đầy đủ các nhóm consumer được ghi trong [coordinate compatibility proposal](HUGO_HOTEL_COORDINATE_COMPATIBILITY_PROPOSAL.md): serializer, map, Planner, Recommendation, partner create/edit và catalog projection. Không sửa Planner/Recommendation/geography34 trong B.
+
+**Giới hạn được kiểm thực tế:** new Place/Hotel chưa có tọa độ không thể tạo draft theo schema NOT NULL hiện có; trả **422 trước INSERT**, không tự dùng0,0 hoặc mượn tọa độ Business. Existing Hotel có thể lưu address null pair nhưng phải unpublished; Admin approve409, Hotel public409 và legacy Place404. Đã test khôi phục supplied pair rồi submit/approve đúng revision. Nullable-coordinate migration chỉ PROPOSED, không apply.
+
+### 21.38-B.6. Profile, rooms, rates, inventory, promotions
+
+Partner quản lý profile qua Place identity và Hotel extension: subtype, tên/mô tả/amenities/services, check-in/out, child/pets/smoking/general policies. Room editing có area/bedrooms/bathrooms/beds, capacities, supplied view/UNKNOWN, nullable booleans và room-specific amenities; archive không xóa reference đã đặt.
+
+Rate VND/PER_ROOM_NIGHT, periods, occupancy/child bands/extra guest, meals/cancellation/tax/fees và version. Calendar override/closed days, inventory batch≤90ngày, readonly allocated và server version checks. Partner không giảm sellable dưới allocation hoặc tự sửa allocated. Promotion một lựa chọn, explicit scope/date/min nights/value/version; không stacking, giá gạch ảo hoặc countdown giả.
+
+Mutable APIs strict fields/types, server IDs, If-Match, scoped row locks và transaction/audit. Scoped UUID injection chỉ từ locked test launcher, không nhận ID tùy ý của client. Quote không suy Place.priceFrom thành giá phòng; thiếu thuế/phí/tồn không thành giá0 hoặc available mặc định.
+
+Oracle độc lập actualHTTP:2phòng/2đêm, đêm1=1.000.000/đêm2=1.200.000, giảm10% ⇒ **3.960.000VND**. Đổi base thành1.100.000 ⇒ **4.140.000**; đổi calendar đêm2 thành1.300.000 ⇒ **4.320.000**; hết/không chọn promotion ⇒ **4.800.000**. Đây chỉ là dữ liệu SYNTHETIC test, không phải giá khách sạn thật.
+
+### 21.38-B.7. Shared media và storage
+
+`services/imageStorageService.ts` là shared raster/storage core, `hotels/media.ts` xử lý ownership/metadata Hotel. Kiểm bytes/signature/decode, JPEG/PNG/WebP,10MiB,16–8000px/25MP, không animation, re-encode WebP và strip EXIF. Không tin filename/MIME client hoặc mở external URL fetch. Keys server-generated, namespace UUID, mode0600 trên OS hỗ trợ, root persistent/configurable Linux nằm ngoài build output.
+
+Hotel/room upload, authenticated preview, caption, cover/move-to-front, vị trí metadata và archive kết nối API thật; rights declaration và Admin moderation trước public serving. Gallery ordering V1 dùng cover/move-to-front; chưa làm drag-and-drop editor. Scoped ownership/path traversal và rights/publication checks không bị bypass. Không sao chép ảnh từ website tham khảo; test dùng generated SYNTHETIC pixels.
+
+Rollback upload dọn file mới khi DB thất bại; có explicit bounded orphan cleanup giữ referenced/young files và không follow symlink, **không schedule worker**. Actual API restart giữ file và DB revision; decode WEBP/EXIF strip đã kiểm. Ba object test cuối đã xóa đúng key/hash.
+
+### 21.38-B.8. Partner/Admin UI và browser
+
+Frontend `/partner/hotels` có10tab thật: overview/profile/address/images/rooms/rates/inventory/promotions/policies/review status. Các form gọi authenticated backend trên DB riêng; loading/error/empty/conflict, Save/cancel/dirty state và control labels tiếng Việt. `/admin/hotels` reuse Admin layout/auth để xem owner Business/representatives, details, media review, revision/approved snapshot comparison, reasoned approve/reject/suspend và audit history.
+
+Browser thật **Microsoft Edge**: desktop1440×1000 và mobile viewport390×844 emulation, không phải thiết bị vật lý. Login đi qua existing scrypt/AuthService, không mocked success. Customer/Partner/Admin authorization kiểm riêng bằng HTTP với4account SYNTHETIC; secrets chỉ trong RAM phiên test, không ghi source/log/Master/chat. Không lấy personal Edge profile hoặc DPAPI.
+
+Đã sửa hai vấn đề UI/harness rõ ràng: select cần accessible label tường minh; harness date locator được scope đúng rate form khi có2date control trùng nhãn. Lỗi React thực tế sau Save mobile giữ captured initial cũ đã sửa bằng latest authoritative props/ref và synchronization; **FINAL_MOBILE_SAVE_STATE** kiểm input=DB và dirty marker đã xóa, sau đó Admin review đúng revision mới. Ảnh final được scroll về đầu trang trước capture để sticky header không nằm giữa full-page screenshot.
+
+Ảnh nghiệm thu:
+
+- [Profile editor](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/browser-profile-editor.png), [room list](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/browser-room-management.png), [room editor](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/browser-room-editor.png).
+- [Gallery manager](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/browser-image-gallery.png), [rate calendar Save](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/browser-rate-calendar-save.png), [inventory](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/browser-inventory-calendar.png), [promotion](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/browser-promotion-management.png).
+- [Admin publication final](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/browser-admin-publication-final.png), [mobile final](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/browser-mobile-management-final.png).
+
+### 21.38-B.9. Dynamic common data acceptance
+
+**ACTUAL HTTP/BROWSER PASS** cho B01–B14 và các check liên quan, tổng **25record PASS** (có setup/readiness và affected rechecks; không trình bày là25journey độc lập). Rate/calendar Save được phản ánh bởi common PostgreSQL read/quote; inventory5→3, đêm cuối closed thì quote409, mở lại đọc3; expiry theo server clock thật loại promotion và clip validUntil, future-start không được dùng. Room amenity update không public trước review, sau approval hiện đúng KITCHEN/boolean; suspend/archive làm dữ liệu không eligible. Batch conflict rollback cả first-row update và revision.
+
+V1 fresh reads/no-store, không thêm broker/cache riêng cho AI. Task chỉ nghiệm thu common data source/read contract; **AI nhận giá mới, Browser→Qwen→Tools và21.40 NOT RUN**. Không retrain hoặc sửa AgentCoreService/Qwen.
+
+### 21.38-B.10. Booking/review compatibility
+
+Existing BookingService chặn Hotel có extension đi qua legacy Place.priceFrom path, kể cả feature OFF khi extension có trong DB. Actual POST legacy hotel Booking409 và không tăng Booking/allocation. Existing tour/ticket/restaurant paths, idempotency/fingerprint/history/lifecycle giữ nguyên; affected Booking unit **11/11 PASS**.
+
+Không implement HotelStay confirm/payment engine trong B. Native allocation chỉ trong SQL test riêng. Review/ReviewInsight engine không đổi; booked-room attribution guard được kiểm cả positive completed-stay control và negative author/target; không gán property review chung cho room hoặc tạo public review corpus. Handoff D/E còn nguyên.
+
+### 21.38-B.11. Targeted tests/build và evidence
+
+| Lớp bằng chứng | Kết quả |
+|---|---|
+| Hotel foundation unit/read-port | **37/37 OFFLINE PASS** sau source cuối. |
+| Shared image decode/privacy/storage/orphan tests | **8/8 OFFLINE PASS**; generated buffers/temp directory riêng. |
+| Booking compatibility | **11/11 OFFLINE PASS**; không PostgreSQL persistence claim. |
+| Current-contract RBAC | **OFFLINE PASS**, actual visibility/ownership kiểm riêng qua live HTTP/PG. |
+| Migration/constraints/concurrency/cancel | **NATIVE PASS**,14invariants +3review attribution cases; rollback empty/refusal thực tế. |
+| Backend TypeScript | **PASS** với model-off preload. |
+| Frontend TypeScript + default OFF build | **PASS**; Hotel management tree-shaken về disabled wrapper. |
+| Separate feature-enabled frontend build | **PASS**, Hotel chunk≈33.49kB; output test riêng đã cleanup, không đổi default flag. |
+| HTTP + real browser | **PASS**25records,0page errors; desktop/mobile viewport, no successful-response mocks. |
+| Qwen/Ollama/worker/production deploy | **NOT RUN / OFF**. |
+
+Không chạy lại toàn bộ Agent benchmarks. TypeScript printer chỉ format new/Hotel files; canonical compiled backend AST9files khớp trước/sau. Preserve failed native/harness/browser/SQL logs và screenshot trước fix; các source/input/expected locks theo phiên bản không ghi đè. Không sửa oracle sau khi xem giá output.
+
+[Verification results](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/verification-results.json), [final HTTP/browser source lock](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/browser-http-manifest-final.json), [journey records](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/journey-state.json), [feature build proof](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/feature-enabled-build-proof.json).
+
+### 21.38-B.12. Cleanup và protected data
+
+**121/160 mutation attempts** theo conservative application budget, bao gồm setup/login/negative probes và failed attempts; không phải Agent turns. Account/candidate quota/model quota không bị đổi hoặc dùng để vượt policy; **Agent chat0, model metadata0, native model POST0, warm-load/inference0, worker cycles0**. External optional frontend CSS/font requests bị abort trong browser test; không thu thập business data hoặc dùng paid API/Maps/GPS.
+
+Cleanup exact task IDs và audits của SYNTHETIC actors, không unrelated rows. Source18 cuối rollback được khi12bảng rỗng, test trở về40/17 và17checksum không đổi. File cleanup ban đầu EBUSY do test harness `sharp(file).metadata()` giữ libvips cache trên Windows; DB rollback đã hoàn tất trước đó. Đã giải phóng **cache của chính phiên harness**, xóa đúng3file theo key/hash và các thư mục rỗng, không đổi tài nguyên/process khác. Sau đó dừng đúng API/frontend task-owned, xóa đúng container/network đã tạo và xác minh các port15453/5058/5178 không còn listener. Test build directory riêng cũng đã xóa sau hash receipt.
+
+[Native cleanup/rollback](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/native-cleanup-rollback.json), [owned resources cleanup](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/cleanup.json).
+
+Fresh READ ONLY sau cleanup: **40/40 fingerprint staging không đổi,130Place/20Business,17migration**, đúng Owner `bae330d6-c3cb-462e-839e-cf07d73a64d2`/SUPER_ADMIN role `fe016c5b-63a1-4e9a-9938-465aaae58f69`, retained knowledge `467bd60b-27ab-42ad-a450-b3076a4215c3` version2. [Staging after proof](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/staging-after.json). **Staging DML0/migration0; original DB connections0**, không truy cập27Trip ở DB gốc. Không seed/reset/touch real credentials/DPAPI.
+
+**25protected hashes** của freeze26 giữ nguyên (AppRouter là thay đổi Hotel route đã được yêu cầu); Agent Core backend/source/compiled và guards không đổi. Evidence21.37 **67/67**, phaseA **15/15** hash giữ nguyên; historical Master prefix không đổi. Không commit/push/deploy hoặc thay .env/Windows ExecutionPolicy/đóng ứng dụng khác.
+
+### 21.38-B.13. Persistent migration packet và remaining gates
+
+[Persistent staging migration review packet](evidence/travelgo-ai-agent-core/hotel-management-2138b-20261118/persistent-staging-migration-review-packet.json) là **PROPOSED_NOT_APPROVED_NOT_EXECUTED**: frozen target identity/baseline, final DDL/checksum,12empty tables,40→52/17→18,39non-tracker fingerprint không đổi và exact tracker delta, protected Owner/knowledge/catalog, role/maintenance/runtime compatibility và empty-only rollback/recovery.
+
+**Encrypted backup NOT CREATED; verified restore NOT RUN** trong task. Packet yêu cầu secure key custody, backup ngoàiGit và restore rehearsal trên target riêng được phê duyệt trước persistent migration. Không copy sensitive staging data vào SYNTHETIC target để giả nghiệm thu restore. Runtime Hotel hiện test-only; persistent staging cần profile/role/sentinel/dependency/media/feature-OFF handoff được review riêng, không nới existing40/17 launcher.
+
+Remaining: new draft không có tọa độ cần proposal/migration compatibility riêng; advanced drag-and-drop gallery ordering chưa có (V1 cover/move-to-front); HotelStay booking/policy cancellation và customer room-review integration thuộcD/E; public commercial search filters/detail UX/real partner onboarding chưa phải nghiệm thu đầy đủ platform. Không tuyên bố production/LIVE READY từ một cohort test.
+
+### 21.38-B.14. Handoff21.38-C và điểm dừng
+
+Đã có foundation/persistence/auth/publication/media và common read contracts để phaseC xây homepage/hotel search theo HuGo navy/trắng/cam, reuse geography/backend và licensed assets. C cần URL-preserved criteria, đúng supported server filters, current-price basis/availability uncertainty/DEMO labels, responsive/accessibility; không dùng Place.priceFrom thành giá phòng xác nhận hoặc dựng số lượng/ưu đãi giả. Khóa source/runtime/data scope mới trước actual acceptance; không reuse container/credentials đã cleanup.
+
+**Dừng sau21.38-B. Chưa bắt đầu21.38-C,21.40 hoặc21.41; không bật Qwen/worker, không persistent migration, không VPS/paid API/commit/push/deploy.**
+
+
+## 21.38-C — HOTEL HOMEPAGE & ADVANCED HOTEL SEARCH REDESIGN
+
+Thực hiện19/11/2026 ICT, sau21.38-B. **HOTEL_CUSTOMER_SEARCH_ACCEPTANCE_PASS_ISOLATED_ONLY**: IMPLEMENTED, OFFLINE PASS, ACTUAL HTTP PASS và ACTUAL BROWSER PASS trong phạm vi SYNTHETIC đã kiểm. Preview localhost được giữ READ ONLY để owner xem. **Persistent staging migration NOT RUN; HotelStay Booking/payment NOT IMPLEMENTED; production ready:NO; Qwen/Ollama/worker OFF.**
+
+### 21.38-C.1. Audit, kiến trúc và giao diện
+
+Đã đọc Master A/B, Hotel foundation/coordinate proposal và source/evidence B; audit HomePage, HotelsPage, Explore/Place detail/router/layout, Navbar/Footer, LocationCombobox, catalog filters, AuthContext/API client và responsive styles. Giữ một application/router/auth system; không sửa RecommendationService/Planner/geography34/Agent Core. Existing service routes vẫn giữ.
+
+Tham khảo hierarchy/search/destination sections của [iVIVU](https://www.ivivu.com/), không sao chép marketing/business data/assets/code. [Booking.com](https://www.booking.com/index.vi.html) yêu cầu xác minh robot; không bypass hoặc thu thập assets. Homepage mới navy/trắng/cam, hero minh họa gốc có nguồn, thanh tìm kiếm nổi bật, liên kết dịch vụ thật, curated destinations theo canonical IDs, loại lưu trú đang support, danh sách đã duyệt/mới duyệt/có ưu đãi và section promotion có điều kiện. Không dựng popularity/countdown/giá gạch/Booking analytics. Footer bỏ địa chỉ/hotline/social-link giả; chỉ hiển thị contact nếu đã cấu hình và route điều khoản/privacy thực có.
+
+Routes: `/` chung; `/hotels` landing; `/hotels/search` results; `/places/:id` giữ canonical detail và stay/promotion criteria. `/hotels/:id` vẫn hoạt động. Legacy `/hotels?city=…&search=…`/`locationId` được đưa vào search; existing Place Hotel link không có query cũng nhận native Hotel projection khi Hotel feature được bật, tránh hiển thị old Booking CTA. Header desktop/mobile có Khách sạn/Nhà hàng và các dịch vụ đang có, account menu vẫn dùng AuthContext hiện hành.
+
+Source chính: `HotelLandingPage.tsx`, `HotelSearchPage.tsx`, `HotelPublicDetail.tsx`, `components/hotels/{SharedHotelSearchBar,HotelResultCard,useHotelSearch}`, `utils/hotelSearchState.ts`, scoped `styles/hotels.css`; sửa HomePage/HotelsPage/PlaceDetail wrapper, AppRouter, Navbar/Footer. Không tạo site song song.
+
+### 21.38-C.2. Search bar, URL và ảnh
+
+Shared search bar có geography picker hiện có (tỉnh/thành khác địa danh), tên/đường/khu vực + gợi ý từ eligible Hotel API, ngày nhận/trả native browser, số đêm, khách/phòng và tuổi từng trẻ. Guest panel desktop/mobile phân bổ **từng phòng**; thiếu tuổi hoặc ngày sai bị chặn, không tự bỏ trẻ hay suy tuổi. Location keyboard navigation/loading/empty/error reuse component hiện có; hotel suggestions có loading/empty/failure message. Native date inputs hỗ trợ lịch/tháng của browser; không dựng calendar giả.
+
+Draft chưa submit trên landing dùng React Router history state để Back/reload giữ ngày và tuổi trẻ; không thêm private identity/auth. [Actual history draft](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/actual-landing-back.json). URL giữ criteria/filter/sort/page và JSON room allocations không có danh tính riêng tư/token. Destination click giữ ngày/khách/phòng và canonical ID từ existing geography API; không duplicate registry. Reload/back/forward/chia sẻ/reset/chip removal được kiểm thực tế. Đổi filter reset page1. AbortController và kiểm aborted signal ngăn response cũ ghi đè; actual recheck có1request hủy khi trì hoãn dispatch, không mock success response.
+
+Ảnh:5SVG phong cảnh gốc của repository và raster SYNTHETIC tự tạo cho preview. Có [asset/source/rights manifest](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/asset-rights-manifest.json), alt text, stable aspect ratio, lazy loading và fallback; **không phải ảnh khách sạn/địa danh thực tế**, có nhãn minh họa. Không hotlink/scrape iVIVU/Booking hoặc dùng ảnh cơ sở khác. Final screenshots được scroll tải ảnh, kiểm decode rồi chụp và xem trực quan1440px/390px; screenshots đầu thiếu ảnh ngoài viewport do lazy-load được giữ, không dùng thay final evidence.
+
+### 21.38-C.3. Commercial search API và common source
+
+`hotels/commercialSearch.ts` mở rộng `GET /api/hotels` bằng strict DTO; giữ alias `sort=name` và ward query của B. `readModel.ts` tìm fulltext name/address/city/province đã chuẩn hóa bằng SQL parameterized, gồm tên đường + địa danh; không sửa historical address hoặc đoán tọa độ. `postgresStore.ts` đọc batch snapshots; existing HotelReadService và pricing/inventory vẫn là authority chung. Không có search DB/AI price table riêng.
+
+Trong **một REPEATABLE READ + READ ONLY transaction**, API lấy DB time, scoped IDs, các bảng theo batch và aggregate PUBLISHED Place reviews. Không gọi DB riêng từng hotel. V1 cap60candidate hotels,600active rates toàn scope/80mỗi hotel,8promotion mỗi rate và6000row mỗi batch table, statement timeout5giây; vượt cap trả422 yêu cầu thu hẹp, không giả total từ phần bị cắt. Filter, exact total, stable sort và pagination thực hiện ở backend; client không tính giá cuối.
+
+Filter đã implement và kiểm typed/actual theo phạm vi: tên/địa điểm/đường/phường, giá **tổng kỳ lưu trú VND** khi có ngày, accommodation subtype, verified stars, published-review rating, property/room amenities, view, capacities theo room allocation, bedrooms/bathrooms, promotion, breakfast, cancellation và toàn bộ các đêm tồn phòng. Mọi room/rate condition phải khớp **cùng hạng phòng/gói giá** phục vụ mọi phòng yêu cầu. Chưa phối hợp các hạng phòng khác nhau; có nhãn/contract giới hạn, không tự chia lại nhu cầu.
+
+Sort: tên ổn định cho “phù hợp”, giá tăng/giảm cùng dates/occupancy/STAY_TOTAL, rating thật và `places.approved_at` cho mới duyệt. Không suy mới duyệt từ commercial revision hoặc ngày đổi giá, không popularity score giả. Price min/max lọc các offer phù hợp trước khi chọn offer tốt nhất của từng hotel. No-date không nhận price-sort/range thiếu basis, availability UNKNOWN; reference rate có nhãn, không thành confirmed total.
+
+Public eligibility giữ Place APPROVED/Business ACTIVE/exact approved content revision/approved rights media; DEMO/testOnly không được coi là real production. Public media endpoint cũng chặn DEMO/testOnly ngoài test profile. Projection có selected room/rate/quote, canonical address/destination, provenance, content/commercial revision, sourceVersion/asOf/validUntil, promotion conditions và DEMO. Không dùng Place.priceFrom/Bayesian prior/view từ tên hoặc review opinion làm tiện nghi.
+
+### 21.38-C.4. Cô lập và physical schema
+
+User task cấp đúng1môi trường mới. [Execution lock](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/execution-lock.json) khóa target `hugotravel_hotel_search_test_20261119`, cached imageSHA, sentinel `hugotravel-isolated-test-database-v1`, migration/runtime role, fixture UUIDs, ports15454/5059/5179 và caps. DB container1CPU/1024MiB/shm128MiB, dedicated network và **volume riêng của C**; loopback-only. Không reuse container/credentials B đã cleanup, không copy Owner/customer/knowledge staging.
+
+Physical baseline thật **40bảng/17migration**, sau apply unchanged reviewed1–18 **52/18**. Migration18 digest giữ nguyên B (`553d0b6f23955cce8633b25447b4bb47d3c073e0194ac5b33367ea9009f09d19`); không thay migration/nullable coordinate/schema contract. Không chạy lại14+3native B invariants vì SQL source không đổi; kết quả đó là historical B, không cộng thành test mới của C. [Native schema](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/native-schema.json).
+
+Initial readiness helper dùng `ps -p` không có trên BusyBox; FAIL được giữ. Đã dùng `/proc/1/comm` và resume đúng owned container/volume, không tạo môi trường thứ hai. Resume guard ban đầu cũng bắt occupied DB port của chính container; đã sửa ownership-checked resume, không bỏ collision guard của target khác. Migrations/fixtures chỉ bắt đầu sau native lock/readiness đạt.
+
+### 21.38-C.5. Actual acceptance và freshness
+
+Actual React → HTTP → PostgreSQL qua Microsoft Edge desktop1440×1000/mobile viewport390×844 (emulation, không phải physical phone), successful API mocks0/page errors0. C01–C17 được phủ bởi17record nhóm trong [journey state](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/acceptance-state.json), [actual acceptance](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/actual-acceptance.json), [freshness](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/actual-freshness.json), [final visual/deep-link/cancellation](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/actual-final-browser.json). Không coi17record nhóm là17journey độc lập.
+
+Oracle độc lập SYNTHETIC An Nhiên:2đêm/1phòng,1.000.000+1.200.000=2.200.000, giảm10%=220.000, thuế10% phần còn lại198.000 và fee50.000 ⇒ **2.228.000VND**. Partner đổi base1.100.000 ⇒ **2.327.000**; promotion20% ⇒ **2.074.000**; sau expiry theo **clock server thật** ⇒ **2.580.000** không giảm. Browser đọc đúng giá mới/source version đổi. Không sửa expected của các oracle này.
+
+Missing/closed đêm cuối/unknown tax bị loại, stock không thành available/0. Hai hotel Bùi Thị Xuân tại Đà Lạt/Đà Nẵng tách scope đúng; đắt hướng hồ + rẻ hướng phố không thể ghép thành rẻ hướng hồ. Archive phòng/unapproved content và suspend Hotel/Business bị loại ngay retrieval kế tiếp. Actual totals/pagination kể cả trang rỗng đúng; family child age5 được tính phí đúng.
+
+List và detail đều **ẩn giá khi hết validUntil**, explicit reload lấy giá mới và focus/navigation revalidate khi expired; không interval polling. [Detail expiry real-clock](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/actual-detail-expiry.json) chờ≈61giây thật, không giả clock: giá cũ biến mất rồi reload hiện fresh quote. Canonical detail giữ placeId/stay/selected promotion và không có Booking/payment action. Booking rows/allocation rows0.
+
+Additional typed filter matrix **15/15 ACTUAL HTTP PASS v2**, gồm stars/review/property+room amenities/capacity/room dimensions/refund/breakfast/promo/min-max/sorts, response no-store. [Evidence v2](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/actual-final-http-filters-v2.json). **V1 có FAIL assertion**: expected chỉ B cho minPrice1,5m đã bỏ sót offer hướng hồ4m của A. Source contract lọc offer trước rồi chọn matching offer; cả A4m/B2,228m hợp lệ. [Oracle clarification](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/price-lower-bound-oracle-clarification.json) giữ nguyên V1/FAIL và khóa V2 trước GET; không sửa product để che lỗi. Các max-price+view/breakfast oracle ban đầu giữ nguyên.
+
+Final browser lượt đầu cũng FAIL do driver điều hướng trước API vừa restart sẵn sàng; đã bổ sung actual HTTP200/scope readiness trước targeted recheck, giữ receipt FAIL. Detail-expiry helper đầu throw trên optional external CSS thay vì abort, dừng trước case; đã sửa network deny handling, giữ receipt rồi kiểm clock thật. Không xóa FAIL hoặc thay successful response bằng mock.
+
+### 21.38-C.6. Offline/build và bảo toàn
+
+| Lớp | Verdict |
+|---|---|
+| Commercial search typed/semantic/price cases | **12/12 OFFLINE PASS** |
+| Affected Hotel foundation/read-port/address/pricing | **37/37 OFFLINE PASS** |
+| Frontend URL/privacy/room-age/date/legacy criteria | **13assertions OFFLINE PASS** |
+| Backend TypeScript | **PASS**, model-off preload |
+| Frontend TypeScript/default Hotel OFF build | **PASS** |
+| Separate Hotel-enabled frontend build | **PASS**, output riêng có hash proof |
+| C01–C17 HTTP/browser | **ACTUAL PASS trong phạm vi SYNTHETIC**, final screenshot/cancellation/expiry receipts riêng |
+| Additional HTTP matrix | V1 assertion FAIL preserved; **v2 15/15 PASS** |
+| Media8/8, Booking11/11, legacy RBAC B | **Historical PASS preserved**, source liên quan không đổi nên không rerun để tăng số test |
+| Qwen/Agent benchmarks/worker/paid API/Maps | **NOT RUN/OFF** |
+
+Không chạy lại toàn bộ AI benchmark hoặc sửa AgentCoreService/RecommendationService/Planner/geography34. [Verification results](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/verification-results.json). Không .env/default feature switch, không Windows ExecutionPolicy/Owner/DPAPI changes, không commit/push/deploy.
+
+Fresh READ ONLY trước/sau: staging **40/40 fingerprint không đổi**,40bảng/17migration,130Place/20Business; Owner/SUPER_ADMIN exact IDs và knowledgev2 giữ nguyên. [Staging after](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/staging-after.json). Original database/27Trip không truy cập. Migrations1–18 và protected Core25hashes giữ nguyên; evidence21.37/A/B giữ nguyên byte hashes; Master chỉ append, không ghi đè historical prefix.
+
+### 21.38-C.7. Cleanup và preview owner
+
+Fixture setup108DML giới hạn; controlled mutations qua API **7attempts** (1login SYNTHETIC+6Partner writes), zero Agent chat/quota/model/worker operations. Toàn bộ request/evidence trong cap đã khóa; public preview GET của owner sau handoff tách khỏi acceptance automation, không mở write capability.
+
+Đã cleanup đúng user/role/membership/audits tạm,2hotel DRAFT/SUSPENDED controls và ảnh tương ứng, promotion expired negative fixture. Còn **6Place/6Hotel profile,1Business,6managed image** SYNTHETIC cho owner xem; private users/reviews/knowledge/Booking/allocation0. Restore synthetic base/promotion sau test có receipt riêng, không sửa expected/evidence đã ghi. Runtime role revoked mọi table DML và default transaction READ ONLY đã kiểm trên connection mới. [Final native preview](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/native-preview-final.json), [fixture cleanup](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/preview-fixture-final.json).
+
+**Preview đang chạy tại thời điểm chốt HTTP verification**, cùng owned container/volume đã stop/start và giữ dữ liệu/media. Đã mở trang chủ trong browser. Không tự bật Hotel ở staging5177/5057.
+
+- Home: http://127.0.0.1:5179/
+- Hotel landing: http://127.0.0.1:5179/hotels
+- Sample: http://127.0.0.1:5179/hotels/search?locationId=destination%3Ada-lat&checkIn=2028-02-28&checkOut=2028-03-01&view=LAKE&maxPrice=2300000
+- [START_PREVIEW.cmd](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/START_PREVIEW.cmd), [STOP_PREVIEW.cmd](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/STOP_PREVIEW.cmd). Node launcher dùng relative repository paths, xác minh source/schema/image/volume/sentinel/owned processes, không seed/migrate/tạo môi trường khác; nếu thiếu target hoặc source lệch thì BLOCKED. Stop chỉ task C và giữ volume. Docker daemon phải đang chạy.
+
+Live runtime status/log/model-off audits nằm `.local/hotel-2138c-preview/` để không làm thay đổi sealed evidence sau khi owner dùng preview. Credentials runtime crypto-random chỉ trong memory; không Owner credentials/DPAPI, không plaintext password/token trong report/log/Git.
+
+### 21.38-C.8. Screenshots, remaining gates và handoff D
+
+- [Homepage desktop](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/homepage-desktop-final.png), [homepage mobile](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/homepage-mobile-final.png), [hero/search](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/hero-search.png).
+- [Destination grid](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/destination-grid-final.png), [promotion section](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/promotion-section-final.png).
+- [Search desktop](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/search-desktop-final.png), [search mobile](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/search-mobile-final.png), [combined filters](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/combined-filters-final.png).
+- [Guest selector](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/guest-selector.png), [mobile date/search](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/mobile-date-selector.png), [updated price/promotion](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/updated-price-promotion.png).
+- [Empty](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/empty-state.png), [real failed transport/error](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/error-state.png), [canonical detail](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/canonical-detail-final.png), [expired detail](evidence/travelgo-ai-agent-core/hotel-search-2138c-20261119/detail-expired-real-clock.png).
+
+Remaining: persistent staging migration/encrypted backup/verified restore chưa thực hiện; runtime Hotel vẫn test-only; chưa có real partner photography/business onboarding/production scale test; nullable-coordinate blocker422 của B giữ nguyên; multi-room khác hạng chưa support. Room-review integration, HotelStay confirmation/payment/idempotency/atomic allocation/cancellation thuộc D/E. Common data source sẵn để AI đọc sau21.40 nhưng **Browser→Qwen→Tools NOT RUN**, không sửa AI hoặc tự mở D.
+
+Handoff D phải reuse BookingService, recheck exact quote/source/occupancy/promotion/stock under deterministic locks, enforce confirmation/idempotency and bảo toàn dịch vụ cũ; cần authorization/scope riêng. [Customer search contracts/preview guide](HUGO_HOTEL_CUSTOMER_SEARCH.md). **Dừng sau21.38-C. Không production activation, Qwen/worker, Maps/GPS, VPS, commit/push/deploy.**
+
+
+## 21.38-D — HOTEL DETAIL, ROOM SELECTION & HOTELSTAY BOOKING
+
+**19/11/2026 — HOTEL_STAY_BOOKING_ACCEPTANCE_PASS_ISOLATED_ONLY.** IMPLEMENTED; OFFLINE, ACTUAL HTTP, ACTUAL PostgreSQL và ACTUAL BROWSER PASS trong một target SYNTHETIC. **Payment NOT IMPLEMENTED; production activation/LIVE AI NOT RUN.** Tiếp tục source C, không viết lại homepage/search hoặc Agent. Task gửi lại có cùng attachment SHA, được xử lý như cùng nhiệm vụ, không tạo target thứ hai.
+
+### 21.38-D.1. Implementation và contracts
+
+- Detail canonical `/places/:id`, compatibility `/hotels/:id`: gallery property/room tách biệt, mobile carousel, modal keyboard/Escape/focus, anchor, structured amenities/capacity/address/approved-time provenance và policy. Không ảnh kinh doanh/review giả, khoảng cách suy diễn hoặc Maps. Sandbox reviews0 hiển thị empty state; existing ReviewService/PUBLISHED/VERIFIED contract cho dữ liệu thật giữ nguyên.
+- Multiple room/rate cards, promotion theo đúng rate, room modal; giữ toàn bộ public search criteria qua detail/checkout/login/quay lại. Dirty criteria/expiry ẩn giá cũ; backend nightly/extra adult/child/promotion/tax/fee/STAY_TOTAL. Không mix khác hạng hoặc tính tổng tại frontend.
+- Customer checkout/explicit confirmation, authenticated CUSTOMER, bounded contact/notes riêng của Booking, không tự sửa profile. Server HMAC bind owner/key/exact intent/quote/source/content/commercial/validUntil ≤60s. Strict fields; client không có quyền total/owner/payment/status. Mất response giữ key và tra owned intent-status.
+- Reuse BookingService/Booking identity/history/audit và ba bảng HotelStay của migration18; không migration19. Confirm trong transaction với advisory idempotency → Hotel parent → Place/Business → exact inventory theo thứ tự; kiểm clock sau chờ khóa, requery/reprice, native allocation trigger là writer duy nhất của allocated_quantity. Deferred constraints/all-night rollback vẫn được enforce.
+- My Bookings đọc immutable snapshot. Partner giữ membership/MANAGE_BOOKINGS, server search/status filtering, minimal DTO và lifecycle hiện có. Hủy theo policy snapshot/actual clock, release mỗi đêm một lần, giữ audit/history; confirmed/completed khác paid. COMPLETED phải qua approved checkout time, customer không tự completed. CONDITIONAL chưa đủ structured fees và auto cancel quá hạn/nonref fail closed.
+
+File chính: `backend/src/hotels/{hotelStay,stayConfirmation}.ts`, `utils/bookingLifecycle.ts`, `services/{bookingService,hotelReadService}.ts`, `hotels/{postgresStore,contracts,pricing}.ts`, `routes/{bookingRoutes,hotelRoutes}.ts`, `controllers/partnerResourceController.ts`, privacy-safe `middlewares/errorHandler.ts`; frontend `HotelPublicDetail`, `HotelCheckoutPage`, HotelGallery/HotelDialog/HotelPriceBreakdown/HotelBookingSummary, hotelBookingClient, BookingsPage, PartnerBookingsPage, router, management client/types/search URL helper/scoped CSS. Agent Core25 source/compiled hashes không đổi. [Tài liệu nghiệp vụ/API/ERD/locks/lifecycle/preview](HUGO_HOTEL_STAY_BOOKING.md).
+
+### 21.38-D.2. Target, guards và validation
+
+Một cached-image target **hugotravel_hotel_stay_test_20261119**, sentinel `hugotravel-isolated-test-database-v1`, DB15455/API5062/frontend5180; Docker1CPU/1024MiB, ba role migration/operator/runtime, runtime non-superuser, exact cohort SQL fence, write deadline, cap180 mutation attempts/1000 API reads/32 Booking/1600 fixture SQL. C được dừng bằng owned launcher; volume/media/seal C không bị nâng quyền hoặc sửa.
+
+Đã chạy API Hotel OFF với **40 bảng/17 migrations thật**, sau đó áp dụng18 trên cùng target → **52/18**; checksum1–18 nguyên vẹn. Không apply migration vào staging hoặc DB gốc. Tất cả fixture/ảnh original-generated và tài khoản là SYNTHETIC, không copy Owner/customer/knowledge thật. [Execution lock](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/execution-lock.json), [native baseline17](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/native-baseline.json), [extension18](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/native-extension.json).
+
+Offline: foundation **37/37**, commercial **12/12**, confirmation **14/14**, legacy Booking **11/11**, frontend URL/state **13 assertions**. Backend/frontend TypeScript và Vite **PASS**. Chỉ chạy suites liên quan, không rerun Agent benchmark. [Validation summary](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/validation-summary.json).
+
+| Case | Kết quả và evidence thật |
+|---|---|
+| D01 | Edge1440/390 detail/gallery/anchors; keyboard/focus trap/restore và mobile scroll đã kiểm. |
+| D02 | Room-specific gallery/modal, capacity/amenities/structured facts đúng native fixture. |
+| D03 | Hai rate cùng phòng, breakfast/nonref/free-cutoff/promotion khác nhau, không kế thừa nhầm. |
+| D04 | Full public criteria roundtrip search/detail/checkout/login/back PASS. |
+| D05 | Native invalid dates, missing age, coerced counts, capacity, mixed-room contract và thiếu một đêm bị chặn. |
+| D06 | Independent oracle1room2night:2.228.000VND; child5:2.338.000;2room:4.406.000. |
+| D07 | Giá, promotion và unapproved content revision đổi trước confirm đều reject, không ghi đơn; explicit fresh confirm mới được dùng. UI price-change PASS. |
+| D08 | Actual PostgreSQL clock reject unused token hết hạn; browser chờ thật hết60s, ẩn giá/confirm cũ. Không mock clock. |
+| D09 | Actual auth/COMMIT Booking+stay+item+allocation đủ từng đêm; snapshot tồn tại sau API restart. |
+| D10 | Same-key concurrent confirm201/200 cùng một ID; changed payload/key/owner reject; browser mất response sau server COMMIT tìm lại đúng một đơn. |
+| D11 | Hai runtime PostgreSQL PID độc lập cùng chờ khóa parent; stock1 → một201/một409, allocated1 mỗi đêm, không oversell. |
+| D12 | Native last-night injected failure sau allocation đầu rollback toàn bộ; missing inventory không thành available. |
+| D13 | Cross-customer/read/cancel/key, cross-Business, forged signature/total/payment/IDs và legacy Place.priceFrom bypass bị từ chối. |
+| D14 | My Bookings desktop/mobile hiện immutable snapshot, không thay bằng giá catalog mới. |
+| D15 | Partner actual API/UI, server scoped filters, minimal contact, Business membership; không sửa tiền/tồn trực tiếp. |
+| D16 | Valid free cancel release đủ mọi đêm, unpaid/no refund, giữ history. |
+| D17 | Concurrent/duplicate cancel200, đúng một cancellation history và mỗi allocation release một lần. |
+| D18 | Nonref và free-cutoff quá hạn theo actual clock409, không release hoặc giả hoàn tiền. |
+| D19 | Customer completed403; future stay409; final-source Partner COMPLETED trên explicit past-stay SYNTHETIC fixture có owner/place/room/item references, review rows0. |
+| D20 | Native feature OFF/schema17 tour/ticket/restaurant/legacy hotel create/replay/cancel PASS; unit compatibility11/11. |
+| D21 | Mọi Booking unpaid, provider calls0, không card/CVV/false paid/refunded. |
+| D22 | Fresh protected staging40/40,17migrations; Core25/seal V7/A/B/C và C media giữ nguyên; original DB connections0. |
+
+Đây là **coverage22 case groups**, không phải22 journey độc lập; setup/recheck không cộng vào số journey. [Native matrix](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/native-matrix-final.json), [concurrency/PIDs](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/native-concurrency.json), [rollback](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/native-atomic-rollback.json), [actual Edge](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/actual-browser.json), [current-source followup](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/actual-browser-followup.json), [mobile/focus](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/mobile-current-source-check.json), [expiry/policy](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/native-actual-expiry-policy.json), [final completion attribution](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/native-completed-attribution-1795068428215.json).
+
+### 21.38-D.3. Lỗi đã giữ nguyên evidence và xử lý
+
+Không xóa các FAIL/helper failures. Port5060 bị WHATWG/browser chặn (SIP); đổi D sang5062, không phải lỗi DB. Extension lúc đó chưa có Hotel data, rollback bằng artifact18 hiện có rồi kiểm17/reapply18 trên **cùng target**. Runtime SELECT FOR SHARE cần UPDATE(id) trên relation được khóa: bổ sung đúng column privilege, không cấp quyền sửa contact/giá. Siết preview grants đã làm mất UPDATE(id) của Place, smoke409/rollback; phục hồi đúng privilege khóa và smoke đặt/hủy sau đó PASS. API cap helper sai tên `apiGetRequests` được sửa về manifest `apiGetAttempts`, giữ counter conservative, không nới cap. SYNTHETIC past fixture cần explicit UUID/text casts; lần lỗi rollback. Cleanup user giữ existing anonymization trigger, cấp tạm đúng5 column cho zero-row UPDATE reviews (reviews0 trước/sau), rồi revoke.
+
+Browser phát hiện compact gallery mobile bị lặp do CSS specificity, đã sửa và recheck current source. Banner consent giữ nguyên policy/authorization, chỉ chuyển sang flow trong checkout để không che form/CTA; không tự đồng ý analytics. Review endpoint catalog thật không phục vụ SYNTHETIC nên sandbox trình bày rõ không có review thật. Thêm guard COMPLETED kiểm cả approved checkout time thay vì chỉ ngày; unit14/14 và actual Partner path được revalidate sau build/restart. Một followup mobile assertion đọc vị trí trong lúc smooth-scroll chưa kết thúc; chờ animation ổn định, không đổi UI threshold/expected, PASS. Không thay historical FAIL/expected của task cũ.
+
+### 21.38-D.4. Cleanup, integrity và preview đang chạy
+
+Đã cleanup đúng **10 HotelStay acceptance Booking +4 legacy Booking**, rows/items/allocations/history/audits và helper users/hotels; không disable trigger. Giữ dataset preview:1Place/Hotel,2room,3rate,1promotion,6media,1Business, CUSTOMER A+Partner A SYNTHETIC. Bốn media phụ xóa đúng từng file có checksum receipt. Preview smoke sau siết quyền tạo/hủy riêng1 Booking **CANCELLED/unpaid**, intentionally retained để owner xem; allocated mọi đêm0. [Cleanup](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/exact-fixture-cleanup.json), [preview actual write](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/preview-actual-write-smoke.json).
+
+Fresh staging trước/sau khớp **40/40 bảng**,17migrations,130Place/20Business, exact Owner/SUPER_ADMIN và retained knowledge; zero DML. Core25 hash, seal V7 **67**, A **15**, B **110**, C **113** entries khớp; sáu C media hashes không đổi. C container dừng, volume đúng tên giữ nguyên; không restart C để nới source lock. **DB gốc không được truy cập**: không tuyên bố đã trực tiếp re-fingerprint25 bảng/27Trip trong D; runtime network guards và no-original-connection evidence là ranh giới bảo vệ. [Staging after](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/staging-after.json), [protected integrity](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/protected-integrity.json).
+
+Preview D trên **cùng target** đang chạy, source lock431file; **BOUNDED_SYNTHETIC_WRITE_ENABLED đến15:12:54 ICT19/11/2026**, cap toàn task180mutation/1000reads/32Booking, SQL+application deadline, least privilege và HTTP allowlist. Tại checkpoint sau browser final: conservative mutation132/180, còn48 (sẽ giảm khi owner thao tác). Start không gia hạn deadline; hết hạn supervisor chuyển READ ONLY, transition tương lai chưa được quan sát khi chốt. Không dùng Owner thật; dedicated test credentials DPAPI CurrentUser+ACL user-only, private Edge profile và logs/counters ngoài sealed evidence. Runtime DB password/JWT chỉ trong RAM. Đã xác minh login thật và **mở Edge trang chi tiết**, không yêu cầu nhập/lộ mật khẩu.
+
+- Home: http://127.0.0.1:5180/ ; Hotels: http://127.0.0.1:5180/hotels.
+- [Khách sạn nhiều hạng phòng](http://127.0.0.1:5180/places/2138d000-0000-4000-8000-000000000020?hotel=1&checkIn=2026-11-22&checkOut=2026-11-24&rooms=%5B%7B%22adults%22%3A2%2C%22childAges%22%3A%5B%5D%7D%5D&promotionId=2138d000-0000-4000-8000-000000000085). Chọn gói ăn sáng để vào checkout; My Bookings: http://127.0.0.1:5180/bookings.
+- [START_PREVIEW](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/START_PREVIEW.cmd), [STOP_PREVIEW](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/STOP_PREVIEW.cmd), [OPEN_CUSTOMER](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/OPEN_CUSTOMER.cmd), [OPEN_PARTNER](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/OPEN_PARTNER.cmd). Không tạo môi trường mới/seed/migrate hoặc đọc Owner DPAPI. C launcher/seal giữ nguyên; không tự khởi động C với source D.
+
+### 21.38-D.5. Screenshots và remaining gates
+
+[Detail desktop](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/screenshots/desktop-hotel-detail-final.png), [detail mobile](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/screenshots/mobile-hotel-detail-final.png), [gallery](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/screenshots/desktop-gallery.png), [overview](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/screenshots/desktop-overview.png), [amenities](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/screenshots/desktop-amenities.png), [room list/rate comparison](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/screenshots/desktop-room-list.png), [room modal](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/screenshots/mobile-room-modal.png), [checkout desktop](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/screenshots/desktop-checkout-review-final.png), [checkout mobile](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/screenshots/mobile-checkout-review-final.png), [price breakdown](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/screenshots/desktop-price-breakdown.png), [price changed](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/screenshots/desktop-price-changed.png), [expired](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/screenshots/desktop-quote-expired.png), [confirmation](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/screenshots/mobile-booking-confirmed.png), [My Bookings](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/screenshots/desktop-my-bookings.png), [cancel](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/screenshots/mobile-cancelled.png), [Partner](evidence/travelgo-ai-agent-core/hotel-stay-2138d-20261119/screenshots/desktop-partner-booking.png). Không mock successful HTTP để lấy actual PASS.
+
+Remaining/NOT RUN: production/staging Hotel migration, encrypted backup+verified restore, DB-container restart persistence, Linux/GPU/scale acceptance, real business payment policy/provider, real populated reviews integration, room-review E và AI21.40. Existing nullable-coordinate blocker và mixed-room-type limitation giữ nguyên. No Qwen/Ollama/resource/quota checks, Agent chat, worker, Maps/GPS, paid API, commit/push/deploy. **Dừng sau21.38-D; không production ready và không tự mở E/AI task.**
+
+## 21.38-D-UI — PREMIUM TRAVEL WEBSITE UI/UX & PHOTOGRAPHIC IMAGERY REDESIGN
+
+Ngày hoàn thành: **20/11/2026 ICT**.
+Trạng thái: **OWNER_VISUAL_APPROVAL_PENDING** (Triển khai hoàn tất · Preview READ-ONLY hoạt động · 15/15 Viewport Screenshots sẵn sàng).
+
+### 21.38-D-UI.1. Bối cảnh tiếp quản từ Codex và xử lý lỗi kỹ thuật
+- Tiếp quản working tree từ Codex bị ngắt giữa chừng do quota limit; bảo toàn toàn bộ uncommitted working tree và không `git reset`/`git clean`.
+- Đã khắc phục lỗi TDZ trong `frontend/src/router/AppRouter.tsx` (`PhotoCreditsPage = React.lazy(...)` nằm trước `import React`), khôi phục việc render React DOM của toàn bộ ứng dụng.
+- Đã khắc phục cảnh báo React DOM `fetchPriority` trong `TravelPhoto.tsx` cho phù hợp React 18.
+- Tạo và khóa `preview-source-lock.json` bảo vệ tính toàn vẹn của mã nguồn UI.
+- Khởi động thành công môi trường preview cô lập tại cổng 5181 (frontend Vite) và 5063 (backend API) kết nối container dữ liệu `hugotravel_hotel_ui_test_20261119` (port 15456).
+
+### 21.38-D-UI.2. Chiến lược hình ảnh & Asset Manifest
+- Loại bỏ hoàn toàn việc sử dụng 5 SVG phong cảnh (`hero-bay.svg`, `highlands.svg`, `coast.svg`, `island.svg`, `town.svg`) làm hero và đại diện địa danh.
+- Tích hợp 24 master photographic assets tuyển chọn từ Wikimedia Commons với giấy phép CC BY 4.0, CC BY-SA 4.0 và CC0. Tối ưu thành 72 biến thể WebP (480w, 960w, 1920w/1600w).
+- Toàn bộ 72 biến thể ảnh phong cảnh và 54 ảnh khách sạn WebP qua managed endpoint `/api/hotel-media/` đều trả về HTTP 200 (100% pass, 0 ảnh lỗi 404).
+- Trang minh bạch bản quyền ảnh được cung cấp tại `/photo-credits`.
+
+### 21.38-D-UI.3. Các trang giao diện đã nâng cấp
+1. **Trang chủ & Khách sạn (`HotelLandingPage.tsx`):** Hero ảnh Phú Quốc chất lượng cao, thanh tìm kiếm nổi bật dạng overlap, date-range calendar chuyên nghiệp, mosaic điểm đến trong nước, danh sách khách sạn nổi bật, phân loại hình thức lưu trú, banner trợ lý AI.
+2. **Trang tìm kiếm (`HotelSearchPage.tsx`, `HotelResultCard.tsx`):** Thẻ khách sạn ngang chuẩn thương mại với hình ảnh lớn, tiện nghi, thông tin phòng khớp tiêu chí, hiển thị tổng giá minh bạch kèm chi tiết thuế phí, thanh lọc bên hông trên desktop và drawer trên mobile.
+3. **Trang chi tiết khách sạn (`HotelPublicDetail.tsx`, `HotelGallery.tsx`):** Gallery ảnh dạng mosaic có lightbox toàn màn hình, thanh điều hướng nhanh, danh sách hạng phòng kèm thư viện ảnh riêng cho từng phòng, bảng so sánh nhiều gói giá (rate plans), thông tin quy định và đánh giá đã xác minh.
+4. **Trang xem lại đặt phòng (`HotelCheckoutPage.tsx`):** Bố cục thương mại gọn gàng với ảnh phòng, tóm tắt đặt phòng và chi tiết giá, nhãn cảnh báo SYNTHETIC sandbox rõ ràng.
+
+### 21.38-D-UI.4. Nghiệm thu trực quan & Bảo vệ nghiệp vụ
+- **Chụp ảnh màn hình thực tế (Playwright headless Edge):** 15 ảnh BEFORE tại `docs/evidence/.../before-live/` và 15 ảnh AFTER tại `docs/evidence/.../after/` trên 3 viewport: Desktop (1440px), Laptop (1366px), Mobile (390px).
+- **Kiểm tra Responsive:** `overflow: false` trên toàn bộ 15 ảnh sau sửa đổi (không tràn ngang, không vỡ khung).
+- **Kiểm thử hồi quy trọng điểm:** 84/84 tests PASS (hotelMedia: 8/8, hotelFoundation: 37/37, hotelCommercialSearch: 12/12, hotelStayConfirmation: 14/14, hotelSearchState: 13/13).
+- **Bảo toàn dữ liệu & nghiệp vụ:** Giữ nguyên 100% logic định giá của `HotelReadService`, room inventory, booking idempotency, database 18 migrations / 40 bảng. Không thêm migration mới. Tọa độ cũ chỉ dùng phục vụ tương thích schema theo phê duyệt của owner, không hiển thị bản đồ hay dẫn đường.
+- **Tài liệu bàn giao:** Đã cập nhật `docs/HUGO_HOTEL_UI_VISUAL_REDESIGN.md` và `docs/HUGO_CURRENT_TASK_HANDOFF.md`.
+- **Dừng tại TASK21.38-D-UI:** Giữ nguyên trạng thái `OWNER_VISUAL_APPROVAL_PENDING`. Không tự ý chuyển sang TASK21.38-E hay tích hợp AI21.40.

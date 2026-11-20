@@ -1,0 +1,473 @@
+{
+  "task": "21.35",
+  "at": "2026-11-18T12:22:47.397Z",
+  "tier": "OFFLINE_SYNTHETIC_ONLY",
+  "expectedLockedBeforeProductEdits": true,
+  "holdoutIndependent": "Different phrasing and compositions, frozen with development cases; not a statistical generalization.",
+  "global": {
+    "noModel": true,
+    "noMutation": true,
+    "noBookingAuthorityFromCatalog": true,
+    "noRawPrivateData": true
+  },
+  "cases": [
+    {
+      "id": "D01",
+      "cohort": "DEVELOPMENT",
+      "kind": "slang",
+      "setup": [],
+      "messages": [
+        "Tui muốn đi đâu đó mát mát, ít đông, đi hai đứa, cỡ 5 củ."
+      ],
+      "expected": {
+        "clarify": true,
+        "budget": 5000000,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D02",
+      "cohort": "DEVELOPMENT",
+      "kind": "typo",
+      "setup": [],
+      "messages": [
+        "Tìm homestay tại Đà Lạc cho 2 người."
+      ],
+      "expected": {
+        "locationClarification": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D03",
+      "cohort": "DEVELOPMENT",
+      "kind": "multi-goal",
+      "setup": [],
+      "messages": [
+        "Tìm homestay và nhà hàng ở Đà Lạt, chỗ ở cần Wi-Fi."
+      ],
+      "expected": {
+        "category": "hotel",
+        "deferred": "restaurant",
+        "amenity": "Wi-Fi"
+      }
+    },
+    {
+      "id": "D04",
+      "cohort": "DEVELOPMENT",
+      "kind": "negative-amenity",
+      "setup": [],
+      "messages": [
+        "Tìm khách sạn ở Đà Lạt không cần hồ bơi nhưng cần Wi-Fi."
+      ],
+      "expected": {
+        "category": "hotel",
+        "amenity": "Wi-Fi",
+        "notAmenity": "Hồ bơi"
+      }
+    },
+    {
+      "id": "D05",
+      "cohort": "DEVELOPMENT",
+      "kind": "hypothetical",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi xe khách."
+      ],
+      "messages": [
+        "Nếu đi Nha Trang thay Đà Lạt thì sao?"
+      ],
+      "expected": {
+        "preserve": true,
+        "clarify": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D06",
+      "cohort": "DEVELOPMENT",
+      "kind": "ambiguous-change",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi xe khách."
+      ],
+      "messages": [
+        "Tăng tiền lên chút với đổi xe cho thoải mái hơn nhé, chưa biết chọn loại nào."
+      ],
+      "expected": {
+        "preserve": true,
+        "clarify": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D07",
+      "cohort": "DEVELOPMENT",
+      "kind": "group-correction",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi xe khách."
+      ],
+      "messages": [
+        "Ý tôi là 6 triệu cho cả hai người, không phải mỗi người."
+      ],
+      "expected": {
+        "budget": 6000000,
+        "adults": 2,
+        "destination": "Đà Lạt",
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D08",
+      "cohort": "DEVELOPMENT",
+      "kind": "role-correction",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi xe khách."
+      ],
+      "messages": [
+        "Ý tôi không phải đi từ Hà Nội mà là đi tới Hà Nội."
+      ],
+      "expected": {
+        "destination": "Hà Nội",
+        "departure": "Hồ Chí Minh",
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D09",
+      "cohort": "DEVELOPMENT",
+      "kind": "optout-composition",
+      "setup": [
+        "Tìm homestay ở Đà Lạt có Wi-Fi, ưu tiên sạch sẽ và yên tĩnh."
+      ],
+      "messages": [
+        "Đừng dùng sở thích cũ nữa, lần này tìm khách sạn ở Đà Lạt có Wi-Fi."
+      ],
+      "expected": {
+        "category": "hotel",
+        "accommodationType": "hotel",
+        "memoryOff": true,
+        "amenity": "Wi-Fi"
+      }
+    },
+    {
+      "id": "D10",
+      "cohort": "DEVELOPMENT",
+      "kind": "habit-composition",
+      "setup": [],
+      "messages": [
+        "Tôi thường thích yên tĩnh, giờ tìm homestay ở Đà Lạt có Wi-Fi."
+      ],
+      "expected": {
+        "category": "hotel",
+        "amenity": "Wi-Fi",
+        "noMemoryMutation": true
+      }
+    },
+    {
+      "id": "D11",
+      "cohort": "DEVELOPMENT",
+      "kind": "unspecified-correction",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi xe khách."
+      ],
+      "messages": [
+        "Bạn hiểu sai rồi, không phải ý đó."
+      ],
+      "expected": {
+        "preserve": true,
+        "clarify": true,
+        "noPlanner": true,
+        "proposalCleared": true
+      }
+    },
+    {
+      "id": "D12",
+      "cohort": "DEVELOPMENT",
+      "kind": "cheaper",
+      "setup": [
+        "Tìm homestay ở Đà Lạt có Wi-Fi, ưu tiên sạch sẽ và yên tĩnh.",
+        "Xem homestay thứ 2."
+      ],
+      "messages": [
+        "Tìm chỗ rẻ hơn nhưng vẫn giữ Wi-Fi."
+      ],
+      "expected": {
+        "category": "hotel",
+        "maxPrice": 499999,
+        "amenity": "Wi-Fi",
+        "notId": 2
+      }
+    },
+    {
+      "id": "D13",
+      "cohort": "DEVELOPMENT",
+      "kind": "quality-feedback",
+      "setup": [
+        "Tìm homestay ở Đà Lạt có Wi-Fi, ưu tiên sạch sẽ và yên tĩnh."
+      ],
+      "messages": [
+        "Muốn yên tĩnh hơn nhưng đừng tăng giá."
+      ],
+      "expected": {
+        "qualityUnknown": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D14",
+      "cohort": "DEVELOPMENT",
+      "kind": "distance-feedback",
+      "setup": [
+        "Tìm homestay ở Đà Lạt có Wi-Fi, ưu tiên sạch sẽ và yên tĩnh."
+      ],
+      "messages": [
+        "Hơi xa trung tâm, tìm gần trung tâm hơn."
+      ],
+      "expected": {
+        "clarify": true,
+        "landmark": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D15",
+      "cohort": "DEVELOPMENT",
+      "kind": "session-learning",
+      "setup": [],
+      "messages": [
+        "Tìm zelvoro ở Đà Lạt.",
+        "Ý tôi là homestay.",
+        "Kiếm zelvoro có Wi-Fi tại Đà Lạt."
+      ],
+      "expected": {
+        "category": "hotel",
+        "accommodationType": "homestay",
+        "amenity": "Wi-Fi",
+        "sessionMapping": true
+      }
+    },
+    {
+      "id": "D16",
+      "cohort": "DEVELOPMENT",
+      "kind": "user-price",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi xe khách."
+      ],
+      "messages": [
+        "Giá xe shuttle sân bay Đà Lạt tôi nghe là 200k/người, đúng không?"
+      ],
+      "expected": {
+        "preserve": true,
+        "notVerifiedAmount": 200000,
+        "historical": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D17",
+      "cohort": "DEVELOPMENT",
+      "kind": "expiry",
+      "setup": [],
+      "messages": [
+        "Giá xe shuttle sân bay Đà Lạt tháng 02/2026 là bao nhiêu?"
+      ],
+      "expected": {
+        "fixture": "expired",
+        "observations": 0,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "D18",
+      "cohort": "DEVELOPMENT",
+      "kind": "knowledge-followup",
+      "setup": [],
+      "messages": [
+        "Giá xe shuttle sân bay Đà Lạt tháng 02/2026 là bao nhiêu?",
+        "Khoản đó tính cho một người hay cả nhóm?"
+      ],
+      "expected": {
+        "amount": 150000,
+        "unit": "PER_PERSON",
+        "period": "02/2026",
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "H01",
+      "cohort": "HOLDOUT",
+      "kind": "optout-reordered",
+      "setup": [
+        "Tìm homestay ở Đà Lạt có Wi-Fi, ưu tiên sạch sẽ và yên tĩnh."
+      ],
+      "messages": [
+        "Lần này kiếm khách sạn có Wi-Fi tại Đà Lạt; không dùng sở thích cũ."
+      ],
+      "expected": {
+        "category": "hotel",
+        "accommodationType": "hotel",
+        "memoryOff": true,
+        "amenity": "Wi-Fi"
+      }
+    },
+    {
+      "id": "H02",
+      "cohort": "HOLDOUT",
+      "kind": "habit-reordered",
+      "setup": [],
+      "messages": [
+        "Kiếm homestay Đà Lạt có Wi-Fi nhé, mình thường ưu tiên sạch sẽ."
+      ],
+      "expected": {
+        "category": "hotel",
+        "amenity": "Wi-Fi",
+        "noMemoryMutation": true
+      }
+    },
+    {
+      "id": "H03",
+      "cohort": "HOLDOUT",
+      "kind": "planner-resume",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi xe khách. Lập lịch trình giúp tôi.",
+        "Giá xe shuttle sân bay Đà Lạt tháng 02/2026?",
+        "Tìm homestay ở Đà Lạt."
+      ],
+      "messages": [
+        "Tiếp tục lập lịch trình đang làm."
+      ],
+      "expected": {
+        "itinerary": true,
+        "samePlan": true,
+        "onePlanner": true,
+        "destination": "Đà Lạt"
+      }
+    },
+    {
+      "id": "H04",
+      "cohort": "HOLDOUT",
+      "kind": "plan-hypothetical",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi xe khách. Lập lịch trình giúp tôi."
+      ],
+      "messages": [
+        "Giả sử chuyển qua Nha Trang thì chi phí thế nào?"
+      ],
+      "expected": {
+        "preserve": true,
+        "planPreserved": true,
+        "noExtraPlanner": true
+      }
+    },
+    {
+      "id": "H05",
+      "cohort": "HOLDOUT",
+      "kind": "negative-destination",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi xe khách."
+      ],
+      "messages": [
+        "Chưa đổi sang Nha Trang, tôi chỉ đang cân nhắc."
+      ],
+      "expected": {
+        "preserve": true,
+        "clarify": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "H06",
+      "cohort": "HOLDOUT",
+      "kind": "current-quality",
+      "setup": [
+        "Tìm homestay ở Đà Lạt có Wi-Fi, ưu tiên sạch sẽ và yên tĩnh."
+      ],
+      "messages": [
+        "Không cần rẻ nhất, lần này ưu tiên sạch sẽ và yên tĩnh."
+      ],
+      "expected": {
+        "qualityUnknown": true,
+        "noPlanner": true,
+        "qualityCurrent": true,
+        "memoryFixture": true
+      }
+    },
+    {
+      "id": "H07",
+      "cohort": "HOLDOUT",
+      "kind": "no-autosave",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi xe khách. Lập lịch trình giúp tôi."
+      ],
+      "messages": [
+        "Lưu chuyến đi này giúp tôi."
+      ],
+      "expected": {
+        "noAutoMutation": true,
+        "confirmationRequired": true
+      }
+    },
+    {
+      "id": "H08",
+      "cohort": "HOLDOUT",
+      "kind": "greeting",
+      "setup": [],
+      "messages": [
+        "Chào bạn, cảm ơn nha!"
+      ],
+      "expected": {
+        "simple": true,
+        "noServices": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "H09",
+      "cohort": "HOLDOUT",
+      "kind": "ambiguous-reference",
+      "setup": [
+        "Tìm homestay ở Đà Lạt có Wi-Fi, ưu tiên sạch sẽ và yên tĩnh.",
+        "Tìm nhà hàng ở Đà Lạt."
+      ],
+      "messages": [
+        "Cho xem cái thứ hai."
+      ],
+      "expected": {
+        "clarify": true,
+        "noPlanner": true
+      }
+    },
+    {
+      "id": "H10",
+      "cohort": "HOLDOUT",
+      "kind": "unknown-money",
+      "setup": [
+        "Tôi đi Đà Lạt từ TP HCM, 2 người, ngân sách 5 triệu cả nhóm, ngày 25/11/2026 đến 27/11/2026, đi xe khách."
+      ],
+      "messages": [
+        "Ý tôi là ngân sách 7 lốp cho cả nhóm."
+      ],
+      "expected": {
+        "preserve": true,
+        "clarify": true,
+        "noPlanner": true
+      }
+    }
+  ],
+  "sources": {
+    "backend/src/services/agentCoreService.ts": "60ed84db068a1bdabf438a4e4a9d0d8bbc0e1197f32efbf6715e842633e82be5",
+    "backend/src/agent/vietnameseNormalizer.ts": "46f4c18b6ee702bec5212a4d71c53c277e6db43a0b47eb3695abfda7321a3303",
+    "backend/src/agent/vietnameseConversation.ts": "7556c465cf8ec6a85a5c875cac7b81bafa3aae36963041daf7eacb3fe29e3c22",
+    "backend/src/agent/conversationSemantics.ts": "3ae41e8db4f49efabedd66d2ec3a804263699d2996e18b9d895dcdc1e3bb005c",
+    "backend/src/agent/adaptiveLanguage.ts": "5a3d1e8e7a8a7a6d64f6084445974768a12b5d827b3b5d2f496a8e4cc41822f1",
+    "backend/src/agent/travelConsultant.ts": "b250c00423e292e26c3928367a10f005201957c6689dc3e61cffeac5861fde54",
+    "backend/src/agent/advisoryReasoning.ts": "f2b3afaa21ae7b3c7b0c917ddfe221a03ff61de138d5d6a7e46873f231a429b4",
+    "backend/src/agent/decisionIntelligence.ts": "0a47d3e1582cf4f0cc1674ef1cc1e6071650efb037cd6b8900a4d1e3c9216528",
+    "backend/src/agent/naturalGrounding.ts": "ade5ecf583dcaf35709cd7db6aabbd8436fd35a8edafaa8d334e564e34592dee",
+    "backend/src/agent/personalizedGrounding.ts": "b97ed24b4277355a1fd4ffaa58f436d7e82b5264b44166c28cfd815e11f3c515",
+    "backend/src/agent/customerPersonalization.ts": "e951b05e29ba5fdab5fda22d3ec9ea40d8002fd596c482a15cfc627368d52a92",
+    "backend/src/services/customerMemoryService.ts": "cfbe5207ee8e9db27c7929beaf150bfd4fc76c463da914d73623b20a5e88c412",
+    "backend/src/services/reviewInsightService.ts": "bb4f62dad465f94088f498b9b1c1ade97c88ec884dcb33cfddd1013331ad3415",
+    "backend/src/services/travelKnowledgeService.ts": "5ec27aea3392410e11eeeba65081ccb8e17e448e01b58fb1812a8c28ddcf724e",
+    "backend/src/agent/costIntelligence.ts": "ad033fb239a7b3255a635e69f4329490047188e84a593415e578fa7844decfb8"
+  }
+}

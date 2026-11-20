@@ -1,0 +1,178 @@
+{
+  "at": "2026-11-18T13:59:04.071Z",
+  "baseline": "Master21.34C",
+  "infraCostsApproved": false,
+  "vpsRented": false,
+  "deployed": false,
+  "blocksUiDevelopment": false,
+  "blockers": [
+    {
+      "id": "ENV_SEPARATION",
+      "priority": "P0",
+      "gate": "Before production",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Independent staging/production configs, roles/sentinels/secrets and no Windows workstation dependency"
+    },
+    {
+      "id": "REAL_CATALOG",
+      "priority": "P0",
+      "gate": "Before production",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Verified real-business catalog; DEMO excluded or unmistakably separated; no simulated Booking availability"
+    },
+    {
+      "id": "AUTH_RBAC",
+      "priority": "P0",
+      "gate": "Before production",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Production auth/session/JWT/secrets/recovery and cross-role denial acceptance"
+    },
+    {
+      "id": "SESSIONS",
+      "priority": "P0",
+      "gate": "Before production",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Concurrent user isolation, ownership/replay/TTL and process/restart behavior acceptance"
+    },
+    {
+      "id": "PRIVACY",
+      "priority": "P0",
+      "gate": "Before production",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Consent/revocation/retention/private-memory/review analysis and logging verified"
+    },
+    {
+      "id": "CONCURRENCY",
+      "priority": "P1",
+      "gate": "Before public AI release",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Bounded concurrent customers; sequential9chat is not throughput proof"
+    },
+    {
+      "id": "QUOTA",
+      "priority": "P0",
+      "gate": "Before production",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Principal-scoped quotas/reserve/concurrency across deployed topology; no restart quota bypass"
+    },
+    {
+      "id": "API_ERRORS",
+      "priority": "P1",
+      "gate": "Before public UI release",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Typed failure/429/disabled-provider states in UI; existing runtime guards retained"
+    },
+    {
+      "id": "BACKUP_RESTORE",
+      "priority": "P0",
+      "gate": "Before production",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Encrypted PG/PostGIS backup and isolated restore test preserving Owner/knowledge/data"
+    },
+    {
+      "id": "SECRETS",
+      "priority": "P0",
+      "gate": "Before production",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Linux secrets injection/rotation; no browser secrets or workstation DPAPI dependency in website runtime"
+    },
+    {
+      "id": "LINUX_DOCKER",
+      "priority": "P0",
+      "gate": "Before production",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Actual Ubuntu builds/containers and graceful startup/shutdown, not static portability only"
+    },
+    {
+      "id": "PERSISTENT_PG",
+      "priority": "P0",
+      "gate": "Before production",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "PostGIS volumes/permissions/migrations/recovery acceptance with approved data"
+    },
+    {
+      "id": "PRIVATE_OLLAMA",
+      "priority": "P0",
+      "gate": "Before enabling model in production",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Ollama private host/network;11434 andPG never publicly exposed; pinned model/digest/context"
+    },
+    {
+      "id": "GPU_MODEL",
+      "priority": "P1",
+      "gate": "Before public model release",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Fresh approved model resource/readiness/ownership/quota and raw semantic acceptance"
+    },
+    {
+      "id": "HEALTH_RECOVERY",
+      "priority": "P0",
+      "gate": "Before production",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Health/readiness/dependency timeouts/restart/resource limits/rollback tested"
+    },
+    {
+      "id": "NGINX_HTTPS",
+      "priority": "P0",
+      "gate": "Before production",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Authorized host/domain/DNS/TLS/Nginx reverse proxy and security headers; no VPS rented here"
+    },
+    {
+      "id": "OBSERVABILITY",
+      "priority": "P1",
+      "gate": "Before production",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Redacted structured logs/metrics/alerts and operational ownership"
+    },
+    {
+      "id": "ROLLBACK",
+      "priority": "P0",
+      "gate": "Before production",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Release/data rollback and backup-restore rehearsal"
+    },
+    {
+      "id": "EXTERNAL_E2E",
+      "priority": "P0",
+      "gate": "Before public release",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Actual browser outside VPS network through HTTPS with DB persistence and safe model fallback"
+    },
+    {
+      "id": "WORKER",
+      "priority": "P1",
+      "gate": "Before enabling scheduled worker",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Fresh source/rights/manual approval/real-PG lifecycle/idempotence/recovery/revoke acceptance; keep OFF until complete"
+    },
+    {
+      "id": "MODEL_RAW",
+      "priority": "P1",
+      "gate": "Before public Qwen claims",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "One proposed bounded packet; fallback success cannot replace raw model semantic PASS"
+    },
+    {
+      "id": "GLOBAL_UI",
+      "priority": "P1",
+      "gate": "Next development task21.38",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Design system/responsive journeys/accessibility; confirmed Admin/Partner placeholders need separate business scope, not false visual completion"
+    },
+    {
+      "id": "NEW_TRAVEL_MODES",
+      "priority": "P2",
+      "gate": "After demo if desired",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "Bus/plane/train execution/routing/ticketing remain unsupported; explain clearly, do not coerce"
+    },
+    {
+      "id": "EXTRA_INTELLIGENCE",
+      "priority": "P2",
+      "gate": "After explicit product decision only",
+      "status": "NOT_CLOSED_BY_LOCAL_MODEL_OFF_ACCEPTANCE",
+      "required": "No new AI version/store/engine; unknown language/data clarifies rather than invents"
+    }
+  ]
+}

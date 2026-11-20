@@ -1,3 +1,8 @@
+import {HotelBookingSummary} from '../components/hotels/HotelBookingSummary';
+import {useAuth} from '../context/AuthContext';
+import '../styles/hotels.css';
+import '../styles/hotelStay.css';
+import '../styles/hotelPremium.css';
 import React, { useState, useEffect } from 'react';
 import { BookingService } from '../services/bookingService';
 import { Booking } from '../types';
@@ -5,18 +10,23 @@ import { Bookmark, Calendar, Users, CheckCircle2, Clock, XCircle, ArrowRight, Sh
 import { formatCurrencyVND } from '../utils/formatters';
 
 export const BookingsPage: React.FC = () => {
+  const {user,sessionGeneration}=useAuth();
+  const [loadError,setLoadError]=useState('');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let active=true;
+    const token=localStorage.getItem('travelgo_token');
+    setBookings([]);setLoadError('');
     window.scrollTo(0, 0);
     const fetchBookings = async () => {
       setLoading(true);
       try {
         const data = await BookingService.getBookings();
-        setBookings(data);
+        if(active&&localStorage.getItem('travelgo_token')===token)setBookings(data);
       } catch (e) {
-        console.error(e);
+        if(active)setLoadError('Chưa tải được lịch sử đặt dịch vụ.');
       } finally {
         setLoading(false);
       }
@@ -52,7 +62,7 @@ export const BookingsPage: React.FC = () => {
         return (
           <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
             <Clock className="w-3.5 h-3.5" />
-            <span>Chờ thanh toán</span>
+            <span>Chờ xác nhận</span>
           </span>
         );
       case 'CANCELLED':
@@ -86,6 +96,7 @@ export const BookingsPage: React.FC = () => {
           </p>
         </div>
 
+        {loadError&&<p role="alert" className="text-rose-700 mb-4">{loadError}</p>}
         {bookings.length === 0 ? (
           <div className="bg-white rounded-3xl p-12 text-center border border-slate-200">
             <Bookmark className="w-12 h-12 text-slate-300 mx-auto mb-3" />
@@ -94,7 +105,7 @@ export const BookingsPage: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {bookings.map((b) => (
+            {bookings.map((b) => b.hotelStay?<HotelBookingSummary key={b.id} booking={b} onCancel={async id=>{const result=await BookingService.cancelBooking(id);setBookings(items=>items.map(item=>item.id===id?result:item));}}/>:(
               <div
                 key={b.id}
                 className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4"

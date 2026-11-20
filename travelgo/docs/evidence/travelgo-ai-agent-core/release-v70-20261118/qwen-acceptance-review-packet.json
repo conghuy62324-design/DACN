@@ -1,0 +1,232 @@
+{
+  "task": "V7.0_SEPARATE_REAL_MODEL_ACCEPTANCE_PROPOSAL",
+  "status": "PROPOSED_NOT_APPROVED_NOT_EXECUTED",
+  "requiresFreshExplicitApproval": true,
+  "sourceLock": {
+    "backend/src/services/agentCoreService.ts": "0792e11fd3fa6d90c11c09c33acd84d5fcced1618dc4f866fa9907ed48fa4baa",
+    "backend/dist/services/agentCoreService.js": "a0eb5578050f7162a0581cd93f2ca0e3164c7222db28230bdc019eecd1c04b18",
+    "backend/src/agent/vietnameseConversation.ts": "d0cdbfea50454c8ccf76ecef60adbcf83a7dc9950a4636cfdfe3e31dd76d17b4",
+    "backend/dist/agent/vietnameseConversation.js": "33f59cdd3c9f3b825ff911c77162ee31d1b7964e502caad15cad76b5ad8f2db7",
+    "backend/src/agent/conversationSemantics.ts": "3c890751ad07de2bbb783ce108fe83912e15f504c171c8ab7a13530cc47ab696",
+    "backend/dist/agent/conversationSemantics.js": "c9906727c45a0e48b88e9e681475b0737b6ce02730f2b64e4cecca9e1a7e61cc",
+    "backend/src/agent/travelConsultant.ts": "b75c8201af399c505be976423b230ef4509e0c2f84a7ffde08af31a26f3e16c3",
+    "backend/dist/agent/travelConsultant.js": "71c5039343e8947ffe07f2ab55518c161ca6b92a04111debd2cc25efe80e3d76",
+    "backend/src/agent/advisoryReasoning.ts": "60c8187e08b58bc58870938bec604e5771366af89a40834f75cda47a6d38c6b8",
+    "backend/dist/agent/advisoryReasoning.js": "2bc5e3cd3bd6ada0fdc3483815692a38dd355493d638f155b428ba9252230b09",
+    "backend/src/agent/costIntelligence.ts": "2fec6ae27e8e116a733a634e08a264231bf4439b39db997511013add86f71840",
+    "backend/dist/agent/costIntelligence.js": "39781240274c1f0ee552c50f1db02270d9c95fcc77b642d1d72e50b69a22b833",
+    "backend/src/agent/geographicEvidence.ts": "49fe7fe9c029be19dc2b0fea606332088b3bf3b722a2f88b4557671926ba2775",
+    "backend/dist/agent/geographicEvidence.js": "3127f27c538ca079a7ccc31f16b29c6ed427f3caeb84307e07cc50f019096ba5",
+    "backend/src/agent/planningIntelligence.ts": "4044dc49bffe3e09578b75f9129a86f796f14e680ce9acd41bfe79fd5fcafb39",
+    "backend/dist/agent/planningIntelligence.js": "02270b659a9e9f171f344ef2c9dc87504b48291308c41c790900703b4e34b3e6",
+    "backend/src/utils/itineraryComparison.ts": "74b9f151e002958bd2f621c5d6e00912077e8a382101f2dba739c1ecf0c17b62",
+    "backend/dist/utils/itineraryComparison.js": "82bb1285adbe0bd9df098186d1dc7055747e30f51feb709a540c24f7b468c337"
+  },
+  "providerSourceSha256": "0fcb89eef6cfe55914c3eaf597fce8b4591bf5bb750d1aa94cac3eca92c09bf9",
+  "reuse": [
+    "CoreOllamaProvider",
+    "NATURAL_RESPONSE_SCHEMA",
+    "GROUNDED_RESPONSE_SCHEMA",
+    "existing resource/ownership/quota/readiness helpers",
+    "strict request recorder",
+    "geographic evidence and semantic validators",
+    "grounded server renderer"
+  ],
+  "model": {
+    "tag": "qwen3:4b-instruct-2507-q4_K_M",
+    "digest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+    "endpoint": "http://127.0.0.1:11434",
+    "context": 16384,
+    "temperature": 0,
+    "numPredict": 2048,
+    "inferenceDeadlineMs": 15000,
+    "concurrency": 1
+  },
+  "proposedBounds": {
+    "resourcePreflight": 1,
+    "metadataGetEndpoints": [
+      "/api/version",
+      "/api/tags",
+      "/api/ps"
+    ],
+    "postWarmResidentCheck": "/api/ps if warm-load used",
+    "warmLoadMax": 1,
+    "inferenceMax": 3,
+    "nativePostMax": 4,
+    "retries": 0
+  },
+  "preflight": {
+    "freeRamMinMiB": 6144,
+    "coldGpuUtilMaxPercent": 10,
+    "coldVramExpectedAllocationMiB": 4866,
+    "coldReserveMiB": 512,
+    "coldFreeVramMinMiB": 5378,
+    "resident": "Exact tag/digest/context/residency expiry and headroom verified; no load when cold guard fails",
+    "ownership": "Same approved owner; localhost listener and runner proven, no competing client; do not close/kill processes",
+    "quota": {
+      "principalId": "57e6e64a-9dac-43af-bcf0-5f2c992a423a",
+      "principalHash": "856f41c9ad2ffc1e3f467eeb45f0069a943196101062d0e3ab3927bec64b95c5",
+      "modelAndAgentFreshScans": true,
+      "allAtAndCreatedAtHistoricalAttempts": true,
+      "capPerHour": 20,
+      "reserve": 10,
+      "conservativeCapacityReserve": 4,
+      "minimumRemainingForFullBound": 14,
+      "noPrincipalSwitch": true
+    },
+    "onGuardFail": "STOP; no repeated preflight, lower context, model change, guard bypass or retry"
+  },
+  "cases": [
+    {
+      "id": "Q1",
+      "role": "RAW_NATURAL_LANGUAGE_PROPOSAL",
+      "schema": "NATURAL_RESPONSE_SCHEMA",
+      "input": "Tụi mình 2 người, tính trốn cái nóng lên Đà Lậtt nghỉ 3n2đ, tầm 6 củ cả hai, xuất phát Sài Gòn; chưa chốt ngày hay xe.",
+      "verifiedContext": {},
+      "expected": {
+        "operation": "plan_trip",
+        "understoodDestination": "Đà Lạt",
+        "departure": "Thành phố Hồ Chí Minh",
+        "adults": 2,
+        "totalBudget": 6000000,
+        "quotes": "Exact current-message contiguous quotes, shared unique geographic candidate evidence only",
+        "forbidden": [
+          "invented start/end dates",
+          "chosen transportation",
+          "entire utterance in preferences",
+          "weather claim",
+          "tool execution"
+        ],
+        "backend": "May require confirmation for fuzzy destination; do not score parser fallback as Qwen understanding"
+      }
+    },
+    {
+      "id": "Q2",
+      "role": "AMBIGUITY_CONTEXT_CORRECTION",
+      "schema": "NATURAL_RESPONSE_SCHEMA",
+      "input": "Chỗ đó ổn đó, nhưng tăng tiền xíu, đổi xe cho khỏe; để mình bàn với bạn đã.",
+      "verifiedContext": {
+        "destinationCity": "Đà Lạt",
+        "departureCity": "Thành phố Hồ Chí Minh",
+        "adults": 2,
+        "totalBudget": 6000000,
+        "transportation": "car"
+      },
+      "expected": {
+        "kind": "natural",
+        "operation": "chat",
+        "updates": [],
+        "optionalChangeAbsent": true,
+        "verifiedContextPreserved": true,
+        "noToolsOrMutation": true,
+        "forbidden": [
+          "copy inherited6000000 as a new update",
+          "guess increased amount",
+          "select car/motorbike without current evidence",
+          "resolve ambiguous listing ID by guessing"
+        ]
+      }
+    },
+    {
+      "id": "Q3",
+      "role": "SERVER_FACT_SELECTION_AND_RENDERING",
+      "schema": "GROUNDED_RESPONSE_SCHEMA",
+      "input": "Nhà mình ưu tiên sạch và yên tĩnh. Với chỗ ở này thì đánh đổi thế nào, và khoản xe sân bay lúc nãy có cộng vào giá phòng không?",
+      "factsPolicy": "Fresh server facts or clearly SYNTHETIC isolated fixtures; no raw untrusted review or private user data; never write fixtures to PG",
+      "offeredFactIds": [
+        "option.0",
+        "reviews.0",
+        "cost.0"
+      ],
+      "structuredFacts": {
+        "option.0": {
+          "label": "SYNTHETIC lodging fixture",
+          "priceReferenceVnd": 750000,
+          "priceUnit": "UNKNOWN_UNIT",
+          "availability": "UNKNOWN",
+          "demo": true
+        },
+        "reviews.0": {
+          "label": "SYNTHETIC structured review fixture, not real reviews",
+          "sampleCount": 3,
+          "cleanliness": {
+            "positive": 2,
+            "negative": 0
+          },
+          "noise": {
+            "positive": 0,
+            "negative": 2
+          },
+          "opinionOnly": true,
+          "rawTextNotProvided": true
+        },
+        "cost.0": {
+          "authority": "APPROVED_WEB_KNOWLEDGE_IF_FRESH_ELSE_EXPLICIT_SYNTHETIC_FIXTURE",
+          "amount": 150000,
+          "currency": "VND",
+          "unit": "PER_PERSON",
+          "period": "02/2026",
+          "currentPriceConfirmed": false,
+          "sourceVersion": 2,
+          "sourceUrl": "https://en.wikivoyage.org/wiki/Da_Lat",
+          "requiresFreshServerRetrievalBeforeRealIntegrationClaim": true
+        }
+      },
+      "allowedMemory": {
+        "scope": "SYNTHETIC_EXPLICIT_CONSENT_FIXTURE",
+        "preferences": [
+          "quiet",
+          "clean"
+        ],
+        "privateIdentityOmitted": true
+      },
+      "expected": {
+        "kind": "grounded",
+        "factIdsSet": [
+          "option.0",
+          "reviews.0",
+          "cost.0"
+        ],
+        "leadAllowed": [
+          "suggestion",
+          "summary"
+        ],
+        "renderer": "Name/reference price with unknown-unit caveat, mixed cleanliness/noise tradeoff as opinions with sample limit, separate historical shuttle/per-person/period/source; no combined room price, current quote or availability claim",
+        "realReviewIntegrationPass": false
+      },
+      "fixtureConstruction": "Structured facts are proposal examples, not a native payload. Future approved builder must use the existing fact pool/renderer, resolve exact offered IDs and full typed fact bundles, then freeze them before native POST; no retuning after raw output."
+    }
+  ],
+  "scoring": {
+    "separate": [
+      "raw envelope/output/schema",
+      "raw semantic quality",
+      "backend semantic/authority validation",
+      "grounding/renderer",
+      "fallback quality",
+      "latency/token usage/model digest/resident context/native count"
+    ],
+    "fallbackCannotAwardRawModelPass": true,
+    "expectedLockedBeforeNativePost": true,
+    "noExpectedOrPromptRetuneAfterOutput": true,
+    "browserQwenTools": "NOT_INCLUDED_IN_THREE_SEMANTIC_CASES",
+    "onFailure": "Preserve evidence; stop, no additional inference beyond authorization"
+  },
+  "restoration": "Default website stays modelOFF; return protected READ ONLY; do not unload a pre-existing resident model unless separately authorized",
+  "executedHere": {
+    "metadataGet": 0,
+    "warmLoad": 0,
+    "inference": 0,
+    "resourceChecks": 0,
+    "modelQuotaChecks": 0
+  },
+  "contractSourceHashes": {
+    "backend/src/agent/naturalContract.ts": "63640f0c29830a65c04e832ea9f9ed4d8f847306fe36339328fb4683697258b5",
+    "backend/src/agent/naturalGrounding.ts": "ade5ecf583dcaf35709cd7db6aabbd8436fd35a8edafaa8d334e564e34592dee",
+    "backend/src/agent/costIntelligence.ts": "2fec6ae27e8e116a733a634e08a264231bf4439b39db997511013add86f71840",
+    "backend/src/agent/currentTurnProof.ts": "81b354fbb59ce4c06e51870e439b9642691a55077db5e14637ba0bade8fa67ca",
+    "backend/src/agent/ollamaReadiness.ts": "01ee551e8d4655bf3dbf6639b751d74353544531ae8a91b2d58b989de3b4ac4c",
+    "backend/src/agent/limits.ts": "62dba723d7744e9525697f6ecf12663afe7d330f12b79419acc679ce2c5bf295",
+    "backend/src/agent/coreProvider.ts": "0fcb89eef6cfe55914c3eaf597fce8b4591bf5bb750d1aa94cac3eca92c09bf9"
+  }
+}

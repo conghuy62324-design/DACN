@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { Transaction } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { sequelize } from '../config/database.js';
 import { AuditLog, Booking, BookingStatusHistory, Business, Place, Ticket, Tour, User } from '../models/index.js';
 import { HttpError } from '../utils/httpError.js';
@@ -9,9 +9,9 @@ import { TelemetryService } from './telemetryService.js';
 import { RecommendationExposureService } from './recommendationExposureService.js';
 export type { BookingPayload } from '../utils/bookingValidation.js';
 
-export type BookingStatus = 'PENDING'|'CONFIRMED'|'CANCELLED'|'COMPLETED'|'REJECTED';
-const transitions:Record<BookingStatus,BookingStatus[]>={PENDING:['CONFIRMED','REJECTED','CANCELLED'],CONFIRMED:['COMPLETED','CANCELLED'],CANCELLED:[],COMPLETED:[],REJECTED:[]};
-export function assertBookingTransition(from:BookingStatus,to:BookingStatus){if(!transitions[from]?.includes(to))throw new HttpError(409,`Không thể chuyển trạng thái từ ${from} sang ${to}`,'INVALID_BOOKING_TRANSITION');}
+import {assertBookingTransition,type BookingStatus} from '../utils/bookingLifecycle.js';
+export {assertBookingTransition,type BookingStatus} from '../utils/bookingLifecycle.js';
+import {prepareHotelStay,confirmHotelStay,hotelIntentStatus,attachHotelStays,isHotelStayBooking,transitionHotelStay} from '../hotels/hotelStay.js';
 export function calculateBookingPrice(unitPrice:number,adults:number,children:number,quantity?:number){
   const units = quantity ?? adults + children;
   if (!Number.isSafeInteger(units) || units < 1 || !Number.isFinite(unitPrice) || unitPrice < 0) throw new HttpError(400,'Số lượng hoặc giá không hợp lệ');
@@ -50,12 +50,19 @@ async function resolveService(payload:BookingPayload,transaction:Transaction){
   const place=await Place.findOne({where:{id:payload.serviceId,status:'APPROVED'},transaction,lock:transaction.LOCK.SHARE});
   if(!place)throw new HttpError(404,'Dịch vụ không tồn tại hoặc chưa được duyệt');
   if(place.category!==payload.serviceType)throw new HttpError(400,'Loại dịch vụ không khớp');
+  if(payload.serviceType==='hotel'&&(await sequelize.query("SELECT to_regclass('public.hotel_profiles') AS relation",{transaction}))[0]?.[0]?.['relation']){
+    const [rows]=await sequelize.query('SELECT place_id FROM hotel_profiles WHERE place_id=$1',{bind:[place.id],transaction});
+    if(rows.length)throw new HttpError(409,'Khách sạn dùng hạng phòng chưa hỗ trợ xác nhận Booking mới; không đặt theo giá tham khảo.','HOTEL_BOOKING_NOT_ENABLED');
+  }
   await assertActiveBusiness(place.businessId,transaction);
   return{businessId:place.businessId,serviceName:place.name,unitPrice:Number(place.priceFrom),placeId:place.id};
 }
 async function restoreInventory(booking:Booking,transaction:Transaction){if(booking.ticketId){const ticket=await Ticket.findByPk(booking.ticketId,{transaction,lock:transaction.LOCK.UPDATE});if(ticket)await ticket.update({availableSeats:Math.min(ticket.capacity,ticket.availableSeats+booking.quantity)},{transaction});}if(booking.tourId){const tour=await Tour.findByPk(booking.tourId,{transaction,lock:transaction.LOCK.UPDATE});if(tour)await tour.update({availableCapacity:Math.min(tour.capacity,tour.availableCapacity+booking.quantity)},{transaction});}}
 
 export class BookingService {
+  static prepareHotelStay=prepareHotelStay;
+  static confirmHotelStay=confirmHotelStay;
+  static hotelIntentStatus=hotelIntentStatus;
   static async createBooking(userId:string,raw:BookingPayload,idempotencyKey?:string){
     const payload = normalizeBookingPayload(raw);
     const key = validateIdempotencyKey(idempotencyKey);
@@ -94,13 +101,18 @@ export class BookingService {
       return serialize(booking);
     });
   }
-  static async getBookingsByUser(userId:string){return (await Booking.findAll({where:{userId},order:[['createdAt','DESC']]})).map(serialize);}
-  static async getAllBookings(){return (await Booking.findAll({order:[['createdAt','DESC']]})).map(serialize);}
-  static async getBookingByIdOrCode(value:string){const booking=await Booking.findOne({where:isUuid(value)?{id:value}:{bookingCode:value}});return booking?serialize(booking):null;}
-  static async getOwned(userId:string,value:string){const booking=await Booking.findOne({where:isUuid(value)?{id:value,userId}:{bookingCode:value,userId}});if(!booking)throw new HttpError(404,'Không tìm thấy booking');return serialize(booking);}
-  static async getForPartner(userId:string,id:string){const booking=await Booking.findByPk(id);if(!booking?.businessId)throw new HttpError(404,'Không tìm thấy booking');await BusinessAccessService.assert(userId,booking.businessId,'MANAGE_BOOKINGS');return serialize(booking);}
-  static async listForPartner(userId:string,businessId:string,page=1,limit=20){await BusinessAccessService.assert(userId,businessId,'MANAGE_BOOKINGS');const safePage=Math.max(1,page),safeLimit=Math.min(100,Math.max(1,limit));const result=await Booking.findAndCountAll({where:{businessId},order:[['createdAt','DESC']],limit:safeLimit,offset:(safePage-1)*safeLimit});return{items:result.rows.map(serialize),total:result.count,page:safePage,limit:safeLimit};}
-  static async changeStatus(id:string,status:BookingStatus,actor:{id:string;roles:string[]},reason?:string,partnerBusinessId?:string){return sequelize.transaction(async transaction=>{const booking=await Booking.findByPk(id,{transaction,lock:transaction.LOCK.UPDATE});if(!booking)throw new HttpError(404,'Booking không tồn tại');if(partnerBusinessId&&booking.businessId!==partnerBusinessId)throw new HttpError(403,'Booking không thuộc cơ sở này','BOOKING_ACCESS_DENIED');assertBookingTransition(booking.bookingStatus,status);if(status==='CANCELLED'||status==='REJECTED')await restoreInventory(booking,transaction);const oldStatus=booking.bookingStatus;await booking.update({bookingStatus:status},{transaction});await BookingStatusHistory.create({bookingId:id,oldStatus,newStatus:status,actorUserId:actor.id,reason},{transaction});await AuditLog.create({actorUserId:actor.id,action:`BOOKING_${status}`,entityType:'Booking',entityId:id,previousData:{status:oldStatus},newData:{status},reason},{transaction});const eventType=status==='CONFIRMED'?'BOOKING_CONFIRMED':status==='COMPLETED'?'BOOKING_COMPLETED':status==='CANCELLED'?'BOOKING_CANCELLED':undefined;if(eventType)await TelemetryService.recordBookingEvent({userId:booking.userId,bookingId:booking.id,eventType,transaction});return serialize(booking);});}
+  static async getBookingsByUser(userId:string){return attachHotelStays((await Booking.findAll({where:{userId},order:[['createdAt','DESC']]})).map(serialize));}
+  static async getAllBookings(){return attachHotelStays((await Booking.findAll({order:[['createdAt','DESC']]})).map(serialize));}
+  static async getBookingByIdOrCode(value:string){const booking=await Booking.findOne({where:isUuid(value)?{id:value}:{bookingCode:value}});return booking?(await attachHotelStays([serialize(booking)]))[0]:null;}
+  static async getOwned(userId:string,value:string){const booking=await Booking.findOne({where:isUuid(value)?{id:value,userId}:{bookingCode:value,userId}});if(!booking)throw new HttpError(404,'Không tìm thấy booking');return (await attachHotelStays([serialize(booking)]))[0];}
+  static async getForPartner(userId:string,id:string){const booking=await Booking.findByPk(id);if(!booking?.businessId)throw new HttpError(404,'Không tìm thấy booking');await BusinessAccessService.assert(userId,booking.businessId,'MANAGE_BOOKINGS');const result=(await attachHotelStays([serialize(booking)]))[0];if(result.hotelStay){delete result.customerEmail;delete result.userId;delete result.idempotencyKey;}return result;}
+  static async listForPartner(userId:string,businessId:string,page=1,limit=20,filters:{search?:string;status?:string}={}){
+    await BusinessAccessService.assert(userId,businessId,'MANAGE_BOOKINGS');const where:any={businessId};
+    if(filters.status){if(!['PENDING','CONFIRMED','COMPLETED','CANCELLED','REJECTED'].includes(filters.status))throw new HttpError(400,'Trạng thái lọc không hợp lệ');where.bookingStatus=filters.status;}
+    if(filters.search){if(filters.search.length>120)throw new HttpError(400,'Từ khóa quá dài');const pattern='%'+filters.search.replace(/[%_\\]/g,c=>'\\'+c)+'%';where[Op.or]=['bookingCode','customerName','serviceName'].map(k=>({[k]:{[Op.iLike]:pattern}}));}
+    const safePage=Math.max(1,Number.isFinite(page)?page:1),safeLimit=Math.min(100,Math.max(1,Number.isFinite(limit)?limit:20));const result=await Booking.findAndCountAll({where,order:[['createdAt','DESC']],limit:safeLimit,offset:(safePage-1)*safeLimit});const items=await attachHotelStays(result.rows.map(serialize));for(const item of items)if(item.hotelStay){delete item.customerEmail;delete item.userId;delete item.idempotencyKey;}return{items,total:result.count,page:safePage,limit:safeLimit};
+  }
+  static async changeStatus(id:string,status:BookingStatus,actor:{id:string;roles:string[]},reason?:string,partnerBusinessId?:string){if(await isHotelStayBooking(id))return transitionHotelStay(id,status,actor,reason,partnerBusinessId);return sequelize.transaction(async transaction=>{const booking=await Booking.findByPk(id,{transaction,lock:transaction.LOCK.UPDATE});if(!booking)throw new HttpError(404,'Booking không tồn tại');if(partnerBusinessId&&booking.businessId!==partnerBusinessId)throw new HttpError(403,'Booking không thuộc cơ sở này','BOOKING_ACCESS_DENIED');assertBookingTransition(booking.bookingStatus,status);if(status==='CANCELLED'||status==='REJECTED')await restoreInventory(booking,transaction);const oldStatus=booking.bookingStatus;await booking.update({bookingStatus:status},{transaction});await BookingStatusHistory.create({bookingId:id,oldStatus,newStatus:status,actorUserId:actor.id,reason},{transaction});await AuditLog.create({actorUserId:actor.id,action:`BOOKING_${status}`,entityType:'Booking',entityId:id,previousData:{status:oldStatus},newData:{status},reason},{transaction});const eventType=status==='CONFIRMED'?'BOOKING_CONFIRMED':status==='COMPLETED'?'BOOKING_COMPLETED':status==='CANCELLED'?'BOOKING_CANCELLED':undefined;if(eventType)await TelemetryService.recordBookingEvent({userId:booking.userId,bookingId:booking.id,eventType,transaction});return serialize(booking);});}
   static async cancelByCustomer(userId:string,id:string,reason?:string){const booking=await Booking.findOne({where:{id,userId}});if(!booking)throw new HttpError(404,'Không tìm thấy booking');return this.changeStatus(id,'CANCELLED',{id:userId,roles:['CUSTOMER']},reason);}
   static async updateBookingStatus(id:string,status:BookingStatus){return this.changeStatus(id,status,{id:'',roles:['SUPER_ADMIN']});}
 }

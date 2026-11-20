@@ -17,7 +17,7 @@ app.use(cors({
     callback(new Error('Origin không được HuGo Travel cho phép'));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key','If-Match'],
 }));
 
 app.use(express.json({ limit: '1mb' }));

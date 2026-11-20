@@ -1,0 +1,58 @@
+// Exact technical source preparation scope for the existing staging launcher.
+// Approval still comes from authenticated human UI through TravelWebService.moderateSource.
+const assert=require('node:assert/strict'),crypto=require('node:crypto');
+const sha=s=>crypto.createHash('sha256').update(s).digest('hex');
+const sourceConfigHash=config=>sha(JSON.stringify(Object.fromEntries(Object.entries(config).sort(([a],[b])=>a.localeCompare(b)))));
+const uuid=s=>typeof s==='string'&&/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(s);
+function sourceReviewScope(p,now=Date.now()){
+ assert(['21.33','21.34'].includes(p.task));assert.equal(p.status,'APPROVED_BOUNDED_STAGING');
+ assert.equal(p.sourceReviewOnly,true);assert.equal(p.actorClass,'REAL_OWNER_SUPER_ADMIN');assert(uuid(p.actorId));
+ assert.equal(p.personalTestWrites,false);assert.equal(p.realKnowledgeApprovalAllowed,false);
+ assert.equal(p.internetAllowed,false);assert.equal(p.modelAllowed,false);
+ assert(Number.isFinite(Date.parse(p.expiresAt))&&Date.parse(p.expiresAt)>now&&Date.parse(p.expiresAt)<=now+2*3600000);
+ assert(Array.isArray(p.sources)&&p.sources.length>=1&&p.sources.length<=2&&new Set(p.sources.map(s=>s.id)).size===p.sources.length);
+ assert.equal(p.maxSqlDml,2*p.sources.length+(p.task==='21.34'&&p.revocationAllowed===true?1:0));if(p.revocationAllowed){assert.equal(p.task,'21.34');assert(p.sourceIds.includes(p.revocationSourceId));}
+ for(const s of p.sources){assert(uuid(s.id));assert(/^[a-z0-9.-]+\.[a-z]{2,}$/.test(s.domain));assert(/^[a-f0-9]{64}$/.test(s.configHash));}
+ assert.deepEqual(p.sourceIds,p.sources.map(s=>s.id));assert.deepEqual(p.sourceDomains,p.sources.map(s=>s.domain));
+ for(const key of ['candidateIds','jobIds','knowledgeIds'])assert.deepEqual(p[key],[]);
+ assert(!p.sourceIds.includes('3c427f07-c1e2-42eb-b380-42e46c28a2ca'),'RETAINED_SOURCE_PROTECTED');
+ return p;
+}
+function sourceReviewSqlDecision(p,sql,values,state,now=Date.now()){
+ try{
+  sourceReviewScope(p,now);if((state.dmlReservations||0)>=p.maxSqlDml)return{allowed:false};
+  const s=sql.trim().replace(/\s+/g,' ');let next;
+  if(s==='INSERT INTO travel_web_sources(id,config,domain,history) VALUES($1,$2::jsonb,$3,$4::jsonb) RETURNING *'){
+   const target=p.sources.find(x=>x.domain===values[2]);assert(target&&values.length===4&&uuid(values[0]));
+   const config=JSON.parse(values[1]);assert.equal(sourceConfigHash(config),target.configHash);assert.deepEqual(JSON.parse(values[3]),[]);
+   // Production saveSource allocates a random ID; bind that allocation to the reviewed packet.
+   next={allowed:true,values:[target.id,...values.slice(1)]};
+  }else if(s==='UPDATE travel_web_sources SET enabled=$2,permission=$3,review_status=$4,reviewed_by=$5,version=version+1,history=$6::jsonb,updated_at=now() WHERE id=$1 RETURNING *'){
+   assert(p.sourceIds.includes(values[0])&&values.length===6);
+   assert.equal(values[4],p.actorId);const history=JSON.parse(values[5]);let h;if(values[1]===true){assert.equal(values[2],'ALLOWED');assert.equal(values[3],'APPROVED');assert.equal(history.length,1);h=history[0];assert.equal(h.version,1);assert.equal(h.decision,'APPROVE');}else{assert(p.task==='21.34'&&p.revocationAllowed===true&&values[0]===p.revocationSourceId);assert.equal(values[1],false);assert.equal(values[2],'DENIED');assert.equal(values[3],'REVOKED');assert.equal(history.length,2);assert(history[0].version===1&&history[0].decision==='APPROVE'&&history[0].actorId===p.actorId);h=history[1];assert.equal(h.version,2);assert.equal(h.decision,'REVOKE');}assert.equal(h.actorId,p.actorId);
+   assert(typeof h.reason==='string'&&h.reason.trim().length>=3&&h.reason.length<=240);
+   assert(Number.isFinite(Date.parse(h.at))&&Date.parse(h.at)<=now&&Date.parse(h.at)>now-60000);
+   next={allowed:true};
+  }else return{allowed:false};
+  state.dmlReservations=(state.dmlReservations||0)+1;return next;
+ }catch{return{allowed:false};}
+}
+function assertCreationState(row){
+ assert.equal(row.enabled,false);assert.equal(row.permission,'UNKNOWN');assert.equal(row.review_status,'UNREVIEWED');
+ assert.equal(row.reviewed_by,null);assert.equal(row.version,1);assert.deepEqual(row.history,[]);return true;
+}
+function assertPhysicalSourceSchema(schema){
+ const columns=schema.columns.filter(c=>c.table_name==='travel_web_sources'),byName=Object.fromEntries(columns.map(c=>[c.column_name,c]));
+ for(const name of ['id','domain','config','permission','review_status','enabled','version','history','updated_at'])assert.equal(byName[name]?.is_nullable,'NO',name);
+ assert.equal(byName.reviewed_by?.is_nullable,'YES');
+ assert.equal(byName.enabled.column_default,'false');assert.equal(byName.version.column_default,'1');
+ assert(byName.permission.column_default.includes('UNKNOWN'));assert(byName.review_status.column_default.includes('UNREVIEWED'));
+ const constraints=schema.constraints.filter(c=>c.table_name==='travel_web_sources');
+ assert(constraints.some(c=>c.contype==='c'&&c.definition.includes('NOT enabled')&&c.definition.includes('reviewed_by IS NOT NULL')));
+ assert(constraints.some(c=>c.contype==='f'&&c.definition==='FOREIGN KEY (reviewed_by) REFERENCES users(id)'));
+ assert(constraints.some(c=>c.contype==='u'&&c.definition==='UNIQUE (domain)'));
+ assert(constraints.some(c=>c.contype==='p'&&c.definition==='PRIMARY KEY (id)'));
+ // There is no reviewed_at column: moderation timestamp/reason/actor are in versioned history.
+ assert(!byName.reviewed_at);return true;
+}
+module.exports={sourceConfigHash,sourceReviewScope,sourceReviewSqlDecision,assertCreationState,assertPhysicalSourceSchema};

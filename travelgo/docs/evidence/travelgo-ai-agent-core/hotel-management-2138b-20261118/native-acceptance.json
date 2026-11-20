@@ -1,0 +1,89 @@
+{
+  "at": "2026-11-19T00:21:20.695Z",
+  "status": "NATIVE_PASS",
+  "originalEvidence": "native-invariants-1795047622395.json",
+  "originalFailPreserved": true,
+  "originalCause": "hotel_stay_complete fires first and correctly rejects partial coverage under a different error code; recheck isolates the named all-night guard",
+  "results": [
+    {
+      "name": "Cross-hotel rate FK",
+      "status": "PASS",
+      "rejectedCode": "23503",
+      "reason": "insert or update on table \"hotel_rate_plans\" violates foreign key constraint \"hotel_rate_plans_room_type_id_place_id_fkey\""
+    },
+    {
+      "name": "Cross-hotel media FK",
+      "status": "PASS",
+      "rejectedCode": "23503",
+      "reason": "insert or update on table \"hotel_media\" violates foreign key constraint \"hotel_media_room_type_id_place_id_fkey\""
+    },
+    {
+      "name": "Invalid civil date",
+      "status": "PASS",
+      "rejectedCode": "22008",
+      "reason": "date/time field value out of range: \"2027-02-29\""
+    },
+    {
+      "name": "Reversed rate dates",
+      "status": "PASS",
+      "rejectedCode": "23514",
+      "reason": "new row for relation \"hotel_rate_plans\" violates check constraint \"hotel_rate_plans_check\""
+    },
+    {
+      "name": "Negative price",
+      "status": "PASS",
+      "rejectedCode": "23514",
+      "reason": "new row for relation \"hotel_rate_plans\" violates check constraint \"hotel_rate_plans_base_amount_vnd_check\""
+    },
+    {
+      "name": "Allocated cannot exceed sellable",
+      "status": "PASS",
+      "rejectedCode": "23514",
+      "reason": "new row for relation \"hotel_room_inventory\" violates check constraint \"hotel_room_inventory_check\""
+    },
+    {
+      "name": "Duplicate allocation",
+      "status": "PASS",
+      "rejectedCode": "23505",
+      "reason": "duplicate key value violates unique constraint \"hotel_room_allocations_booking_item_id_stay_date_key\""
+    },
+    {
+      "name": "Missing final night",
+      "status": "PASS",
+      "scope": "hotel_item_all_nights checked independently with same expected error",
+      "error": {
+        "code": "P0001",
+        "message": "HOTEL_ALLOCATION_ALL_NIGHTS_REQUIRED"
+      }
+    },
+    {
+      "name": "Complete all-night stay and rollback",
+      "status": "PASS"
+    },
+    {
+      "name": "Review attribution requires completed stay",
+      "status": "PASS",
+      "rejectedCode": "P0001",
+      "reason": "HOTEL_REVIEW_STAY_NOT_VERIFIED"
+    },
+    {
+      "name": "Price and revision roll back atomically",
+      "status": "PASS"
+    },
+    {
+      "name": "Rollback refuses populated extension",
+      "status": "PASS"
+    },
+    {
+      "name": "Concurrent allocation: one winner, no overselling",
+      "status": "PASS"
+    },
+    {
+      "name": "Cancellation releases all nights exactly once",
+      "status": "PASS"
+    }
+  ],
+  "unchangedExpected": "HOTEL_ALLOCATION_ALL_NIGHTS_REQUIRED",
+  "publicTables": 52,
+  "migrations": 18
+}

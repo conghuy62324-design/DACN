@@ -10,9 +10,11 @@ function install(){
  const researchScope=new (require('node:async_hooks').AsyncLocalStorage)();let collection,collectionAttempts=0;
  if(mode==='collection'){
   const authorization=path.resolve(process.env.TRAVELGO_COLLECTION_AUTHORIZATION||'');assert(authorization.startsWith(path.resolve(__dirname,'../..')+path.sep));
-  collection=JSON.parse(fs.readFileSync(authorization));assert(['APPROVED_BOUNDED_INTERNET_21_30','APPROVED_BOUNDED_INTERNET_21_32'].includes(collection.status));assert(Date.parse(collection.expiresAt)>Date.now());
+  collection=JSON.parse(fs.readFileSync(authorization));assert(['APPROVED_BOUNDED_INTERNET_21_30','APPROVED_BOUNDED_INTERNET_21_32','APPROVED_BOUNDED_INTERNET_21_33','APPROVED_BOUNDED_INTERNET_21_34'].includes(collection.status));assert(Date.parse(collection.expiresAt)>Date.now());
   const packet=JSON.parse(fs.readFileSync(collection.packet));assert.equal(crypto.createHash('sha256').update(fs.readFileSync(collection.packet)).digest('hex'),collection.packetSha256);
   if(collection.status==='APPROVED_BOUNDED_INTERNET_21_32')assert.equal(packet.task,'21.32');
+  if(collection.status==='APPROVED_BOUNDED_INTERNET_21_33')assert.equal(packet.task,'21.33');
+  if(collection.status==='APPROVED_BOUNDED_INTERNET_21_34')assert.equal(packet.task,'21.34');
   assert(packet.maxAttempts<=30&&packet.maxArticles<=8&&packet.concurrency<=2&&packet.searchCalls===0&&packet.domains.length<=5);
   for(const u of packet.allowedUrls){const url=new URL(u);assert(url.protocol==='https:'&&!url.username&&!url.password&&!url.search&&!url.hash&&(!url.port||url.port==='443')&&packet.domains.includes(url.hostname));}
   for(const [file,hash]of Object.entries(collection.sourceHashes))assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.resolve(__dirname,'../..',file))).digest('hex'),hash);

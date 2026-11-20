@@ -12,6 +12,7 @@ import { catalogMetadataEnabled, demoCatalogEnabled, editableClassification, CAT
 export type PlaceData = ReturnType<typeof serializePlace>;
 const slugify = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/đ/g, 'd').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 const number = (value: unknown) => Number(value || 0);
+async function assertLegacyHotelEditAllowed(id:string){if(!(await sequelize.query("SELECT to_regclass('public.hotel_profiles') AS relation"))[0]?.[0]?.['relation'])return;const [rows]=await sequelize.query('SELECT place_id FROM hotel_profiles WHERE place_id=$1',{bind:[id]});if(rows.length)throw new HttpError(409,'Khách sạn có hạng phòng phải dùng module Khách sạn để giữ địa chỉ và revision thống nhất.','HOTEL_USE_MANAGEMENT_CONTRACT');}
 export function serializePlace(place: any) {
   const value = place.toJSON ? place.toJSON() : place;
   return { ...value, priceFrom: number(value.priceFrom), rating: number(value.rating), bayesianRating: number(value.bayesianRating), latitude: number(value.latitude), longitude: number(value.longitude) };
@@ -59,24 +60,27 @@ export class PlaceService {
     return serializePlace(await Place.create({ ...input, businessId, slug, priceFrom: input.priceFrom || 0, galleryImages: input.galleryImages || [], highlights: input.highlights || [], amenities: input.amenities || [], openingHours: input.openingHours || {}, contactInfo: input.contactInfo || {}, rating: 0, reviewCount: 0, bayesianRating: RatingService.calculateBayesianAverage(0,0), isFeatured: false, status: 'DRAFT' }));
   }
   static async updateForPartner(userId: string, id: string, input: Partial<PlaceInput>) {
+    await assertLegacyHotelEditAllowed(id);
     const place = await Place.findByPk(id); if (!place?.businessId) throw new HttpError(404, 'Không tìm thấy địa điểm'); await BusinessAccessService.assert(userId, place.businessId, 'MANAGE_BUSINESS');
     if (!['DRAFT','REJECTED'].includes(place.status)) throw new HttpError(409, 'Chỉ có thể sửa địa điểm nháp hoặc bị từ chối', 'RESOURCE_LOCKED');
     await place.update(cleanInput(input,place.catalogMetadata)); return serializePlace(place);
   }
   static async archiveForPartner(userId: string, id: string) {
+    await assertLegacyHotelEditAllowed(id);
     const place = await Place.findByPk(id);
     if (!place?.businessId) throw new HttpError(404, 'Không tìm thấy địa điểm');
     await BusinessAccessService.assert(userId, place.businessId, 'MANAGE_BUSINESS');
     await place.update({ status: 'SUSPENDED',...(catalogMetadataEnabled()?{approvedAt:null}:{}) });
     return serializePlace(place);
   }
-  static async submit(userId: string, id: string) { const place = await Place.findByPk(id); if (!place?.businessId) throw new HttpError(404, 'Không tìm thấy địa điểm'); await BusinessAccessService.assert(userId, place.businessId); if (!['DRAFT','REJECTED'].includes(place.status)) throw new HttpError(409, 'Trạng thái không cho phép gửi duyệt'); await place.update({ status: 'PENDING' }); return serializePlace(place); }
+  static async submit(userId: string, id: string) { await assertLegacyHotelEditAllowed(id); const place = await Place.findByPk(id); if (!place?.businessId) throw new HttpError(404, 'Không tìm thấy địa điểm'); await BusinessAccessService.assert(userId, place.businessId); if (!['DRAFT','REJECTED'].includes(place.status)) throw new HttpError(409, 'Trạng thái không cho phép gửi duyệt'); await place.update({ status: 'PENDING' }); return serializePlace(place); }
   static async adminList(query: PlaceListQuery = {}) { const result = await PlaceRepository.list(query); return { ...result, items: result.items.map(serializePlace) }; }
   static async adminGet(id: string) { const place = await PlaceRepository.find(id); if (!place) throw new HttpError(404, 'Không tìm thấy địa điểm'); return serializePlace(place); }
   static async moderate(id: string, status: 'APPROVED'|'REJECTED'|'SUSPENDED'|'DRAFT', actorUserId: string, reason?: string) {
+    await assertLegacyHotelEditAllowed(id);
     if ((status === 'REJECTED' || status === 'DRAFT') && !reason?.trim()) throw new HttpError(400, 'Cần nhập lý do moderation');
     return sequelize.transaction(async transaction => { const place = await Place.findByPk(id,{ transaction, lock: transaction.LOCK.UPDATE }); if (!place) throw new HttpError(404,'Không tìm thấy địa điểm'); const previous = place.status; await place.update({ status,...(catalogMetadataEnabled()?{approvedAt:status==='APPROVED'?(previous==='APPROVED'?place.approvedAt:new Date()):null}:{}) },{ transaction }); await AuditLog.create({ actorUserId, action:`PLACE_${status}`, entityType:'Place', entityId:id, previousData:{status:previous}, newData:{status}, reason },{ transaction }); return serializePlace(place); });
   }
   static async createPlace(input: PlaceInput) { return serializePlace(await Place.create({ ...input, slug: `${slugify(input.name)}-${Date.now().toString(36)}`, galleryImages: input.galleryImages || [], highlights: input.highlights || [], amenities: input.amenities || [], rating:0, reviewCount:0, bayesianRating:RatingService.calculateBayesianAverage(0,0), isFeatured:false, status:'APPROVED' })); }
-  static async deletePlace(id: string) { const place = await Place.findByPk(id); if (!place) return false; await place.update({ status:'SUSPENDED' }); return true; }
+  static async deletePlace(id: string) { await assertLegacyHotelEditAllowed(id); const place = await Place.findByPk(id); if (!place) return false; await place.update({ status:'SUSPENDED' }); return true; }
 }

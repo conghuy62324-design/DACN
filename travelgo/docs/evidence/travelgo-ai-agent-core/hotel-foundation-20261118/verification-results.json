@@ -1,0 +1,57 @@
+{
+  "at": "2026-11-18T15:43:51.339Z",
+  "scope": "21.38-A_ONLY",
+  "domain": {
+    "status": "OFFLINE_PASS",
+    "report": "offline-tests-final-v2.json",
+    "passed": 37,
+    "total": 37
+  },
+  "backendBuild": {
+    "status": "PASS",
+    "command": "node --require ./backend/scripts/model-off-isolation.cjs ./backend/node_modules/typescript/bin/tsc --project backend/tsconfig.json --pretty false",
+    "exitCode": 0
+  },
+  "bookingCompatibility": {
+    "status": "fulfilled",
+    "value": {
+      "chunk_id": "398400",
+      "wall_time_seconds": 0.6082866,
+      "exit_code": 0,
+      "original_token_count": 183,
+      "output": "PASS zero adults rejected at request boundary\nPASS calendar overflow and timestamp rejected\nPASS reversed return date rejected\nPASS unsafe/coerced/excessive counts rejected\nPASS tour quantity cannot override priced units\nPASS suspended business rejected before effects\nPASS same key with changed payload conflicts\nPASS direct service callers cannot bypass count validation\nPASS defaults only for absent children; zero and null quantity never default\nPASS canonical fingerprint covers dates, notes, phone, counts, quantity mode and attribution\nPASS real calendar leap days valid, malformed dates and excessive combined guests invalid\n{\"suite\":\"booking-unit\",\"passed\":11,\"failed\":0,\"database\":\"NOT USED\",\"persistenceEvidence\":false}\n"
+    }
+  },
+  "rbacCompatibility": {
+    "status": "fulfilled",
+    "value": {
+      "chunk_id": "348d22",
+      "wall_time_seconds": 0.7048883,
+      "exit_code": 1,
+      "original_token_count": 115,
+      "output": "FAIL: AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n    blog: 'APPROVED',\n+   place: undefined,\n-   place: 'APPROVED',\n    ticket: 'ACTIVE',\n    tour: 'APPROVED'\n  }\n\n    at run (C:\\Users\\Danh\\Downloads\\HCH\\DACN\\travelgo\\backend\\dist\\tests\\rbac.test.js:75:22) {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: [Object],\n  expected: [Object],\n  operator: 'deepStrictEqual',\n  diff: 'simple'\n}\n"
+    }
+  },
+  "rbacDiagnosis": {
+    "status": "FAIL_PREEXISTING_TEST_CONTRACT_MISMATCH",
+    "assertion": "rbac.test.ts publicFilters.place expects options.where.status",
+    "actual": "PlaceRepository.list uses {[Op.and]: visibilityParts}; APPROVED condition is nested in Op.and",
+    "productionFileChanged": false,
+    "testChanged": false,
+    "fullSuitePassClaimed": false,
+    "sourceHashes": {
+      "test": "1d594a4521d1f642685c7440bb2333d1541537546a6f61903352b33fae7b5147",
+      "repository": "722f37b7a962c267ba9b52ff4d3dfca2cd3cf6f8b27cf4dec37db1fa7834519b"
+    }
+  },
+  "nativeSchemaAcceptance": "NOT_RUN_NO_MIGRATION_AUTHORIZATION",
+  "frontendBuild": "NOT_RUN_UNCHANGED_FRONTEND_PRIOR21_37_BUILD_REUSED",
+  "browserAcceptance": "NOT_RUN_PHASE_A",
+  "modelNativePosts": 0,
+  "postgresDml": 0,
+  "frontendCompatibility": {
+    "status": "UNCHANGED_PRIOR_BUILD_REUSED",
+    "sourceFiles": 132,
+    "builtFiles": 106
+  }
+}

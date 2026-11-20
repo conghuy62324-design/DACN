@@ -13,7 +13,7 @@ export function readPlanningAct(message:string):PlanningAct|undefined{
  if(/\b(?:nghi duong|di it cho|it dia diem|it cho|khong muon (?:chay|di) nhieu (?:noi|cho))\b/.test(s))pace='relaxed';
  if(/\b(?:nhieu trai nghiem|nhieu cho|nhieu noi|kham pha nhieu)\b/.test(s)&&!/\bkhong muon\b/.test(s))pace='packed';
  if(/\bcan bang\b/.test(s))pace='balanced';
- const day=s.match(/\bngay\s*(?:thu\s*)?(\d{1,2}|hai|ba|tu|nam|dau|cuoi)\b/),ordinal:Record<string,number>={hai:2,ba:3,tu:4,nam:5,dau:1,cuoi:-1};
+ const day=s.match(/\bngay\s*(?:thu\s*)?(\d{1,2}|hai|ba|tu|nam|dau|cuoi)\b(?!\s*\/)/),ordinal:Record<string,number>={hai:2,ba:3,tu:4,nam:5,dau:1,cuoi:-1};
  const dayNumber=day?ordinal[day[1]]??+day[1]:undefined;
  const removal=s.match(/\b(?:bo|bot)\s+(?:cho|diem)\s+tham quan\s*(?:thu\s*)?(\d{1,2}|mot|hai|ba|cuoi)(?:\s+cung)?\b/),activityRemoval=s.match(/\b(?:bo|bot)\s+hoat dong\s*(?:thu\s*)?(\d{1,2}|mot|hai|ba|cuoi)(?:\s+cung)?\b/);
  const index=(v:string)=>({mot:1,hai:2,ba:3,cuoi:-1} as Record<string,number>)[v]??+v;

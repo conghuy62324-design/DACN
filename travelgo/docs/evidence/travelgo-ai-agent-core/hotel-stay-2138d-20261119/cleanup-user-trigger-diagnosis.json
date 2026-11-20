@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-19T06:12:23.484Z",
+  "triggers": [
+    {
+      "tgname": "trg_anonymize_reviews_before_user_delete",
+      "def": "CREATE TRIGGER trg_anonymize_reviews_before_user_delete BEFORE DELETE ON public.users FOR EACH ROW EXECUTE FUNCTION anonymize_reviews_before_user_delete()",
+      "prosrc": "\nBEGIN\n  UPDATE reviews\n  SET user_name = 'Người dùng đã xóa',\n      user_avatar = NULL,\n      ai_usage_allowed = false,\n      consent_policy_version = NULL,\n      updated_at = CURRENT_TIMESTAMP\n  WHERE user_id = OLD.id;\n  RETURN OLD;\nEND;\n"
+    }
+  ]
+}

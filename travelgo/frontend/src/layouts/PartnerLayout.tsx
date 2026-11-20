@@ -4,6 +4,7 @@ import { BookOpen, Building2, CalendarRange, Compass, LayoutDashboard, LogOut, M
 import { useAuth } from '../context/AuthContext';
 
 const navigation = [
+  { to: '/partner/hotels', label: 'Quản lý khách sạn', icon: Building2 },
   { to: '/partner', label: 'Tổng quan', icon: LayoutDashboard, end: true },
   { to: '/partner/places', label: 'Địa điểm & cơ sở', icon: MapPinned },
   { to: '/partner/tours', label: 'Tour du lịch', icon: Route },
@@ -26,7 +27,7 @@ export const PartnerLayout: React.FC = () => {
           <button className="lg:hidden" onClick={() => setOpen(false)} aria-label="Đóng menu"><X /></button>
         </div>
         <nav className="p-4 space-y-1" aria-label="Điều hướng đối tác">
-          {navigation.map(({ to, label, icon: Icon, end }) => (
+          {navigation.filter(item=>!item.to.endsWith('/hotels')||import.meta.env.VITE_HOTEL_DOMAIN_ENABLED==='true').map(({ to, label, icon: Icon, end }) => (
             <NavLink key={to} to={to} end={end} onClick={() => setOpen(false)} className={({ isActive }) => `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition ${isActive ? 'bg-white text-teal-950 shadow-lg' : 'text-teal-100 hover:bg-white/10'}`}>
               <Icon className="h-4 w-4" />{label}
             </NavLink>

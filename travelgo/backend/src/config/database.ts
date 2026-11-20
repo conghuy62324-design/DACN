@@ -17,6 +17,9 @@ export const sequelize = new Sequelize(ENV.DB_NAME, ENV.DB_USER, ENV.DB_PASSWORD
     ssl: process.env.DB_SSL === 'true' ? { require: true, rejectUnauthorized: false } : false,
   },
 });
+if(process.env.HOTEL_DOMAIN_ENABLED==='true')sequelize.addHook('afterConnect',async(client:any)=>{
+ const {assertHotelDatabase}=await import('../hotels/postgresStore.js');await assertHotelDatabase(client);
+});
 
 // DEMO remains opt-in for one local target; verify physical identity on every connection.
 if(process.env.CATALOG_DEMO_ENABLED==='true')sequelize.addHook('afterConnect',async(client:any)=>{

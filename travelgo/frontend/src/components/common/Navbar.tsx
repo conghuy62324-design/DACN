@@ -48,7 +48,7 @@ const NavDropdown: React.FC<NavDropdownProps> = ({ label, items, isActive }) => 
   }, []);
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative" onKeyDown={e=>{if(e.key==='Escape')setOpen(false);}}>
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
@@ -134,6 +134,7 @@ export const Navbar: React.FC = () => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
+  useEffect(()=>{const close=(e:KeyboardEvent)=>{if(e.key==='Escape'){setMobileMenuOpen(false);setUserDropdownOpen(false);}};window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close);},[]);
   const isActive = (path: string) => {
     if (path === '/' && location.pathname === '/') return true;
     if (path !== '/' && location.pathname.startsWith(path)) return true;
@@ -167,8 +168,8 @@ export const Navbar: React.FC = () => {
 
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 group shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-orange-500 flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform">
-              <Compass className="w-6 h-6 animate-spin-slow" />
+            <div className="w-10 h-10 rounded-xl bg-[#102d47] flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform">
+              <Compass className="w-6 h-6" />
             </div>
             <span className="text-2xl font-extrabold tracking-tight text-slate-900">
               HuGo<span className="text-orange-500">Travel</span>
@@ -176,45 +177,10 @@ export const Navbar: React.FC = () => {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-6">
-            <Link
-              to="/"
-              className={`text-[15px] font-medium transition-colors relative py-1 ${
-                isActive('/') ? 'text-orange-600 font-semibold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-orange-500 after:rounded-full' : 'text-slate-700 hover:text-orange-500'
-              }`}
-            >
-              Trang chủ
-            </Link>
-            <Link
-              to="/explore"
-              className={`text-[15px] font-medium transition-colors relative py-1 ${
-                isActive('/explore') ? 'text-orange-600 font-semibold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-orange-500 after:rounded-full' : 'text-slate-700 hover:text-orange-500'
-              }`}
-            >
-              Khám phá
-            </Link>
-            <NavDropdown
-              label="Tour & Lịch trình"
-              items={tourItems}
-              isActive={isGroupActive(['/tours', '/tour-planner', '/my-trips', '/assistant'])}
-            />
-            <NavDropdown
-              label="Dịch vụ"
-              items={serviceItems}
-              isActive={isGroupActive(['/hotels', '/restaurants', '/tickets'])}
-            />
-            <Link
-              to="/blog"
-              className={`text-[15px] font-medium transition-colors relative py-1 ${
-                isActive('/blog') ? 'text-orange-600 font-semibold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-orange-500 after:rounded-full' : 'text-slate-700 hover:text-orange-500'
-              }`}
-            >
-              Blog
-            </Link>
-          </nav>
+          <nav className="hidden xl:flex items-center gap-4" aria-label="Điều hướng chính">{[['/','Trang chủ'],['/hotels','Khách sạn'],['/restaurants','Nhà hàng'],['/explore','Khám phá'],['/tour-planner','Lịch trình'],...(!user||user.roles.includes('CUSTOMER')?[['/assistant','Trợ lý AI']]:[])].map(([path,label])=><Link key={path} to={path} className={`text-[13px] font-semibold whitespace-nowrap transition-colors ${isActive(path)?'text-orange-600':'text-slate-700 hover:text-orange-500'}`}>{label}</Link>)}<NavDropdown label="Dịch vụ khác" items={[...tourItems.filter(i=>!['/assistant','/tour-planner'].includes(i.path)),serviceItems[2],{label:'Cẩm nang',path:'/blog',icon:<Bookmark className="w-4 h-4"/>}]} isActive={isGroupActive(['/tours','/tickets','/blog'])}/></nav>
 
           {/* Desktop Right */}
-          <div className="hidden lg:flex items-center gap-3 shrink-0">
+          <div className="hidden xl:flex items-center gap-3 shrink-0">
             {/* Favorites */}
             <Link
               to="/favorites"
@@ -305,7 +271,7 @@ export const Navbar: React.FC = () => {
           </div>
 
           {/* Mobile Controls */}
-          <div className="flex items-center space-x-2 lg:hidden">
+          <div className="flex items-center space-x-2 xl:hidden">
             <Link to="/favorites" aria-label="Danh sách yêu thích" className="relative p-2 text-slate-700">
               <Heart className="w-6 h-6" />
               {favorites.length > 0 && (
@@ -326,8 +292,10 @@ export const Navbar: React.FC = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-slate-100 mt-3 pt-3 pb-4 space-y-1 animate-in slide-in-from-top-4 duration-200">
+          <div className="xl:hidden border-t border-slate-100 mt-3 pt-3 pb-4 space-y-1 animate-in slide-in-from-top-4 duration-200">
             <MobileLink to="/" label="Trang chủ" isActive={isActive('/')} onClick={() => setMobileMenuOpen(false)} />
+            <MobileLink to="/hotels" label="Khách sạn" isActive={isActive('/hotels')} onClick={()=>setMobileMenuOpen(false)}/>
+            <MobileLink to="/restaurants" label="Nhà hàng" isActive={isActive('/restaurants')} onClick={()=>setMobileMenuOpen(false)}/>
             <MobileLink to="/explore" label="Khám phá" isActive={isActive('/explore')} onClick={() => setMobileMenuOpen(false)} />
 
             {/* Tour dropdown */}
