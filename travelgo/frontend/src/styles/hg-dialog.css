@@ -1,0 +1,65 @@
+/* HuGo — HotelDialog (Gói B). Chỉ dùng biến --hg-*; giá trị sau dấu phẩy là fallback khi hg-tokens.css chưa nạp. */
+
+/* ---------- Lớp nền ---------- */
+.hg-dialog-layer.hd-dialog-layer{z-index:var(--hg-z-modal,100);font-family:var(--hg-font,inherit);color:var(--hg-text,#10273D)}
+.hg-dialog-layer .hg-dialog-shade{background:var(--hg-overlay,rgba(4,28,48,.56));border:0;cursor:default}
+
+/* ---------- Mặc định (giữ hành vi cũ, chỉ đổi giao diện theo token) ---------- */
+.hg-dialog-layer .hg-dialog{border-radius:var(--hg-radius-lg,12px);background:var(--hg-surface,#FFFFFF);box-shadow:var(--hg-shadow-2,0 8px 24px rgba(8,59,99,.12));outline:none}
+.hg-dialog-layer .hg-dialog-header{display:flex;align-items:center;justify-content:space-between;gap:var(--hg-space-4,16px);min-height:56px;padding:var(--hg-space-2,8px) var(--hg-space-2,8px) var(--hg-space-2,8px) var(--hg-space-6,24px);border-bottom:1px solid var(--hg-border,#DCE3EA);flex-shrink:0}
+.hg-dialog-layer .hg-dialog-title{margin:0;min-width:0;font-size:var(--hg-fs-18,18px);font-weight:var(--hg-fw-bold,700);line-height:var(--hg-lh-snug,1.35);letter-spacing:var(--hg-ls-heading,-0.01em);color:var(--hg-text-heading,#083B63)}
+.hg-dialog-layer .hg-dialog-close{display:inline-grid;place-items:center;width:44px;height:44px;flex-shrink:0;padding:0;border:0;border-radius:var(--hg-radius-md,8px);background:transparent;color:var(--hg-text,#10273D);cursor:pointer}
+.hg-dialog-layer .hg-dialog-close:hover{background:var(--hg-primary-50,#E8F0F7)}
+.hg-dialog-layer .hg-dialog-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:var(--hg-space-6,24px)}
+.hg-dialog-layer .hg-dialog-footer{flex-shrink:0;display:flex;gap:var(--hg-space-3,12px);align-items:center;padding:var(--hg-space-3,12px) var(--hg-space-4,16px);border-top:1px solid var(--hg-border,#DCE3EA);background:var(--hg-surface,#FFFFFF)}
+.hg-dialog-layer :focus-visible{outline:2px solid var(--hg-focus,#1F6FD1);outline-offset:2px}
+.hg-dialog-layer .hg-dialog--wide{width:min(880px,100%)}
+
+/* ---------- Toàn màn hình ---------- */
+.hg-dialog-layer--fullscreen.hd-dialog-layer{padding:0}
+.hg-dialog-layer .hg-dialog--fullscreen{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;border-radius:0;box-shadow:none}
+.hg-dialog-layer .hg-dialog--fullscreen .hg-dialog-header{position:sticky;top:0;z-index:1;background:var(--hg-surface,#FFFFFF);padding-left:var(--hg-space-4,16px)}
+.hg-dialog-layer .hg-dialog--fullscreen .hg-dialog-body{padding:var(--hg-space-4,16px)}
+
+@media (max-width:767px){
+ .hg-dialog-layer .hg-dialog-header{padding-left:var(--hg-space-4,16px)}
+ .hg-dialog-layer .hg-dialog-body{padding:var(--hg-space-4,16px)}
+}
+
+/* ---------- Drawer bộ lọc (bottom sheet mobile, panel phải trên tablet) ---------- */
+.hg-dialog-layer .hg-dialog.hg-drawer{position:absolute;left:0;right:0;bottom:0;width:100%;height:92dvh;max-height:92dvh;border-radius:var(--hg-radius-lg,12px) var(--hg-radius-lg,12px) 0 0}
+.hg-dialog-layer .hg-drawer .hg-dialog-title{font-size:var(--hg-fs-18,18px)}
+.hg-dialog-layer .hg-drawer .hg-dialog-body{padding:0}
+.hg-dialog-layer .hg-drawer .hg-dialog-footer{min-height:72px;padding:var(--hg-space-3,12px) var(--hg-space-4,16px)}
+@media (min-width:768px){
+ .hg-dialog-layer .hg-dialog.hg-drawer{left:auto;top:0;width:min(420px,100%);height:100dvh;max-height:100dvh;border-radius:0}
+}
+
+/* ---------- Lightbox ---------- */
+.hg-dialog-layer .hg-dialog.hg-lightbox{background:var(--hg-lightbox-bg,rgba(7,18,28,.96));color:var(--hg-on-dark,#FFFFFF)}
+.hg-dialog-layer .hg-lightbox .hg-dialog-header{position:static;min-height:56px;padding:0 var(--hg-space-2,8px) 0 var(--hg-space-4,16px);background:transparent;border-bottom:0}
+.hg-dialog-layer .hg-lightbox .hg-dialog-title{display:flex;align-items:baseline;gap:var(--hg-space-3,12px);font-size:var(--hg-fs-14,14px);font-weight:var(--hg-fw-semibold,600);color:var(--hg-on-dark,#FFFFFF);white-space:nowrap;overflow:hidden}
+.hg-dialog-layer .hg-lightbox .hg-dialog-title span{font-weight:var(--hg-fw-regular,400);color:var(--hg-on-dark-muted,#C9D6E2);overflow:hidden;text-overflow:ellipsis}
+.hg-dialog-layer .hg-lightbox .hg-dialog-close{color:var(--hg-on-dark,#FFFFFF)}
+.hg-dialog-layer .hg-lightbox .hg-dialog-close:hover{background:rgba(255,255,255,.12)}
+.hg-dialog-layer .hg-lightbox .hg-dialog-body{display:flex;flex-direction:column;padding:0;overflow:hidden}
+.hg-dialog-layer .hg-lightbox :focus-visible{outline-color:var(--hg-on-dark,#FFFFFF)}
+
+.hg-dialog-layer .hg-lb-stage{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:0 var(--hg-space-4,16px);touch-action:pan-y}
+.hg-dialog-layer .hg-lb-figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:var(--hg-space-2,8px);min-width:0}
+.hg-dialog-layer .hg-lb-figure img{display:block;max-width:min(1200px,calc(100vw - 160px));max-height:calc(100dvh - 56px - 96px - 40px);width:auto;height:auto;object-fit:contain;user-select:none}
+.hg-dialog-layer .hg-lb-figure figcaption{font-size:var(--hg-fs-13,13px);color:var(--hg-on-dark-muted,#C9D6E2);text-align:center;max-width:720px}
+.hg-dialog-layer .hg-lb-nav{position:absolute;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:48px;height:48px;padding:0;border:0;border-radius:var(--hg-radius-pill,999px);background:rgba(255,255,255,.12);color:var(--hg-on-dark,#FFFFFF);cursor:pointer}
+.hg-dialog-layer .hg-lb-nav:hover{background:rgba(255,255,255,.22)}
+.hg-dialog-layer .hg-lb-prev{left:var(--hg-space-6,24px)}
+.hg-dialog-layer .hg-lb-next{right:var(--hg-space-6,24px)}
+.hg-dialog-layer .hg-lb-thumbs{flex-shrink:0;display:flex;gap:var(--hg-space-2,8px);height:96px;align-items:center;padding:var(--hg-space-3,12px) var(--hg-space-4,16px);overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:thin;justify-content:safe center}
+.hg-dialog-layer .hg-lb-thumbs button{flex-shrink:0;width:80px;height:56px;padding:0;border:2px solid transparent;border-radius:var(--hg-radius-sm,4px);overflow:hidden;opacity:.6;background:transparent;cursor:pointer;scroll-snap-align:center}
+.hg-dialog-layer .hg-lb-thumbs button[aria-pressed=true]{opacity:1;border-color:var(--hg-on-dark,#FFFFFF)}
+.hg-dialog-layer .hg-lb-thumbs img{display:block;width:100%;height:100%;object-fit:cover}
+.hg-dialog-layer .hg-lb-failed{display:grid;place-items:center;gap:var(--hg-space-2,8px);width:min(480px,80vw);height:240px;color:var(--hg-on-dark-muted,#C9D6E2);font-size:var(--hg-fs-14,14px)}
+@media (max-width:767px){
+ .hg-dialog-layer .hg-lb-nav{display:none}
+ .hg-dialog-layer .hg-lb-figure img{max-width:calc(100vw - 16px)}
+ .hg-dialog-layer .hg-lb-stage{padding:0 var(--hg-space-2,8px)}
+}
