@@ -13,9 +13,9 @@ import {
   Users, 
   MessageSquare, 
   Info,
-  ChevronRight,
-  Flame,
-  Plus
+  Plus,
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import { Place, Review } from '../types';
 import { PlaceService } from '../services/placeService';
@@ -30,6 +30,8 @@ import { useAuth } from '../context/AuthContext';
 import { Booking } from '../types';
 import {ReviewInsightsPanel} from '../components/common/ReviewInsightsPanel';
 import {api} from '../services/api';
+import {CatalogBreadcrumb,CatalogState,catalogErrorText} from '../components/explore/CatalogPageFilters';
+import '../styles/hg-catalog.css';
 
 export const PlaceDetailPage: React.FC = () => {
  const {id}=useParams();const enabled=import.meta.env.VITE_HOTEL_DOMAIN_ENABLED==='true';
@@ -49,6 +51,8 @@ const LegacyPlaceDetailPage: React.FC = () => {
   const [similarPlaces, setSimilarPlaces] = useState<Place[]>([]);
   const [activeTab, setActiveTab] = useState<'overview' | 'itinerary' | 'inclusions' | 'policies' | 'reviews'>(()=>new URLSearchParams(window.location.search).get('tab')==='reviews'?'reviews':'overview');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [retry, setRetry] = useState(0);
 
   // Booking Card State
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -81,6 +85,7 @@ const LegacyPlaceDetailPage: React.FC = () => {
     window.scrollTo(0, 0);
     const fetchPlaceData = async () => {
       setLoading(true);
+      setLoadError('');
       try {
         const placeData = await PlaceService.getPlaceById(id || 'p-danang-hoian');
         setPlace(placeData);
@@ -101,23 +106,56 @@ const LegacyPlaceDetailPage: React.FC = () => {
 
         const allPlaces = await PlaceService.getPlaces();
         setSimilarPlaces(allPlaces.filter((p) => p.id !== placeData.id).slice(0, 3));
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to load place:', err);
+        setLoadError(/không tìm thấy|không tồn tại/i.test(String(err?.message || '')) ? 'NOT_FOUND' : catalogErrorText(err, 'Chưa tải được thông tin địa điểm. Vui lòng thử lại sau ít phút.'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchPlaceData();
-  }, [id, user?.id]);
+  }, [id, user?.id, retry]);
   useEffect(()=>{if(!loading&&activeTab==='reviews'&&/^#review-[0-9a-f-]{36}$/i.test(window.location.hash))document.getElementById(window.location.hash.slice(1))?.scrollIntoView({block:'center'});},[loading,activeTab,reviews]);
 
   if (loading || !place) {
     return (
-      <div className="min-h-screen pt-28 pb-16 flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-slate-500 text-sm font-medium">Đang tải thông tin hành trình...</p>
+      <div className="hg-cat">
+        <div className="hg-container hg-cat-main">
+          <CatalogBreadcrumb items={[{ label: 'Trang chủ', to: '/' }, { label: 'Khám phá', to: '/explore' }, { label: 'Chi tiết' }]} />
+          {loading ? (
+            <div role="status">
+              <span className="hg-cat-sr">Đang tải thông tin hành trình...</span>
+              <div className="hg-cat-skelhead" aria-hidden="true">
+                <span className="hg-cat-skel" />
+                <span className="hg-cat-skel" />
+              </div>
+              <div className="hg-cat-gallery" aria-hidden="true">
+                <figure><span className="hg-cat-skel hg-cat-skel--fill" /></figure>
+                <figure><span className="hg-cat-skel hg-cat-skel--fill" /></figure>
+                <figure><span className="hg-cat-skel hg-cat-skel--fill" /></figure>
+              </div>
+            </div>
+          ) : loadError === 'NOT_FOUND' ? (
+            <CatalogState
+              role="status"
+              icon={<MapPin size={32} aria-hidden="true" />}
+              title="Không tìm thấy địa điểm"
+              text="Địa điểm không tồn tại hoặc đã tạm ngừng hiển thị."
+              actions={<Link to="/explore" className="hg-cat-btn hg-cat-btn--outline">Khám phá dịch vụ khác</Link>}
+            />
+          ) : (
+            <CatalogState
+              role="alert"
+              tone="error"
+              title="Chưa tải được thông tin địa điểm"
+              text={loadError || 'Kết nối tới máy chủ chưa ổn định. Vui lòng thử lại sau ít phút.'}
+              actions={<>
+                <button type="button" className="hg-cat-btn hg-cat-btn--outline" onClick={() => setRetry((v) => v + 1)}>Thử lại</button>
+                <Link to="/explore" className="hg-cat-btn hg-cat-btn--ghost">Về trang Khám phá</Link>
+              </>}
+            />
+          )}
         </div>
       </div>
     );
@@ -207,308 +245,290 @@ const LegacyPlaceDetailPage: React.FC = () => {
     }
   };
 
+  const categoryCrumb = place.category === 'hotel'
+    ? { label: 'Khách sạn', to: '/hotels' }
+    : place.category === 'restaurant'
+      ? { label: 'Nhà hàng', to: '/restaurants' }
+      : { label: 'Khám phá', to: '/explore' };
+  const gallery = [place.heroImage, ...place.galleryImages.slice(1, 3)].filter(Boolean);
+  const tabs = [
+    { id: 'overview', label: 'Tổng quan' },
+    { id: 'itinerary', label: 'Lịch trình chi tiết' },
+    { id: 'inclusions', label: 'Dịch vụ bao gồm' },
+    { id: 'policies', label: 'Chính sách & hủy' },
+    { id: 'reviews', label: `Đánh giá (${reviews.length})` },
+  ];
+
   return (
-    <div className="min-h-screen pt-20 pb-20 bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {place.isDemo&&<p role="status" className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">DEMO staging — giá giả định, ảnh minh họa và tọa độ mô phỏng. Không phải cơ sở hoặc Booking thật; chưa xác minh giá vé, giờ mở cửa, rating hay availability.</p>}
-        <Link to={'/assistant?listing='+encodeURIComponent(place.id)} className="mt-4 inline-block font-bold text-teal-700 underline">Tư vấn dịch vụ này bằng AI</Link>
-        {/* Breadcrumb Navigation */}
-        <nav className="flex items-center space-x-2 text-xs text-slate-500 py-4">
-          <Link to="/" className="hover:text-orange-500 transition-colors">Trang chủ</Link>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-          <Link to="/explore" className="hover:text-orange-500 transition-colors">Tour du lịch</Link>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-          <span className="text-slate-800 font-semibold truncate max-w-xs">{place.name}</span>
-        </nav>
+    <div className="hg-cat">
+      <div className="hg-container hg-cat-main">
+        <CatalogBreadcrumb items={[{ label: 'Trang chủ', to: '/' }, categoryCrumb, { label: place.name }]} />
 
-        {/* Gallery Grid Matching Image 2 */}
-        <div ref={viewRef} className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
-          {/* Main Large Photo */}
-          <div className="lg:col-span-2 aspect-[16/10] rounded-3xl overflow-hidden bg-slate-200 shadow-md">
-            <img
-              src={place.heroImage}
-              alt={place.name}
-              className="w-full h-full object-cover hover:scale-103 transition-transform duration-500"
-            />
-          </div>
-
-          {/* 3 Smaller Right Photos Matching Image 2 */}
-          <div className="grid grid-cols-2 lg:grid-cols-1 gap-4">
-            {place.galleryImages.slice(1, 3).map((img, idx) => (
-              <div key={idx} className="aspect-[16/9] rounded-2xl overflow-hidden bg-slate-200 shadow-sm">
-                <img
-                  src={img}
-                  alt={`${place.name} preview ${idx}`}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+        {/* Tiêu đề + hành động */}
+        <div className="hg-cat-detail-head">
+          <div className="hg-cat-detail-head__text">
+            <h1 className="hg-cat-h1">{place.name}</h1>
+            <div className="hg-cat-facts">
+              <span className="hg-cat-rating">
+                <RatingBadge
+                  rating={place.rating}
+                  reviewCount={place.reviewCount}
+                  showBayesianDetail={true}
+                  size="md"
                 />
-              </div>
-            ))}
-            {place.galleryImages[3] && (
-              <div className="aspect-[16/9] rounded-2xl overflow-hidden bg-slate-200 shadow-sm hidden lg:block">
-                <img
-                  src={place.galleryImages[3]}
-                  alt={`${place.name} preview 3`}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Header Title & Badges Matching Image 2 */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 mb-8 border-b border-slate-200 gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 leading-tight mb-3">
-              {place.name}
-            </h1>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
-              <RatingBadge
-                rating={place.rating}
-                reviewCount={place.reviewCount}
-                showBayesianDetail={true}
-                size="md"
-              />
-              <div className="flex items-center text-slate-500">
-                <MapPin className="w-4 h-4 text-orange-500 mr-1" />
-                <span>{place.province}</span>
-              </div>
-              <div className="flex items-center text-slate-500">
-                <Clock className="w-4 h-4 text-slate-400 mr-1" />
-                <span>{place.duration || '3 Ngày 2 Đêm'}</span>
-              </div>
+              </span>
+              <span>
+                <MapPin size={16} aria-hidden="true" />
+                {place.address || place.province}
+              </span>
+              {place.duration && (
+                <span>
+                  <Clock size={16} aria-hidden="true" />
+                  {place.duration}
+                </span>
+              )}
             </div>
+            <Link to={'/assistant?listing='+encodeURIComponent(place.id)} className="hg-cat-ai">
+              <Sparkles size={16} aria-hidden="true" />Tư vấn dịch vụ này bằng AI
+            </Link>
           </div>
 
-          {/* Action buttons */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="hg-cat-head__actions">
             <button
               type="button"
               data-testid="add-place-to-itinerary"
               onClick={handleAddToItinerary}
-              className="flex items-center space-x-1.5 px-4 py-2.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold shadow-sm transition-colors"
+              className="hg-cat-btn hg-cat-btn--outline"
             >
-              <Plus className="w-4 h-4" />
+              <Plus size={16} aria-hidden="true" />
               <span>Thêm vào lịch trình</span>
             </button>
             <button
+              type="button"
               data-testid="place-favorite"
               aria-pressed={favorited}
               disabled={isPending(place.id)}
               onClick={() => toggleFavorite(place, 'place_detail', recommendationRequestId)}
-              className={`flex items-center space-x-1.5 px-4 py-2.5 rounded-full border text-sm font-semibold transition-colors ${
-                favorited
-                  ? 'bg-rose-50 border-rose-200 text-rose-600'
-                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-              }`}
+              className="hg-cat-btn hg-cat-btn--ghost hg-cat-like"
             >
-              <Heart className={`w-4 h-4 ${favorited ? 'fill-rose-500 text-rose-500' : ''}`} />
+              <Heart size={16} aria-hidden="true" />
               <span>{favorited ? 'Đã lưu' : 'Lưu lại'}</span>
             </button>
             <button
+              type="button"
               onClick={() => {
                 navigator.clipboard?.writeText(window.location.href);
                 alert('Đã sao chép liên kết chia sẻ vào khay nhớ tạm!');
               }}
-              className="flex items-center space-x-1.5 px-4 py-2.5 rounded-full border border-slate-200 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors"
+              className="hg-cat-btn hg-cat-btn--ghost"
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 size={16} aria-hidden="true" />
               <span>Chia sẻ</span>
             </button>
           </div>
         </div>
 
-        {/* Content Layout (Left Details + Right Sticky Booking Box) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* Left Column (Tabs & Details) */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Tabs Navigation Matching Image 2 */}
-            <div className="flex items-center space-x-4 border-b border-slate-200 pb-2 overflow-x-auto text-sm font-bold">
-              {[
-                { id: 'overview', label: 'Tổng quan' },
-                { id: 'itinerary', label: 'Lịch trình chi tiết' },
-                { id: 'inclusions', label: 'Dịch vụ bao gồm' },
-                { id: 'policies', label: 'Chính sách & huỷ' },
-                { id: 'reviews', label: `Đánh giá (${reviews.length})` },
-              ].map((tab) => (
+        {/* Gallery */}
+        <div ref={viewRef} className={'hg-cat-gallery hg-cat-gallery--' + Math.max(1, gallery.length)}>
+          {gallery.length === 0 ? (
+            <figure className="hg-cat-imgfail" aria-hidden="true" />
+          ) : gallery.map((img, idx) => (
+            <figure key={idx}>
+              <img
+                src={img}
+                alt={idx === 0 ? place.name : `${place.name} – ảnh ${idx + 1}`}
+                loading={idx === 0 ? 'eager' : 'lazy'}
+                decoding="async"
+                onError={(e) => e.currentTarget.parentElement?.classList.add('hg-cat-imgfail')}
+              />
+            </figure>
+          ))}
+        </div>
+
+        <div className="hg-cat-layout">
+          {/* Cột trái: tab nội dung */}
+          <div className="hg-cat-stack">
+            <div className="hg-cat-anchor" role="tablist" aria-label="Thông tin chi tiết">
+              {tabs.map((tab) => (
                 <button
+                  type="button"
+                  role="tab"
                   key={tab.id}
+                  aria-selected={activeTab === tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`pb-2 whitespace-nowrap transition-colors relative ${
-                    activeTab === tab.id
-                      ? 'text-orange-600 border-b-2 border-orange-500'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
                 >
                   {tab.label}
                 </button>
               ))}
             </div>
 
-            {/* TAB 1: Tổng quan (Overview) */}
+            {/* TAB 1: Tổng quan */}
             {activeTab === 'overview' && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-3">Tổng quan hành trình</h3>
-                  <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                    {place.description || place.summary}
-                  </p>
-                </div>
-
-                {/* Highlights */}
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-3">Điểm nhấn nổi bật</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {place.highlights.map((h, i) => (
-                      <div key={i} className="flex items-start space-x-2.5 p-3 rounded-xl bg-orange-50/60 border border-orange-100">
-                        <Check className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm font-medium text-slate-800">{h}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <section className="hg-cat-box" role="tabpanel">
+                <h2>Tổng quan</h2>
+                <p className="hg-cat-text">{place.description || place.summary || 'Nhà cung cấp chưa cập nhật mô tả.'}</p>
+                {place.highlights.length > 0 && (
+                  <>
+                    <h3 className="hg-cat-box__sub">Điểm nhấn nổi bật</h3>
+                    <ul className="hg-cat-checks">
+                      {place.highlights.map((h, i) => (
+                        <li key={i}>
+                          <Check size={16} aria-hidden="true" />
+                          <span>{h}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </section>
             )}
 
-            {/* TAB 2: Lịch trình (Itinerary with numbered milestone icons) */}
+            {/* TAB 2: Lịch trình */}
             {activeTab === 'itinerary' && (
-              <div className="space-y-8">
-                <h3 className="text-xl font-bold text-slate-900">Lịch trình chi tiết</h3>
-                <div className="space-y-8 relative before:absolute before:inset-0 before:left-4 before:w-0.5 before:bg-slate-200">
-                  {place.itinerary && place.itinerary.length > 0 ? (
-                    place.itinerary.map((step) => (
-                      <div key={step.day} className="relative flex items-start space-x-6 pl-2">
-                        {/* Number Badge */}
-                        <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-sm flex items-center justify-center flex-shrink-0 ring-4 ring-white z-10">
-                          {step.day}
-                        </div>
-                        {/* Step Details */}
-                        <div className="flex-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                          <h4 className="text-base font-bold text-slate-900">{step.title}</h4>
-                          <p className="text-sm text-slate-600 leading-relaxed">{step.desc}</p>
+              <section className="hg-cat-box" role="tabpanel">
+                <h2>Lịch trình chi tiết</h2>
+                {place.itinerary && place.itinerary.length > 0 ? (
+                  <ol className="hg-cat-days hg-cat-days--spaced">
+                    {place.itinerary.map((step) => (
+                      <li key={step.day} className="hg-cat-day">
+                        <span className="hg-cat-day__num">{step.day}</span>
+                        <div>
+                          <h3>{step.title}</h3>
+                          <p>{step.desc}</p>
                           {step.image && (
-                            <div className="aspect-[16/9] rounded-xl overflow-hidden mt-3 max-h-56">
-                              <img src={step.image} alt={step.title} className="w-full h-full object-cover" />
+                            <div className="hg-cat-day__img">
+                              <img src={step.image} alt={step.title} loading="lazy" decoding="async" />
                             </div>
                           )}
                         </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-slate-500 text-sm pl-8">Lịch trình chi tiết sẽ được gửi kèm hợp đồng du lịch.</p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* TAB 3: Dịch vụ bao gồm (Inclusions) */}
-            {activeTab === 'inclusions' && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-4">Dịch vụ đã bao gồm</h3>
-                  <div className="space-y-2.5">
-                    {place.amenities.map((item, idx) => (
-                      <div key={idx} className="flex items-center space-x-3 text-sm text-slate-700">
-                        <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-3.5 h-3.5" />
-                        </div>
-                        <span className="font-medium">{item}</span>
-                      </div>
+                      </li>
                     ))}
-                  </div>
-                </div>
+                  </ol>
+                ) : (
+                  <p className="hg-cat-note">Lịch trình chi tiết sẽ được gửi kèm hợp đồng du lịch.</p>
+                )}
+              </section>
+            )}
 
-                <div className="pt-4 border-t border-slate-200">
-                  <h3 className="text-lg font-bold text-slate-900 mb-3">Dịch vụ chưa bao gồm</h3>
-                  <ul className="list-disc list-inside text-sm text-slate-500 space-y-1.5">
-                    <li>Chi phí cá nhân ngoài chương trình (giặt là, đồ uống mini bar)</li>
-                    <li>Tiền bồi dưỡng (tip) cho tài xế và hướng dẫn viên (tùy tâm)</li>
-                    <li>Thuế VAT (nếu xuất hóa đơn đỏ công ty)</li>
+            {/* TAB 3: Dịch vụ bao gồm */}
+            {activeTab === 'inclusions' && (
+              <section className="hg-cat-box" role="tabpanel">
+                <h2>Dịch vụ đã bao gồm</h2>
+                {place.amenities.length > 0 ? (
+                  <ul className="hg-cat-checks hg-cat-checks--spaced">
+                    {place.amenities.map((item, idx) => (
+                      <li key={idx}>
+                        <Check size={16} aria-hidden="true" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
                   </ul>
-                </div>
-              </div>
+                ) : <p className="hg-cat-note">Nhà cung cấp chưa cung cấp danh sách dịch vụ.</p>}
+
+                <h3 className="hg-cat-box__sub">Dịch vụ chưa bao gồm</h3>
+                <ul className="hg-cat-bullets">
+                  <li>Chi phí cá nhân ngoài chương trình (giặt là, đồ uống mini bar)</li>
+                  <li>Tiền bồi dưỡng (tip) cho tài xế và hướng dẫn viên (tùy tâm)</li>
+                  <li>Thuế VAT (nếu xuất hóa đơn đỏ công ty)</li>
+                </ul>
+              </section>
             )}
 
-            {/* TAB 4: Chính sách & huỷ (Policies) */}
+            {/* TAB 4: Chính sách */}
             {activeTab === 'policies' && (
-              <div className="space-y-6 text-sm text-slate-600 leading-relaxed">
-                <h3 className="text-xl font-bold text-slate-900 mb-2">Chính sách đặt & hủy tour</h3>
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
-                  <h4 className="font-bold text-slate-800">Theo dõi và hủy đơn:</h4>
-                  <p>Bạn có thể hủy đơn đang chờ hoặc đã xác nhận trong lịch sử. Hệ thống MVP chưa xử lý thanh toán hay hoàn tiền.</p>
+              <section className="hg-cat-box" role="tabpanel">
+                <h2>Chính sách đặt &amp; hủy</h2>
+                <div className="hg-cat-stack hg-cat-stack--spaced">
+                  <div className="hg-cat-box hg-cat-box--muted hg-cat-box--flat">
+                    <h3>Theo dõi và hủy đơn</h3>
+                    <p className="hg-cat-note">Bạn có thể hủy đơn đang chờ hoặc đã xác nhận trong lịch sử. Hệ thống MVP chưa xử lý thanh toán hay hoàn tiền.</p>
+                  </div>
+                  <div className="hg-cat-box hg-cat-box--muted hg-cat-box--flat">
+                    <h3>Chính sách trẻ em</h3>
+                    <p className="hg-cat-note">Giá MVP theo số khách: người lớn tính đơn giá, trẻ em giảm 30%. Số tiền xác nhận lấy từ máy chủ khi tạo đơn.</p>
+                  </div>
                 </div>
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
-                  <h4 className="font-bold text-slate-800">Chính sách trẻ em:</h4>
-                  <p>Giá MVP theo số khách: người lớn tính đơn giá, trẻ em giảm 30%. Số tiền xác nhận lấy từ server khi tạo đơn.</p>
-                </div>
-              </div>
+              </section>
             )}
 
-            {/* TAB 5: Đánh giá & Viết đánh giá (Reviews & Bayesian calculation) */}
+            {/* TAB 5: Đánh giá */}
             {activeTab === 'reviews' && (
-              <div className="space-y-8">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-bold text-slate-900">Đánh giá từ khách hàng</h3>
-                  <RatingBadge
-                    rating={place.rating}
-                    reviewCount={place.reviewCount}
-                    showBayesianDetail={true}
-                    size="md"
-                  />
+              <section className="hg-cat-stack" role="tabpanel">
+                <div className="hg-cat-box">
+                  <div className="hg-cat-box__head">
+                    <h2>Đánh giá từ khách hàng</h2>
+                    <span className="hg-cat-rating">
+                      <RatingBadge
+                        rating={place.rating}
+                        reviewCount={place.reviewCount}
+                        showBayesianDetail={true}
+                        size="md"
+                      />
+                    </span>
+                  </div>
+
+                  {reviewSuccessMsg && (
+                    <p className="hg-cat-notice hg-cat-notice--success">
+                      <ShieldCheck size={16} aria-hidden="true" />
+                      <span>{reviewSuccessMsg}</span>
+                    </p>
+                  )}
+                  {reviewErrorMsg && (
+                    <p role="alert" className="hg-cat-notice hg-cat-notice--error">
+                      <Info size={16} aria-hidden="true" />
+                      <span>{reviewErrorMsg}</span>
+                    </p>
+                  )}
+
+                  <ReviewInsightsPanel placeId={place.id} revision={reviewRevision}/>
                 </div>
 
-                {reviewSuccessMsg && (
-                  <div className="bg-emerald-50 text-emerald-800 p-4 rounded-xl text-sm border border-emerald-200">
-                    {reviewSuccessMsg}
-                  </div>
-                )}
-                {reviewErrorMsg && (
-                  <div role="alert" className="bg-rose-50 text-rose-800 p-4 rounded-xl text-sm border border-rose-200">
-                    {reviewErrorMsg}
-                  </div>
-                )}
-
-                <ReviewInsightsPanel placeId={place.id} revision={reviewRevision}/>{/* New Review Form */}
-                <form aria-label="Đánh giá dịch vụ" onSubmit={handleAddReview} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                  <h4 className="font-bold text-slate-900 text-sm flex items-center">
-                    <MessageSquare className="w-4 h-4 text-orange-500 mr-2" />
+                {/* Form đánh giá */}
+                <form aria-label="Đánh giá dịch vụ" onSubmit={handleAddReview} className="hg-cat-box hg-cat-form">
+                  <h3 className="hg-cat-box__title">
+                    <MessageSquare size={18} aria-hidden="true" />
                     Để lại trải nghiệm thực tế của bạn
-                  </h4>
+                  </h3>
 
-                  {!user && <p className="text-sm text-slate-600">Vui lòng đăng nhập để gửi đánh giá.</p>}
-                  <label className="flex gap-2 text-sm"><input type="checkbox" checked={analysisConsent} onChange={e=>setAnalysisConsent(e.target.checked)}/>Tôi cho phép tổng hợp bình luận công khai này để tư vấn; không dùng thông tin riêng tư của tôi.</label><div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">Booking đã hoàn thành (không bắt buộc)</label>
+                  {!user && <p className="hg-cat-note">Vui lòng đăng nhập để gửi đánh giá.</p>}
+                  <label className="hg-cat-check">
+                    <input type="checkbox" checked={analysisConsent} onChange={e=>setAnalysisConsent(e.target.checked)}/>
+                    <span>Tôi cho phép tổng hợp bình luận công khai này để tư vấn; không dùng thông tin riêng tư của tôi.</span>
+                  </label>
+                  <div className="hg-cat-form__grid">
+                    <label className="hg-cat-field">
+                      <span>Booking đã hoàn thành (không bắt buộc)</span>
                       <select
                         disabled={!!editingReviewId} data-testid="review-booking"
                         value={selectedReviewBooking}
                         onChange={(e) => setSelectedReviewBooking(e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                        className="hg-cat-select"
                       >
                         <option value="">Không gắn đơn đã hoàn thành — đánh giá chưa xác thực</option>
                         {eligibleReviewBookings.map((booking) => (
                           <option key={booking.id} value={booking.id}>{booking.bookingCode} — {booking.serviceName}</option>
                         ))}
                       </select>
-                    </div>
-                    <div>
-                      <label htmlFor="review-rating" className="block text-xs font-semibold text-slate-600 mb-1">Đánh giá số sao</label>
+                    </label>
+                    <div className="hg-cat-field">
+                      <label htmlFor="review-rating">Đánh giá số sao</label>
                       <select
                         id="review-rating"
                         value={newReviewScore}
                         onChange={(e) => setNewReviewScore(Number(e.target.value))}
-                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                        className="hg-cat-select"
                       >
-                        <option value={5}>★★★★★ 5 Sao (Tuyệt vời)</option>
-                        <option value={4}>★★★★☆ 4 Sao (Rất tốt)</option>
-                        <option value={3}>★★★☆☆ 3 Sao (Bình thường)</option>
-                        <option value={2}>★★☆☆☆ 2 Sao (Kém)</option>
-                        <option value={1}>★☆☆☆☆ 1 Sao (Rất tệ)</option>
+                        <option value={5}>★★★★★ 5 sao (Tuyệt vời)</option>
+                        <option value={4}>★★★★☆ 4 sao (Rất tốt)</option>
+                        <option value={3}>★★★☆☆ 3 sao (Bình thường)</option>
+                        <option value={2}>★★☆☆☆ 2 sao (Kém)</option>
+                        <option value={1}>★☆☆☆☆ 1 sao (Rất tệ)</option>
                       </select>
                     </div>
                   </div>
 
-                  <div>
-                    <label htmlFor="review-comment" className="block text-xs font-semibold text-slate-600 mb-1">Nội dung đánh giá</label>
+                  <div className="hg-cat-field">
+                    <label htmlFor="review-comment">Nội dung đánh giá</label>
                     <textarea
                       id="review-comment"
                       rows={3}
@@ -518,225 +538,183 @@ const LegacyPlaceDetailPage: React.FC = () => {
                       value={newReviewComment}
                       onChange={(e) => setNewReviewComment(e.target.value)}
                       placeholder="Chia sẻ cảm nhận về hướng dẫn viên, khách sạn, chất lượng phục vụ..."
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                      className="hg-cat-textarea"
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={submittingReview || !user}
-                    data-testid="review-submit"
-                    className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm rounded-xl shadow transition-colors"
-                  >
-                    {submittingReview ? 'Đang gửi...' : 'Gửi đánh giá'}
-                  </button>
+                  <div>
+                    <button
+                      type="submit"
+                      disabled={submittingReview || !user}
+                      data-testid="review-submit"
+                      className="hg-cat-btn hg-cat-btn--cta"
+                    >
+                      {submittingReview ? 'Đang gửi...' : 'Gửi đánh giá'}
+                    </button>
+                  </div>
                 </form>
 
-                {/* Review List */}
-                <div className="space-y-4">
-                  {reviews.map((rev) => (
-                    <div key={rev.id} id={'review-'+rev.id} className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <img
-                            src={rev.userAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'}
-                            alt={rev.userName}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                          <div>
-                            <h5 className="font-bold text-sm text-slate-900">{rev.userName}</h5>
-                            <div className="flex items-center gap-2 text-[11px]">
-                              <span className="text-slate-400">{new Date(rev.createdAt).toLocaleDateString('vi-VN')}</span>
-                              {rev.verificationStatus === 'VERIFIED' ? (
-                                <span data-testid="verified-review" className="inline-flex items-center gap-1 font-bold text-emerald-700">
-                                  <ShieldCheck className="h-3.5 w-3.5" /> Đã xác thực booking
-                                </span>
-                              ) : <span className="text-slate-400">Chưa xác thực</span>}
+                {/* Danh sách đánh giá */}
+                {reviews.length === 0 ? (
+                  <p className="hg-cat-note">Chưa có đánh giá nào cho dịch vụ này.</p>
+                ) : (
+                  <div className="hg-cat-stack">
+                    {reviews.map((rev) => (
+                      <div key={rev.id} id={'review-'+rev.id} className="hg-cat-review">
+                        <div className="hg-cat-review__head">
+                          <div className="hg-cat-review__who">
+                            <span className="hg-cat-avatar">
+                              {rev.userAvatar ? <img src={rev.userAvatar} alt="" /> : (rev.userName || 'K').trim().charAt(0).toUpperCase()}
+                            </span>
+                            <div>
+                              <p className="hg-cat-review__name">{rev.userName}</p>
+                              <div className="hg-cat-review__sub">
+                                <span>{new Date(rev.createdAt).toLocaleDateString('vi-VN')}</span>
+                                {rev.verificationStatus === 'VERIFIED' ? (
+                                  <span data-testid="verified-review">
+                                    <ShieldCheck size={14} aria-hidden="true" /> Đã xác thực booking
+                                  </span>
+                                ) : <span>Chưa xác thực</span>}
+                              </div>
                             </div>
                           </div>
+                          <span className="hg-cat-stars" role="img" aria-label={`${Math.round(rev.rating)} trên 5 sao`}>
+                            {[...Array(Math.round(rev.rating))].map((_, i) => (
+                              <Star key={i} size={16} aria-hidden="true" />
+                            ))}
+                          </span>
                         </div>
-                        <div className="flex text-amber-400">
-                          {[...Array(Math.round(rev.rating))].map((_, i) => (
-                            <Star key={i} className="w-4 h-4 fill-amber-400" />
-                          ))}
-                        </div>
+                        <p className="hg-cat-review__body">{rev.comment}</p>
+                        {(user || myReviewIds.has(rev.id)) && (
+                          <div className="hg-cat-review__tools">
+                            {user&&<>
+                              <select aria-label="Lý do báo cáo đánh giá" className="hg-cat-select" value={reportReasons[rev.id]||'SPAM'} onChange={e=>setReportReasons(v=>({...v,[rev.id]:e.target.value}))}>
+                                <option value="SPAM">Spam</option>
+                                <option value="ABUSE">Nội dung không phù hợp</option>
+                                <option value="PRIVACY">Thông tin riêng tư</option>
+                                <option value="MISLEADING">Thông tin gây hiểu nhầm</option>
+                              </select>
+                              <button type="button" className="hg-cat-link" onClick={async()=>{try{await api.post('/reviews/'+rev.id+'/report',{reason:reportReasons[rev.id]||'SPAM'});setReviewSuccessMsg('Đã gửi báo cáo để quản trị viên kiểm tra.');}catch{setReviewErrorMsg('Chưa gửi được báo cáo.');}}}>Báo cáo đánh giá</button>
+                            </>}
+                            {myReviewIds.has(rev.id)&&<button type="button" className="hg-cat-link" onClick={()=>{setEditingReviewId(rev.id);setNewReviewScore(rev.rating);setNewReviewComment(rev.comment);setAnalysisConsent(false);}}>Sửa đánh giá</button>}
+                            {myReviewIds.has(rev.id) && (
+                              <button type="button" onClick={() => handleDeleteReview(rev.id)} className="hg-cat-link hg-cat-link--danger">
+                                Xóa đánh giá
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      <p className="text-sm text-slate-600 leading-relaxed">{place.isDemo&&'DEMO — bình luận kiểm thử: '}{rev.comment}</p>{user&&<div className="flex flex-wrap gap-2 text-xs"><select aria-label="Lý do báo cáo đánh giá" value={reportReasons[rev.id]||'SPAM'} onChange={e=>setReportReasons(v=>({...v,[rev.id]:e.target.value}))}><option value="SPAM">Spam</option><option value="ABUSE">Nội dung không phù hợp</option><option value="PRIVACY">Thông tin riêng tư</option><option value="MISLEADING">Thông tin gây hiểu nhầm</option></select><button className="underline" onClick={async()=>{try{await api.post('/reviews/'+rev.id+'/report',{reason:reportReasons[rev.id]||'SPAM'});setReviewSuccessMsg('Đã gửi báo cáo để quản trị viên kiểm tra.');}catch{setReviewErrorMsg('Chưa gửi được báo cáo.');}}}>Báo cáo đánh giá</button></div>}
-                      {myReviewIds.has(rev.id)&&<button className="mr-4 text-xs underline" onClick={()=>{setEditingReviewId(rev.id);setNewReviewScore(rev.rating);setNewReviewComment(rev.comment);setAnalysisConsent(false);}}>Sửa đánh giá</button>}
-                      {myReviewIds.has(rev.id) && (
-                        <button type="button" onClick={() => handleDeleteReview(rev.id)}
-                          className="text-xs font-bold text-rose-600 hover:text-rose-700">
-                          Xóa đánh giá
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
+                    ))}
+                  </div>
+                )}
+              </section>
             )}
           </div>
 
-          {/* Right Column: Sticky Booking Sidebar Matching Image 2 */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24 bg-white rounded-3xl p-6 shadow-xl border border-slate-100 space-y-6">
-              {/* Unit Price */}
-              <div>
-                <span className="text-xs text-slate-400 block font-medium">Giá áp dụng</span>
-                <div className="flex items-baseline space-x-1">
-                  <span className="text-3xl font-black text-orange-600">
-                    {unitPrice==null?'Chưa có giá':formatCurrencyVND(unitPrice)}
-                  </span>
-                  <span className="text-xs text-slate-500 font-semibold">/ khách</span>
-                </div>
-              </div>
+          {/* Cột phải: khung đặt dịch vụ */}
+          <aside className="hg-cat-aside" aria-label="Đặt dịch vụ">
+            <div className="hg-cat-box">
+              <span className="hg-cat-price__label">Giá áp dụng</span>
+              <p className="hg-cat-bigprice">
+                {unitPrice==null?'Chưa có giá':formatCurrencyVND(unitPrice)} {unitPrice!=null&&<small>/ khách</small>}
+              </p>
 
-              {/* Booking Options */}
-              <div className="space-y-4 pt-2 border-t border-slate-100">
-                {/* Date Picker */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 mb-1.5 flex items-center">
-                    <Calendar className="w-3.5 h-3.5 text-orange-500 mr-1.5" />
-                    Ngày khởi hành
-                  </label>
+              <div className="hg-cat-form hg-cat-form--aside">
+                <label className="hg-cat-field">
+                  <span><Calendar size={16} aria-hidden="true" />Ngày khởi hành</span>
                   <input
                     type="date"
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-sm font-semibold border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                    className="hg-cat-input"
                   />
-                </div>
+                </label>
 
-                {/* Counters for Adults & Children Matching Image 2 */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                    <span className="text-xs font-bold text-slate-600 block mb-1">Người lớn</span>
-                    <div className="flex items-center justify-between">
-                      <button
-                        type="button"
-                        onClick={() => setAdults(Math.max(1, adults - 1))}
-                        className="w-7 h-7 bg-white rounded-lg border border-slate-300 font-bold hover:bg-slate-100 flex items-center justify-center text-slate-700"
-                      >
-                        -
-                      </button>
-                      <span className="font-extrabold text-slate-800 text-sm">{adults}</span>
-                      <button
-                        type="button"
-                        onClick={() => setAdults(adults + 1)}
-                        className="w-7 h-7 bg-white rounded-lg border border-slate-300 font-bold hover:bg-slate-100 flex items-center justify-center text-slate-700"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                    <span className="text-xs font-bold text-slate-600 block mb-1">Trẻ em (-30%)</span>
-                    <div className="flex items-center justify-between">
-                      <button
-                        type="button"
-                        onClick={() => setChildren(Math.max(0, children - 1))}
-                        className="w-7 h-7 bg-white rounded-lg border border-slate-300 font-bold hover:bg-slate-100 flex items-center justify-center text-slate-700"
-                      >
-                        -
-                      </button>
-                      <span className="font-extrabold text-slate-800 text-sm">{children}</span>
-                      <button
-                        type="button"
-                        onClick={() => setChildren(children + 1)}
-                        className="w-7 h-7 bg-white rounded-lg border border-slate-300 font-bold hover:bg-slate-100 flex items-center justify-center text-slate-700"
-                      >
-                        +
-                      </button>
-                    </div>
+                <div className="hg-cat-stepper">
+                  <span>Người lớn</span>
+                  <div>
+                    <button type="button" aria-label="Giảm người lớn" disabled={adults<=1} onClick={() => setAdults(Math.max(1, adults - 1))}>−</button>
+                    <b aria-live="polite">{adults}</b>
+                    <button type="button" aria-label="Tăng người lớn" onClick={() => setAdults(adults + 1)}>+</button>
                   </div>
                 </div>
 
-                {/* Total Price Calculation Matching Image 2 */}
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-700">Tổng cộng:</span>
-                  <span className="text-2xl font-black text-slate-900">
-                    {unitPrice==null?'Chưa có giá':formatCurrencyVND(totalPrice)}
-                  </span>
+                <div className="hg-cat-stepper">
+                  <span>Trẻ em<small>Giảm 30% đơn giá</small></span>
+                  <div>
+                    <button type="button" aria-label="Giảm trẻ em" disabled={children<=0} onClick={() => setChildren(Math.max(0, children - 1))}>−</button>
+                    <b aria-live="polite">{children}</b>
+                    <button type="button" aria-label="Tăng trẻ em" onClick={() => setChildren(children + 1)}>+</button>
+                  </div>
                 </div>
 
-                {/* Primary CTA Button (Vibrant Orange Matching Image 2) */}
+                <dl className="hg-cat-kv hg-cat-kv--total">
+                  <div>
+                    <dt>Tổng cộng (tạm tính)</dt>
+                    <dd>{unitPrice==null?'Chưa có giá':formatCurrencyVND(totalPrice)}</dd>
+                  </div>
+                </dl>
+
                 <button
+                  type="button"
                   onClick={handleBookingClick}
                   disabled={place.isDemo||place.priceFrom==null}
-                  className="w-full py-4 bg-orange-500 hover:bg-orange-600 active:scale-98 text-white font-extrabold rounded-2xl shadow-xl shadow-orange-500/25 transition-all duration-150 text-base flex items-center justify-center"
+                  className="hg-cat-btn hg-cat-btn--cta hg-cat-btn--lg hg-cat-btn--block"
                 >
-                  {place.isDemo?'DEMO · Không nhận đặt dịch vụ':place.priceFrom==null?'Chưa có giá được xác minh':place.category === 'hotel' || place.category === 'restaurant' ? 'Đặt dịch vụ ngay' : 'Xem tour có thể đặt'}
+                  {place.isDemo?'Chưa nhận đặt dịch vụ':place.priceFrom==null?'Chưa có giá được xác minh':place.category === 'hotel' || place.category === 'restaurant' ? 'Đặt dịch vụ ngay' : 'Xem tour có thể đặt'}
                 </button>
 
-                {/* Guarantees Matching Image 2 */}
-                <div className="space-y-2 text-xs text-slate-600 pt-2">
-                  <div className="flex items-center space-x-2">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>Đơn đặt được lưu trong lịch sử tài khoản</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>Theo dõi xác nhận từ đối tác trong lịch sử</span>
-                  </div>
-                </div>
+                <ul className="hg-cat-checks hg-cat-checks--1">
+                  <li><ShieldCheck size={16} aria-hidden="true" /><span>Đơn đặt được lưu trong lịch sử tài khoản</span></li>
+                  <li><Check size={16} aria-hidden="true" /><span>Theo dõi xác nhận từ đối tác trong lịch sử</span></li>
+                </ul>
               </div>
             </div>
-          </div>
+          </aside>
         </div>
 
-        {/* Tour tương tự (Similar Tours Grid Matching Image 2) */}
-        <div className="mt-20 pt-12 border-t border-slate-200">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900">Tour & Trải nghiệm tương tự</h2>
-              <p className="text-sm text-slate-500 mt-1">Khám phá thêm các hành trình hấp dẫn với mức giá ưu đãi</p>
-            </div>
-            <Link to="/explore" className="text-sm font-bold text-orange-600 hover:text-orange-700">
-              Xem tất cả ➔
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {similarPlaces.map((sim, index) => (
-              <Link
-                key={sim.id}
-                to={`/places/${sim.id}`}
-                className="group bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 border border-slate-100 flex flex-col"
-              >
-                <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-                  <img
-                    src={sim.heroImage}
-                    alt={sim.name}
-                    className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
-                  />
-                  <span className="absolute top-3 left-3 bg-teal-600 text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-lg uppercase">
-                    {index === 0 ? 'Trending' : 'Bán chạy'}
-                  </span>
-                </div>
-                <div className="p-4 flex-1 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center text-xs text-amber-500 font-bold mb-1">
-                      <Star className="w-3.5 h-3.5 fill-amber-400 mr-1" />
-                      <span>{Number.isFinite(sim.rating)&&sim.reviewCount>0?Number(sim.rating).toFixed(1):'Chưa có đánh giá'}</span>
-                      <span className="text-slate-400 font-normal ml-1">({sim.reviewCount})</span>
-                    </div>
-                    <h3 className="font-bold text-slate-900 text-sm line-clamp-1 group-hover:text-orange-600 transition-colors">
-                      {sim.name}
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-1 flex items-center">
-                      <Clock className="w-3.5 h-3.5 mr-1 text-slate-400" />
-                      {sim.duration || '3 Ngày 2 Đêm'}
-                    </p>
-                  </div>
-                  <div className="pt-3 border-t border-slate-100 mt-3 flex items-center justify-between">
-                    <span className="text-base font-black text-slate-900">{formatCurrencyVND(sim.priceFrom)}</span>
-                    <span className="text-xs font-bold text-orange-600">Xem ngay ➔</span>
-                  </div>
-                </div>
+        {/* Gợi ý khác */}
+        {similarPlaces.length > 0 && (
+          <section className="hg-cat-similar" aria-labelledby="similar-title">
+            <div className="hg-cat-resultbar">
+              <div>
+                <h2 id="similar-title" className="hg-cat-h2">Có thể bạn cũng quan tâm</h2>
+                <p className="hg-cat-count">Một số dịch vụ khác đang hiển thị trên HuGo Travel</p>
+              </div>
+              <Link to="/explore" className="hg-cat-link">
+                Xem tất cả <ArrowRight size={16} aria-hidden="true" />
               </Link>
-            ))}
-          </div>
-        </div>
+            </div>
+
+            <div className="hg-cat-grid">
+              {similarPlaces.map((sim) => (
+                <Link key={sim.id} to={`/places/${sim.id}`} className="hg-cat-card">
+                  <span className="hg-cat-card__media">
+                    <img src={sim.heroImage} alt="" loading="lazy" decoding="async" onError={(e) => e.currentTarget.parentElement?.classList.add('hg-cat-imgfail')} />
+                  </span>
+                  <span className="hg-cat-card__body">
+                    <span className="hg-cat-card__meta">
+                      <span>
+                        <Star size={14} aria-hidden="true" />
+                        {Number.isFinite(sim.rating)&&sim.reviewCount>0?`${Number(sim.rating).toFixed(1)} (${sim.reviewCount})`:'Chưa có đánh giá'}
+                      </span>
+                      {sim.duration && <span><Clock size={14} aria-hidden="true" />{sim.duration}</span>}
+                    </span>
+                    <span className="hg-cat-card__title">{sim.name}</span>
+                  </span>
+                  <span className="hg-cat-card__foot">
+                    <span className="hg-cat-price">
+                      <span className="hg-cat-price__label">Giá tham khảo từ</span>
+                      <span className="hg-cat-price__value">{sim.priceFrom==null?'Chưa có giá':formatCurrencyVND(sim.priceFrom)}</span>
+                    </span>
+                    <span className="hg-cat-link">Xem <ArrowRight size={16} aria-hidden="true" /></span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

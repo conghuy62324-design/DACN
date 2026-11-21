@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Heart, Lightbulb, MapPin, Sparkles } from 'lucide-react';
+import { ArrowRight, Heart, Lightbulb, MapPin, SearchX, Sparkles } from 'lucide-react';
 import { Place } from '../../types';
 import { RatingBadge } from '../common/RatingBadge';
 import { formatCurrencyVND } from '../../utils/formatters';
@@ -10,6 +10,7 @@ import { useRecommendationVisibility } from '../../hooks/useRecommendationVisibi
 import { RecommendedPlace } from '../../services/recommendationService';
 import { recommendationReasonLabels } from '../../utils/exploreRecommendation';
 import {accommodationLabels,cuisineLabels} from './ServiceFilters';
+import '../../styles/hg-catalog.css';
 
 type DisplayPlace = Place & Partial<Pick<RecommendedPlace, 'rank' | 'reasonCodes' | 'why' | 'scoreBreakdown'>>;
 
@@ -66,81 +67,83 @@ const PlaceCard: React.FC<PlaceCardProps> = ({
     requestId: attributedRequestId, context: { position: item.rank || index + 1 },
   });
 
+  const typeLabel = item.category==='hotel'
+    ? accommodationLabels[item.catalogMetadata?.accommodationType||'']||'Lưu trú'
+    : item.category==='restaurant'
+      ? (item.catalogMetadata?.cuisines||[]).map(k=>cuisineLabels[k]).filter(Boolean).join(' · ')||'Nhà hàng'
+      : 'Điểm tham quan';
+  const area = item.city+(item.geography?.provinceName&&item.geography.provinceName!==item.city?' · '+item.geography.provinceName:'');
+
   return (
     <div
       ref={cardRef}
       data-testid={`recommendation-card-${item.id}`}
       data-attribution-ready={attributionReady ? 'true' : 'false'}
+      aria-current={selected ? 'true' : undefined}
       onClick={() => { recordClick(); onSelectPlace(item); }}
-      className={`cursor-pointer overflow-hidden rounded-2xl border bg-white p-3 transition-all hover:shadow-md ${
-        selected ? 'border-orange-500 bg-orange-50/20 shadow-sm ring-2 ring-orange-500/20' : 'border-slate-200 hover:border-slate-300'
-      }`}
+      className="hg-cat-card hg-cat-card--clickable"
     >
-      <div className={grid?'flex h-full flex-col gap-3':'flex gap-3.5'}>
-        <div className={grid?'relative h-28 w-full sm:h-44 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100':'relative h-28 w-28 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100'}>
-          <img src={item.heroImage} alt={item.name} className="h-full w-full object-cover" />
-          {item.rank ? (
-            <span className="absolute left-1.5 top-1.5 rounded-md bg-slate-950/85 px-1.5 py-1 text-[10px] font-extrabold text-white backdrop-blur-sm">
-              #{item.rank}
-            </span>
-          ) : null}
-          <button
-            type="button"
-            aria-pressed={favorited}
-            aria-label={favorited ? 'Bỏ lưu địa điểm' : 'Lưu địa điểm'}
-            disabled={isPending(item.id)}
-            onClick={(event) => {
-              event.stopPropagation();
-              toggleFavorite(item, 'explore_results', attributedRequestId);
-            }}
-            className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm backdrop-blur-sm hover:text-rose-500 disabled:opacity-50"
-          >
-            <Heart className={`h-3.5 w-3.5 ${favorited ? 'fill-rose-500 text-rose-500' : ''}`} />
-          </button>
-        </div>
-
-        <div className="flex min-w-0 flex-1 flex-col justify-between">
-          <div>
-            <div className="mb-0.5 flex items-center gap-1 text-[11px] text-slate-500">
-              <MapPin className="h-3 w-3 flex-shrink-0 text-orange-500" />
-              <span className="truncate">{item.city}{item.geography?.provinceName&&item.geography.provinceName!==item.city?' · '+item.geography.provinceName:''}</span>
-            </div>
-            <h3 className="line-clamp-2 text-sm font-bold leading-snug text-slate-900 transition-colors hover:text-orange-600">{item.name}</h3>
-            <p className="mt-1 text-xs text-slate-500">{item.category==='hotel'?accommodationLabels[item.catalogMetadata?.accommodationType||'']||'Lưu trú':item.category==='restaurant'?(item.catalogMetadata?.cuisines||[]).map(k=>cuisineLabels[k]).filter(Boolean).join(' · ')||'Nhà hàng':'Điểm tham quan'}</p>
-            {item.isDemo&&<p className="text-xs font-bold text-amber-800">DEMO · Không phải đối tác thật</p>}
-            <div className="mt-1"><RatingBadge rating={item.rating} reviewCount={item.reviewCount} showBayesianDetail size="sm" /></div>
-          </div>
-          <div className="mt-2 flex items-end justify-between border-t border-slate-100 pt-2">
-            <div>
-              <span className="block text-[10px] text-slate-400">Giá tham khảo từ</span>
-              <span className="text-sm font-extrabold text-slate-900">{item.priceFrom==null?'Chưa có giá':formatCurrencyVND(item.priceFrom)}</span><span className="block text-[10px] text-slate-500">{item.isDemo?'Giả định DEMO · ':'VND · '}đơn vị chưa xác minh</span>
-            </div>
-            <Link
-              to={detailUrl}
-              onClick={(event) => { event.stopPropagation(); recordClick(); }}
-              className="flex items-center text-xs font-bold text-orange-600 hover:text-orange-700"
-            >
-              Chi tiết <ArrowRight className="ml-0.5 h-3.5 w-3.5" />
-            </Link>
-          </div>
-        </div>
+      <div className="hg-cat-card__media">
+        <img src={item.heroImage} alt={item.name} loading="lazy" decoding="async" onError={e=>e.currentTarget.parentElement?.classList.add('hg-cat-imgfail')}/>
+        <span className="hg-cat-card__badges">
+          {item.rank ? <span className="hg-cat-badge hg-cat-badge--dark">#{item.rank}</span> : null}
+          <span className="hg-cat-badge">{typeLabel}</span>
+        </span>
+        <button
+          type="button"
+          aria-pressed={favorited}
+          aria-label={favorited ? 'Bỏ lưu địa điểm' : 'Lưu địa điểm'}
+          disabled={isPending(item.id)}
+          onClick={(event) => {
+            event.stopPropagation();
+            toggleFavorite(item, 'explore_results', attributedRequestId);
+          }}
+          className="hg-cat-fav"
+        >
+          <Heart size={18} aria-hidden="true" />
+        </button>
       </div>
 
-      <div className="mt-3 border-t border-slate-100 pt-3">
-        <Link onClick={e=>e.stopPropagation()} to={'/assistant?listing='+encodeURIComponent(item.id)} className="mb-2 inline-block text-xs font-bold text-teal-700 underline">Tư vấn bằng AI</Link>
-        <div data-testid={`recommendation-why-${item.id}`} className="flex items-start gap-2 text-[11px] leading-4 text-slate-600">
-          {item.why ? <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" /> : <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-teal-500" />}
-          <span>{item.why || publicExplanation || 'Địa điểm công khai đủ điều kiện hiển thị; chưa cá nhân hóa.'}</span>
+      <div className="hg-cat-card__body">
+        <div className="hg-cat-card__meta">
+          <span>
+            <MapPin size={14} aria-hidden="true" />
+            {area}
+          </span>
         </div>
+        <h3 className="hg-cat-card__title">
+          <Link to={detailUrl} onClick={(event) => { event.stopPropagation(); recordClick(); }}>{item.name}</Link>
+        </h3>
+        <div className="hg-cat-rating"><RatingBadge rating={item.rating} reviewCount={item.reviewCount} showBayesianDetail size="sm" /></div>
+        <p data-testid={`recommendation-why-${item.id}`} className="hg-cat-card__why">
+          {item.why ? <Lightbulb size={16} aria-hidden="true" /> : <Sparkles size={16} aria-hidden="true" />}
+          <span>{item.why || publicExplanation || 'Địa điểm công khai đủ điều kiện hiển thị; chưa cá nhân hóa.'}</span>
+        </p>
         {reasonLabels.length > 0 ? (
-          <div data-testid={`recommendation-reasons-${item.id}`} className="mt-2 flex flex-wrap gap-1.5">
+          <div data-testid={`recommendation-reasons-${item.id}`} className="hg-cat-card__tags">
             {reasonLabels.map((label) => (
-              <span key={label} className="rounded-full border border-teal-100 bg-teal-50 px-2 py-1 text-[10px] font-bold text-teal-700">
-                {label}
-              </span>
+              <span key={label} className="hg-cat-tag">{label}</span>
             ))}
           </div>
         ) : null}
+        <Link onClick={e=>e.stopPropagation()} to={'/assistant?listing='+encodeURIComponent(item.id)} className="hg-cat-ai"><Sparkles size={16} aria-hidden="true" />Tư vấn bằng AI</Link>
+      </div>
+
+      <div className="hg-cat-card__foot">
+        <div className="hg-cat-price">
+          <span className="hg-cat-price__label">Giá tham khảo từ</span>
+          <span className="hg-cat-price__value">{item.priceFrom==null?'Chưa có giá':formatCurrencyVND(item.priceFrom)}</span>
+          <span className="hg-cat-price__note">VND · đơn vị chưa xác minh</span>
+        </div>
+        <div className="hg-cat-card__actions">
+          <Link
+            to={detailUrl}
+            onClick={(event) => { event.stopPropagation(); recordClick(); }}
+            className="hg-cat-btn hg-cat-btn--outline hg-cat-btn--sm"
+          >
+            Chi tiết <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -157,10 +160,11 @@ export const PlaceSidebar: React.FC<PlaceSidebarProps> = ({
   publicExplanation,
   grid=false,
 }) => (
-  <div className={grid?'grid items-start gap-4 sm:grid-cols-2 xl:grid-cols-3':'max-h-[720px] space-y-3 overflow-y-auto pr-1'} aria-busy={loading}>
+  <div className={grid?'hg-cat-grid':'hg-cat-stack hg-cat-scroll'} aria-busy={loading}>
     {!loading && places.length === 0 ? (
-      <div data-testid="explore-empty" className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-        <p className="text-sm text-slate-500">{emptyMessage}</p>
+      <div data-testid="explore-empty" className="hg-cat-state" role="status">
+        <SearchX size={32} aria-hidden="true" />
+        <p>{emptyMessage}</p>
       </div>
     ) : (
       places.map((item, index) => (
