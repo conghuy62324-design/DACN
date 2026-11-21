@@ -1,54 +1,102 @@
-import React, { useState } from 'react';
-import { Link, NavLink, Outlet } from 'react-router-dom';
-import { BookOpen, Building2, Compass, FileCheck2, LayoutDashboard, LogOut, MapPinned, Menu, Route, ShieldCheck, X } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  BadgePercent,
+  BookOpen,
+  Building2,
+  CalendarCheck,
+  FileCheck2,
+  Languages,
+  LayoutDashboard,
+  LayoutTemplate,
+  MapPinned,
+  MessageSquareWarning,
+  Newspaper,
+  Route,
+  Settings,
+  Store,
+  Users,
+} from 'lucide-react';
+import { BackofficeShell, NavGroup } from '../components/backoffice';
+import { AdminDashboardData, PlatformService } from '../services/platformService';
 
-const primaryNavigation = [
-  { to: '/admin/hotels', label: 'Kiểm duyệt khách sạn', icon: Building2 },
-  { to: '/admin', label: 'Tổng quan', icon: LayoutDashboard, end: true },
-  { to: '/admin/partner-applications', label: 'Duyệt hồ sơ đối tác', icon: FileCheck2 },
-  { to: '/admin/places', label: 'Duyệt địa điểm', icon: MapPinned },
-  { to: '/admin/tours', label: 'Duyệt tour', icon: Route },
-  { to: '/admin/travel-web', label: 'Nguồn web & kiến thức', icon: BookOpen },
-  { to: '/admin/language-lexicon', label: 'Từ điển tiếng Việt', icon: BookOpen },
-  { to: '/admin/blogs', label: 'Duyệt bài viết', icon: BookOpen },
-];
+type Badges = Partial<Pick<AdminDashboardData, 'pendingPartners' | 'pendingPlaces' | 'pendingTours' | 'pendingBlogs' | 'pendingBookings'>>;
+
+const hotelDomainEnabled = import.meta.env.VITE_HOTEL_DOMAIN_ENABLED === 'true';
 
 export const AdminLayout: React.FC = () => {
-  const { user, logout } = useAuth();
-  const [open, setOpen] = useState(false);
+  const [badges, setBadges] = useState<Badges>({});
+
+  useEffect(() => {
+    let live = true;
+    // Một lần khi layout mount. Lỗi thì không hiện badge, không chặn layout.
+    PlatformService.getAdminDashboard()
+      .then((data) => {
+        if (live && data) setBadges(data);
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  const nav = useMemo<NavGroup[]>(() => [
+    {
+      items: [
+        { to: '/admin', label: 'Bảng điều khiển', icon: LayoutDashboard, end: true },
+      ],
+    },
+    {
+      label: 'Đối tác',
+      items: [
+        { to: '/admin/partner-applications', label: 'Hồ sơ đối tác', icon: FileCheck2, badge: badges.pendingPartners },
+        { to: '/admin/businesses', label: 'Cơ sở kinh doanh', icon: Store },
+      ],
+    },
+    {
+      label: 'Kiểm duyệt',
+      items: [
+        { to: '/admin/hotels', label: 'Khách sạn', icon: Building2, hidden: !hotelDomainEnabled },
+        { to: '/admin/places', label: 'Địa điểm', icon: MapPinned, badge: badges.pendingPlaces },
+        { to: '/admin/tours', label: 'Tour', icon: Route, badge: badges.pendingTours },
+        { to: '/admin/blogs', label: 'Bài viết', icon: Newspaper, badge: badges.pendingBlogs },
+        { to: '/admin/reviews', label: 'Đánh giá & báo cáo', icon: MessageSquareWarning },
+      ],
+    },
+    {
+      label: 'Vận hành',
+      items: [
+        { to: '/admin/bookings', label: 'Booking toàn hệ thống', icon: CalendarCheck, badge: badges.pendingBookings },
+        { to: '/admin/users', label: 'Người dùng & vai trò', icon: Users },
+      ],
+    },
+    {
+      label: 'Nội dung website',
+      items: [
+        { to: '/admin/cms', label: 'CMS trang chủ', icon: LayoutTemplate },
+        { to: '/admin/promotions', label: 'Ưu đãi', icon: BadgePercent },
+      ],
+    },
+    {
+      label: 'Hệ thống',
+      items: [
+        { to: '/admin/settings', label: 'Cài đặt', icon: Settings },
+      ],
+    },
+    {
+      label: 'Trí tuệ nhân tạo',
+      items: [
+        { to: '/admin/travel-web', label: 'Nguồn web & kiến thức', icon: BookOpen },
+        { to: '/admin/language-lexicon', label: 'Từ điển tiếng Việt', icon: Languages },
+      ],
+    },
+  ], [badges]);
 
   return (
-    <div className="min-h-screen bg-[#f4f7fb] text-slate-900">
-      <aside className={`fixed inset-y-0 left-0 z-40 w-72 bg-[#0b1f3a] text-white transition-transform lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="h-20 flex items-center justify-between px-6 border-b border-white/10">
-          <Link to="/admin" className="flex items-center gap-3" onClick={() => setOpen(false)}>
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/10"><ShieldCheck className="h-6 w-6 text-cyan-300" /></span>
-            <span><b className="block text-lg">HuGo Travel</b><small className="text-slate-400">Super Admin Console</small></span>
-          </Link>
-          <button className="lg:hidden" onClick={() => setOpen(false)} aria-label="Đóng menu"><X /></button>
-        </div>
-        <nav className="p-4 space-y-1" aria-label="Điều hướng quản trị">
-          {primaryNavigation.filter(item=>!item.to.endsWith('/hotels')||import.meta.env.VITE_HOTEL_DOMAIN_ENABLED==='true').map(({ to, label, icon: Icon, end }) => (
-            <NavLink key={to} to={to} end={end} onClick={() => setOpen(false)} className={({ isActive }) => `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition ${isActive ? 'bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-950/20' : 'text-slate-300 hover:bg-white/10 hover:text-white'}`}>
-              <Icon className="h-4 w-4" />{label}
-            </NavLink>
-          ))}
-        </nav>
-        <div className="absolute bottom-0 inset-x-0 border-t border-white/10 p-4">
-          <Link to="/" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:text-white"><Compass className="h-4 w-4" />Về website khách hàng</Link>
-          <button onClick={logout} className="mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-2 text-sm text-rose-300 hover:bg-rose-500/10"><LogOut className="h-4 w-4" />Đăng xuất</button>
-        </div>
-      </aside>
-      {open && <button className="fixed inset-0 z-30 bg-slate-950/50 lg:hidden" onClick={() => setOpen(false)} aria-label="Đóng menu" />}
-      <div className="lg:pl-72">
-        <header className="sticky top-0 z-20 flex h-20 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-8">
-          <button onClick={() => setOpen(true)} className="rounded-lg p-2 hover:bg-slate-100 lg:hidden" aria-label="Mở menu"><Menu /></button>
-          <div className="hidden sm:block"><p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-700">Platform operations</p><p className="text-sm text-slate-500">Dữ liệu quản trị tập trung và có kiểm soát</p></div>
-          <div className="text-right"><p className="text-sm font-bold">{user?.fullName}</p><p className="text-xs text-slate-500">Super Admin</p></div>
-        </header>
-        <main className="p-4 sm:p-8"><Outlet /></main>
-      </div>
-    </div>
+    <BackofficeShell
+      area="admin"
+      brandSubtitle="Quản trị hệ thống"
+      roleLabel="Quản trị viên"
+      nav={nav}
+    />
   );
 };
