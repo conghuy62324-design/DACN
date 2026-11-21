@@ -1,177 +1,379 @@
-import {HotelBookingSummary} from '../components/hotels/HotelBookingSummary';
-import {useAuth} from '../context/AuthContext';
-import '../styles/hotels.css';
-import '../styles/hotelStay.css';
-import '../styles/hotelPremium.css';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  AlertTriangle,
+  BedDouble,
+  CalendarDays,
+  CheckCircle2,
+  Clock,
+  Compass,
+  Loader2,
+  ReceiptText,
+  Search,
+  SearchX,
+  Ticket,
+  UtensilsCrossed,
+  XCircle,
+} from 'lucide-react';
+import { HotelBookingSummary } from '../components/hotels/HotelBookingSummary';
+import { AccountShell } from '../components/account/AccountShell';
+import { AccountLoadError, AccountState } from '../components/account/AccountState';
+import { friendlyError } from '../components/account/accountErrors';
 import { BookingService } from '../services/bookingService';
 import { Booking } from '../types';
-import { Bookmark, Calendar, Users, CheckCircle2, Clock, XCircle, ArrowRight, ShieldCheck } from 'lucide-react';
 import { formatCurrencyVND } from '../utils/formatters';
+import '../styles/hg-account.css';
 
-export const BookingsPage: React.FC = () => {
-  const {user,sessionGeneration}=useAuth();
-  const [loadError,setLoadError]=useState('');
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
+type Status = Booking['bookingStatus'];
+type StatusFilter = 'ALL' | Status;
 
-  useEffect(() => {
-    let active=true;
-    const token=localStorage.getItem('travelgo_token');
-    setBookings([]);setLoadError('');
-    window.scrollTo(0, 0);
-    const fetchBookings = async () => {
-      setLoading(true);
-      try {
-        const data = await BookingService.getBookings();
-        if(active&&localStorage.getItem('travelgo_token')===token)setBookings(data);
-      } catch (e) {
-        if(active)setLoadError('Chưa tải được lịch sử đặt dịch vụ.');
-      } finally {
-        setLoading(false);
-      }
-    };
+const statusMeta: Record<Status, { label: string; tone: 'ok' | 'warn' | 'bad' | 'info'; icon: typeof Clock }> = {
+  PENDING: { label: 'Chờ xác nhận', tone: 'warn', icon: Clock },
+  CONFIRMED: { label: 'Đã xác nhận', tone: 'ok', icon: CheckCircle2 },
+  COMPLETED: { label: 'Đã hoàn thành', tone: 'info', icon: CheckCircle2 },
+  CANCELLED: { label: 'Đã hủy', tone: 'bad', icon: XCircle },
+  REJECTED: { label: 'Bị từ chối', tone: 'bad', icon: XCircle },
+};
+const STATUS_ORDER: Status[] = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'REJECTED'];
 
-    fetchBookings();
-  }, []);
+const serviceMeta: Record<Booking['serviceType'], { label: string; icon: typeof Clock }> = {
+  tour: { label: 'Tour', icon: Compass },
+  hotel: { label: 'Khách sạn', icon: BedDouble },
+  restaurant: { label: 'Nhà hàng', icon: UtensilsCrossed },
+  ticket: { label: 'Vé', icon: Ticket },
+};
 
-  const handleCancelBooking = async (id: string) => {
-    if (!confirm('Bạn có chắc chắn muốn hủy đơn đặt này không?')) return;
+const paymentLabels: Record<string, string> = {
+  paid: 'Đã thanh toán',
+  refunded: 'Đã hoàn tiền',
+  unpaid: 'Chưa thanh toán',
+};
 
+function dateLabel(value?: string): string {
+  if (!value) return '';
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+  if (match) return `${match[3]}/${match[2]}/${match[1]}`;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString('vi-VN');
+}
+
+function StatusPill({ status }: { status: string }) {
+  const meta = statusMeta[status as Status];
+  if (!meta) return <span className="hg-acc-pill">{status}</span>;
+  const Icon = meta.icon;
+  return (
+    <span className={'hg-acc-pill hg-acc-pill--' + meta.tone}>
+      <Icon size={14} aria-hidden="true" />
+      <span>{meta.label}</span>
+    </span>
+  );
+}
+
+function ServiceBookingCard({ booking: b, onCancel }: { booking: Booking; onCancel: (id: string) => Promise<void> }) {
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const service = serviceMeta[b.serviceType];
+  const ServiceIcon = service?.icon || ReceiptText;
+  const cancellable = !['CANCELLED', 'COMPLETED', 'REJECTED'].includes(b.bookingStatus);
+
+  const confirmCancel = async () => {
+    setBusy(true);
+    setError('');
     try {
-      await BookingService.cancelBooking(id);
-      setBookings((prev) =>
-        prev.map((b) => (b.id === id ? { ...b, bookingStatus: 'CANCELLED' } : b))
-      );
-      alert('Đã hủy đơn đặt dịch vụ thành công!');
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'CONFIRMED':
-        return (
-          <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Đã xác nhận</span>
-          </span>
-        );
-      case 'PENDING':
-        return (
-          <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
-            <Clock className="w-3.5 h-3.5" />
-            <span>Chờ xác nhận</span>
-          </span>
-        );
-      case 'CANCELLED':
-        return (
-          <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">
-            <XCircle className="w-3.5 h-3.5" />
-            <span>Đã hủy</span>
-          </span>
-        );
-      default:
-        return (
-          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
-            {status}
-          </span>
-        );
+      await onCancel(b.id);
+      setConfirming(false);
+    } catch (cancelError) {
+      console.error(cancelError);
+      setError(friendlyError(cancelError, 'Chưa hủy được đơn. Vui lòng thử lại.'));
+    } finally {
+      setBusy(false);
     }
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-20 bg-slate-50">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <span className="text-orange-600 font-bold text-xs uppercase tracking-wider block mb-1">
-            Quản lý hành trình
-          </span>
-          <h1 className="text-3xl font-extrabold text-slate-900">
-            Lịch sử đặt vé & dịch vụ
-          </h1>
-          <p className="text-slate-500 text-sm mt-1">
-            Theo dõi tình trạng đơn đặt tour, khách sạn, nhà hàng và vé phương tiện.
-          </p>
+    <article className="hg-acc-card hg-acc-order" data-booking-id={b.id}>
+      <div className="hg-acc-order__head">
+        <div className="hg-acc-order__code">
+          <small>Mã đơn đặt</small>
+          <b>{b.bookingCode}</b>
         </div>
-
-        {loadError&&<p role="alert" className="text-rose-700 mb-4">{loadError}</p>}
-        {bookings.length === 0 ? (
-          <div className="bg-white rounded-3xl p-12 text-center border border-slate-200">
-            <Bookmark className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <h3 className="text-lg font-bold text-slate-800 mb-1">Chưa có đơn đặt nào</h3>
-            <p className="text-slate-500 text-sm">Hãy khám phá các tour du lịch và đặt dịch vụ ngay hôm nay!</p>
+        <StatusPill status={b.bookingStatus} />
+      </div>
+      <div className="hg-acc-order__body">
+        <div>
+          <div className="hg-acc-order__service">
+            <span className="hg-acc-order__icon" aria-hidden="true">
+              <ServiceIcon size={20} />
+            </span>
+            <div>
+              <h3>{b.serviceName}</h3>
+              <p>{service?.label || 'Dịch vụ'}</p>
+            </div>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {bookings.map((b) => b.hotelStay?<HotelBookingSummary key={b.id} booking={b} onCancel={async id=>{const result=await BookingService.cancelBooking(id);setBookings(items=>items.map(item=>item.id===id?result:item));}}/>:(
-              <div
-                key={b.id}
-                className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4"
-              >
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
-                  <div>
-                    <span className="text-xs text-slate-400 block">Mã đơn đặt</span>
-                    <span className="text-base font-mono font-bold text-slate-900">{b.bookingCode}</span>
-                  </div>
-                  <div>{getStatusBadge(b.bookingStatus)}</div>
-                </div>
-
-                {/* Details */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-                  <div>
-                    <span className="text-slate-400 block mb-1">Dịch vụ</span>
-                    <span className="font-bold text-slate-800 text-sm line-clamp-1">{b.serviceName}</span>
-                    <span className="text-slate-400 block capitalize mt-0.5">Loại: {b.serviceType}</span>
-                  </div>
-
-                  <div>
-                    <span className="text-slate-400 block mb-1">Thời gian khởi hành</span>
-                    <span className="font-bold text-slate-800 text-sm">{b.bookingDate}</span>
-                    {b.returnDate && <span className="text-slate-500 block">Đến: {b.returnDate}</span>}
-                  </div>
-
-                  <div>
-                    <span className="text-slate-400 block mb-1">Số lượng khách</span>
-                    <span className="font-bold text-slate-800 text-sm">
-                      {b.adultsCount} Người lớn, {b.childrenCount} Trẻ em
-                    </span>
-                    <span className="text-slate-500 block mt-0.5">Khách: {b.customerName}</span>
-                  </div>
-
-                  <div>
-                    <span className="text-slate-400 block mb-1">Tổng tiền thanh toán</span>
-                    <span className="font-black text-orange-600 text-base">
-                      {formatCurrencyVND(b.totalAmount)}
-                    </span>
-                    <span className="text-slate-400 block uppercase text-[10px]">
-                      {b.paymentStatus === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-xs text-slate-400">
-                    Ngày đặt: {new Date(b.createdAt).toLocaleDateString('vi-VN')}
-                  </span>
-
-                  {!['CANCELLED', 'COMPLETED', 'REJECTED'].includes(b.bookingStatus) && (
-                    <button
-                      onClick={() => handleCancelBooking(b.id)}
-                      className="px-4 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
-                    >
-                      Hủy dịch vụ
-                    </button>
-                  )}
-                </div>
+          <dl className="hg-acc-order__dl">
+            <div>
+              <dt>Ngày sử dụng</dt>
+              <dd>
+                {dateLabel(b.bookingDate) || 'Chưa có'}
+                {b.returnDate && <> → {dateLabel(b.returnDate)}</>}
+              </dd>
+            </div>
+            <div>
+              <dt>Số lượng khách</dt>
+              <dd>
+                {b.adultsCount} người lớn · {b.childrenCount} trẻ em
+              </dd>
+            </div>
+            <div>
+              <dt>Người đặt</dt>
+              <dd>{b.customerName}</dd>
+            </div>
+            {b.notes && (
+              <div>
+                <dt>Ghi chú</dt>
+                <dd>{b.notes}</dd>
               </div>
-            ))}
+            )}
+          </dl>
+        </div>
+        <div className="hg-acc-order__price">
+          <span>Tổng tiền</span>
+          <strong>{formatCurrencyVND(b.totalAmount)}</strong>
+          <small>{paymentLabels[b.paymentStatus] || 'Chưa thanh toán'}</small>
+        </div>
+      </div>
+      {error && (
+        <p className="hg-acc-notice hg-acc-notice--error" role="alert">
+          <AlertTriangle size={16} aria-hidden="true" />
+          <span>{error}</span>
+        </p>
+      )}
+      {confirming && (
+        <div className="hg-acc-confirm" role="group" aria-label="Xác nhận hủy dịch vụ">
+          <p>Bạn có chắc chắn muốn hủy đơn {b.bookingCode} không? Đơn không bị xóa khỏi lịch sử.</p>
+          <div className="hg-acc-confirm__actions">
+            <button type="button" className="hg-acc-btn hg-acc-btn--ghost" disabled={busy} onClick={() => setConfirming(false)}>
+              Giữ đơn
+            </button>
+            <button type="button" className="hg-acc-btn hg-acc-btn--danger-solid" disabled={busy} onClick={() => void confirmCancel()}>
+              {busy && <Loader2 size={16} className="hg-acc-spin" aria-hidden="true" />}
+              <span>{busy ? 'Đang hủy…' : 'Xác nhận hủy'}</span>
+            </button>
           </div>
+        </div>
+      )}
+      <div className="hg-acc-order__foot">
+        <span>Ngày đặt: {new Date(b.createdAt).toLocaleDateString('vi-VN')}</span>
+        {cancellable && !confirming && (
+          <button type="button" className="hg-acc-btn hg-acc-btn--danger" onClick={() => setConfirming(true)}>
+            Hủy dịch vụ
+          </button>
         )}
       </div>
+    </article>
+  );
+}
+
+function BookingsSkeleton() {
+  return (
+    <div className="hg-acc-list" aria-hidden="true">
+      {[0, 1].map((key) => (
+        <div key={key} className="hg-acc-card hg-acc-skel-card animate-pulse">
+          <span className="hg-acc-skel hg-acc-skel--line hg-acc-skel--short" />
+          <span className="hg-acc-skel hg-acc-skel--title" />
+          <span className="hg-acc-skel hg-acc-skel--line" />
+          <span className="hg-acc-skel hg-acc-skel--block" />
+        </div>
+      ))}
     </div>
+  );
+}
+
+export const BookingsPage: React.FC = () => {
+  const [loadError, setLoadError] = useState('');
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [reload, setReload] = useState(0);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
+  const [typeFilter, setTypeFilter] = useState<'ALL' | Booking['serviceType']>('ALL');
+  const [query, setQuery] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    const token = localStorage.getItem('travelgo_token');
+    setBookings([]);
+    setLoadError('');
+    if (reload === 0) window.scrollTo(0, 0);
+    const fetchBookings = async () => {
+      setLoading(true);
+      try {
+        const data = await BookingService.getBookings();
+        if (active && localStorage.getItem('travelgo_token') === token) setBookings(data);
+      } catch (e) {
+        if (active) setLoadError(friendlyError(e, 'Chưa tải được lịch sử đặt dịch vụ.'));
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    fetchBookings();
+    return () => {
+      active = false;
+    };
+  }, [reload]);
+
+  const handleCancelBooking = async (id: string) => {
+    await BookingService.cancelBooking(id);
+    setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, bookingStatus: 'CANCELLED' } : b)));
+  };
+
+  const counts = useMemo(() => {
+    const result: Partial<Record<Status, number>> = {};
+    for (const b of bookings) result[b.bookingStatus] = (result[b.bookingStatus] || 0) + 1;
+    return result;
+  }, [bookings]);
+  const types = useMemo(() => Array.from(new Set(bookings.map((b) => (b.hotelStay ? 'hotel' : b.serviceType)))), [bookings]);
+
+  const visible = useMemo(() => {
+    const needle = query.trim().toLocaleLowerCase('vi-VN');
+    return bookings.filter((b) => {
+      if (statusFilter !== 'ALL' && b.bookingStatus !== statusFilter) return false;
+      if (typeFilter !== 'ALL' && (b.hotelStay ? 'hotel' : b.serviceType) !== typeFilter) return false;
+      if (!needle) return true;
+      const haystack = [b.bookingCode, b.serviceName, b.hotelStay?.hotel?.name].filter(Boolean).join(' ').toLocaleLowerCase('vi-VN');
+      return haystack.includes(needle);
+    });
+  }, [bookings, statusFilter, typeFilter, query]);
+
+  const filtered = statusFilter !== 'ALL' || typeFilter !== 'ALL' || query.trim() !== '';
+  const resetFilters = () => {
+    setStatusFilter('ALL');
+    setTypeFilter('ALL');
+    setQuery('');
+  };
+
+  let content: React.ReactNode;
+  if (loading) {
+    content = (
+      <>
+        <p role="status" className="hg-acc-result">
+          Đang tải đơn đặt chỗ…
+        </p>
+        <BookingsSkeleton />
+      </>
+    );
+  } else if (loadError) {
+    content = <AccountLoadError message={loadError} onRetry={() => setReload((n) => n + 1)} />;
+  } else if (bookings.length === 0) {
+    content = (
+      <AccountState
+        icon={ReceiptText}
+        title="Chưa có đơn đặt nào"
+        description="Khi bạn đặt phòng khách sạn, tour, vé hoặc nhà hàng, đơn sẽ hiển thị tại đây."
+        actions={
+          <>
+            <Link to="/hotels" className="hg-acc-btn hg-acc-btn--cta">
+              Tìm khách sạn
+            </Link>
+            <Link to="/explore" className="hg-acc-btn hg-acc-btn--outline">
+              Khám phá điểm đến
+            </Link>
+          </>
+        }
+      />
+    );
+  } else {
+    content = (
+      <>
+        <div className="hg-acc-filters" role="group" aria-label="Lọc theo trạng thái">
+          <button type="button" className="hg-acc-filter" aria-pressed={statusFilter === 'ALL'} onClick={() => setStatusFilter('ALL')}>
+            <span>Tất cả</span>
+            <span className="hg-acc-filter__count">{bookings.length}</span>
+          </button>
+          {STATUS_ORDER.filter((status) => counts[status]).map((status) => (
+            <button
+              key={status}
+              type="button"
+              className="hg-acc-filter"
+              aria-pressed={statusFilter === status}
+              onClick={() => setStatusFilter(status)}
+            >
+              <span>{statusMeta[status].label}</span>
+              <span className="hg-acc-filter__count">{counts[status]}</span>
+            </button>
+          ))}
+        </div>
+        <div className="hg-acc-toolbar">
+          <label className="hg-acc-search">
+            <span className="sr-only">Tìm theo mã đơn hoặc tên dịch vụ</span>
+            <Search size={16} aria-hidden="true" />
+            <input
+              type="search"
+              className="hg-acc-input"
+              placeholder="Tìm mã đơn hoặc tên dịch vụ"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </label>
+          {types.length > 1 && (
+            <select
+              className="hg-acc-select"
+              aria-label="Lọc theo loại dịch vụ"
+              value={typeFilter}
+              onChange={(event) => setTypeFilter(event.target.value as typeof typeFilter)}
+            >
+              <option value="ALL">Mọi loại dịch vụ</option>
+              {types.map((type) => (
+                <option key={type} value={type}>
+                  {serviceMeta[type]?.label || type}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+        <p className="hg-acc-result" aria-live="polite">
+          {filtered ? `Hiển thị ${visible.length} / ${bookings.length} đơn` : `${bookings.length} đơn đặt chỗ`}
+        </p>
+        {visible.length === 0 ? (
+          <AccountState
+            icon={SearchX}
+            title="Không có đơn phù hợp"
+            description="Thử chọn trạng thái khác hoặc xóa từ khóa tìm kiếm."
+            actions={
+              <button type="button" className="hg-acc-btn hg-acc-btn--outline" onClick={resetFilters}>
+                Xóa bộ lọc
+              </button>
+            }
+          />
+        ) : (
+          <div className="hg-acc-list">
+            {visible.map((b) =>
+              b.hotelStay ? (
+                <HotelBookingSummary
+                  key={b.id}
+                  booking={b}
+                  onCancel={async (id) => {
+                    const result = await BookingService.cancelBooking(id);
+                    setBookings((items) => items.map((item) => (item.id === id ? result : item)));
+                  }}
+                />
+              ) : (
+                <ServiceBookingCard key={b.id} booking={b} onCancel={handleCancelBooking} />
+              ),
+            )}
+          </div>
+        )}
+      </>
+    );
+  }
+
+  return (
+    <AccountShell
+      title="Đơn đặt chỗ"
+      description="Theo dõi trạng thái đơn khách sạn, tour, nhà hàng và vé bạn đã đặt."
+    >
+      {content}
+    </AccountShell>
   );
 };
