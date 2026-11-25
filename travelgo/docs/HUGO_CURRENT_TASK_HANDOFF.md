@@ -8,6 +8,38 @@
 
 ---
 
+## 0. CẬP NHẬT MỚI NHẤT — Thành viên WEB (23/11/2026)
+
+> Mục này do thành viên WEB thêm. Các mục 1–8 bên dưới là nội dung gốc của chủ dự án (20/11/2026), giữ nguyên.
+
+| Mục | Trạng thái |
+|---|---|
+| **Branch / HEAD** | `feature/web-ui-admin-partner` @ `62815c1` (gốc `e76d187`, 8 commit) |
+| **Remote** | Đã push nhánh `feature/web-ui-admin-partner` lên `origin` (25/11/2026, được cấp quyền). Không push/merge `main` |
+| **Working tree** | Sạch sau commit `62815c1` (kể cả 3 file tài liệu bàn giao, đã commit) |
+| **Task / phase** | WEB-0 xong; WEB-1 xong phần giao diện, chờ duyệt; giao diện WEB-2/3/4 đã dựng trên mock; WEB-5/6 chưa |
+| **Trạng thái** | `OWNER_VISUAL_APPROVAL_PENDING` — không tự chuyển PASS, không tự mở 21.40/21.41 |
+
+**Đã làm:** giao diện mới cho website công khai, Admin (9 trang mới + CMS), Khách hàng, Partner (onboarding 6 bước, quản lý khách sạn theo mục, lịch giá & tồn). Bỏ nội dung giả và nhãn DEMO/SYNTHETIC hiển thị. Không sửa backend/schema/vùng AI (257 file khớp `docs/web-team/protected-baseline.sha256`). tsc + build PASS.
+
+**Chưa làm / NOT RUN:** toàn bộ ma trận nghiệm thu với PostgreSQL thật (máy không cài được Docker); e2e (dự kiến hỏng `t13b01`, `t13b02*`, `roles.spec`); API mới và migration 19 (mới ở dạng đề xuất).
+
+**Cần chủ dự án duyệt:** (1) giao diện; (2) `docs/web-team/PROPOSED_API_CONTRACTS.md` + hướng migration 19; (3) diff vùng Vàng: `frontend/src/router/AppRouter.tsx` (commit `7fc742a`), global CSS, Navbar/Footer; (4) e2e `t-ai-02` thuộc vùng AI.
+
+**Nguồn / evidence:**
+- Báo cáo đầy đủ: `docs/HUGO_WEB_TEAM_HANDOFF_REPORT.md`
+- Hợp đồng dữ liệu cho AI: `docs/HUGO_WEB_API_AI_HANDOFF.md`
+- Gap matrix, checkpoint, đề xuất API, hash: `docs/web-team/`
+- Thiết kế: `docs/HUGO_WEB_DESIGN_SPEC.md`, `docs/HUGO_WEB_ADMIN_PARTNER_SPEC.md`
+- Ảnh: `docs/evidence/web-design-v1/`
+- Mock API dựng giao diện (ngoài repo, không dùng nghiệm thu): `D:\ĐỒ ÁN A\mock-api` trên máy thành viên
+
+**Hạn chế đang áp dụng:** chỉ dữ liệu SYNTHETIC; chỉ push nhánh feature, không push/merge `main`, không force push; không sửa vùng AI; không ghi credentials vào tài liệu.
+
+**Bước tiếp theo:** chủ dự án duyệt giao diện + PAC → dựng DB test SYNTHETIC → chạy nghiệm thu H/U/P/R/S → làm API + migration 19 → sửa e2e → mở PR vào nhánh tích hợp khi chủ dự án review.
+
+---
+
 ## 1. Task hiện tại & Trạng thái
 
 - **Task ID:** `TASK21.38-D-UI` — Premium Travel Website UI/UX & Photographic Imagery Redesign.
