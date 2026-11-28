@@ -13,7 +13,7 @@ const rows:[string,string,string[]?][]=[
 ];
 export const PROVINCES:GeoLocation[]=rows.map(([id,name,legacyNames=[]])=>({id,name,kind:'province',provinceCode:id,aliases:[],legacyNames,catalogName:name==='Hồ Chí Minh'?'Thành phố Hồ Chí Minh':name}));
 const tourism:[string,string,string,string[]?][]=[
- ['da-nang','Đà Nẵng','48',['DN']],['da-lat','Đà Lạt','68',['ĐL','Dalat']],['nha-trang','Nha Trang','56'],['hoi-an','Hội An','48'],['hue','Huế','46'],['ha-noi','Hà Nội','01',['HN']],['ho-chi-minh','Hồ Chí Minh','79',['HCM','SG','Sài Gòn','TP.HCM','TP. Hồ Chí Minh','Thành phố Hồ Chí Minh']],['phu-quoc','Phú Quốc','91',['PQ']],['ha-long','Hạ Long','22'],['sa-pa','Sa Pa','15',['Sapa']],['quy-nhon','Quy Nhơn','52']
+ ['da-nang','Đà Nẵng','48',['DN']],['da-lat','Đà Lạt','68',['ĐL','Dalat']],['nha-trang','Nha Trang','56'],['hoi-an','Hội An','48'],['hue','Huế','46'],['ha-noi','Hà Nội','01',['HN']],['ho-chi-minh','Hồ Chí Minh','79',['HCM','SG','Sài Gòn','TP.HCM','TP. Hồ Chí Minh','Thành phố Hồ Chí Minh']],['vung-tau','Vũng Tàu','79'],['phu-quoc','Phú Quốc','91',['PQ']],['ha-long','Hạ Long','22'],['sa-pa','Sa Pa','15',['Sapa']],['quy-nhon','Quy Nhơn','52']
 ];
 // Tourism destination, not a new province or a claim about ward boundaries/catalog availability.
 // Official provincial sources: indexed excerpts reviewed 2026-11-14; full signed PDF fetch unavailable.
@@ -21,6 +21,10 @@ export const DESTINATION_PROVENANCE={ 'destination:quy-nhon':{provinceCode:'52',
 export const DESTINATIONS:GeoLocation[]=tourism.map(([id,name,provinceCode,aliases=[]])=>({id:'destination:'+id,name,kind:'destination',provinceCode,aliases,catalogName:name==='Hồ Chí Minh'?'Thành phố Hồ Chí Minh':name}));
 export const ALL_LOCATION:GeoLocation={id:'all',name:'Tất cả địa điểm',kind:'all',aliases:[],catalogName:'all'};
 export const GEO_LOCATIONS=[ALL_LOCATION,...PROVINCES,...DESTINATIONS];
+/** An address may use an older area ID created before its destination was registered. */
+export function destinationAddressIds(g:GeoLocation){
+ return g.id==='destination:vung-tau'?[g.id,'area:79:vung-tau']:[g.id];
+}
 export function resolveLocation(value:unknown):GeoLocation|undefined{
  if(typeof value!=='string'||!value.trim())return;
  const byId=GEO_LOCATIONS.find(x=>x.id===value);if(byId)return byId;

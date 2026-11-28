@@ -12,12 +12,60 @@ const numeric = (r: any, fields: string[]) => { const v = camel(r); for (const f
     if (v[f] !== null && v[f] !== undefined)
         v[f] = Number(v[f]); return v; };
 export async function assertHotelDatabase(client: any) {
-    const r = (await client.query("SELECT current_database() db,current_user role,r.rolsuper,r.rolcreatedb,r.rolcreaterole,shobj_description(d.oid,'pg_database') sentinel FROM pg_database d JOIN pg_roles r ON r.rolname=current_user WHERE d.datname=current_database()")).rows[0];
-    if (process.env.NODE_ENV !== 'test' || !/(^|_)test(_|$)/.test(r.db) || r.db !== process.env.DB_NAME || r.role !== 'hotel_runtime' || r.rolsuper || r.rolcreatedb || r.rolcreaterole || r.sentinel !== 'hugotravel-isolated-test-database-v1')
+    const r = (await client.query("SELECT current_database() db,current_user role,r.rolsuper,r.rolcreatedb,r.rolcreaterole,r.rolbypassrls,shobj_description(d.oid,'pg_database') sentinel FROM pg_database d JOIN pg_roles r ON r.rolname=current_user WHERE d.datname=current_database()")).rows[0];
+    // Explicit A1/A2 isolated acceptance profile. Never grants writes to the public runtime.
+    const acceptanceUntil=Date.parse(process.env.AI_HOTEL_ACCEPTANCE_UNTIL||'');
+    const scopedAcceptance=r.db==='hugotravel_web_integration_test_20261125' && r.role==='ai_hotel_a1a2_acceptance' &&
+        process.env.AI_HOTEL_ACCEPTANCE_PROFILE==='21.40-A1/A2' && acceptanceUntil>Date.now() && acceptanceUntil-Date.now()<=7200000;
+    const reviewUntil=Date.parse(process.env.REVIEW_B_WRITE_UNTIL||'');
+    const scopedReview=r.db==='hugotravel_web_integration_test_20261125'&&r.role==='review_b_acceptance'&&process.env.REVIEW_B_PROFILE==='21.40-B'&&reviewUntil>Date.now()&&reviewUntil-Date.now()<=7200000;
+    const businessUntil=Date.parse(process.env.HOTEL_2141B_BUSINESS_UNTIL||'');
+    const scopedBusiness=r.db==='hugotravel_web_integration_test_20261125'&&r.role==='hotel_2141b_business'&&
+        process.env.DB_HOST==='127.0.0.1'&&process.env.DB_PORT==='15457'&&
+        process.env.HOTEL_2141B_BUSINESS_PROFILE==='21.41-B'&&businessUntil>Date.now()&&businessUntil-Date.now()<=7200000;
+    const lockUntil=Date.parse(process.env.HOTEL_2141C_LOCK_UNTIL||'');
+    const scopedLock=r.db==='hugotravel_web_integration_test_20261125'&&r.role==='hotel_2141c_business'&&
+        process.env.DB_HOST==='127.0.0.1'&&process.env.DB_PORT==='15457'&&
+        process.env.HOTEL_REFERENCE_LOCKS==='capability'&&process.env.WEB_ACCOUNT_SECURITY_ENABLED==='true'&&
+        lockUntil>Date.now()&&lockUntil-Date.now()<=7200000;
+    const productionRead=process.env.NODE_ENV==='production'&&process.env.HOTEL_PRODUCTION_READ_APPROVED==='true'&&
+        process.env.HOTEL_PRODUCTION_READ_DATABASE===r.db&&r.role==='hotel_runtime'&&r.sentinel==='hugotravel-production-v1'&&
+        process.env.HOTEL_STAY_BOOKING_ENABLED!=='true'&&process.env.ALLOW_TEST_DB_WRITES!=='true'&&process.env.CATALOG_DEMO_ENABLED!=='true';
+    const isolated=process.env.NODE_ENV==='test'&&/(^|_)test(_|$)/.test(r.db)&&
+        (r.role==='hotel_runtime'||scopedAcceptance||scopedReview||scopedBusiness||scopedLock)&&r.sentinel==='hugotravel-isolated-test-database-v1';
+    if((!productionRead&&!isolated)||r.db!==process.env.DB_NAME||r.rolsuper||r.rolcreatedb||r.rolcreaterole||r.rolbypassrls)
         throw Error('HOTEL_ISOLATED_RUNTIME_REQUIRED');
+    if(productionRead){
+        const [access]=(await client.query("SELECT current_setting('default_transaction_read_only') readonly,EXISTS (SELECT 1 FROM pg_tables WHERE schemaname='public' AND has_table_privilege(format('%I.%I',schemaname,tablename),'INSERT,UPDATE,DELETE,TRUNCATE')) writable")).rows;
+        if(access?.readonly!=='on'||access.writable!==false)throw Error('HOTEL_PRODUCTION_READ_ONLY_REQUIRED');
+    }
     const counts = (await client.query("SELECT (SELECT count(*) FROM pg_tables WHERE schemaname='public')::int tables,(SELECT count(*) FROM schema_migrations)::int migrations")).rows[0];
-    if (counts.tables !== 52 || counts.migrations !== 18)
+    const reviewSchema=process.env.WEB_FOUNDATION_ENABLED==='true'&&counts.tables===61&&
+        (counts.migrations===20||counts.migrations===21||counts.migrations===22);
+    if(scopedLock&&counts.migrations!==22)throw Error('HOTEL_LOCK_MIGRATION_REQUIRED');
+    if(productionRead&&!reviewSchema)throw Error('HOTEL_PRODUCTION_SCHEMA_REQUIRED');
+    const webSchema = process.env.WEB_FOUNDATION_ENABLED === 'true' && counts.tables === 59 && counts.migrations === 19||reviewSchema;
+    if (!webSchema && (counts.tables !== 52 || counts.migrations !== 18))
         throw Error('HOTEL_SCHEMA_52_18_REQUIRED');
+    if (webSchema) {
+        if (counts.migrations===22) {
+            const name='20261128_22_hotelstay_lock_pilot.sql';
+            const entry=(await client.query('SELECT checksum FROM schema_migrations WHERE filename=$1',[name])).rows[0];
+            const digest=createHash('sha256').update(readFileSync(path.resolve(__dirname,'../../../database/migrations',name))).digest('hex');
+            if(entry?.checksum!==digest)throw Error('HOTEL_LOCK_SOURCE_DIGEST_MISMATCH');
+        }
+        if (counts.migrations>=21) {
+            const name='20261127_21_agent_reliability_coordination.sql';
+            const entry=(await client.query('SELECT checksum FROM schema_migrations WHERE filename=$1',[name])).rows[0];
+            const digest=createHash('sha256').update(readFileSync(path.resolve(__dirname,'../../../database/migrations',name))).digest('hex');
+            if(entry?.checksum!==digest)throw Error('AGENT_COORDINATION_SOURCE_DIGEST_MISMATCH');
+        }
+        if(reviewSchema){const name='20261126_20_review_processing_foundation.sql',entry=(await client.query('SELECT checksum FROM schema_migrations WHERE filename=$1',[name])).rows[0];if(entry?.checksum!==createHash('sha256').update(readFileSync(path.resolve(__dirname,'../../../database/migrations/',name))).digest('hex'))throw Error('REVIEW_SCHEMA_SOURCE_DIGEST_MISMATCH');}
+        const webMigration = '20261125_19_web_foundation.sql';
+        const webTracked = (await client.query('SELECT checksum FROM schema_migrations WHERE filename=$1', [webMigration])).rows[0];
+        if (webTracked?.checksum !== createHash('sha256').update(readFileSync(path.resolve(__dirname, '../../../database/migrations/', webMigration))).digest('hex'))
+            throw Error('WEB_SCHEMA_SOURCE_DIGEST_MISMATCH');
+    }
     const tracked = (await client.query('SELECT checksum FROM schema_migrations WHERE filename=$1', ['20261118_18_hotel_domain_foundation.sql'])).rows[0];
     if (tracked?.checksum !== createHash('sha256').update(readFileSync(path.resolve(__dirname, '../../../database/migrations/20261118_18_hotel_domain_foundation.sql'))).digest('hex'))
         throw Error('HOTEL_SCHEMA_SOURCE_DIGEST_MISMATCH');

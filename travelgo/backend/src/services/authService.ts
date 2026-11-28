@@ -5,6 +5,7 @@ import { AuthUser, LEGACY_ROLE_MAP, Role } from '../types/auth.js';
 import { HttpError } from '../utils/httpError.js';
 import { hashPassword, verifyPassword } from './passwordService.js';
 import { signAccessToken } from './tokenService.js';
+import { loginSessionVersion } from '../web/accountSecurity.js';
 
 export interface PublicUser extends AuthUser {
   phone?: string;
@@ -35,7 +36,9 @@ export class AuthService {
       throw new HttpError(401, 'Email hoặc mật khẩu không chính xác', 'INVALID_CREDENTIALS');
     }
     const publicUser = await toPublicUser(user);
-    return { user: publicUser, token: signAccessToken(publicUser) };
+    const sessionVersion = await loginSessionVersion(user.id);
+    const claims = sessionVersion === undefined ? publicUser : { ...publicUser, sessionVersion };
+    return { user: publicUser, token: signAccessToken(claims) };
   }
 
   static async register(input: { fullName: string; email: string; password: string; phone?: string }) {

@@ -1,0 +1,183 @@
+/* HuGo — SharedHotelSearchBar + HotelDateRange (Gói A). Chỉ dùng biến --hg-*.
+   Ghi đè CSS cũ (hotels.css/hotelStay.css/hotelPremium.css đang đóng băng) bằng scope .hg-search / .hg-cal-dialog.
+   Base = variant "hero"; variant "bar" chỉ ghi đè từ 1024px trở lên (dưới 1024 Gói B tự ẩn bar). */
+
+/* ---------- Khung form ---------- */
+.hg-search.hotel-search-form{border:0;border-radius:0;padding:0;box-shadow:none;background:transparent;font-family:var(--hg-font);color:var(--hg-text);line-height:var(--hg-lh-snug)}
+.hg-search *{box-sizing:border-box}
+.hg-search.hg-search :focus-visible{outline:2px solid var(--hg-focus);outline-offset:2px}
+.hg-search .hg-search-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1.3fr) minmax(0,1.6fr) minmax(0,1.1fr) 148px;gap:var(--hg-space-3);align-items:end}
+.hg-search .hg-field{position:relative;min-width:0}
+
+/* ---------- Nhãn ---------- */
+.hg-search .hotel-field-label,
+.hg-search .hg-field--location [data-location-picker]>span:first-child{display:block;margin:0 0 6px;font-size:var(--hg-fs-13);font-weight:var(--hg-fw-semibold);line-height:1.3;color:var(--hg-muted);letter-spacing:0;text-transform:none}
+.hg-search .hg-field-box{display:block;margin:0;gap:0;font-size:inherit;font-weight:inherit;color:inherit}
+
+/* ---------- Ô nhập / nút kích hoạt ---------- */
+.hg-search .hg-trigger,
+.hg-search .hg-field--name input,
+.hg-search .hg-field--location [data-location-picker]>button{display:flex;align-items:center;gap:10px;width:100%;height:var(--hg-control-h-lg);min-height:var(--hg-control-h-lg);margin:0;padding:0 12px;border:1px solid var(--hg-border-strong);border-radius:var(--hg-radius-md);background:var(--hg-surface);color:var(--hg-text);font-family:inherit;font-size:var(--hg-fs-15);font-weight:var(--hg-fw-semibold);line-height:1.25;text-align:left;box-shadow:none;cursor:pointer;transition:border-color var(--hg-dur) var(--hg-ease),box-shadow var(--hg-dur) var(--hg-ease)}
+.hg-search .hg-field--name input{display:block;cursor:text}
+.hg-search .hg-field--name input::placeholder{color:var(--hg-subtle);font-weight:var(--hg-fw-regular);opacity:1}
+.hg-search .hg-trigger:hover,
+.hg-search .hg-field--name input:hover,
+.hg-search .hg-field--location [data-location-picker]>button:hover{border-color:var(--hg-border-hover)}
+.hg-search .hg-field--name input:focus,
+.hg-search.hg-search .hg-trigger:focus-visible,
+.hg-search.hg-search .hg-field--location [data-location-picker]>button:focus-visible,
+.hg-search .hg-trigger[aria-expanded=true],
+.hg-search .hg-field--location [data-location-picker]>button[aria-expanded=true]{outline:none;border-color:var(--hg-focus);box-shadow:var(--hg-focus-ring)}
+.hg-search .hg-trigger>svg{flex:none;color:var(--hg-muted)}
+.hg-search .hg-trigger-text{display:flex;flex-direction:column;min-width:0;flex:1}
+.hg-search .hg-trigger-text>b{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:var(--hg-fs-15);font-weight:var(--hg-fw-semibold);color:var(--hg-text)}
+.hg-search .hg-trigger-text>small{display:block;margin-top:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:var(--hg-fs-13);font-weight:var(--hg-fw-regular);color:var(--hg-muted)}
+.hg-search .hg-date-sep{padding-inline:6px;font-weight:var(--hg-fw-regular);color:var(--hg-muted)}
+
+/* LocationCombobox: không sửa TSX, chỉ style trong phạm vi .hg-search [data-location-picker] */
+.hg-search .hg-field--location [data-location-picker]{position:relative;min-width:0}
+.hg-search .hg-field--location [data-location-picker]>button{justify-content:space-between}
+.hg-search .hg-field--location [data-location-picker]>button>span:first-child{min-width:0;flex:1}
+.hg-search .hg-field--location [data-location-picker]>button>span>span:first-child{font-size:var(--hg-fs-15);font-weight:var(--hg-fw-semibold);color:var(--hg-text)}
+.hg-search .hg-field--location [data-location-picker]>button>span>span+span{margin-top:2px;font-size:var(--hg-fs-13);font-weight:var(--hg-fw-regular);color:var(--hg-muted)}
+.hg-search .hg-field--location [data-location-picker]>button>span[aria-hidden]{flex:none;color:var(--hg-muted);font-size:var(--hg-fs-16)}
+
+/* ---------- Trạng thái lỗi ---------- */
+.hg-search [data-invalid] .hg-trigger{border-color:var(--hg-danger)}
+.hg-search .hg-search-error{display:flex;align-items:center;gap:6px;margin:var(--hg-space-3) 0 0;font-size:var(--hg-fs-14);line-height:1.4;color:var(--hg-danger)}
+.hg-search .hg-search-error>svg{flex:none}
+
+/* ---------- Nút tìm ---------- */
+.hg-search .hg-search-submit{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;height:var(--hg-control-h-lg);min-height:var(--hg-control-h-lg);margin:0;padding:0 16px;border:0;border-radius:var(--hg-radius-md);background:var(--hg-cta);color:var(--hg-cta-ink)!important;font-family:inherit;font-size:var(--hg-fs-16);font-weight:var(--hg-fw-bold);white-space:nowrap;box-shadow:none;cursor:pointer;transition:background-color var(--hg-dur) var(--hg-ease)}
+.hg-search .hg-search-submit:hover{background:var(--hg-cta-hover)}
+.hg-search .hg-search-submit:active{background:var(--hg-cta-active)}
+
+/* ---------- Gợi ý tên khách sạn ---------- */
+.hg-search .hg-suggestions{position:absolute;top:calc(100% + 6px);left:0;z-index:var(--hg-z-dropdown);width:max(100%,320px);min-width:0;max-width:calc(100vw - 32px);padding:6px;border:1px solid var(--hg-border);border-radius:var(--hg-radius-md);background:var(--hg-surface);box-shadow:var(--hg-shadow-2)}
+.hg-search .hg-suggestions button{display:block;width:100%;padding:10px 12px;border:0;border-radius:6px;background:transparent;text-align:left;font-size:var(--hg-fs-14);color:var(--hg-text);cursor:pointer}
+.hg-search .hg-suggestions button:hover,
+.hg-search .hg-suggestions button[aria-selected=true]{background:var(--hg-primary-50)}
+.hg-search .hg-suggestions b{display:block;font-weight:var(--hg-fw-semibold)}
+.hg-search .hg-suggestions small{display:block;margin-top:2px;font-size:var(--hg-fs-13);color:var(--hg-muted)}
+.hg-search .hg-suggestions-status{margin:0;padding:10px 12px;font-size:var(--hg-fs-13);line-height:1.5;color:var(--hg-muted)}
+
+/* ---------- Popover khách & phòng ---------- */
+.hg-search .hg-guest-backdrop{position:fixed;inset:0;z-index:calc(var(--hg-z-dropdown) - 1);padding:0;border:0;background:transparent;cursor:default}
+.hg-search .hg-guest-panel{position:absolute;top:calc(100% + 8px);right:0;left:auto;z-index:var(--hg-z-dropdown);width:360px;max-width:calc(100vw - 32px);max-height:min(70vh,560px);overflow-y:auto;overscroll-behavior:contain;padding:var(--hg-space-5);border:1px solid var(--hg-border);border-radius:var(--hg-radius-lg);background:var(--hg-surface);box-shadow:var(--hg-shadow-2);color:var(--hg-text);text-align:left}
+.hg-search .hg-guest-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.hg-search .hg-guest-head>b{font-size:var(--hg-fs-16);font-weight:var(--hg-fw-bold);color:var(--hg-text-heading)}
+.hg-search .hg-guest-head>button{display:inline-grid;place-items:center;width:40px;height:40px;margin-right:-8px;padding:0;border:0;border-radius:var(--hg-radius-md);background:transparent;color:var(--hg-text);cursor:pointer}
+.hg-search .hg-guest-head>button:hover{background:var(--hg-primary-50)}
+.hg-search .hg-guest-note{margin:4px 0 0;font-size:var(--hg-fs-13);line-height:1.5;color:var(--hg-muted)}
+.hg-search .hg-guest-panel fieldset.hg-guest-room{display:block;min-width:0;margin:var(--hg-space-4) 0 0;padding:var(--hg-space-4) 0 0;border:0;border-radius:0;box-shadow:inset 0 1px 0 var(--hg-border)}
+.hg-search .hg-guest-room>legend{float:left;width:100%;margin:0 0 4px;padding:0;font-size:var(--hg-fs-15);font-weight:var(--hg-fw-bold);color:var(--hg-text)}
+.hg-search .hg-guest-row{clear:both;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px}
+.hg-search .hg-guest-row>span{font-size:var(--hg-fs-15);font-weight:var(--hg-fw-medium);color:var(--hg-text)}
+.hg-search .hg-guest-row>span>small{display:block;font-size:var(--hg-fs-12);font-weight:var(--hg-fw-regular);color:var(--hg-muted)}
+.hg-search .hg-counter{display:flex;align-items:center;gap:4px}
+.hg-search .hg-counter>button{display:inline-grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid var(--hg-border-strong);border-radius:50%;background:var(--hg-surface);color:var(--hg-primary);cursor:pointer}
+.hg-search .hg-counter>button:hover:not(:disabled){border-color:var(--hg-primary);background:var(--hg-primary-50)}
+.hg-search.hg-search .hg-counter>button:disabled{opacity:.35;cursor:not-allowed}
+.hg-search .hg-counter>output{display:inline-block;width:32px;text-align:center;font-size:var(--hg-fs-16);font-weight:var(--hg-fw-bold);color:var(--hg-text)}
+.hg-search .hg-guest-ages{clear:both;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:4px}
+.hg-search .hg-guest-ages>label{display:flex;flex-direction:column;gap:4px;min-width:0;margin:0;font-size:var(--hg-fs-13);font-weight:var(--hg-fw-semibold);color:var(--hg-muted)}
+.hg-search .hg-guest-ages select{width:100%;height:44px;min-height:44px;padding:0 10px;border:1px solid var(--hg-border-strong);border-radius:var(--hg-radius-md);background:var(--hg-surface);font-size:var(--hg-fs-15);font-weight:var(--hg-fw-regular);color:var(--hg-text)}
+.hg-search .hg-guest-remove{clear:both;display:inline-flex;align-items:center;min-height:40px;margin-top:4px;padding:0;border:0;background:transparent;font-size:var(--hg-fs-14);font-weight:var(--hg-fw-semibold);color:var(--hg-danger);cursor:pointer}
+.hg-search .hg-guest-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:var(--hg-space-4);padding-top:var(--hg-space-4);border-top:1px solid var(--hg-border)}
+.hg-search .hg-guest-foot>.hg-guest-add{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0;border:0;border-radius:0;background:transparent;font-size:var(--hg-fs-15);font-weight:var(--hg-fw-semibold);color:var(--hg-link);cursor:pointer}
+.hg-search .hg-guest-foot>.hg-guest-add:disabled{opacity:.45;cursor:not-allowed}
+.hg-search .hg-btn-navy,
+.hg-btn-navy{display:inline-flex;align-items:center;justify-content:center;height:var(--hg-control-h-sm);padding:0 20px;border:0;border-radius:var(--hg-radius-md);background:var(--hg-primary);color:var(--hg-on-dark);font-size:var(--hg-fs-15);font-weight:var(--hg-fw-semibold);cursor:pointer}
+.hg-btn-navy:hover{background:var(--hg-primary-hover)}
+
+/* ---------- Responsive: variant hero ---------- */
+@media (max-width:1199px){
+  .hg-search .hg-search-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .hg-search .hg-field--location,
+  .hg-search .hg-field--name,
+  .hg-search .hg-field--date{grid-column:span 3}
+  .hg-search .hg-field--guests{grid-column:span 2}
+  .hg-search .hg-search-submit{grid-column:span 1;padding:0 10px}
+}
+@media (min-width:768px) and (max-width:1023px){
+  .hg-search .hg-search-submit>svg{display:none}
+}
+@media (max-width:767px){
+  .hg-search .hg-search-grid{grid-template-columns:minmax(0,1fr);gap:var(--hg-space-3)}
+  .hg-search .hg-field--location,
+  .hg-search .hg-field--name,
+  .hg-search .hg-field--date,
+  .hg-search .hg-field--guests,
+  .hg-search .hg-search-submit{grid-column:1/-1}
+  .hg-search .hg-field--name input,
+  .hg-search .hg-guest-ages select{font-size:var(--hg-fs-16)}
+  .hg-search .hg-guest-backdrop{z-index:calc(var(--hg-z-modal) - 1);background:var(--hg-overlay)}
+  .hg-search .hg-guest-panel{position:fixed;inset:auto 0 0 0;top:auto;width:100%;max-width:none;max-height:85dvh;padding:0 var(--hg-space-4) var(--hg-space-4);border-radius:var(--hg-radius-lg) var(--hg-radius-lg) 0 0;z-index:var(--hg-z-modal)}
+  .hg-search .hg-guest-head{position:sticky;top:0;z-index:1;margin:0 calc(-1 * var(--hg-space-4));padding:var(--hg-space-3) var(--hg-space-4);background:var(--hg-surface);border-bottom:1px solid var(--hg-border)}
+  .hg-search .hg-guest-head>button{width:44px;height:44px}
+  .hg-search .hg-guest-note{margin-top:var(--hg-space-3)}
+  .hg-search .hg-counter>button{width:44px;height:44px}
+  .hg-search .hg-guest-foot{position:sticky;bottom:calc(-1 * var(--hg-space-4));margin:var(--hg-space-4) calc(-1 * var(--hg-space-4)) 0;padding:var(--hg-space-3) var(--hg-space-4);background:var(--hg-surface)}
+  .hg-search .hg-guest-foot>.hg-guest-add,
+  .hg-search .hg-btn-navy{min-height:44px}
+}
+
+/* ---------- Variant bar (trang kết quả, trang chi tiết) — chỉ ≥1024 ---------- */
+@media (min-width:1024px){
+  .hg-search.hg-search--bar .hg-search-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,1.3fr) minmax(0,1.6fr) minmax(0,1.1fr) 140px;gap:0;align-items:stretch}
+  .hg-search.hg-search--bar .hg-field{grid-column:auto}
+  .hg-search.hg-search--bar .hg-search-submit{grid-column:auto}
+  .hg-search--bar .hg-field-box,
+  .hg-search--bar .hg-date-field,
+  .hg-search--bar .hg-field--guests{position:relative}
+  .hg-search.hg-search--bar .hotel-field-label,
+  .hg-search.hg-search--bar .hg-field--location [data-location-picker]>span:first-child{position:absolute;top:8px;left:13px;right:12px;z-index:2;margin:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:var(--hg-fs-12);pointer-events:none}
+  .hg-search.hg-search--bar .hg-trigger,
+  .hg-search.hg-search--bar .hg-field--name input,
+  .hg-search.hg-search--bar .hg-field--location [data-location-picker]>button{position:relative;height:56px;min-height:56px;padding:24px 12px 6px;border-radius:0;border-left-width:0}
+  .hg-search.hg-search--bar .hg-field--location [data-location-picker]>button{border-left-width:1px;border-radius:var(--hg-radius-md) 0 0 var(--hg-radius-md)}
+  .hg-search.hg-search--bar .hg-trigger>svg,
+  .hg-search.hg-search--bar .hg-trigger-text>small,
+  .hg-search.hg-search--bar .hg-field--location [data-location-picker]>button>span>span+span{display:none}
+  .hg-search.hg-search--bar .hg-trigger:focus-visible,
+  .hg-search.hg-search--bar .hg-field--name input:focus,
+  .hg-search.hg-search--bar .hg-field--location [data-location-picker]>button:focus-visible{z-index:1}
+  .hg-search.hg-search--bar .hg-search-submit{height:56px;min-height:56px;border-radius:0 var(--hg-radius-md) var(--hg-radius-md) 0}
+}
+
+/* ---------- Lịch (HotelDateRange trong HotelDialog) ---------- */
+.hg-cal-dialog{font-family:var(--hg-font);color:var(--hg-text)}
+.hg-cal-dialog .hg-cal-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 var(--hg-space-5)}
+.hg-cal-dialog .hg-cal-toolbar>button{display:inline-grid;place-items:center;flex:none;width:40px;height:40px;padding:0;border:1px solid var(--hg-border-strong);border-radius:var(--hg-radius-md);background:var(--hg-surface);color:var(--hg-primary);cursor:pointer}
+.hg-cal-dialog .hg-cal-toolbar>button:hover:not(:disabled){border-color:var(--hg-primary);background:var(--hg-primary-50)}
+.hg-cal-dialog .hg-cal-toolbar>p{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 10px;margin:0;font-size:var(--hg-fs-14);color:var(--hg-muted);text-align:center}
+.hg-cal-dialog .hg-cal-toolbar b{font-weight:var(--hg-fw-semibold);color:var(--hg-text)}
+.hg-cal-dialog .hg-cal-months{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--hg-space-10)}
+.hg-cal-dialog .hg-cal-months--stack{grid-template-columns:minmax(0,1fr);gap:var(--hg-space-8)}
+.hg-cal-dialog .hg-cal-month h3{margin:0 0 var(--hg-space-3);text-align:center;text-transform:capitalize;font-size:var(--hg-fs-16);font-weight:var(--hg-fw-bold);letter-spacing:0;color:var(--hg-text-heading)}
+.hg-cal-dialog .hg-cal-grid{display:grid;grid-template-columns:repeat(7,40px);justify-content:center;gap:4px 0}
+.hg-cal-dialog .hg-cal-grid>*{display:grid;place-items:center;height:40px}
+.hg-cal-dialog .hg-cal-weekday{height:28px!important;font-size:var(--hg-fs-12);font-weight:var(--hg-fw-semibold);color:var(--hg-muted)}
+.hg-cal-dialog .hg-cal-grid>button{position:relative;width:40px;padding:0;border:0;border-radius:var(--hg-radius-md);background:transparent;font-family:inherit;font-size:var(--hg-fs-14);font-weight:var(--hg-fw-medium);color:var(--hg-text);cursor:pointer}
+.hg-cal-dialog .hg-cal-grid>button:hover:not(:disabled){background:var(--hg-primary-50);box-shadow:inset 0 0 0 1px var(--hg-primary-100)}
+.hg-cal-dialog .hg-cal-grid>button.is-between{border-radius:0;background:var(--hg-primary-50)}
+.hg-cal-dialog .hg-cal-grid>button.is-start{border-radius:var(--hg-radius-md) 0 0 var(--hg-radius-md)}
+.hg-cal-dialog .hg-cal-grid>button.is-end{border-radius:0 var(--hg-radius-md) var(--hg-radius-md) 0}
+.hg-cal-dialog .hg-cal-grid>button.is-selected{background:var(--hg-primary);color:var(--hg-on-dark);font-weight:var(--hg-fw-bold)}
+.hg-cal-dialog .hg-cal-grid>button.is-today::after{content:'';position:absolute;left:50%;bottom:5px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--hg-cta)}
+.hg-cal-dialog.hg-cal-dialog .hg-cal-grid>button:disabled{opacity:.35;text-decoration:line-through;cursor:not-allowed}
+.hg-cal-dialog .hg-cal-footer{display:flex;align-items:center;gap:var(--hg-space-4);width:100%}
+.hg-cal-dialog .hg-cal-clear{min-height:44px;padding:0;border:0;background:transparent;font-size:var(--hg-fs-14);font-weight:var(--hg-fw-semibold);color:var(--hg-link);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.hg-cal-dialog .hg-cal-summary{flex:1;min-width:0;font-size:var(--hg-fs-14);color:var(--hg-text);text-align:center}
+.hg-btn-cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 20px;border:0;border-radius:var(--hg-radius-md);background:var(--hg-cta);color:var(--hg-cta-ink);font-family:inherit;font-size:var(--hg-fs-15);font-weight:var(--hg-fw-bold);white-space:nowrap;cursor:pointer;transition:background-color var(--hg-dur) var(--hg-ease)}
+.hg-btn-cta:hover:not(:disabled){background:var(--hg-cta-hover)}
+.hg-btn-cta:active:not(:disabled){background:var(--hg-cta-active)}
+.hg-cal-dialog.hg-cal-dialog .hg-btn-cta:disabled{opacity:.45;cursor:not-allowed}
+@media (max-width:767px){
+  .hg-cal-dialog .hg-cal-toolbar{position:sticky;top:-16px;z-index:1;margin:-16px -16px var(--hg-space-4);padding:var(--hg-space-3) var(--hg-space-4);background:var(--hg-surface);border-bottom:1px solid var(--hg-border)}
+  .hg-cal-dialog .hg-cal-grid{grid-template-columns:repeat(7,minmax(0,1fr))}
+  .hg-cal-dialog .hg-cal-grid>*{height:44px}
+  .hg-cal-dialog .hg-cal-grid>button{width:100%}
+  .hg-cal-dialog .hg-cal-footer{gap:var(--hg-space-3)}
+  .hg-cal-dialog .hg-cal-summary{font-size:var(--hg-fs-13)}
+}

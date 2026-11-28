@@ -1,0 +1,70 @@
+map "$request_method:$uri" $hugo_login_client {
+    default "";
+    ~*^POST:/api/auth/login/?$ $binary_remote_addr;
+}
+limit_req_zone $hugo_login_client zone=hugo_login:2m rate=12r/m;
+limit_req_zone $binary_remote_addr zone=hugo_api:10m rate=20r/s;
+
+server {
+    listen 80 default_server;
+    server_name _;
+    return 444;
+}
+
+server {
+    listen 80;
+    server_name ${TRAVELGO_DOMAIN};
+    return 308 https://${TRAVELGO_HTTPS_AUTHORITY}$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name ${TRAVELGO_DOMAIN};
+    ssl_certificate /run/tls/fullchain.pem;
+    ssl_certificate_key /run/tls/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    if ($host != "${TRAVELGO_DOMAIN}") { return 444; }
+    client_max_body_size 16m;
+    client_header_timeout 10s;
+    client_body_timeout 15s;
+    send_timeout 35s;
+    add_header X-Content-Type-Options nosniff always;
+    add_header Referrer-Policy no-referrer always;
+
+    # Docker's resolver follows service address changes when a container is replaced.
+    resolver 127.0.0.11 valid=15s ipv6=off;
+    location = /api/health { return 404; }
+    location /api/ {
+        limit_req zone=hugo_login burst=12 nodelay;
+        limit_req zone=hugo_api burst=80 nodelay;
+        limit_req_status 429;
+        error_page 429 = @rate_limited;
+        set $backend http://${TRAVELGO_API_UPSTREAM}:5000;
+        proxy_pass $backend;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Forwarded "";
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 30s;
+    }
+    location @rate_limited {
+        default_type application/json;
+        add_header Retry-After 5 always;
+        add_header Cache-Control no-store always;
+        add_header X-Content-Type-Options nosniff always;
+        add_header Referrer-Policy no-referrer always;
+        return 429 '{"success":false,"code":"GATEWAY_RATE_LIMIT"}';
+    }
+    location / {
+        set $frontend http://frontend:8080;
+        proxy_pass $frontend;
+        proxy_set_header Host $host;
+    }
+}
+log_format hugo_request '$request_method $status $request_time $body_bytes_sent';
+access_log /var/log/nginx/access.log hugo_request;
+# Upstream failures can include the original URL at error level.
+error_log /var/log/nginx/error.log crit;
+

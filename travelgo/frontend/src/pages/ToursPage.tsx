@@ -4,27 +4,25 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Compass,
   MapPin,
-  Calendar,
   Clock,
-  Sparkles,
-  SlidersHorizontal,
   Search,
   CheckCircle2,
   ArrowRight,
-  ShieldCheck,
   Star,
-  Users
+  Route,
 } from 'lucide-react';
 import { TourService } from '../services/tourService';
 import { TourPackage } from '../types';
-import { RatingBadge } from '../components/common/RatingBadge';
 import { useTelemetry } from '../context/TelemetryContext';
+import {CatalogBreadcrumb,CatalogSkeletonGrid,CatalogState,catalogErrorText} from '../components/explore/CatalogPageFilters';
+import '../styles/hg-catalog.css';
 
 export const ToursPage: React.FC = () => {
   const navigate = useNavigate();
   const { track } = useTelemetry();
   const [tours, setTours] = useState<TourPackage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCity, setSelectedCity] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -46,6 +44,7 @@ export const ToursPage: React.FC = () => {
 
   const fetchTours = async () => {
     setLoading(true);
+    setError('');
     try {
       const data = await TourService.getTours({
         city: selectedCity,
@@ -57,6 +56,8 @@ export const ToursPage: React.FC = () => {
       setTours(data);
     } catch (err) {
       console.error('Error fetching tours:', err);
+      setTours([]);
+      setError(catalogErrorText(err, 'Chưa tải được danh sách tour. Vui lòng thử lại sau ít phút.'));
     } finally {
       setLoading(false);
     }
@@ -67,73 +68,174 @@ export const ToursPage: React.FC = () => {
     fetchTours();
   };
 
-  return (
-    <div className="min-h-screen bg-slate-50 pt-24 pb-16">
-      {/* Hero Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-sky-950 to-slate-900 text-white py-12 px-4 sm:px-6 lg:px-8 mb-8 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div>
-              <div className="inline-flex items-center space-x-2 bg-sky-500/20 text-sky-300 border border-sky-400/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-3">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Xếp hạng thông minh theo Bayesian Average</span>
+  const resetFilters = () => {
+    setSelectedCity('all');
+    setSelectedCategory('all');
+    setSelectedDuration(undefined);
+    setSearchQuery('');
+  };
+
+  let list: React.ReactNode;
+  if (loading) {
+    list = <CatalogSkeletonGrid count={3} label="Đang tải tour…"/>;
+  } else if (error) {
+    list = <CatalogState role="alert" tone="error" title="Chưa tải được tour" text={error} actions={<button type="button" className="hg-cat-btn hg-cat-btn--outline" onClick={fetchTours}>Thử lại</button>}/>;
+  } else if (tours.length === 0) {
+    list = <CatalogState
+      role="status"
+      icon={<Compass size={32} aria-hidden="true"/>}
+      title="Không tìm thấy tour phù hợp"
+      text="Thử thay đổi bộ lọc, hoặc tự tạo lịch trình riêng bằng HuGo Planner."
+      actions={<>
+        <button type="button" onClick={resetFilters} className="hg-cat-btn hg-cat-btn--outline">Xóa bộ lọc</button>
+        <Link to="/tour-planner" className="hg-cat-btn hg-cat-btn--ghost">Tạo lịch trình riêng</Link>
+      </>}
+    />;
+  } else {
+    list = (
+      <div className="hg-cat-grid">
+        {tours.map((tour) => (
+          <article key={tour.id} className="hg-cat-card">
+            <Link
+              to={`/tours/${tour.id}`}
+              tabIndex={-1}
+              aria-hidden="true"
+              onClick={() => void track({ itemId: tour.id, itemType: 'tour', eventType: 'CLICK', uiSurface: 'tour_list' })}
+              className="hg-cat-card__media"
+            >
+              <img src={tour.heroImage} alt="" loading="lazy" decoding="async" onError={(e) => e.currentTarget.parentElement?.classList.add('hg-cat-imgfail')} />
+              <span className="hg-cat-card__badges">
+                <span className="hg-cat-badge"><MapPin size={12} aria-hidden="true" />{tour.destinationCity}</span>
+                <span className="hg-cat-badge hg-cat-badge--dark">{tour.durationDays}N{tour.durationNights}Đ</span>
+              </span>
+            </Link>
+
+            <div className="hg-cat-card__body">
+              <div className="hg-cat-card__meta">
+                <span>Khởi hành từ {tour.departureCity}</span>
+                {tour.reviewCount > 0 ? (
+                  <span>
+                    <Star size={14} aria-hidden="true" />
+                    <b>{tour.bayesianScore.toFixed(2)}</b> ({tour.reviewCount} đánh giá)
+                  </span>
+                ) : (
+                  <span>Chưa có đánh giá</span>
+                )}
               </div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-                Tour Du Lịch Trọn Gói & Hành Trình Tuyển Chọn
-              </h1>
-              <p className="mt-2 text-slate-300 text-base max-w-2xl">
-                Khám phá các tour du lịch mẫu chuẩn mực, kết hợp điểm tham quan biểu tượng, lịch trình tối ưu thời gian di chuyển và minh bạch chi phí.
-              </p>
+              <h3 className="hg-cat-card__title">
+                <Link
+                  to={`/tours/${tour.id}`}
+                  onClick={() => void track({ itemId: tour.id, itemType: 'tour', eventType: 'CLICK', uiSurface: 'tour_list' })}
+                >
+                  {tour.title}
+                </Link>
+              </h3>
+              {tour.summary && <p className="hg-cat-card__text">{tour.summary}</p>}
+
+              {tour.highlights.length > 0 && (
+                <ul className="hg-cat-checks hg-cat-checks--1" aria-label="Điểm nhấn nổi bật">
+                  {tour.highlights.slice(0, 3).map((hl, idx) => (
+                    <li key={idx}>
+                      <CheckCircle2 size={16} aria-hidden="true" />
+                      <span>{hl}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {tour.itineraryDays.length > 0 && (
+                <div className="hg-cat-card__why">
+                  <Route size={16} aria-hidden="true" />
+                  <span>
+                    {tour.itineraryDays.slice(0, 3).map((day) => `N${day.day}: ${day.title}`).join(' · ')}
+                    {tour.itineraryDays.length > 3 ? ' · …' : ''}
+                  </span>
+                </div>
+              )}
             </div>
 
-            {/* Quick Action to Planner */}
-            <div className="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/15 max-w-md flex-shrink-0">
-              <h3 className="font-bold text-white text-base flex items-center gap-2">
-                <Compass className="w-5 h-5 text-orange-400" />
-                Muốn một lịch trình của riêng bạn?
-              </h3>
-              <p className="text-xs text-slate-200 mt-1 mb-3">
-                Thuật toán HuGo Planner sẽ tự động phân cụm địa lý, tính toán thời gian và cân đối ngân sách cho bạn.
+            <div className="hg-cat-card__foot">
+              <div className="hg-cat-price">
+                <span className="hg-cat-price__label">Chi phí trọn gói từ</span>
+                <span className="hg-cat-price__value">
+                  {new Intl.NumberFormat('vi-VN').format(tour.priceVND)} ₫ <small>/ khách</small>
+                </span>
+              </div>
+
+              <div className="hg-cat-card__actions">
+                <button
+                  type="button"
+                  onClick={() => navigate('/tour-planner', { state: { templateTour: tour } })}
+                  className="hg-cat-btn hg-cat-btn--ghost hg-cat-btn--sm"
+                  title="Sao chép lịch trình này để tự tùy biến"
+                >
+                  <span>Tùy biến</span>
+                </button>
+                <Link
+                  to={`/tours/${tour.id}`}
+                  onClick={() => void track({ itemId: tour.id, itemType: 'tour', eventType: 'CLICK', uiSurface: 'tour_list' })}
+                  className="hg-cat-btn hg-cat-btn--primary hg-cat-btn--sm"
+                >
+                  Chi tiết tour
+                </Link>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="hg-cat">
+      <header className="hg-cat-head">
+        <div className="hg-container">
+          <CatalogBreadcrumb items={[{label:'Trang chủ',to:'/'},{label:'Tour du lịch'}]}/>
+          <div className="hg-cat-head__row">
+            <div className="hg-cat-head__text">
+              <p className="hg-cat-eyebrow"><Compass size={16} aria-hidden="true"/>Xếp hạng theo điểm đánh giá Bayesian</p>
+              <h1 className="hg-cat-h1">Tour du lịch trọn gói</h1>
+              <p className="hg-cat-lead">
+                Các tour mẫu kết hợp điểm tham quan tiêu biểu, lịch trình theo ngày và chi phí minh bạch. Muốn tự sắp xếp? HuGo Planner giúp bạn tạo lịch trình riêng.
               </p>
-              <Link
-                to="/tour-planner"
-                className="inline-flex items-center justify-center w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold py-2.5 px-4 rounded-xl text-sm shadow-md transition-all group"
-              >
-                <span>Tạo lịch trình cá nhân hóa</span>
-                <ArrowRight className="w-4 h-4 ml-1.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+            <div className="hg-cat-head__actions">
+              <Link to="/tour-planner" className="hg-cat-btn hg-cat-btn--outline">
+                Tạo lịch trình riêng
+                <ArrowRight size={16} aria-hidden="true" />
               </Link>
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Search & Filter Bar */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200/80 mb-8">
-          <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
-            {/* Search input */}
-            <div className="md:col-span-4 relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Tìm tên tour, điểm tham quan..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-800"
-              />
-            </div>
+      <div className="hg-container hg-cat-main">
+        <section className="hg-cat-panel" aria-label="Tìm và lọc tour">
+          <form onSubmit={handleSearchSubmit} className="hg-cat-searchrow hg-cat-searchrow--tours">
+            <label className="hg-cat-field">
+              <span>Tìm kiếm</span>
+              <span className="hg-cat-inputwrap">
+                <Search size={18} aria-hidden="true" />
+                <input
+                  type="search"
+                  aria-label="Tìm tour"
+                  placeholder="Tên tour, điểm tham quan…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="hg-cat-input"
+                />
+              </span>
+            </label>
 
-            {/* Destination select */}
-            <div className="md:col-span-3">
-              <LocationCombobox label="Điểm đến tour" value={selectedCity} onChange={setSelectedCity}/>
-            </div>
+            <LocationCombobox label="Điểm đến tour" value={selectedCity} onChange={setSelectedCity}/>
 
-            {/* Category select */}
-            <div className="md:col-span-3">
+            <label className="hg-cat-field">
+              <span>Thể loại</span>
               <select
+                aria-label="Thể loại tour"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full py-2.5 px-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-700"
+                className="hg-cat-select"
               >
                 {CATEGORIES.map((cat) => (
                   <option key={cat.id} value={cat.id}>
@@ -141,202 +243,59 @@ export const ToursPage: React.FC = () => {
                   </option>
                 ))}
               </select>
-            </div>
+            </label>
 
-            {/* Sort select */}
-            <div className="md:col-span-2">
+            <label className="hg-cat-field">
+              <span>Sắp xếp</span>
               <select
+                aria-label="Sắp xếp tour"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full py-2.5 px-3 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-700 font-medium"
+                className="hg-cat-select"
               >
                 <option value="bayesian">Điểm Bayesian cao nhất</option>
                 <option value="priceAsc">Giá thấp đến cao</option>
                 <option value="priceDesc">Giá cao đến thấp</option>
                 <option value="duration">Thời lượng dài ngày</option>
               </select>
-            </div>
+            </label>
+
+            <button type="submit" className="hg-cat-btn hg-cat-btn--cta hg-cat-btn--lg">
+              <Search size={18} aria-hidden="true" />Tìm
+            </button>
           </form>
 
-          {/* Quick Duration Pills */}
-          <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500">
-            <span className="font-semibold text-slate-600 flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-slate-400" /> Thời lượng:
-            </span>
+          <div className="hg-cat-chips hg-cat-chips--row" role="group" aria-label="Thời lượng tour">
+            <span className="hg-cat-chips__label"><Clock size={16} aria-hidden="true" />Thời lượng</span>
             <button
+              type="button"
+              aria-pressed={selectedDuration === undefined}
               onClick={() => setSelectedDuration(undefined)}
-              className={`px-3 py-1 rounded-full transition-colors ${
-                selectedDuration === undefined
-                  ? 'bg-sky-600 text-white font-medium'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
+              className="hg-cat-chip"
             >
               Tất cả
             </button>
             {[2, 3, 4].map((d) => (
               <button
+                type="button"
                 key={d}
+                aria-pressed={selectedDuration === d}
                 onClick={() => setSelectedDuration(d)}
-                className={`px-3 py-1 rounded-full transition-colors ${
-                  selectedDuration === d
-                    ? 'bg-sky-600 text-white font-medium'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
+                className="hg-cat-chip"
               >
                 {d} ngày {d > 1 ? `${d - 1} đêm` : ''}
               </button>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* Tour List Content */}
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 animate-pulse">
-                <div className="h-48 bg-slate-200 rounded-xl mb-4" />
-                <div className="h-5 bg-slate-200 rounded w-3/4 mb-2" />
-                <div className="h-4 bg-slate-200 rounded w-1/2 mb-4" />
-                <div className="h-10 bg-slate-100 rounded-xl" />
-              </div>
-            ))}
+        <section aria-label="Danh sách tour">
+          <div className="hg-cat-resultbar">
+            <h2 className="hg-cat-h2">Tour phù hợp</h2>
+            <p className="hg-cat-count" role="status">{loading ? 'Đang tải…' : error ? '' : `${tours.length} tour`}</p>
           </div>
-        ) : tours.length === 0 ? (
-          <div className="bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-sm max-w-lg mx-auto">
-            <Compass className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <h3 className="text-lg font-bold text-slate-800">Không tìm thấy tour phù hợp</h3>
-            <p className="text-slate-500 text-sm mt-1 mb-6">
-              Vui lòng thử thay đổi bộ lọc tìm kiếm hoặc sử dụng công cụ tạo lịch trình tự động HuGo Planner.
-            </p>
-            <button
-              onClick={() => {
-                setSelectedCity('all');
-                setSelectedCategory('all');
-                setSelectedDuration(undefined);
-                setSearchQuery('');
-              }}
-              className="text-sky-600 hover:text-sky-700 text-sm font-semibold inline-block"
-            >
-              Xóa bộ lọc
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-            {tours.map((tour) => (
-              <div
-                key={tour.id}
-                className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group"
-              >
-                {/* Image Banner */}
-                <div className="relative h-60 overflow-hidden bg-slate-900">
-                  <img
-                    src={tour.heroImage}
-                    alt={tour.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-95"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-                  {/* Top Badges */}
-                  <div className="absolute top-3 left-3 flex flex-wrap gap-2">
-                    <span className="bg-slate-900/80 backdrop-blur-md text-white text-xs font-semibold px-2.5 py-1 rounded-lg border border-white/20 flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-orange-400" />
-                      {tour.destinationCity}
-                    </span>
-                    <span className="bg-sky-600/90 text-white text-xs font-semibold px-2.5 py-1 rounded-lg">
-                      {tour.durationDays}N{tour.durationNights}Đ
-                    </span>
-                  </div>
-
-                  {/* Rating Badge */}
-                  <div className="absolute top-3 right-3">
-                    <div className="bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-xl shadow-md flex items-center space-x-1.5 border border-white/40">
-                      <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                      <span className="font-extrabold text-slate-800 text-xs">{tour.bayesianScore.toFixed(2)}</span>
-                      <span className="text-[10px] text-slate-500">({tour.reviewCount})</span>
-                    </div>
-                  </div>
-
-                  {/* Bottom Image Info */}
-                  <div className="absolute bottom-3 left-3 right-3 text-white">
-                    <span className="text-[11px] text-sky-200 font-medium">Khởi hành từ: {tour.departureCity}</span>
-                    <h2 className="text-lg font-bold line-clamp-1 group-hover:text-sky-300 transition-colors">
-                      {tour.title}
-                    </h2>
-                  </div>
-                </div>
-
-                {/* Body Details */}
-                <div className="p-5 flex-1 flex flex-col justify-between">
-                  <div>
-                    <p className="text-slate-600 text-sm line-clamp-2 mb-4 leading-relaxed">
-                      {tour.summary}
-                    </p>
-
-                    {/* Highlights */}
-                    <div className="space-y-1.5 mb-5">
-                      <div className="text-xs font-bold text-slate-700 uppercase tracking-wider">Điểm nhấn nổi bật:</div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {tour.highlights.slice(0, 4).map((hl, idx) => (
-                          <span
-                            key={idx}
-                            className="text-xs bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg border border-slate-200/60 flex items-center gap-1"
-                          >
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600 flex-shrink-0" />
-                            {hl}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Daily Itinerary Mini Timeline */}
-                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 mb-5">
-                      <div className="text-xs font-semibold text-slate-500 mb-2">Chương trình chi tiết tóm tắt:</div>
-                      <div className="space-y-1.5 text-xs text-slate-700">
-                        {tour.itineraryDays.map((day) => (
-                          <div key={day.day} className="flex items-start gap-2">
-                            <span className="font-bold text-sky-700 bg-sky-100 px-1.5 py-0.5 rounded text-[10px] flex-shrink-0">
-                              N{day.day}
-                            </span>
-                            <span className="line-clamp-1">{day.title}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Price & Action Footer */}
-                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                    <div>
-                      <div className="text-[11px] text-slate-400 font-medium">Chi phí trọn gói từ</div>
-                      <div className="text-xl font-extrabold text-orange-600">
-                        {new Intl.NumberFormat('vi-VN').format(tour.priceVND)}{' '}
-                        <span className="text-xs font-normal text-slate-500">đ/khách</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Link
-                        to={`/tours/${tour.id}`}
-                        onClick={() => void track({ itemId: tour.id, itemType: 'tour', eventType: 'CLICK', uiSurface: 'tour_list' })}
-                        className="bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs py-2.5 px-4 rounded-xl shadow-sm transition-all"
-                      >
-                        Chi tiết tour
-                      </Link>
-                      <button
-                        onClick={() => navigate('/tour-planner', { state: { templateTour: tour } })}
-                        className="bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 font-semibold text-xs py-2.5 px-3 rounded-xl transition-all flex items-center gap-1"
-                        title="Sao chép lịch trình này để tự tùy biến"
-                      >
-                        <span>Tùy biến</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+          {list}
+        </section>
       </div>
     </div>
   );

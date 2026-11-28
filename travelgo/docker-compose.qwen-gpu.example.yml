@@ -1,0 +1,94 @@
+# Phase D Linux GPU proposal. Validate configuration with reviewed images and env files.
+# Backend shares Ollama's network namespace so Ollama can stay on loopback.
+name: hugotravel-gpu-proposal
+services:
+  gateway:
+    image: ${TRAVELGO_GATEWAY_IMAGE:?reviewed gateway image required}
+    ports:
+      - "80:80"
+      - "443:443"
+    networks: [public, app]
+    restart: unless-stopped
+    # Gateway configuration routes API to ollama:5000 and site traffic to frontend.
+    # TLS configuration and certificates are operator-managed.
+  frontend:
+    image: ${TRAVELGO_FRONTEND_IMAGE:?reviewed frontend image required}
+    networks: [app]
+    restart: unless-stopped
+  backend:
+    image: ${TRAVELGO_BACKEND_IMAGE:?reviewed backend image required}
+    network_mode: service:ollama
+    env_file: ${TRAVELGO_API_ENV_FILE:?API secret environment required}
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      PORT: "5000"
+      HOTEL_MEDIA_DIR: /var/lib/travelgo/media
+      OLLAMA_BASE_URL: http://127.0.0.1:11434
+      AGENT_CORE_LLM_ENABLED: "false"
+      AI_NATIVE_CONSULTATION_MODEL_ENABLED: "false"
+      LLM_LIVE_ENABLED: "false"
+      TRAVEL_WEB_WORKER_ENABLED: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    mem_limit: 1536m
+    volumes:
+      - hotel_media:/var/lib/travelgo/media
+    restart: unless-stopped
+  postgres:
+    image: ${TRAVELGO_POSTGIS_IMAGE:?reviewed PostGIS image required}
+    env_file: ${TRAVELGO_DB_ENV_FILE:?PostgreSQL secret environment required}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks: [data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 15s
+      timeout: 4s
+      retries: 5
+    restart: unless-stopped
+  ollama:
+    image: ${TRAVELGO_OLLAMA_IMAGE:?reviewed Ollama image required}
+    environment:
+      OLLAMA_HOST: 127.0.0.1:11434
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+    volumes:
+      - approved_models:/root/.ollama
+    networks: [app, data]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    mem_limit: 10g
+    restart: unless-stopped
+  review_worker:
+    image: ${TRAVELGO_BACKEND_IMAGE:?reviewed backend image required}
+    profiles: [review-worker]
+    env_file: ${TRAVELGO_REVIEW_WORKER_ENV_FILE:?worker-specific secret environment required}
+    command: ["node", "dist/workers/reviewWorker.js"]
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      REVIEW_PERSISTENT_WORKER_ENABLED: "false"
+    networks: [data]
+    mem_limit: 768m
+    restart: "no"
+volumes:
+  postgres_data:
+  hotel_media:
+  approved_models:
+    external: true
+    name: ${TRAVELGO_APPROVED_MODEL_VOLUME:?existing checked model volume required}
+networks:
+  public:
+  app:
+    internal: true
+  data:
+    internal: true

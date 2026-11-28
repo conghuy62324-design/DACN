@@ -1,0 +1,277 @@
+/* src/styles/hg-partner.css — HuGo kênh đối tác (Gói F), 21/11/2026.
+   Chỉ dùng var(--hg-*) / var(--hgbo-*). Tiền tố class hgp-, biến riêng --hgp-*. Không selector thẻ toàn cục. */
+:root{
+  --hgp-day-h:96px;
+  --hgp-panel-w:360px;
+  --hgp-media-cols:4;
+  --hgp-media-gap:16px;
+}
+@media (max-width:1279px){:root{--hgp-day-h:84px;--hgp-media-cols:3}}
+@media (max-width:1023px){:root{--hgp-day-h:72px;--hgp-media-cols:2}}
+@media (max-width:767px){:root{--hgp-media-gap:8px}}
+
+/* ---------- tiện ích ---------- */
+.hgp-page{min-width:0}
+.hgp-page .hgbo-ph{margin-bottom:0}
+.hgp-mt{margin-top:12px}
+.hgp-ml{margin-left:8px}
+.hgp-block{display:block}
+.hgp-wfull{width:100%}
+.hgp-lead{margin:0 0 12px;color:var(--hg-text);font-size:15px;line-height:var(--hg-lh-body)}
+.hgp-h3{margin:0;font-size:15px;font-weight:600;color:var(--hg-text-heading)}
+.hgp-cellstack{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0}
+.hgp-inlinecheck{display:inline-flex;align-items:center;gap:8px;min-height:40px;font-size:14px;color:var(--hg-text);cursor:pointer}
+.hgp-inlinecheck input{width:18px;height:18px;accent-color:var(--hg-primary)}
+.hgp-editor{display:flex;flex-direction:column;gap:16px;min-width:0}
+.hgp-editor .hgbo-savebar{margin-top:0}
+.hgp-bizselect{min-width:240px;max-width:100%}
+@media (max-width:767px){.hgp-bizselect{min-width:0;width:100%}}
+.hgp-filter-action{display:flex;align-items:flex-end}
+
+/* ---------- thanh tình trạng + đầu trang nhúng (admin) ---------- */
+.hgp-statusbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:10px 16px;background:var(--hg-surface);border:1px solid var(--hg-border);border-radius:var(--hg-radius-md);font-size:13px;color:var(--hg-muted)}
+.hgp-statusbar__reload{margin-left:auto}
+@media (max-width:767px){.hgp-statusbar__reload{margin-left:0}}
+.hgp-subhead{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.hgp-subhead__title{margin:0;font-size:20px;font-weight:700;color:var(--hg-text-heading);overflow-wrap:anywhere}
+.hgp-subhead .hgbo-tabs{align-self:stretch}
+
+/* ---------- dịch vụ (chip) ---------- */
+.hgp-tag{display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 4px 0 12px;border:1px solid var(--hg-border-strong);border-radius:var(--hg-radius-pill);background:var(--hg-surface);font-size:13px;color:var(--hg-text)}
+.hgp-tag button{display:grid;place-items:center;width:28px;height:28px;border:0;border-radius:50%;background:none;color:var(--hg-muted);cursor:pointer}
+.hgp-tag button:hover{background:var(--hg-surface-muted);color:var(--hg-danger)}
+.hgp-tag button:focus-visible{outline:2px solid var(--hg-focus);outline-offset:1px}
+.hgp-tag svg{width:14px;height:14px}
+.hgp-addrow{display:flex;gap:8px;margin-top:8px}
+.hgp-addrow .hgbo-input{flex:1 1 auto;min-width:0}
+
+/* ---------- giường / phụ phí ---------- */
+.hgp-beds{display:grid;gap:12px}
+.hgp-beds__row{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) auto;gap:12px;align-items:end}
+.hgp-beds__row--3{grid-template-columns:repeat(3,minmax(0,1fr)) auto;margin-bottom:12px}
+.hgp-fees__row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.2fr) auto auto;gap:12px;align-items:end;margin-bottom:12px}
+@media (max-width:767px){
+  .hgp-beds__row--3{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hgp-fees__row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);padding-bottom:12px;border-bottom:1px solid var(--hg-border)}
+}
+
+/* ---------- so sánh nội dung (admin) ---------- */
+.hgp-compare th[scope="row"]{white-space:normal;color:var(--hg-text);font-weight:600;vertical-align:top;position:static;background:var(--hg-surface)}
+.hgp-compare td{vertical-align:top;min-width:200px}
+.hgp-compare__changed td,.hgp-compare__changed th[scope="row"]{background:var(--hg-warning-50)}
+.hgp-reviewlist{display:grid;gap:16px;margin:0;padding:0;list-style:none}
+.hgp-reviewlist li{padding-bottom:16px;border-bottom:1px solid var(--hg-border)}
+.hgp-reviewlist li:last-child{padding-bottom:0;border-bottom:0}
+
+/* ---------- hàng chờ tải ảnh ---------- */
+.hgp-queue{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.hgp-queue__row{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:12px;align-items:start;padding:12px;border:1px solid var(--hg-border);border-radius:var(--hg-radius-md);background:var(--hg-surface)}
+.hgp-queue__row.is-error{border-color:var(--hg-danger);background:var(--hg-danger-50)}
+.hgp-queue__row.is-done{background:var(--hg-success-50)}
+.hgp-queue__thumb{width:64px;height:64px;border-radius:var(--hg-radius-sm);object-fit:cover;background:var(--hg-surface-muted)}
+.hgp-queue__fields{min-width:0;display:grid;gap:8px}
+.hgp-queue__name{margin:0;font-size:13px;font-weight:600;color:var(--hg-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hgp-queue__grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) minmax(0,1fr);gap:12px}
+.hgp-queue__side{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.hgp-queue__state{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--hg-muted);white-space:nowrap}
+.hgp-queue__state.is-uploading{color:var(--hg-link)}
+.hgp-queue__state.is-done{color:var(--hg-success)}
+.hgp-queue__state.is-error{color:var(--hg-danger)}
+.hgp-queue__state svg{width:14px;height:14px}
+@media (max-width:1023px){.hgp-queue__grid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:767px){
+  .hgp-queue__row{grid-template-columns:48px minmax(0,1fr)}
+  .hgp-queue__thumb{width:48px;height:48px}
+  .hgp-queue__side{grid-column:1 / -1;flex-direction:row;justify-content:space-between;align-items:center}
+}
+
+/* ---------- thư viện ảnh ---------- */
+.hgp-media{display:grid;grid-template-columns:repeat(var(--hgp-media-cols),minmax(0,1fr));gap:var(--hgp-media-gap);margin:0;padding:0;list-style:none}
+.hgp-media__card{display:flex;flex-direction:column;min-width:0;background:var(--hg-surface);border:1px solid var(--hg-border);border-radius:var(--hg-radius-md);overflow:hidden}
+.hgp-media__frame{position:relative;aspect-ratio:4 / 3;background:var(--hg-surface-muted)}
+.hgp-media__img{display:block;width:100%;height:100%;object-fit:cover}
+.hgp-media__ph{display:grid;place-items:center;width:100%;height:100%;color:var(--hg-subtle);background:var(--hg-surface-muted)}
+.hgp-media__ph svg{width:28px;height:28px}
+.hgp-media__cover{position:absolute;top:8px;left:8px;padding:2px 8px;border-radius:var(--hg-radius-sm);background:var(--hg-primary);color:var(--hg-on-dark);font-size:12px;font-weight:600}
+.hgp-media__body{display:flex;flex-direction:column;gap:6px;padding:12px;min-width:0}
+.hgp-media__top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hgp-media__alt{margin:0;font-size:13px;color:var(--hg-text)}
+.hgp-media__meta{margin:0;font-size:12px;color:var(--hg-muted);overflow-wrap:anywhere}
+.hgp-media__order{gap:4px}
+@media (max-width:767px){.hgp-media__body{padding:8px}.hgp-media__order .hgbo-btn{width:44px;height:44px}}
+
+/* ---------- lịch giá & tồn ---------- */
+.hgp-cal__toolbar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 16px}
+.hgp-cal__toolbar > .hgbo-field{width:240px;max-width:100%}
+.hgp-cal__month{display:flex;align-items:center;gap:8px}
+.hgp-cal__monthlabel{min-width:120px;text-align:center;font-size:15px;font-weight:600;color:var(--hg-text-heading);font-variant-numeric:tabular-nums}
+@media (max-width:767px){
+  .hgp-cal__toolbar > .hgbo-field{width:100%}
+  .hgp-cal__month{width:100%;justify-content:space-between}
+  .hgp-cal__month .hgbo-btn{min-width:44px;height:44px}
+}
+.hgp-legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin:0 0 0 auto;padding:0;list-style:none;font-size:12px;color:var(--hg-muted)}
+.hgp-legend li{display:inline-flex;align-items:center;gap:6px}
+.hgp-legend__sw{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid var(--hg-border)}
+.hgp-legend__sw.is-closed{background:var(--hg-surface-muted);border-color:var(--hg-danger)}
+.hgp-legend__sw.is-soldout{background:var(--hg-warning-50);border-color:var(--hg-warning-border)}
+.hgp-legend__sw.is-unset{border:1px dashed var(--hg-border-strong)}
+.hgp-legend__sw.is-today{border:2px solid var(--hg-focus)}
+.hgp-cal__layout{display:grid;gap:16px;min-width:0}
+.hgp-cal__layout.is-wide{grid-template-columns:minmax(0,1fr) var(--hgp-panel-w);align-items:start}
+.hgp-cal__main{display:flex;flex-direction:column;gap:12px;min-width:0}
+.hgp-cal__side{position:sticky;top:calc(var(--hgbo-topbar-h) + 16px)}
+
+.hgp-grid{display:grid;background:var(--hg-surface);border:1px solid var(--hg-border);border-radius:var(--hg-radius-md);overflow:hidden;user-select:none;min-width:0}
+.hgp-grid:focus-within{box-shadow:var(--hg-focus-ring)}
+.hgp-grid__row{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.hgp-grid__head{background:var(--hg-surface-muted);border-bottom:1px solid var(--hg-border)}
+.hgp-grid__wd{display:grid;place-items:center;height:36px;font-size:13px;font-weight:600;color:var(--hg-muted)}
+.hgp-day{position:relative;display:flex;flex-direction:column;gap:2px;min-width:0;min-height:var(--hgp-day-h);padding:8px;box-sizing:border-box;border-right:1px solid var(--hg-border);border-bottom:1px solid var(--hg-border);background:var(--hg-surface);cursor:pointer;outline:none;overflow:hidden}
+.hgp-grid__row .hgp-day:last-child{border-right:0}
+.hgp-grid__row:last-child .hgp-day{border-bottom:0}
+.hgp-day:hover:not(.is-past):not(.is-empty){background:var(--hg-primary-50)}
+.hgp-day:focus-visible{box-shadow:inset 0 0 0 2px var(--hg-focus)}
+.hgp-day.is-empty{background:var(--hg-bg);cursor:default}
+.hgp-day.is-unset{box-shadow:inset 0 0 0 1px var(--hg-border-strong);border-style:dashed}
+.hgp-day.is-closed{background:var(--hg-surface-muted)}
+.hgp-day.is-today{box-shadow:inset 0 0 0 2px var(--hg-focus)}
+.hgp-day.is-selected{background:var(--hg-primary-50);box-shadow:inset 0 0 0 2px var(--hg-primary)}
+.hgp-day.is-past{opacity:.5;cursor:not-allowed}
+.hgp-day__num{font-size:13px;font-weight:600;color:var(--hg-text);font-variant-numeric:tabular-nums}
+.hgp-day__price{font-size:14px;font-weight:600;color:var(--hg-text-heading);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.hgp-day__inv{font-size:12px;color:var(--hg-muted);line-height:1.35;font-variant-numeric:tabular-nums}
+.hgp-day__none{font-size:12px;font-weight:400;color:var(--hg-muted)}
+.hgp-day__pill{align-self:flex-start;max-width:100%}
+@media (max-width:1023px){.hgp-day__invfull{display:none}.hgp-day{padding:6px}}
+
+.hgp-agenda{display:grid;margin:0;padding:0;list-style:none;background:var(--hg-surface);border:1px solid var(--hg-border);border-radius:var(--hg-radius-md);overflow:hidden}
+.hgp-agenda li + li{border-top:1px solid var(--hg-border)}
+.hgp-agenda__row{display:grid;grid-template-columns:76px minmax(0,1fr) auto;grid-template-areas:"date price inv" "date pill pill";align-items:center;gap:2px 8px;width:100%;min-height:64px;padding:8px 12px;border:0;background:var(--hg-surface);color:var(--hg-text);font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.hgp-agenda__row:focus-visible{outline:2px solid var(--hg-focus);outline-offset:-2px}
+.hgp-agenda__row.is-selected{background:var(--hg-primary-50);box-shadow:inset 3px 0 0 var(--hg-primary)}
+.hgp-agenda__row.is-today .hgp-agenda__date{color:var(--hg-link)}
+.hgp-agenda__row.is-closed{background:var(--hg-surface-muted)}
+.hgp-agenda__row.is-past{opacity:.5;cursor:not-allowed}
+.hgp-agenda__date{grid-area:date;font-weight:600;font-variant-numeric:tabular-nums}
+.hgp-agenda__price{grid-area:price;font-weight:600;font-variant-numeric:tabular-nums}
+.hgp-agenda__inv{grid-area:inv;font-size:13px;color:var(--hg-muted);font-variant-numeric:tabular-nums}
+.hgp-agenda__pill{grid-area:pill;display:flex;gap:6px;flex-wrap:wrap}
+
+.hgp-panel{display:flex;flex-direction:column;gap:16px;padding:20px;background:var(--hg-surface);border:1px solid var(--hg-border);border-radius:var(--hg-radius-md);min-width:0}
+.hgbo-drawer .hgp-panel{padding:0;border:0}
+.hgp-panel--empty{flex-direction:row;align-items:flex-start;gap:10px;color:var(--hg-muted);font-size:14px}
+.hgp-panel--empty svg{flex:none;width:18px;height:18px;margin-top:2px;color:var(--hg-link)}
+.hgp-panel--empty p{margin:0}
+.hgp-panel__head{display:grid;gap:4px}
+.hgp-panel__title{margin:0;font-size:16px;font-weight:700;color:var(--hg-text-heading)}
+.hgp-panel__block{display:grid;gap:12px;margin:0;padding:16px 0 0;border:0;border-top:1px solid var(--hg-border);min-width:0}
+.hgp-panel__block:disabled{opacity:.6}
+.hgp-panel__legend{display:flex;width:100%;align-items:center;justify-content:space-between;gap:8px;padding:0;margin-bottom:4px;font-size:14px;font-weight:600;color:var(--hg-text)}
+.hgp-panel__legend > span{overflow-wrap:anywhere}
+.hgp-radios{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:14px}
+.hgp-radios label{display:inline-flex;align-items:center;gap:6px;min-height:32px;cursor:pointer}
+.hgp-radios input{width:18px;height:18px;accent-color:var(--hg-primary)}
+.hgp-selbar{position:sticky;bottom:0;z-index:var(--hg-z-sticky);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;padding:10px 16px;background:var(--hg-surface);border:1px solid var(--hg-border);border-radius:var(--hg-radius-md) var(--hg-radius-md) 0 0;box-shadow:var(--hg-shadow-1);font-size:14px;font-weight:600}
+@media (max-width:767px){.hgp-selbar .hgbo-btn{height:44px}}
+
+/* ---------- switcher khách sạn (topbar) ---------- */
+.hgp-switch{display:flex;min-width:0;max-width:100%}
+.hgp-switch__btn{display:inline-flex;align-items:center;gap:8px;box-sizing:border-box;width:280px;max-width:100%;min-width:0;height:40px;padding:0 12px;border:1px solid var(--hg-border-strong);border-radius:var(--hg-radius-md);background:var(--hg-surface);color:var(--hg-text);font:inherit;font-size:14px;cursor:pointer}
+.hgp-switch__btn:hover{border-color:var(--hg-border-hover)}
+.hgp-switch__btn:focus-visible{outline:none;box-shadow:var(--hg-focus-ring);border-color:var(--hg-focus)}
+.hgp-switch__btn > svg{flex:none;width:16px;height:16px;color:var(--hg-muted)}
+.hgp-switch__name{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;text-align:left}
+.hgp-switch__pill{flex:none}
+@media (max-width:1279px){.hgp-switch__btn{width:240px}}
+@media (max-width:1023px){.hgp-switch__btn{width:200px}.hgp-switch__pill{display:none}}
+@media (max-width:767px){.hgp-switch__btn{width:160px;height:44px;padding:0 8px}}
+.hgp-switch__scrim{position:fixed;inset:0;z-index:var(--hg-z-dropdown);background:transparent}
+.hgp-switch__pop{position:fixed;z-index:var(--hg-z-dropdown);display:flex;flex-direction:column;max-height:min(480px,calc(100dvh - 96px));box-sizing:border-box;background:var(--hg-surface);border:1px solid var(--hg-border);border-radius:var(--hg-radius-lg);box-shadow:var(--hg-shadow-2);overflow:hidden}
+@media (max-width:767px){
+  .hgp-switch__pop{top:auto !important;bottom:0;left:0 !important;width:100% !important;max-height:80dvh;border-radius:var(--hg-radius-lg) var(--hg-radius-lg) 0 0}
+  .hgp-switch__scrim{background:var(--hg-overlay)}
+}
+.hgp-switch__search{position:relative;padding:12px;border-bottom:1px solid var(--hg-border)}
+.hgp-switch__search svg{position:absolute;top:50%;left:24px;width:16px;height:16px;transform:translateY(-50%);color:var(--hg-muted)}
+.hgp-switch__search .hgbo-input{padding-left:36px}
+.hgp-switch__msg{margin:0;padding:12px 16px;font-size:13px}
+.hgp-switch__list{overflow-y:auto;padding:4px 0}
+.hgp-switch__list ul{margin:0;padding:0;list-style:none}
+.hgp-switch__group{margin:0;padding:10px 16px 4px;font-size:12px;font-weight:600;color:var(--hg-muted)}
+.hgp-switch__item{display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:center;gap:8px;width:100%;min-height:44px;padding:6px 16px;border:0;background:none;color:var(--hg-text);font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.hgp-switch__item:hover,.hgp-switch__item:focus-visible{background:var(--hg-primary-50);outline:none}
+.hgp-switch__item.is-active{font-weight:600}
+.hgp-switch__check svg{width:16px;height:16px;color:var(--hg-primary)}
+.hgp-switch__itemtext{display:flex;flex-direction:column;min-width:0}
+.hgp-switch__itemname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hgp-switch__warn{font-size:13px;font-weight:500;color:var(--hg-warning-text)}
+.hgp-switch__add{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-top:1px solid var(--hg-border);color:var(--hg-link);font-size:14px;font-weight:600;text-decoration:none}
+.hgp-switch__add:hover{background:var(--hg-primary-50)}
+.hgp-switch__add:focus-visible{outline:2px solid var(--hg-focus);outline-offset:-2px}
+.hgp-switch__add svg{width:16px;height:16px}
+
+/* ---------- tổng quan ---------- */
+.hgp-bizcard{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hgp-bizcard p{margin:0}
+.hgp-bizcard__name{margin:4px 0;font-size:20px;font-weight:700;color:var(--hg-text-heading);overflow-wrap:anywhere}
+
+/* ---------- đánh giá ---------- */
+.hgp-reviews{display:grid;gap:12px;margin:0;padding:0;list-style:none}
+.hgp-review{display:flex;flex-direction:column;gap:12px;padding:20px;background:var(--hg-surface);border:1px solid var(--hg-border);border-radius:var(--hg-radius-md);min-width:0}
+.hgp-review__head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.hgp-review__body{margin:0;font-size:14px;line-height:1.6;color:var(--hg-text);white-space:pre-wrap;overflow-wrap:anywhere}
+.hgp-review__reply{padding:12px 16px;background:var(--hg-surface-muted);border-left:3px solid var(--hg-primary);border-radius:0 var(--hg-radius-sm) var(--hg-radius-sm) 0}
+.hgp-review__reply p{margin:0 0 4px}
+.hgp-stars{display:inline-flex;align-items:center;gap:2px}
+.hgp-stars svg{width:16px;height:16px;color:var(--hg-border-strong)}
+.hgp-stars svg.is-on{color:var(--hg-star);fill:var(--hg-star)}
+.hgp-stars b{margin-left:4px;font-size:14px}
+@media (max-width:767px){.hgp-review{padding:16px}}
+
+/* ---------- onboarding ---------- */
+.hgp-stepper{display:grid;gap:8px}
+.hgp-stepper__mobile{display:none;margin:0;font-size:14px;font-weight:600;color:var(--hg-text-heading)}
+.hgp-stepper__bar{display:none;height:4px;border-radius:2px;background:var(--hg-surface-muted);overflow:hidden}
+.hgp-stepper__bar span{display:block;height:100%;background:var(--hg-primary)}
+.hgp-stepper__list{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));margin:0;padding:0;list-style:none}
+.hgp-step{position:relative;min-width:0}
+.hgp-step + .hgp-step::before{content:"";position:absolute;top:21px;left:calc(-50% + 22px);right:calc(50% + 22px);height:2px;background:var(--hg-border-strong)}
+.hgp-step.is-done + .hgp-step::before{background:var(--hg-success)}
+.hgp-step__btn{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;padding:6px 4px;border:0;border-radius:var(--hg-radius-md);background:none;color:var(--hg-text);font:inherit;cursor:pointer}
+.hgp-step__btn:disabled{cursor:not-allowed}
+.hgp-step__btn:focus-visible{outline:2px solid var(--hg-focus);outline-offset:2px}
+.hgp-step__dot{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:2px solid var(--hg-border-strong);background:var(--hg-surface);font-size:13px;font-weight:700;color:var(--hg-muted);font-variant-numeric:tabular-nums}
+.hgp-step__dot svg{width:16px;height:16px}
+.hgp-step__label{font-size:13px;font-weight:600;text-align:center;color:var(--hg-muted)}
+.hgp-step.is-current .hgp-step__dot{background:var(--hg-primary);border-color:var(--hg-primary);color:var(--hg-on-dark)}
+.hgp-step.is-current .hgp-step__label{color:var(--hg-text-heading)}
+.hgp-step.is-done .hgp-step__dot{background:var(--hg-success);border-color:var(--hg-success);color:var(--hg-on-dark)}
+.hgp-step.is-fix .hgp-step__dot{background:var(--hg-danger);border-color:var(--hg-danger);color:var(--hg-on-dark)}
+@media (max-width:1023px){
+  .hgp-step__label{display:none}
+  .hgp-step.is-current .hgp-step__label{display:block}
+}
+@media (max-width:767px){
+  .hgp-stepper__mobile,.hgp-stepper__bar{display:block}
+  .hgp-stepper__list{display:none}
+}
+.hgp-wizbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:var(--hg-surface);border:1px solid var(--hg-border);border-radius:var(--hg-radius-md)}
+.hgp-wizbar .hgbo-row{margin-left:auto}
+@media (max-width:767px){.hgp-wizbar .hgbo-btn{height:44px}}
+.hgp-checklist{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.hgp-checklist li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:14px}
+.hgp-checklist svg{flex:none;width:18px;height:18px}
+.hgp-checklist .is-ok svg{color:var(--hg-success)}
+.hgp-checklist .is-missing svg{color:var(--hg-danger)}
+
+/* ---------- Dịch vụ khác ---------- */
+.hgp-rtable__main{display:flex;align-items:center;gap:12px;min-width:0}
+.hgp-rtable .hgbo-dt__table{min-width:640px}
+.hgp-rform{display:grid;gap:24px;grid-template-columns:minmax(0,1fr) 320px;align-items:start}
+.hgp-rform__side{position:sticky;top:calc(var(--hgbo-topbar-h) + 16px)}
+.hgp-rform__img{display:block;width:100%;height:176px;border-radius:var(--hg-radius-md);object-fit:cover;background:var(--hg-surface-muted)}
+@media (max-width:1023px){
+  .hgp-rform{grid-template-columns:minmax(0,1fr)}
+  .hgp-rform__side{position:static}
+}

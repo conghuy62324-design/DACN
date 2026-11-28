@@ -1,6 +1,10 @@
+// Form Dịch vụ khác: chỉ đổi giao diện. Giữ lời gọi API, payload, data-testid `partner-${resource}-form`,
+// thuộc tính name của từng ô và đúng một nút (Lưu nội dung) bên trong form.
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ExternalLink, Save } from 'lucide-react';
+import { ArrowLeft, ExternalLink, ImageOff, Save } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Alert, BoLinkButton, EmptyState, PageHeader, RequiredMark, StatusPill, boButtonClass, statusLabel } from '../../components/backoffice';
+import '../../styles/hg-partner.css';
 import { ManagementService, PartnerResource } from '../../services/managementService';
 import { PlatformService } from '../../services/platformService';
 import { Business } from '../../types';
@@ -12,6 +16,8 @@ const common:Record<PartnerResource,{label:string;fields:Field[]}>= {
   tickets:{label:'vé',fields:[{key:'title',label:'Tên vé',required:true},{key:'type',label:'Loại',type:'select',options:['flight','bus','train','tour','sightseeing'],required:true},{key:'operator',label:'Đơn vị vận hành',required:true},{key:'departureCity',label:'Điểm đi',required:true},{key:'arrivalCity',label:'Điểm đến',required:true},{key:'departureTime',label:'Thời gian khởi hành',type:'datetime-local',required:true},{key:'arrivalTime',label:'Thời gian đến',type:'datetime-local'},{key:'duration',label:'Thời lượng'},{key:'price',label:'Giá',type:'number',required:true},{key:'originalPrice',label:'Giá gốc',type:'number'},{key:'capacity',label:'Sức chứa',type:'number',required:true},{key:'status',label:'Trạng thái',type:'select',options:['ACTIVE','INACTIVE']},{key:'imageUrl',label:'URL ảnh'},{key:'features',label:'Tiện ích (mỗi dòng)',type:'textarea',array:true}]},
   blogs:{label:'bài viết',fields:[{key:'title',label:'Tiêu đề',required:true},{key:'excerpt',label:'Tóm tắt',type:'textarea',required:true},{key:'content',label:'Nội dung',type:'textarea',required:true},{key:'destinationName',label:'Điểm đến',required:true},{key:'coverImage',label:'URL ảnh bìa',required:true},{key:'costEstimate',label:'Chi phí dự kiến'},{key:'tripDuration',label:'Thời lượng chuyến đi'},{key:'tags',label:'Thẻ (mỗi dòng)',type:'textarea',array:true}]},
 };
+
+const optionText:Record<string,string>={hotel:'Khách sạn',resort:'Khu nghỉ dưỡng',homestay:'Homestay',villa:'Biệt thự',apartment:'Căn hộ',guesthouse:'Nhà khách',restaurant:'Nhà hàng',attraction:'Điểm tham quan',tour:'Tour',beach:'Biển',culture:'Văn hóa',nature:'Thiên nhiên',adventure:'Mạo hiểm',flight:'Máy bay',bus:'Xe khách',train:'Tàu hỏa',sightseeing:'Tham quan',ACTIVE:'Đang bán',INACTIVE:'Ngừng bán'};
 
 const toLocalDateTime = (value?: string | null): string => {
   if (!value) return '';
@@ -41,10 +47,126 @@ export const PartnerResourceFormPage:React.FC=()=>{
   const config=common[resource];const [form,setForm]=useState<Record<string,any>>({});const [businesses,setBusinesses]=useState<Business[]>([]);const [error,setError]=useState('');const [saving,setSaving]=useState(false);
   useEffect(()=>{(async()=>{try{const dashboard=await PlatformService.getPartnerDashboard();setBusinesses(dashboard.businesses);if(isNew&&dashboard.selectedBusiness)setForm(v=>({...v,businessId:dashboard.selectedBusiness!.id}));if(!isNew){const data=await ManagementService.partnerGet(resource,itemId!);original.current=data;setForm(normalizeForForm(config,data));}else original.current={};}catch(e:any){setError(e?.message||'Không thể tải biểu mẫu.');}})();},[resource,itemId]);
   const image=useMemo(()=>form.heroImage||form.coverImage||form.imageUrl,[form]);
-  if(!config)return <div>Module không tồn tại.</div>;
+  if(!config)return <EmptyState title="Module không tồn tại."/>;
   const change=(key:string,value:any)=>setForm(v=>({...v,[key]:value}));
   const save=async(e:React.FormEvent)=>{e.preventDefault();setSaving(true);setError('');try{const payload={...form};for(const field of config.fields.filter(f=>f.type==='datetime-local')){payload[field.key]=serializeDateTime(payload[field.key]??'',original.current[field.key]);}for(const field of config.fields.filter(f=>f.array)){payload[field.key]=Array.isArray(payload[field.key])?payload[field.key]:String(payload[field.key]||'').split('\n').map((v:string)=>v.trim()).filter(Boolean);}if(resource==='places'){payload.catalogMetadata={...(payload.accommodationType?{accommodationType:payload.accommodationType}:{}),cuisines:payload.cuisines||[]};delete payload.accommodationType;delete payload.cuisines;}await ManagementService.partnerSave(resource,payload,itemId);navigate(`/partner/${resource}`);}catch(err:any){setError(err?.message||'Không thể lưu dữ liệu.');}finally{setSaving(false);}};
-  return <div className="mx-auto max-w-5xl space-y-6"><div><Link to={`/partner/${resource}`} className="inline-flex items-center gap-2 text-sm font-bold text-teal-700"><ArrowLeft className="h-4 w-4"/>Quay lại</Link><h1 className="mt-3 text-3xl font-black">{isNew?'Tạo':'Chỉnh sửa'} {config.label}</h1><p className="mt-2 text-sm text-slate-500">Ảnh được quản lý bằng URL theo kiến trúc hiện tại. Nội dung mới được lưu ở trạng thái nháp.</p></div>{error&&<div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">{error}</div>}
-  <form onSubmit={save} data-testid={`partner-${resource}-form`} className="grid gap-6 lg:grid-cols-[1fr_320px]"><div className="grid gap-4 rounded-2xl border border-teal-100 bg-white p-6 sm:grid-cols-2">{isNew&&<label className="sm:col-span-2 text-sm font-bold">Cơ sở kinh doanh<select name="businessId" required value={form.businessId||''} onChange={e=>change('businessId',e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal">{businesses.map(b=><option key={b.id} value={b.id}>{b.name}</option>)}</select></label>}{config.fields.map(field=><label key={field.key} className={`text-sm font-bold ${field.type==='textarea'?'sm:col-span-2':''}`}>{field.label}{field.type==='select'?<select name={field.key} required={field.required} value={form[field.key]??''} onChange={e=>change(field.key,e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal"><option value="">Chọn…</option>{field.options!.map(o=><option key={o}>{o}</option>)}</select>:field.type==='textarea'?<textarea name={field.key} required={field.required} rows={field.key==='content'||field.key==='description'?8:3} value={field.array&&Array.isArray(form[field.key])?form[field.key].join('\n'):form[field.key]||''} onChange={e=>change(field.key,e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal"/>:<input name={field.key} required={field.required} type={field.type||'text'} step={field.type==='number'?'any':undefined} value={form[field.key]??''} onChange={e=>change(field.key,e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal"/>}</label>)}</div>
-  <aside className="space-y-4"><div className="sticky top-24 rounded-2xl border border-teal-100 bg-white p-5 shadow-sm"><h2 className="font-black">Xem trước & lưu</h2>{image?<img src={image} className="mt-4 h-44 w-full rounded-xl object-cover"/>:<div className="mt-4 grid h-44 place-items-center rounded-xl bg-slate-100 text-sm text-slate-400">Chưa có ảnh</div>}{resource==='places'&&form.latitude&&form.longitude&&<a className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-teal-700" target="_blank" rel="noreferrer" href={`https://www.openstreetmap.org/?mlat=${form.latitude}&mlon=${form.longitude}#map=15/${form.latitude}/${form.longitude}`}>Xem tọa độ trên bản đồ <ExternalLink className="h-3 w-3"/></a>}<p className="mt-4 text-xs text-slate-500">Trạng thái: <b>{form.status||'DRAFT'}</b></p><button disabled={saving} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 py-3 text-sm font-bold text-white disabled:opacity-50"><Save className="h-4 w-4"/>{saving?'Đang lưu…':'Lưu nội dung'}</button></div></aside></form></div>;
+  const statusCode=form.status||'DRAFT';
+  const statusText=resource==='tickets'?({ACTIVE:'Đang bán',INACTIVE:'Ngừng bán'} as Record<string,string>)[statusCode]||statusCode:statusLabel(statusCode,'moderation');
+  const fieldId=(key:string)=>`hgp-rf-${key}`;
+  return (
+    <div className="hgp-page hgbo-stack">
+      <PageHeader
+        title={`${isNew?'Tạo':'Chỉnh sửa'} ${config.label}`}
+        subtitle="Ảnh được quản lý bằng URL theo kiến trúc hiện tại. Nội dung mới được lưu ở trạng thái nháp."
+        actions={(
+          <BoLinkButton variant="secondary" icon={ArrowLeft} to={`/partner/${resource}`}>
+            Quay lại
+          </BoLinkButton>
+        )}
+      />
+      {error&&<Alert tone="danger" role="alert">{error}</Alert>}
+      <form onSubmit={save} data-testid={`partner-${resource}-form`} className="hgp-rform">
+        <section className="hgbo-fs">
+          <h2 className="hgbo-fs__title">Thông tin {config.label}</h2>
+          <div className="hgbo-fs__body hgbo-fs__body--2">
+            {isNew&&(
+              <div className="hgbo-field hgbo-field--span">
+                <label className="hgbo-field__label" htmlFor={fieldId('businessId')}>
+                  Cơ sở kinh doanh
+                  <RequiredMark/>
+                </label>
+                <select
+                  id={fieldId('businessId')}
+                  name="businessId"
+                  required
+                  className="hgbo-select"
+                  value={form.businessId||''}
+                  onChange={e=>change('businessId',e.target.value)}
+                >
+                  {businesses.map(b=>(
+                    <option key={b.id} value={b.id}>{b.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {config.fields.map(field=>(
+              <div key={field.key} className={`hgbo-field ${field.type==='textarea'?'hgbo-field--span':''}`.trim()}>
+                <label className="hgbo-field__label" htmlFor={fieldId(field.key)}>
+                  {field.label}
+                  {field.required&&<RequiredMark/>}
+                </label>
+                {field.type==='select'?(
+                  <select
+                    id={fieldId(field.key)}
+                    name={field.key}
+                    required={field.required}
+                    className="hgbo-select"
+                    value={form[field.key]??''}
+                    onChange={e=>change(field.key,e.target.value)}
+                  >
+                    <option value="">Chọn…</option>
+                    {field.options!.map(o=>(
+                      <option key={o} value={o}>{optionText[o]||o}</option>
+                    ))}
+                  </select>
+                ):field.type==='textarea'?(
+                  <textarea
+                    id={fieldId(field.key)}
+                    name={field.key}
+                    required={field.required}
+                    rows={field.key==='content'||field.key==='description'?8:3}
+                    className="hgbo-textarea"
+                    value={field.array&&Array.isArray(form[field.key])?form[field.key].join('\n'):form[field.key]||''}
+                    onChange={e=>change(field.key,e.target.value)}
+                  />
+                ):(
+                  <input
+                    id={fieldId(field.key)}
+                    name={field.key}
+                    required={field.required}
+                    type={field.type||'text'}
+                    step={field.type==='number'?'any':undefined}
+                    className="hgbo-input"
+                    value={form[field.key]??''}
+                    onChange={e=>change(field.key,e.target.value)}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+        <aside className="hgp-rform__side">
+          <div className="hgbo-card hgbo-stack hgbo-stack--sm">
+            <h2 className="hgbo-section-title">Xem trước & lưu</h2>
+            {image?(
+              <img src={image} className="hgp-rform__img" alt=""/>
+            ):(
+              <span className="hgp-rform__img hgp-media__ph" role="img" aria-label="Chưa có ảnh">
+                <ImageOff aria-hidden="true"/>
+              </span>
+            )}
+            {resource==='places'&&form.latitude&&form.longitude&&(
+              <a className="hgbo-link hgbo-small" target="_blank" rel="noreferrer" href={`https://www.openstreetmap.org/?mlat=${form.latitude}&mlon=${form.longitude}#map=15/${form.latitude}/${form.longitude}`}>
+                Xem tọa độ trên bản đồ <ExternalLink size={12} aria-hidden="true"/>
+              </a>
+            )}
+            <p className="hgbo-small hgbo-muted">
+              Trạng thái:
+              {' '}
+              <StatusPill status={statusCode} domain="moderation" size="sm" label={statusText}/>
+            </p>
+            <button disabled={saving} className={boButtonClass('primary','md',false,'hgp-wfull')}>
+              <span className="hgbo-btn__content">
+                <Save aria-hidden="true"/>
+                {saving?'Đang lưu…':'Lưu nội dung'}
+              </span>
+            </button>
+          </div>
+        </aside>
+      </form>
+      <p className="hgbo-small hgbo-muted">
+        <Link className="hgbo-link" to={`/partner/${resource}`}>Về danh sách {config.label}</Link>
+      </p>
+    </div>
+  );
 };

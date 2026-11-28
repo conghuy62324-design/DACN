@@ -3,6 +3,8 @@ import { AuthUser, Role } from '../types/auth.js';
 import { HttpError } from '../utils/httpError.js';
 import { verifyAccessToken } from '../services/tokenService.js';
 import { BusinessMember } from '../models/BusinessMember.js';
+import { validateWebSession } from '../web/accountSecurity.js';
+import { securityEnabled } from '../web/common.js';
 
 export interface AuthenticatedRequest extends Request {
   user?: AuthUser;
@@ -15,6 +17,10 @@ export function authenticate(req: AuthenticatedRequest, _res: Response, next: Ne
       throw new HttpError(401, 'Vui lòng đăng nhập để tiếp tục', 'AUTH_REQUIRED');
     }
     req.user = verifyAccessToken(authHeader.slice(7));
+    if (securityEnabled()) {
+      void validateWebSession(req.user, authHeader.slice(7)).then(user => { req.user = user; next(); }).catch(next);
+      return;
+    }
     next();
   } catch (error) {
     next(error);
@@ -27,6 +33,10 @@ export function optionalAuthenticate(req: AuthenticatedRequest, _res: Response, 
     if (!authHeader) return next();
     if (!authHeader.startsWith('Bearer ')) throw new HttpError(401, 'Authorization header không hợp lệ', 'INVALID_AUTH_HEADER');
     req.user = verifyAccessToken(authHeader.slice(7));
+    if (securityEnabled()) {
+      void validateWebSession(req.user, authHeader.slice(7)).then(user => { req.user = user; next(); }).catch(next);
+      return;
+    }
     next();
   } catch (error) {
     next(error);

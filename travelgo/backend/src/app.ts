@@ -28,7 +28,7 @@ app.use((req, res, next) => {
   const start = Date.now();
   res.on('finish', () => {
     const duration = Date.now() - start;
-    console.log(`[${req.method}] ${req.originalUrl} - ${res.statusCode} (${duration}ms)`);
+    console.log(JSON.stringify({event:'HTTP_REQUEST',method:req.method,status:res.statusCode,durationMs:duration}));
   });
   next();
 });
@@ -56,7 +56,7 @@ app.use('/api', apiRouter);
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: `Đường dẫn API '${req.originalUrl}' không tồn tại.`,
+    message: 'Đường dẫn API không tồn tại.',
   });
 });
 

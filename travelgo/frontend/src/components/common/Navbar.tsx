@@ -1,43 +1,52 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
+  BookOpen,
+  Bookmark,
+  Building2,
+  CalendarDays,
+  ChevronDown,
   Compass,
+  Heart,
+  Home,
   Hotel,
-  UtensilsCrossed,
+  LogIn,
+  LogOut,
+  Map,
+  Menu,
+  Route,
+  ShieldCheck,
+  Sparkles,
   Ticket,
   User,
-  Heart,
-  Bookmark,
-  Menu,
+  UtensilsCrossed,
   X,
-  ShieldCheck,
-  LogOut,
-  ChevronDown,
-  Sparkles,
-  Map,
-  Route,
-  CalendarDays,
-  Building2,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useFavorites } from '../../context/FavoritesContext';
+import '../../styles/hg-shell.css';
 
-interface DropdownItem {
-  label: string;
-  path: string;
-  icon: React.ReactNode;
-  description?: string;
-}
+type NavItem = { label: string; path: string; icon: React.ReactNode; description?: string; className?: string };
 
-interface NavDropdownProps {
-  label: string;
-  items: DropdownItem[];
-  isActive: boolean;
-}
+const focusableSelector = 'a[href],button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]';
 
-const NavDropdown: React.FC<NavDropdownProps> = ({ label, items, isActive }) => {
+/** Logo dùng chung cho header, drawer và footer. */
+export const HuGoLogo: React.FC<{ onClick?: () => void }> = ({ onClick }) => (
+  <Link to="/" className="hg-logo" aria-label="HuGo Travel – Trang chủ" onClick={onClick}>
+    <span className="hg-logo-mark" aria-hidden="true">
+      <Compass />
+    </span>
+    <span className="hg-logo-text" aria-hidden="true">
+      HuGo<span>Travel</span>
+    </span>
+  </Link>
+);
+
+const MoreMenu: React.FC<{ items: NavItem[]; isActive: boolean; isCurrent: (path: string) => boolean }> = ({ items, isActive, isCurrent }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const location = useLocation();
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -47,34 +56,46 @@ const NavDropdown: React.FC<NavDropdownProps> = ({ label, items, isActive }) => 
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
+
   return (
-    <div ref={ref} className="relative" onKeyDown={e=>{if(e.key==='Escape')setOpen(false);}}>
+    <div
+      ref={ref}
+      className="hg-more"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape' && open) {
+          setOpen(false);
+          triggerRef.current?.focus();
+        }
+      }}
+    >
       <button
-        onClick={() => setOpen((v) => !v)}
+        ref={triggerRef}
+        type="button"
+        className={'hg-more-trigger' + (isActive ? ' is-active' : '')}
         aria-expanded={open}
         aria-haspopup="true"
-        className={`flex items-center gap-1 text-[15px] font-medium transition-colors py-1 ${
-          isActive ? 'text-orange-600 font-semibold' : 'text-slate-700 hover:text-orange-500'
-        }`}
+        onClick={() => setOpen((v) => !v)}
       >
-        {label}
-        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        Thêm
+        <ChevronDown size={16} aria-hidden="true" />
       </button>
-
       {open && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-          <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-l border-t border-slate-100 rotate-45" />
+        <div className="hg-menu-panel">
           {items.map((item) => (
             <Link
               key={item.path}
               to={item.path}
+              className={'hg-menu-item' + (item.className ? ' ' + item.className : '')}
+              aria-current={isCurrent(item.path) ? 'page' : undefined}
               onClick={() => setOpen(false)}
-              className="flex items-start gap-3 px-4 py-3 hover:bg-orange-50 group transition-colors"
             >
-              <span className="mt-0.5 text-orange-500 group-hover:text-orange-600 shrink-0">{item.icon}</span>
+              {item.icon}
               <span>
-                <p className="text-sm font-semibold text-slate-800 group-hover:text-orange-600">{item.label}</p>
-                {item.description && <p className="text-xs text-slate-400 mt-0.5">{item.description}</p>}
+                {item.label}
+                {item.description && <small>{item.description}</small>}
               </span>
             </Link>
           ))}
@@ -84,47 +105,30 @@ const NavDropdown: React.FC<NavDropdownProps> = ({ label, items, isActive }) => 
   );
 };
 
-interface MobileLinkProps {
-  to: string;
-  label: string;
-  isActive: boolean;
-  onClick: () => void;
-  extraClass?: string;
-}
-const MobileLink: React.FC<MobileLinkProps> = ({ to, label, isActive, onClick, extraClass }) => (
-  <Link
-    to={to}
-    onClick={onClick}
-    className={`block min-w-0 [overflow-wrap:anywhere] px-3 py-2 rounded-lg text-base font-medium ${
-      extraClass ?? (isActive ? 'bg-orange-50 text-orange-600 font-semibold' : 'text-slate-700 hover:bg-slate-50')
-    }`}
-  >
-    {label}
-  </Link>
-);
-
 export const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [mobileTourOpen, setMobileTourOpen] = useState(false);
-  const [mobileServiceOpen, setMobileServiceOpen] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const location = useLocation();
   const { user, logout, isAdmin, isPartner } = useAuth();
   const { favorites } = useFavorites();
+  const canUseAssistant = !user || user.roles.includes('CUSTOMER');
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 30);
-    window.addEventListener('scroll', handleScroll);
+    const handleScroll = () => setIsScrolled(window.scrollY > 8);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      if (userDropdownRef.current && !userDropdownRef.current.contains(e.target as Node))
-        setUserDropdownOpen(false);
+      if (userDropdownRef.current && !userDropdownRef.current.contains(e.target as Node)) setUserDropdownOpen(false);
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
@@ -132,253 +136,323 @@ export const Navbar: React.FC = () => {
 
   useEffect(() => {
     setMobileMenuOpen(false);
+    setUserDropdownOpen(false);
   }, [location.pathname]);
 
-  useEffect(()=>{const close=(e:KeyboardEvent)=>{if(e.key==='Escape'){setMobileMenuOpen(false);setUserDropdownOpen(false);}};window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close);},[]);
+  useEffect(() => {
+    const close = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMobileMenuOpen(false);
+        setUserDropdownOpen(false);
+      }
+    };
+    window.addEventListener('keydown', close);
+    return () => window.removeEventListener('keydown', close);
+  }, []);
+
+  // Drawer: khóa cuộn body, focus nút đóng, đóng khi lên desktop, trả focus về nút menu khi đóng.
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeButtonRef.current?.focus();
+    const media = window.matchMedia('(min-width: 1024px)');
+    const onMedia = () => {
+      if (media.matches) setMobileMenuOpen(false);
+    };
+    media.addEventListener('change', onMedia);
+    const menuButton = menuButtonRef.current;
+    return () => {
+      document.body.style.overflow = overflow;
+      media.removeEventListener('change', onMedia);
+      if (menuButton && menuButton.offsetParent !== null) menuButton.focus();
+    };
+  }, [mobileMenuOpen]);
+
+  const trapFocus = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Tab' || !drawerRef.current) return;
+    const items = Array.from(drawerRef.current.querySelectorAll<HTMLElement>(focusableSelector)).filter((x) => x.offsetParent !== null);
+    if (!items.length) return;
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
+
   const isActive = (path: string) => {
     if (path === '/' && location.pathname === '/') return true;
     if (path !== '/' && location.pathname.startsWith(path)) return true;
     return false;
   };
-  const isGroupActive = (paths: string[]) => paths.some((p) => isActive(p));
+  const current = (path: string) => (isActive(path) ? ('page' as const) : undefined);
+  const closeMenu = () => setMobileMenuOpen(false);
+  const closeUser = () => setUserDropdownOpen(false);
 
-  const tourItems: DropdownItem[] = [
-    ...(!user || user.roles.includes('CUSTOMER') ? [{ label: 'Trợ lý AI', path: '/assistant', icon: <Sparkles className="w-4 h-4" />, description: 'Trao đổi để phác thảo chuyến đi' }] : []),
-    { label: 'Tour du lịch', path: '/tours', icon: <Route className="w-4 h-4" />, description: 'Khám phá các gói tour hấp dẫn' },
-    { label: 'Tạo lịch trình', path: '/tour-planner', icon: <CalendarDays className="w-4 h-4" />, description: 'Tự thiết kế hành trình cá nhân' },
-    { label: 'Chuyến đi của tôi', path: '/my-trips', icon: <Map className="w-4 h-4" />, description: 'Xem và quản lý chuyến đi' },
+  const mainItems: NavItem[] = [
+    { label: 'Trang chủ', path: '/', icon: <Home aria-hidden="true" /> },
+    { label: 'Khách sạn', path: '/hotels', icon: <Hotel aria-hidden="true" /> },
+    { label: 'Nhà hàng', path: '/restaurants', icon: <UtensilsCrossed aria-hidden="true" /> },
+    { label: 'Khám phá', path: '/explore', icon: <Compass aria-hidden="true" /> },
+    { label: 'Lịch trình', path: '/tour-planner', icon: <CalendarDays aria-hidden="true" /> },
+    ...(canUseAssistant ? [{ label: 'Trợ lý AI', path: '/assistant', icon: <Sparkles aria-hidden="true" />, className: 'hg-nav-ai' }] : []),
   ];
 
-  const serviceItems: DropdownItem[] = [
-    { label: 'Khách sạn', path: '/hotels', icon: <Hotel className="w-4 h-4" />, description: 'Tìm nơi lưu trú lý tưởng' },
-    { label: 'Nhà hàng', path: '/restaurants', icon: <UtensilsCrossed className="w-4 h-4" />, description: 'Ẩm thực địa phương đặc sắc' },
-    { label: 'Vé tham quan', path: '/tickets', icon: <Ticket className="w-4 h-4" />, description: 'Đặt vé điểm du lịch nhanh chóng' },
+  const moreItems: NavItem[] = [
+    ...(canUseAssistant
+      ? [{ label: 'Trợ lý AI', path: '/assistant', icon: <Sparkles aria-hidden="true" />, description: 'Trao đổi để phác thảo chuyến đi', className: 'hg-more-ai' }]
+      : []),
+    { label: 'Tour du lịch', path: '/tours', icon: <Route aria-hidden="true" />, description: 'Gói tour theo điểm đến' },
+    { label: 'Vé tham quan', path: '/tickets', icon: <Ticket aria-hidden="true" />, description: 'Vé điểm du lịch' },
+    { label: 'Cẩm nang', path: '/blog', icon: <BookOpen aria-hidden="true" />, description: 'Kinh nghiệm du lịch' },
+    { label: 'Chuyến đi của tôi', path: '/my-trips', icon: <Map aria-hidden="true" />, description: 'Xem và quản lý chuyến đi' },
   ];
+
+  const drawerServiceItems: NavItem[] = [
+    { label: 'Tour du lịch', path: '/tours', icon: <Route aria-hidden="true" /> },
+    { label: 'Vé tham quan', path: '/tickets', icon: <Ticket aria-hidden="true" /> },
+    { label: 'Cẩm nang', path: '/blog', icon: <BookOpen aria-hidden="true" /> },
+  ];
+
+  const favoriteLink = (
+    <Link to="/favorites" className="hg-icon-btn" aria-label="Danh sách yêu thích" title="Địa điểm yêu thích">
+      <Heart aria-hidden="true" />
+      {favorites.length > 0 && (
+        <span className="hg-badge-count" aria-hidden="true">
+          {favorites.length}
+        </span>
+      )}
+    </Link>
+  );
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-md py-3'
-          : 'bg-white py-4 border-b border-slate-100 shadow-sm'
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-4">
+    <header className={'hg-header' + (isScrolled ? ' is-scrolled' : '')}>
+      <div className="hg-container hg-header-inner">
+        <HuGoLogo />
 
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-[#102d47] flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform">
-              <Compass className="w-6 h-6" />
-            </div>
-            <span className="text-2xl font-extrabold tracking-tight text-slate-900">
-              HuGo<span className="text-orange-500">Travel</span>
-            </span>
-          </Link>
-
-          {/* Desktop Nav */}
-          <nav className="hidden xl:flex items-center gap-4" aria-label="Điều hướng chính">{[['/','Trang chủ'],['/hotels','Khách sạn'],['/restaurants','Nhà hàng'],['/explore','Khám phá'],['/tour-planner','Lịch trình'],...(!user||user.roles.includes('CUSTOMER')?[['/assistant','Trợ lý AI']]:[])].map(([path,label])=><Link key={path} to={path} className={`text-[13px] font-semibold whitespace-nowrap transition-colors ${isActive(path)?'text-orange-600':'text-slate-700 hover:text-orange-500'}`}>{label}</Link>)}<NavDropdown label="Dịch vụ khác" items={[...tourItems.filter(i=>!['/assistant','/tour-planner'].includes(i.path)),serviceItems[2],{label:'Cẩm nang',path:'/blog',icon:<Bookmark className="w-4 h-4"/>}]} isActive={isGroupActive(['/tours','/tickets','/blog'])}/></nav>
-
-          {/* Desktop Right */}
-          <div className="hidden xl:flex items-center gap-3 shrink-0">
-            {/* Favorites */}
+        <nav className="hg-nav" aria-label="Điều hướng chính">
+          {mainItems.map((item) => (
             <Link
-              to="/favorites"
-              className="relative p-2 text-slate-600 hover:text-orange-500 hover:bg-orange-50 rounded-full transition-colors"
-              title="Địa điểm yêu thích"
+              key={item.path}
+              to={item.path}
+              className={'hg-nav-link' + (item.className ? ' ' + item.className : '')}
+              aria-current={current(item.path)}
             >
-              <Heart className="w-5 h-5" />
-              {favorites.length > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                  {favorites.length}
-                </span>
-              )}
+              {item.label}
             </Link>
+          ))}
+          <MoreMenu items={moreItems} isActive={['/tours', '/tickets', '/blog', '/my-trips'].some(isActive)} isCurrent={isActive} />
+        </nav>
 
-            {/* User section */}
+        <div className="hg-header-actions">
+          {favoriteLink}
+
+          <div className="hg-desktop-only">
             {user ? (
-              <div className="relative" ref={userDropdownRef}>
+              <div className="hg-account" ref={userDropdownRef}>
                 <button
+                  type="button"
+                  className="hg-account-trigger"
                   onClick={() => setUserDropdownOpen((v) => !v)}
                   aria-expanded={userDropdownOpen}
                   aria-label="Menu tài khoản"
-                  className="flex items-center space-x-2 p-1.5 rounded-full hover:bg-slate-100 transition-colors border border-slate-200"
                 >
-                  {user.avatarUrl ? <img src={user.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" /> : <User aria-hidden="true" className="w-8 h-8 p-1 rounded-full bg-orange-50 text-orange-600" />}
-                  <span className="text-sm font-medium text-slate-800 pr-1 max-w-[100px] truncate">{user.fullName}</span>
-                  <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`} />
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="" className="hg-avatar" />
+                  ) : (
+                    <span className="hg-avatar" aria-hidden="true">
+                      <User />
+                    </span>
+                  )}
+                  <span className="hg-account-name">{user.fullName}</span>
+                  <ChevronDown size={16} aria-hidden="true" />
                 </button>
 
                 {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                    <div className="px-4 py-2 border-b border-slate-100">
-                      <p className="text-xs text-slate-500">Đã đăng nhập với</p>
-                      <p className="text-sm font-semibold text-slate-800 truncate">{user.email}</p>
-                      {isAdmin && (
-                        <span className="inline-block mt-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700">
-                          Quản trị viên (Admin)
-                        </span>
-                      )}
+                  <div className="hg-menu-panel hg-menu-panel--right">
+                    <div className="hg-menu-account">
+                      <small>Đã đăng nhập với</small>
+                      <b>{user.email}</b>
+                      {isAdmin && <span className="hg-role-badge">Quản trị viên (Admin)</span>}
                     </div>
-                    <Link to="/profile" onClick={() => setUserDropdownOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                      <User className="w-4 h-4 mr-3 text-slate-400" /> Hồ sơ cá nhân
+                    <Link to="/profile" onClick={closeUser} className="hg-menu-item">
+                      <User aria-hidden="true" />
+                      <span>Hồ sơ cá nhân</span>
                     </Link>
-                    <Link to="/my-trips" onClick={() => setUserDropdownOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                      <Compass className="w-4 h-4 mr-3 text-slate-400" /> Chuyến đi của tôi
+                    <Link to="/my-trips" onClick={closeUser} className="hg-menu-item">
+                      <Compass aria-hidden="true" />
+                      <span>Chuyến đi của tôi</span>
                     </Link>
-                    <Link to="/bookings" onClick={() => setUserDropdownOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                      <Bookmark className="w-4 h-4 mr-3 text-slate-400" /> Lịch sử đặt vé &amp; dịch vụ
+                    <Link to="/bookings" onClick={closeUser} className="hg-menu-item">
+                      <Bookmark aria-hidden="true" />
+                      <span>Lịch sử đặt vé &amp; dịch vụ</span>
                     </Link>
                     {isAdmin && (
-                      <Link to="/admin" onClick={() => setUserDropdownOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-blue-600 font-medium hover:bg-blue-50">
-                        <ShieldCheck className="w-4 h-4 mr-3 text-blue-500" /> Giao diện Quản trị
+                      <Link to="/admin" onClick={closeUser} className="hg-menu-item">
+                        <ShieldCheck aria-hidden="true" />
+                        <span>Giao diện Quản trị</span>
                       </Link>
                     )}
                     {isPartner && (
-                      <Link to="/partner" onClick={() => setUserDropdownOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-teal-700 font-medium hover:bg-teal-50">
-                        <Building2 className="w-4 h-4 mr-3 text-teal-600" /> Chuyển sang trang Đối tác
+                      <Link to="/partner" onClick={closeUser} className="hg-menu-item">
+                        <Building2 aria-hidden="true" />
+                        <span>Chuyển sang trang Đối tác</span>
                       </Link>
                     )}
                     {!isPartner && (
-                      <Link to="/become-partner" onClick={() => setUserDropdownOpen(false)} className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-600">
-                        <Building2 className="w-4 h-4 mr-3 text-slate-400" /> Trở thành đối tác
+                      <Link to="/become-partner" onClick={closeUser} className="hg-menu-item">
+                        <Building2 aria-hidden="true" />
+                        <span>Trở thành đối tác</span>
                       </Link>
                     )}
-                    <div className="border-t border-slate-100 my-1" />
+                    <div className="hg-menu-divider" />
                     <button
-                      onClick={() => { logout(); setUserDropdownOpen(false); }}
-                      className="w-full flex items-center px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50"
+                      type="button"
+                      onClick={() => {
+                        logout();
+                        closeUser();
+                      }}
+                      className="hg-menu-item hg-menu-item--danger"
                     >
-                      <LogOut className="w-4 h-4 mr-3" /> Đăng xuất
+                      <LogOut aria-hidden="true" />
+                      <span>Đăng xuất</span>
                     </button>
                   </div>
                 )}
               </div>
             ) : (
-              <Link to="/login" className="text-sm font-semibold text-slate-700 hover:text-orange-500 px-3 py-2 transition-colors">
+              <Link to="/login" className="hg-btn-outline">
                 Đăng nhập
               </Link>
             )}
-
-            {/* CTA */}
-            <Link
-              to="/tour-planner"
-              className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white text-sm font-bold px-5 py-2.5 rounded-full shadow-md shadow-orange-500/20 hover:shadow-orange-500/40 transition-all duration-200"
-            >
-              <Sparkles className="w-4 h-4" />
-              Tạo lịch trình
-            </Link>
           </div>
 
-          {/* Mobile Controls */}
-          <div className="flex items-center space-x-2 xl:hidden">
-            <Link to="/favorites" aria-label="Danh sách yêu thích" className="relative p-2 text-slate-700">
-              <Heart className="w-6 h-6" />
-              {favorites.length > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                  {favorites.length}
-                </span>
-              )}
-            </Link>
-            <button
-              onClick={() => setMobileMenuOpen((v) => !v)}
-              aria-label="Mở menu"
-              className="p-2 text-slate-700 hover:bg-slate-100 rounded-lg"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
+          <button
+            ref={menuButtonRef}
+            type="button"
+            className="hg-icon-btn hg-mobile-only"
+            onClick={() => setMobileMenuOpen((v) => !v)}
+            aria-label="Mở menu"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="hg-mobile-drawer"
+          >
+            <Menu aria-hidden="true" />
+          </button>
         </div>
+      </div>
 
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="xl:hidden border-t border-slate-100 mt-3 pt-3 pb-4 space-y-1 animate-in slide-in-from-top-4 duration-200">
-            <MobileLink to="/" label="Trang chủ" isActive={isActive('/')} onClick={() => setMobileMenuOpen(false)} />
-            <MobileLink to="/hotels" label="Khách sạn" isActive={isActive('/hotels')} onClick={()=>setMobileMenuOpen(false)}/>
-            <MobileLink to="/restaurants" label="Nhà hàng" isActive={isActive('/restaurants')} onClick={()=>setMobileMenuOpen(false)}/>
-            <MobileLink to="/explore" label="Khám phá" isActive={isActive('/explore')} onClick={() => setMobileMenuOpen(false)} />
-
-            {/* Tour dropdown */}
-            <div>
-              <button
-                onClick={() => setMobileTourOpen((v) => !v)}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-base font-medium text-slate-700 hover:bg-slate-50"
-              >
-                Tour &amp; Lịch trình
-                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${mobileTourOpen ? 'rotate-180' : ''}`} />
+      {mobileMenuOpen && (
+        <div className="hg-drawer-layer">
+          <button type="button" className="hg-drawer-overlay" aria-hidden="true" tabIndex={-1} onClick={closeMenu} />
+          <div
+            id="hg-mobile-drawer"
+            ref={drawerRef}
+            className="hg-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu điều hướng"
+            onKeyDown={trapFocus}
+          >
+            <div className="hg-drawer-head">
+              <HuGoLogo onClick={closeMenu} />
+              <button ref={closeButtonRef} type="button" className="hg-icon-btn" aria-label="Đóng menu" onClick={closeMenu}>
+                <X aria-hidden="true" />
               </button>
-              {mobileTourOpen && (
-                <div className="pl-4 space-y-1 mt-1">
-                  {tourItems.map((item) => (
-                    <MobileLink key={item.path} to={item.path} label={item.label} isActive={isActive(item.path)} onClick={() => setMobileMenuOpen(false)} />
-                  ))}
-                </div>
-              )}
             </div>
 
-            {/* Service dropdown */}
-            <div>
-              <button
-                onClick={() => setMobileServiceOpen((v) => !v)}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-base font-medium text-slate-700 hover:bg-slate-50"
-              >
-                Dịch vụ
-                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${mobileServiceOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {mobileServiceOpen && (
-                <div className="pl-4 space-y-1 mt-1">
-                  {serviceItems.map((item) => (
-                    <MobileLink key={item.path} to={item.path} label={item.label} isActive={isActive(item.path)} onClick={() => setMobileMenuOpen(false)} />
-                  ))}
-                </div>
-              )}
-            </div>
+            <div className="hg-drawer-body">
+              <nav aria-label="Điều hướng chính (di động)">
+                {mainItems.map((item) => (
+                  <Link key={item.path} to={item.path} className="hg-drawer-link" aria-current={current(item.path)} onClick={closeMenu}>
+                    {item.icon}
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
 
-            <MobileLink to="/blog" label="Blog" isActive={isActive('/blog')} onClick={() => setMobileMenuOpen(false)} />
+              <div className="hg-drawer-group">
+                <p className="hg-drawer-title">Dịch vụ khác</p>
+                {drawerServiceItems.map((item) => (
+                  <Link key={item.path} to={item.path} className="hg-drawer-link" aria-current={current(item.path)} onClick={closeMenu}>
+                    {item.icon}
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
 
-            <div className="border-t border-slate-100 pt-3 space-y-1 mt-2">
+              <div className="hg-drawer-divider" />
+
               {user ? (
-                <>
-                  <MobileLink to="/profile" label={`Hồ sơ (${user.fullName})`} isActive={false} onClick={() => setMobileMenuOpen(false)} />
-                  <MobileLink to="/my-trips" label="Chuyến đi của tôi" isActive={false} onClick={() => setMobileMenuOpen(false)} />
-                  <MobileLink to="/bookings" label="Lịch sử đặt vé &amp; dịch vụ" isActive={false} onClick={() => setMobileMenuOpen(false)} />
+                <div className="hg-drawer-group">
+                  <div className="hg-drawer-user">
+                    {user.avatarUrl ? (
+                      <img src={user.avatarUrl} alt="" className="hg-avatar" />
+                    ) : (
+                      <span className="hg-avatar" aria-hidden="true">
+                        <User />
+                      </span>
+                    )}
+                    <span>
+                      <b>{user.fullName}</b>
+                      <small>{user.email}</small>
+                    </span>
+                  </div>
+                  <Link to="/profile" className="hg-drawer-link" aria-current={current('/profile')} onClick={closeMenu}>
+                    <User aria-hidden="true" />
+                    Hồ sơ cá nhân
+                  </Link>
+                  <Link to="/my-trips" className="hg-drawer-link" aria-current={current('/my-trips')} onClick={closeMenu}>
+                    <Map aria-hidden="true" />
+                    Chuyến đi của tôi
+                  </Link>
+                  <Link to="/bookings" className="hg-drawer-link" aria-current={current('/bookings')} onClick={closeMenu}>
+                    <Bookmark aria-hidden="true" />
+                    Lịch sử đặt vé &amp; dịch vụ
+                  </Link>
                   {isAdmin && (
-                    <MobileLink
-                      to="/admin"
-                      label="Trang Quản trị (Admin)"
-                      isActive={false}
-                      onClick={() => setMobileMenuOpen(false)}
-                      extraClass="text-blue-600 font-semibold hover:bg-blue-50 block px-3 py-2 rounded-lg text-base"
-                    />
+                    <Link to="/admin" className="hg-drawer-link" onClick={closeMenu}>
+                      <ShieldCheck aria-hidden="true" />
+                      Trang Quản trị (Admin)
+                    </Link>
                   )}
                   {isPartner && (
-                    <MobileLink to="/partner" label="Trang quản lý Đối tác" isActive={false} onClick={() => setMobileMenuOpen(false)} extraClass="text-teal-700 font-semibold hover:bg-teal-50 block px-3 py-2 rounded-lg text-base" />
+                    <Link to="/partner" className="hg-drawer-link" onClick={closeMenu}>
+                      <Building2 aria-hidden="true" />
+                      Trang quản lý Đối tác
+                    </Link>
                   )}
                   {!isPartner && (
-                    <MobileLink to="/become-partner" label="Trở thành đối tác" isActive={false} onClick={() => setMobileMenuOpen(false)} />
+                    <Link to="/become-partner" className="hg-drawer-link" aria-current={current('/become-partner')} onClick={closeMenu}>
+                      <Building2 aria-hidden="true" />
+                      Trở thành đối tác
+                    </Link>
                   )}
                   <button
-                    onClick={() => { logout(); setMobileMenuOpen(false); }}
-                    className="w-full text-left px-3 py-2 text-rose-600 font-medium hover:bg-rose-50 rounded-lg text-base"
+                    type="button"
+                    className="hg-drawer-link hg-drawer-link--danger"
+                    onClick={() => {
+                      logout();
+                      closeMenu();
+                    }}
                   >
+                    <LogOut aria-hidden="true" />
                     Đăng xuất
                   </button>
-                </>
+                </div>
               ) : (
-                <MobileLink to="/login" label="Đăng nhập / Đăng ký" isActive={false} onClick={() => setMobileMenuOpen(false)} />
+                <Link to="/login" className="hg-btn-outline hg-drawer-login" onClick={closeMenu}>
+                  <LogIn size={18} aria-hidden="true" />
+                  Đăng nhập / Đăng ký
+                </Link>
               )}
-              <Link
-                to="/tour-planner"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 rounded-full shadow-md mt-3"
-              >
-                <Sparkles className="w-4 h-4" />
-                Tạo lịch trình
-              </Link>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </header>
   );
 };

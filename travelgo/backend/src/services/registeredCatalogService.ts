@@ -5,6 +5,8 @@ import { HttpError } from '../utils/httpError.js';
 import { catalogVisible, isDemoListing } from './catalogPolicy.js';
 import { validatePlaceQuery } from './catalogQuery.js';
 import {matchesLocation,publicGeography} from '../geography/vietnam.js';
+import {PlaceRepository} from '../repositories/placeRepository.js';
+import {serializePlace,type PlaceData} from './placeService.js';
 export const fold = (v: string) => v.normalize('NFD').replace(/\p{M}/gu, '').replace(/[đĐ]/g, 'd').toLowerCase().trim().replace(/\s+/g, ' ');
 export type CatalogFilters = {
     locationId?:string;
@@ -33,7 +35,23 @@ const uuid = (v: any) => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5
 const image = (v: any) => typeof v === 'string' && (v.startsWith('/') && !v.startsWith('//') || /^https:\/\//.test(v)) ? v : null;
 export class RegisteredCatalogService {
     constructor(private loader: () => Promise<any[]> = () => RecommendationRepository.getApprovedPlaces(), private allowedTestIds: ReadonlySet<string> = new Set()) { }
-    async eligible() { return (await this.loader()).filter(p => uuid(p.id) && catalogVisible(p) && (!/\[test fixture\]|test-fixture|synthetic|phase\s*35|integration landmark/i.test([p.name, p.slug, p.summary, p.description, p.city].join(' ')) || this.allowedTestIds.has(p.id))); }
+    private isEligible(p:PlaceData) { return uuid(p.id) && catalogVisible(p) && (!/\[test fixture\]|test-fixture|synthetic|phase\s*35|integration landmark/i.test([p.name, p.slug, p.summary, p.description, p.city].join(' ')) || this.allowedTestIds.has(p.id)); }
+    async eligible() { return (await this.loader()).filter(p=>this.isEligible(p)); }
+    async consultationPlaces(locationId:string,categories:readonly ('restaurant'|'attraction'|'tour')[]) {
+        const allowedTestIds=process.env.NODE_ENV==='test'?this.allowedTestIds:undefined;
+        const batches=await Promise.all(categories.map(category=>PlaceRepository.list({category,locationId,page:1,limit:100},{publicOnly:true,allowedTestIds})));
+        if(batches.some(batch=>batch.pages>1))throw new HttpError(422,'Danh mục ở khu vực này quá rộng. Bạn chọn khu vực cụ thể hơn nhé.','AGENT_CONSULTATION_CATALOG_LIMIT');
+        return batches.flatMap(batch=>batch.items.map(row=>{
+            const value=row.toJSON();
+            return {...serializePlace(row),catalogPriceAvailable:value.priceFrom!=null&&Number.isFinite(Number(value.priceFrom))&&Number(value.priceFrom)>=0};
+        })).filter(p=>this.isEligible(p)&&!isDemoListing(p)&&(p.catalogMetadata?.testOnly!==true||allowedTestIds?.has(p.id)));
+    }
+    async consultationHotel(id:string) {
+        if(!uuid(id))throw bad();
+        const row=await PlaceRepository.find(id,true);
+        if(!row||row.id!==id||row.category!=='hotel')return;
+        return {...serializePlace(row),catalogPriceAvailable:false};
+    }
     matchesClassification(p:any,f:CatalogFilters,plan=false){
       if(f.locationId&&!matchesLocation(p,f.locationId))return false;
       if(plan&&!['hotel','restaurant'].includes(p.category))return true;
@@ -48,9 +66,9 @@ export class RegisteredCatalogService {
     }
     private baseListing(p: any) { const price = p.catalogPriceAvailable !== false && p.priceFrom !== null && p.priceFrom !== undefined && Number.isFinite(Number(p.priceFrom)) && Number(p.priceFrom) >= 0 ? Number(p.priceFrom) : null; return { id: p.id, name: p.name, category: p.category, city: p.city, province: p.province, address: p.address, openingHours: p.openingHours || {}, summary: p.summary, description: p.description, heroImage: image(p.heroImage), amenities: Array.isArray(p.amenities) ? p.amenities.filter((x: any) => typeof x === 'string') : [], priceFrom: price, priceUnit: 'CATALOG_FROM_PRICE_UNIT_UNVERIFIED', currency: 'VND', rating: Number.isFinite(p.rating) && p.rating >= 0 && p.rating <= 5 ? p.rating : null, reviewCount: Number.isInteger(p.reviewCount) && p.reviewCount >= 0 ? p.reviewCount : null, status: 'APPROVED', businessStatus: p.businessId ? 'ACTIVE' : 'PLATFORM_OWNED', source: 'TRAVELGO_REGISTERED_CATALOG', href: '/places/' + p.id, availability: 'NOT_VERIFIED', capacity: 'NOT_MANAGED_FOR_PLACES', roomsMenu: 'NO_SEPARATE_ROOM_OR_MENU_TABLE', bookingEligible: !!p.businessId }; }
     publicListing(p:any){return {...this.baseListing(p),geography:publicGeography(p),catalogMetadata:p.catalogMetadata||{},approvedAt:p.approvedAt||null,isDemo:isDemoListing(p),...(isDemoListing(p)?{source:'DEMO',priceUnit:'ASSUMED_DEMO_VND_UNIT_UNVERIFIED',bookingEligible:false}:{} )};}
-    async search(category: 'hotel' | 'restaurant' | 'places', filters: CatalogFilters, options?: {nearListingId?: string}) {
+    async search(category: 'hotel' | 'restaurant' | 'places', filters: CatalogFilters, options?: {nearListingId?: string;eligibleCatalog?: readonly PlaceData[]}) {
         filters = validateCatalogFilters(filters);
-        const all = await this.eligible();
+        const all = options?.eligibleCatalog??await this.eligible();
         const near=options?.nearListingId?all.find(p=>p.id===options.nearListingId&&p.category==='hotel'):undefined;
         if(options?.nearListingId&&(!near||!Number.isFinite(near.latitude)||!Number.isFinite(near.longitude)||Math.abs(near.latitude)>90||Math.abs(near.longitude)>180))throw new HttpError(422,'Khách sạn chưa có vị trí hợp lệ để tìm xung quanh.','AGENT_LOCATION_UNVERIFIED');
         let candidates = all.filter(p => category === 'places' ? ['attraction','tour'].includes(p.category) : p.category === category);

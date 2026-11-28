@@ -6,6 +6,7 @@ import {Booking,BookingStatusHistory,AuditLog} from '../models/index.js';
 import {query,hotelSnapshot} from './postgresStore.js';
 import {HotelReadService,type HotelReadSnapshot} from '../services/hotelReadService.js';
 import {BusinessAccessService} from '../services/businessAccessService.js';
+import {authorizeHotelLock,hotelCapabilityEnabled,type HotelLockActor} from './referenceLocks.js';
 import {assertBookingTransition,type BookingStatus} from '../utils/bookingLifecycle.js';
 import {hotelError,objectOnly,text,uuid} from './validation.js';
 import {assertHotelCancellation,assertHotelStayCompletion,assertHotelStayWrites,cancellationContract,hotelIntentHash,normalizeHotelIntent,requiredHotelKey,signStayConfirmation,verifyStayConfirmation,type HotelIntent,type StayConfirmation,type CancellationContract} from './stayConfirmation.js';
@@ -31,16 +32,20 @@ export async function prepareHotelStay(userId:string,placeId:string,raw:any,keyR
  assertHotelStayWrites();const key=requiredHotelKey(keyRaw),intent=normalizeHotelIntent(placeId,raw);
  return sequelize.transaction({isolationLevel:Transaction.ISOLATION_LEVELS.REPEATABLE_READ,readOnly:true},async t=>{await query('SET TRANSACTION READ ONLY',[],t);await customer(userId,t);const s=await hotelSnapshot(intent.placeId,t);if(!s)hotelError('HOTEL_NOT_FOUND','Không tìm thấy khách sạn.',404);s!.asOf=await now(t);const a=await authoritative(s!,intent);const value:StayConfirmation={purpose:'HOTELSTAY_CONFIRMATION_V1',userId,key,intent,intentHash:hotelIntentHash(intent),quote:a.quote,issuedAt:s!.asOf,validUntil:a.snapshot.validUntil,snapshot:a.snapshot};const confirmation=signStayConfirmation(value);if(confirmation.length>32768)hotelError('HOTEL_CONFIRMATION_SIZE','Nội dung chính sách quá lớn cho xác nhận hiện tại.',409);return{confirmation,snapshot:{...a.snapshot,quote:a.quote,occupancy:intent.stay.rooms},contact:intent.contact,validUntil:value.validUntil,binding:false,reserved:false,requiresExplicitConfirmation:true};});
 }
-export async function confirmHotelStay(userId:string,raw:any,keyRaw:any){
+export async function confirmHotelStay(userId:string,raw:any,keyRaw:any,sessionVersion?:number){
  assertHotelStayWrites();objectOnly(raw,['confirmation','accepted']);if(raw.accepted!==true)hotelError('HOTEL_EXPLICIT_CONFIRMATION_REQUIRED','Bạn cần chủ động xác nhận giá và điều kiện.');
  const key=requiredHotelKey(keyRaw),value=verifyStayConfirmation(raw.confirmation,userId,key),intent=value.intent;
  return sequelize.transaction({isolationLevel:Transaction.ISOLATION_LEVELS.READ_COMMITTED},async t=>{
-  await transactionConfig(t);await customer(userId,t,true);await intentLock(userId,key,t);
+  await transactionConfig(t);
+  if(hotelCapabilityEnabled())await authorizeHotelLock('confirm_customer',userId,intent.placeId,sessionVersion,t);
+  else await customer(userId,t,true);
+  await intentLock(userId,key,t);
   const existing=await Booking.findOne({where:{userId,idempotencyKey:key},transaction:t});
   if(existing){if(existing.requestFingerprint!==value.intentHash)hotelError('IDEMPOTENCY_PAYLOAD_MISMATCH','Mã ý định đã được dùng cho nội dung khác.',409);return{...plain(existing),hotelStay:(await readHotelStays([existing.id],t))[existing.id],idempotentReplay:true};}
   if(Date.parse(await now(t))>=Date.parse(value.validUntil))hotelError('HOTEL_CONFIRMATION_EXPIRED','Xác nhận đã hết hạn. Hãy xem báo giá mới rồi xác nhận lại.',409);
   const parent=await query('SELECT place_id FROM hotel_profiles WHERE place_id=$1 FOR UPDATE',[intent.placeId],t);if(!parent.length)hotelError('HOTEL_NOT_FOUND','Không tìm thấy khách sạn.',404);
-  await query('SELECT p.id FROM places p JOIN businesses b ON b.id=p.business_id WHERE p.id=$1 FOR SHARE OF p,b',[intent.placeId],t);
+  if(hotelCapabilityEnabled())await authorizeHotelLock('published_hotel',userId,intent.placeId,sessionVersion,t);
+  else await query('SELECT p.id FROM places p JOIN businesses b ON b.id=p.business_id WHERE p.id=$1 FOR SHARE OF p,b',[intent.placeId],t);
   // Parent first, then exact room/date rows in deterministic order. The allocation trigger is the only counter writer.
   await query('SELECT room_type_id,stay_date FROM hotel_room_inventory WHERE room_type_id=$1 AND stay_date >= $2::date AND stay_date < $3::date ORDER BY room_type_id,stay_date FOR UPDATE',[value.quote.roomTypeId,intent.stay.checkIn,intent.stay.checkOut],t);
   const s=await hotelSnapshot(intent.placeId,t);s!.asOf=await now(t);if(Date.parse(s!.asOf)>=Date.parse(value.validUntil))hotelError('HOTEL_CONFIRMATION_EXPIRED','Xác nhận hết hạn trong khi chờ khóa. Hãy lấy báo giá mới.',409);
@@ -64,14 +69,25 @@ export async function readHotelStays(ids:string[],t?:Transaction):Promise<Record
 }
 export async function attachHotelStays(bookings:any[]){if(process.env.HOTEL_DOMAIN_ENABLED!=='true')return bookings;const ids=bookings.filter(b=>b.serviceType==='hotel').map(b=>b.id),stays=await readHotelStays(ids);return bookings.map(b=>stays[b.id]?{...b,hotelStay:stays[b.id]}:b);}
 export async function isHotelStayBooking(id:string){if(process.env.HOTEL_DOMAIN_ENABLED!=='true'){const found=(await query("SELECT to_regclass('public.hotel_booking_stays') AS relation"))[0];if(!found?.relation)return false;}return(await query('SELECT booking_id FROM hotel_booking_stays WHERE booking_id=$1',[id])).length>0;}
-export async function transitionHotelStay(id:string,status:BookingStatus,actor:{id:string;roles:string[]},reason?:string,businessId?:string){
+export async function transitionHotelStay(id:string,status:BookingStatus,actor:HotelLockActor,reason?:string,businessId?:string){
  assertHotelStayWrites();if(reason!==undefined)text(reason,1000,true);
  return sequelize.transaction({isolationLevel:Transaction.ISOLATION_LEVELS.READ_COMMITTED},async t=>{
   await transactionConfig(t);const initial=(await query('SELECT place_id FROM hotel_booking_stays WHERE booking_id=$1',[uuid(id)],t))[0];if(!initial)hotelError('BOOKING_NOT_FOUND','Không tìm thấy đặt phòng.',404);
   await query('SELECT place_id FROM hotel_profiles WHERE place_id=$1 FOR UPDATE',[initial.place_id],t);
   const b=await Booking.findByPk(id,{transaction:t,lock:t.LOCK.UPDATE});if(!b)hotelError('BOOKING_NOT_FOUND','Không tìm thấy đặt phòng.',404);
-  if(actor.roles.includes('PARTNER')&&!actor.roles.includes('SUPER_ADMIN')){if(businessId&&businessId!==b!.businessId)hotelError('BOOKING_ACCESS_DENIED','Đơn không thuộc cơ sở.',403);await BusinessAccessService.assert(actor.id,b!.businessId!,'MANAGE_BOOKINGS');const m=await query("SELECT id FROM business_members WHERE user_id=$1 AND business_id=$2 AND permissions @> '[\"MANAGE_BOOKINGS\"]'::jsonb FOR SHARE",[actor.id,b!.businessId],t);if(!m.length)hotelError('BUSINESS_ACCESS_DENIED','Quyền quản lý đơn đã thay đổi.',403);}
-  else if(!actor.roles.includes('SUPER_ADMIN')){if(b!.userId!==actor.id||status!=='CANCELLED')hotelError('BOOKING_ACCESS_DENIED','Bạn chỉ được hủy đơn của mình.',403);await customer(actor.id,t,true);}
+  if(actor.roles.includes('PARTNER')&&!actor.roles.includes('SUPER_ADMIN')){
+   if(businessId&&businessId!==b!.businessId)hotelError('BOOKING_ACCESS_DENIED','Đơn không thuộc cơ sở.',403);
+   if(hotelCapabilityEnabled())await authorizeHotelLock('partner_transition',actor.id,id,actor.sessionVersion,t);
+   else{
+    await BusinessAccessService.assert(actor.id,b!.businessId!,'MANAGE_BOOKINGS');
+    const membership=await query("SELECT id FROM business_members WHERE user_id=$1 AND business_id=$2 AND permissions @> '[\"MANAGE_BOOKINGS\"]'::jsonb FOR SHARE",[actor.id,b!.businessId],t);
+    if(!membership.length)hotelError('BUSINESS_ACCESS_DENIED','Quyền quản lý đơn đã thay đổi.',403);
+   }
+  }else if(!actor.roles.includes('SUPER_ADMIN')){
+   if(b!.userId!==actor.id||status!=='CANCELLED')hotelError('BOOKING_ACCESS_DENIED','Bạn chỉ được hủy đơn của mình.',403);
+   if(hotelCapabilityEnabled())await authorizeHotelLock('cancel_customer',actor.id,id,actor.sessionVersion,t);
+   else await customer(actor.id,t,true);
+  }else if(hotelCapabilityEnabled())await authorizeHotelLock('admin_transition',actor.id,id,actor.sessionVersion,t);
   const saved=(await query('SELECT quote_snapshot,check_out::text FROM hotel_booking_stays WHERE booking_id=$1',[id],t))[0],snapshot=saved.quote_snapshot;
   if(b!.bookingStatus==='CANCELLED'&&status==='CANCELLED')return{...plain(b),hotelStay:(await readHotelStays([id],t))[id],duplicateCancellation:true};
   assertBookingTransition(b!.bookingStatus,status);

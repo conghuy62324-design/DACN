@@ -83,7 +83,7 @@ export async function projectHotelSearch(s: HotelReadSnapshot, q: HotelSearch, r
   return {...detail,rooms:undefined,destination:resolveLocation(s.address.tourismDestinationId||s.address.provinceCode),review:{count:review.count,rating:review.count?review.rating:null,source:'PUBLISHED_PLACE_REVIEWS'},selected:selected?{room:selected.room,rate:{id:selected.rate.id,name:selected.rate.name,mealPlan:selected.rate.mealPlan,cancellation:selected.rate.cancellation,tax:selected.rate.tax,fees:selected.rate.fees},quote:selected.quote,referenceVnd:selected.reference,promotion:selected.promotion}:null,promotions:matches.map(m=>m.promotion).filter((p,i,a)=>p&&a.findIndex(x=>x?.id===p.id)===i),availability:stay?'VERIFIED_SNAPSHOT':'UNKNOWN',priceBasis:stay?'STAY_TOTAL':'UNDATED_PER_ROOM_NIGHT_REFERENCE'};
 }
 /** Fixed query count, capped candidate scope and rate evaluation; never returns a truncated filtered total. */
-export async function searchHotels(q: HotelSearch, allowSynthetic=false) {
+export async function searchHotels(q: HotelSearch, allowSynthetic=false, placeIds?:readonly string[]) {
   validateHotelSearch(q);
   return sequelize.transaction({isolationLevel:Transaction.ISOLATION_LEVELS.REPEATABLE_READ,readOnly:true},async t=>{
     await query('SET TRANSACTION READ ONLY',[],t);await query("SET LOCAL statement_timeout='5000ms'",[],t);
@@ -93,7 +93,8 @@ export async function searchHotels(q: HotelSearch, allowSynthetic=false) {
     const identity=hotelIdentitySearchQuery({locationId:q.locationId,streetName:q.streetName,wardOrCommune:q.wardOrCommune,nameOrAddress:q.nameOrAddress,accommodationType:q.accommodationType});
     const from=identity.sql.slice(identity.sql.indexOf(' FROM hotel_profiles'),identity.sql.lastIndexOf(' ORDER BY '));
     const params=identity.params.slice(0,-2);
-    const ids=await query('SELECT p.id,p.approved_at'+from+(!allowSynthetic?" AND COALESCE(p.catalog_metadata->>'testOnly','false')<>'true'":'')+" AND EXISTS(SELECT 1 FROM hotel_media m WHERE m.place_id=p.id AND m.room_type_id IS NULL AND m.status='APPROVED' AND m.rights<>'UNVERIFIED') ORDER BY p.id LIMIT 61",params,t);
+    const exactScope=placeIds?' AND p.id=ANY($'+params.push(placeIds)+'::uuid[])':'';
+    const ids=await query('SELECT p.id,p.approved_at'+from+exactScope+(!allowSynthetic?" AND COALESCE(p.catalog_metadata->>'testOnly','false')<>'true'":'')+" AND EXISTS(SELECT 1 FROM hotel_media m WHERE m.place_id=p.id AND m.room_type_id IS NULL AND m.status='APPROVED' AND m.rights<>'UNVERIFIED') ORDER BY p.id LIMIT 61",params,t);
     if(ids.length>60)hotelError('HOTEL_SEARCH_SCOPE_LIMIT','Hãy chọn địa điểm hoặc nhập thêm tên khách sạn để thu hẹp tìm kiếm.',422);
     const stay=q.checkIn?normalizeStayRequest({checkIn:q.checkIn,checkOut:q.checkOut,rooms:q.rooms||[{adults:2,childAges:[]}]}):undefined;
     const snapshots=await hotelSnapshots(ids.map(r=>r.id),t,stay);

@@ -240,3 +240,10 @@ T14
 - [ ] Sentiment A/B — quyết định rõ ràng và document
 - [ ] Runbook startup/reset
 
+
+
+## TASK21.41-SOURCE-CONSOLIDATION · 28/11/2026 ICT
+
+Đã chuẩn bị cây ứng viên, gói duyệt Git và bàn giao GPU staging. P17 PARTIAL. Owner duyệt commit, push và draft PR trước, rồi quyết định merge riêng sau review. TASK21.42-A cần duyệt riêng. Qwen OFF, P12 PARTIAL, persisted:false, một Agent backend.
+
+[Checkpoint, nhóm commit và bàn giao TASK21.42-A](HUGO_21_41_SOURCE_CONSOLIDATION_REPORT.md)

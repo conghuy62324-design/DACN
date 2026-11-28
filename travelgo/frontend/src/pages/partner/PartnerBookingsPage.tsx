@@ -1,23 +1,350 @@
-import {HotelBookingSummary} from '../../components/hotels/HotelBookingSummary';
+// Đơn đặt của cơ sở. Giữ ManagementService.partnerBookings / partnerBooking / partnerBookingStatus.
+// Hành động theo lifecycle hiện có: PENDING → CONFIRMED | REJECTED, CONFIRMED → COMPLETED. Không sửa tổng tiền/thanh toán/phân bổ.
+import { HotelBookingSummary } from '../../components/hotels/HotelBookingSummary';
 import '../../styles/hotels.css';
 import '../../styles/hotelStay.css';
-import React, { useEffect, useState } from 'react';
-import { CheckCircle2, Eye, XCircle } from 'lucide-react';
+import '../../styles/hg-partner.css';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { CheckCircle2, ClipboardList, XCircle } from 'lucide-react';
+import {
+  Alert,
+  AuditList,
+  BoButton,
+  BoTabs,
+  ConfirmDialog,
+  DataColumn,
+  DataTable,
+  DescList,
+  DetailDrawer,
+  DrawerSection,
+  FilterBar,
+  PageHeader,
+  StatusPill,
+  errorMessage,
+  fmtDate,
+  fmtDateTime,
+  fmtVnd,
+  paymentLabel,
+  statusLabel,
+  useQueryParams,
+} from '../../components/backoffice';
 import { ManagementService } from '../../services/managementService';
 import { PlatformService } from '../../services/platformService';
 import { Booking, Business } from '../../types';
-import { formatCurrencyVND } from '../../utils/formatters';
-import { useParams } from 'react-router-dom';
+import { usePartnerHotels } from './hotel/partnerContext';
 
-export const PartnerBookingsPage:React.FC=()=>{
- const bookingId=useParams().id; const [search,setSearch]=useState(''),[filterStatus,setFilterStatus]=useState('');
- const [businesses,setBusinesses]=useState<Business[]>([]);const [businessId,setBusinessId]=useState('');const [items,setItems]=useState<Booking[]>([]);const [selected,setSelected]=useState<Booking|null>(null);const [error,setError]=useState('');
- const load=async(id=businessId)=>{if(!id)return;try{setItems((await ManagementService.partnerBookings(id,{search,status:filterStatus,limit:100})).items as Booking[]);}catch(e:any){setError(e?.message||'Không thể tải booking.');}};
- useEffect(()=>{PlatformService.getPartnerDashboard().then(async d=>{setBusinesses(d.businesses);const id=d.selectedBusiness?.id||'';setBusinessId(id);if(id)await load(id);if(bookingId)setSelected(await ManagementService.partnerBooking(bookingId));}).catch(e=>setError(e?.message||'Không thể tải cơ sở.'));},[bookingId]);
- const status=async(booking:Booking,next:string)=>{try{await ManagementService.partnerBookingStatus(booking.id,businessId,next);setSelected(null);await load();}catch(e:any){setError(e?.message||'Không thể cập nhật booking.');}};
- return <div className="space-y-6"><div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-black uppercase tracking-[.2em] text-teal-700">Operations</p><h1 className="mt-1 text-3xl font-black">Booking của cơ sở</h1></div><label className="text-xs font-bold text-slate-500">CƠ SỞ<select value={businessId} onChange={e=>{setBusinessId(e.target.value);load(e.target.value);}} className="mt-2 block min-w-64 rounded-xl border border-teal-200 bg-white px-4 py-3 text-sm text-slate-900">{businesses.map(b=><option key={b.id} value={b.id}>{b.name}</option>)}</select></label></div>{error&&<div className="rounded-xl bg-rose-50 p-4 text-sm text-rose-700">{error}</div>}
- <form className="flex flex-wrap gap-3" onSubmit={e=>{e.preventDefault();void load();}}><label>Tìm mã, khách hoặc khách sạn<input aria-label="Tìm booking" value={search} onChange={e=>setSearch(e.target.value)} maxLength={120} className="block rounded-lg border p-2"/></label><label>Trạng thái<select aria-label="Lọc trạng thái booking" value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} className="block rounded-lg border p-2"><option value="">Tất cả</option>{["PENDING","CONFIRMED","COMPLETED","CANCELLED","REJECTED"].map(s=><option key={s}>{s}</option>)}</select></label><button type="submit" className="rounded-lg bg-teal-700 px-4 text-white">Lọc đơn</button></form><div className="overflow-x-auto rounded-2xl border border-teal-100 bg-white"><table className="w-full min-w-[760px] text-sm"><thead className="bg-teal-950 text-white"><tr><th className="px-5 py-4 text-left">Mã / Khách</th><th className="px-5 py-4 text-left">Dịch vụ</th><th className="px-5 py-4 text-left">Ngày</th><th className="px-5 py-4 text-left">Tổng tiền</th><th className="px-5 py-4">Trạng thái</th><th/></tr></thead><tbody className="divide-y divide-slate-100">{items.map(b=><tr key={b.id}><td className="px-5 py-4"><b>{b.bookingCode}</b><p className="text-xs text-slate-500">{b.customerName} · {b.customerPhone}</p></td><td className="px-5 py-4">{b.serviceName}<p className="text-xs text-slate-500">{b.quantity} {b.hotelStay?'phòng':'khách/vé'}</p></td><td className="px-5 py-4">{b.bookingDate}{b.hotelStay&&<p className="text-xs text-slate-500">Trả phòng: {b.returnDate}<br/>{b.hotelStay.room.name}</p>}</td><td className="px-5 py-4 font-bold">{formatCurrencyVND(b.totalAmount)}</td><td className="px-5 py-4 text-center"><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold">{b.bookingStatus}</span></td><td className="px-5 py-4 text-right"><button onClick={()=>setSelected(b)} className="rounded-lg bg-teal-50 p-2 text-teal-800"><Eye className="h-4 w-4"/></button></td></tr>)}</tbody></table></div>
- 
- {selected&&<div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/60 p-4"><div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl"><div className="flex items-start justify-between"><div><p className="text-xs font-bold text-teal-700">{selected.bookingCode}</p><h2 className="text-2xl font-black">{selected.serviceName}</h2></div><button onClick={()=>setSelected(null)} className="text-2xl">×</button></div><dl className="mt-5 grid grid-cols-2 gap-4 rounded-2xl bg-slate-50 p-4 text-sm"><div><dt className="text-slate-500">Khách hàng</dt><dd className="font-bold">{selected.customerName}</dd></div><div><dt className="text-slate-500">Liên hệ</dt><dd className="font-bold">{selected.customerPhone}</dd></div><div><dt className="text-slate-500">Ngày dùng</dt><dd className="font-bold">{selected.bookingDate}</dd></div><div><dt className="text-slate-500">Thanh toán</dt><dd className="font-bold">{selected.paymentStatus}</dd></div></dl>{selected.hotelStay&&<HotelBookingSummary booking={selected} partner/>}<div className="mt-5 flex flex-wrap justify-end gap-3">{selected.bookingStatus==='PENDING'&&<><button onClick={()=>status(selected,'REJECTED')} className="inline-flex items-center gap-2 rounded-xl border border-rose-200 px-4 py-2 text-sm font-bold text-rose-700"><XCircle className="h-4 w-4"/>Từ chối</button><button onClick={()=>status(selected,'CONFIRMED')} className="inline-flex items-center gap-2 rounded-xl bg-teal-700 px-4 py-2 text-sm font-bold text-white"><CheckCircle2 className="h-4 w-4"/>Xác nhận</button></>}{selected.bookingStatus==='CONFIRMED'&&<button onClick={()=>status(selected,'COMPLETED')} className="rounded-xl bg-teal-700 px-4 py-2 text-sm font-bold text-white">Hoàn thành</button>}</div></div></div>}
- </div>;
+const STATUSES = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'REJECTED'];
+
+const TABS = [
+  { key: 'PENDING', label: 'Chờ xác nhận' },
+  { key: 'CONFIRMED', label: 'Đã xác nhận' },
+  { key: 'COMPLETED', label: 'Hoàn thành' },
+  { key: 'CLOSED', label: 'Đã hủy/Từ chối' },
+  { key: '', label: 'Tất cả' },
+];
+
+export const PartnerBookingsPage: React.FC = () => {
+  const bookingId = useParams().id;
+  const navigate = useNavigate();
+  const query = useQueryParams();
+  const ctx = usePartnerHotels();
+  const [search, setSearch] = useState(query.get('q'));
+  const filterStatus = query.get('status');
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [businessId, setBusinessId] = useState('');
+  const [items, setItems] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Booking | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [dialog, setDialog] = useState<'' | 'REJECTED' | 'COMPLETED'>('');
+
+  const load = async (id = businessId, status = filterStatus, text = search) => {
+    if (!id) return;
+    setLoading(true);
+    setError('');
+    try {
+      if (status === 'CLOSED') {
+        const [a, b] = await Promise.all(['CANCELLED', 'REJECTED'].map((st) => ManagementService.partnerBookings(id, { search: text, status: st, limit: 100 })));
+        setItems([...(a.items as Booking[]), ...(b.items as Booking[])].sort((x, y) => String(y.createdAt).localeCompare(String(x.createdAt))));
+      } else {
+        setItems((await ManagementService.partnerBookings(id, { search: text, status, limit: 100 })).items as Booking[]);
+      }
+    } catch (e: any) {
+      setError(errorMessage(e, 'Không thể tải booking.'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    PlatformService.getPartnerDashboard()
+      .then(async (d) => {
+        setBusinesses(d.businesses);
+        const hotel = ctx?.current;
+        const byHotel = hotel ? d.businesses.find((b) => (hotel.businessId ? b.id === hotel.businessId : b.name === hotel.businessName)) : undefined;
+        const id = byHotel?.id || d.selectedBusiness?.id || '';
+        setBusinessId(id);
+        if (id) await load(id);
+        else setLoading(false);
+      })
+      .catch((e) => {
+        setError(errorMessage(e, 'Không thể tải cơ sở.'));
+        setLoading(false);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!bookingId) {
+      setSelected(null);
+      return;
+    }
+    const inList = items.find((b) => b.id === bookingId);
+    if (inList) setSelected(inList);
+    setDetailLoading(!inList);
+    setDetailError('');
+    ManagementService.partnerBooking(bookingId)
+      .then((b) => setSelected(b))
+      .catch((e) => setDetailError(errorMessage(e, 'Không tải được đơn đặt.')))
+      .finally(() => setDetailLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookingId]);
+
+  const closeDrawer = () => navigate('/partner/bookings' + query.search);
+  const openBooking = (b: Booking) => navigate(`/partner/bookings/${b.id}${query.search}`);
+
+  const status = async (booking: Booking, next: string, reason?: string) => {
+    setBusy(true);
+    try {
+      await ManagementService.partnerBookingStatus(booking.id, businessId, next, reason);
+      closeDrawer();
+      await load();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const confirmNow = async (booking: Booking) => {
+    setDetailError('');
+    try {
+      await status(booking, 'CONFIRMED');
+    } catch (e: any) {
+      setDetailError(errorMessage(e, 'Không thể cập nhật booking.'));
+    }
+  };
+
+  const setStatusFilter = (value: string) => {
+    query.set({ status: value });
+    void load(businessId, value);
+  };
+
+  const columns: DataColumn<Booking>[] = useMemo(() => [
+    {
+      key: 'code',
+      header: 'Mã / Khách',
+      primary: true,
+      render: (b) => (
+        <div className="hgp-cellstack">
+          <span className="hgbo-strong hgbo-num">{b.bookingCode}</span>
+          <span className="hgbo-dt__cell-sub">{b.customerName}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'service',
+      header: 'Dịch vụ',
+      render: (b) => (
+        <div className="hgp-cellstack">
+          <span>{b.serviceName}</span>
+          {b.hotelStay?.room?.name && <span className="hgbo-dt__cell-sub">{b.hotelStay.room.name}</span>}
+        </div>
+      ),
+    },
+    {
+      key: 'dates',
+      header: 'Nhận → trả phòng',
+      render: (b) => (b.returnDate ? `${fmtDate(b.bookingDate)} → ${fmtDate(b.returnDate)}` : fmtDate(b.bookingDate)),
+    },
+    {
+      key: 'qty',
+      header: 'Số lượng',
+      hideBelow: 1280,
+      render: (b) => `${b.quantity} ${b.hotelStay ? 'phòng' : 'khách/vé'}`,
+    },
+    { key: 'total', header: 'Tổng tiền', align: 'right', hideBelow: 1024, render: (b) => <span className="hgbo-num">{fmtVnd(b.totalAmount)}</span> },
+    { key: 'status', header: 'Trạng thái', render: (b) => <StatusPill status={b.bookingStatus} domain="booking" size="sm" /> },
+  ], []);
+
+  const history = (selected as any)?.statusHistory;
+
+  const footer = selected && !detailLoading ? (
+    selected.bookingStatus === 'PENDING' ? (
+      <>
+        <BoButton variant="danger" icon={XCircle} disabled={busy} onClick={() => setDialog('REJECTED')}>Từ chối</BoButton>
+        <BoButton variant="primary" icon={CheckCircle2} loading={busy} onClick={() => confirmNow(selected)}>Xác nhận đơn</BoButton>
+      </>
+    ) : selected.bookingStatus === 'CONFIRMED' ? (
+      <BoButton variant="primary" icon={CheckCircle2} disabled={busy} onClick={() => setDialog('COMPLETED')}>Đánh dấu hoàn thành</BoButton>
+    ) : undefined
+  ) : undefined;
+
+  return (
+    <div className="hgp-page hgbo-stack">
+      <PageHeader
+        title="Đơn đặt"
+        subtitle="Chỉ gồm đơn của cơ sở bạn được cấp quyền. Tổng tiền là giá chốt lúc đặt, không chỉnh sửa."
+        actions={businesses.length ? (
+          <div className="hgbo-field hgp-bizselect">
+            <label className="hgbo-field__label" htmlFor="hgp-bookings-business">Cơ sở kinh doanh</label>
+            <select
+              id="hgp-bookings-business"
+              className="hgbo-select"
+              value={businessId}
+              onChange={(e) => {
+                setBusinessId(e.target.value);
+                void load(e.target.value);
+              }}
+            >
+              {businesses.map((b) => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+          </div>
+        ) : undefined}
+      />
+      <BoTabs
+        items={TABS.map((t) => ({ key: t.key || 'ALL', label: t.label }))}
+        value={filterStatus === 'CANCELLED' || filterStatus === 'REJECTED' ? 'CLOSED' : filterStatus || 'ALL'}
+        onChange={(key) => setStatusFilter(key === 'ALL' ? '' : key)}
+        label="Lọc nhanh theo trạng thái"
+      />
+      <FilterBar
+        search={{ value: search, onChange: setSearch, placeholder: 'Tìm mã, khách hoặc khách sạn', label: 'Tìm booking', maxLength: 120 }}
+        activeCount={(filterStatus ? 1 : 0) + (search.trim() ? 1 : 0)}
+        onSubmit={() => {
+          query.set({ q: search.trim() });
+          void load();
+        }}
+        onReset={() => {
+          setSearch('');
+          query.set({ q: null, status: null });
+          void load(businessId, '', '');
+        }}
+        note="Nhấn Enter để tìm trên máy chủ."
+      >
+        <div className="hgbo-field">
+          <label className="hgbo-field__label" htmlFor="hgp-booking-status">Trạng thái</label>
+          <select
+            id="hgp-booking-status"
+            className="hgbo-select"
+            aria-label="Lọc trạng thái booking"
+            value={filterStatus === 'CLOSED' ? '' : filterStatus}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="">Tất cả</option>
+            {STATUSES.map((st) => (
+              <option key={st} value={st}>{statusLabel(st, 'booking')}</option>
+            ))}
+          </select>
+        </div>
+      </FilterBar>
+      {error && <Alert tone="danger">{error}</Alert>}
+      <DataTable
+        caption="Danh sách đơn đặt"
+        columns={columns}
+        rows={items}
+        rowKey={(b) => b.id}
+        loading={loading}
+        onRowClick={openBooking}
+        selectedKey={bookingId || null}
+        rowActions={(b) => [{ label: 'Xem', onClick: () => openBooking(b) }]}
+        empty={{
+          icon: ClipboardList,
+          title: businessId ? 'Chưa có đơn đặt phù hợp' : 'Chưa có cơ sở được cấp quyền',
+          description: businessId ? 'Thử bỏ bộ lọc hoặc chọn cơ sở khác.' : 'Liên hệ quản trị viên nếu hồ sơ của bạn đã được phê duyệt.',
+        }}
+      />
+      <DetailDrawer
+        open={!!bookingId}
+        width="lg"
+        title={selected?.bookingCode || 'Đơn đặt'}
+        subtitle={selected?.serviceName}
+        status={selected?.bookingStatus}
+        statusDomain="booking"
+        loading={detailLoading && !selected}
+        error={!selected ? detailError || null : null}
+        onClose={closeDrawer}
+        footer={footer}
+      >
+        {selected && (
+          <div className="hgbo-stack">
+            {detailError && <Alert tone="danger">{detailError}</Alert>}
+            {selected.hotelStay ? (
+              <HotelBookingSummary booking={selected} partner />
+            ) : (
+              <DrawerSection title="Dịch vụ">
+                <DescList
+                  items={[
+                    { label: 'Dịch vụ', value: selected.serviceName },
+                    { label: 'Ngày dùng', value: fmtDate(selected.bookingDate) },
+                    { label: 'Số lượng', value: selected.quantity },
+                  ]}
+                />
+              </DrawerSection>
+            )}
+            <DrawerSection title="Khách & liên hệ">
+              <DescList
+                items={[
+                  { label: 'Khách hàng', value: selected.customerName },
+                  { label: 'Điện thoại', value: selected.customerPhone },
+                ]}
+              />
+            </DrawerSection>
+            <DrawerSection title="Giá & thanh toán">
+              <DescList
+                items={[
+                  { label: 'Tổng tiền (giá chốt lúc đặt)', value: <span className="hgbo-num">{fmtVnd(selected.totalAmount)}</span> },
+                  { label: 'Thanh toán', value: paymentLabel(selected.paymentStatus) },
+                  { label: 'Tạo lúc', value: fmtDateTime(selected.createdAt) },
+                ]}
+              />
+            </DrawerSection>
+            <DrawerSection title="Lịch sử trạng thái">
+              <AuditList
+                domain="booking"
+                items={Array.isArray(history) ? history.map((h: any) => ({ action: h.action || 'BOOKING_' + (h.to || h.status || ''), actorName: h.actorName, at: h.at || h.createdAt, reason: h.reason, from: h.from, to: h.to })) : null}
+                emptyText="Máy chủ chưa trả lịch sử trạng thái cho đơn này."
+              />
+            </DrawerSection>
+          </div>
+        )}
+      </DetailDrawer>
+      <ConfirmDialog
+        open={dialog === 'REJECTED'}
+        title="Từ chối đơn đặt"
+        tone="danger"
+        impact="Phòng giữ cho đơn được trả lại."
+        confirmLabel="Từ chối đơn"
+        reason={{ required: true, label: 'Lý do từ chối', presets: ['Hết phòng trong khoảng ngày này', 'Thông tin đặt chỗ chưa hợp lệ'] }}
+        onClose={() => setDialog('')}
+        onConfirm={async (reason) => {
+          if (selected) await status(selected, 'REJECTED', reason);
+        }}
+      />
+      <ConfirmDialog
+        open={dialog === 'COMPLETED'}
+        title="Đánh dấu hoàn thành"
+        impact="Chỉ hợp lệ sau ngày trả phòng; máy chủ sẽ từ chối nếu chưa đến hạn."
+        confirmLabel="Đánh dấu hoàn thành"
+        onClose={() => setDialog('')}
+        onConfirm={async () => {
+          if (selected) await status(selected, 'COMPLETED');
+        }}
+      />
+    </div>
+  );
 };

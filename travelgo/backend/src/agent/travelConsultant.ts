@@ -39,7 +39,7 @@ export function understandConsultation(message:string,memory:ConsultantMemory):A
  if(/\bgan trung tam\b/.test(s)){advice.question='Bạn muốn gần địa điểm trung tâm cụ thể nào? TravelGo chưa có mốc trung tâm được xác minh để khẳng định khoảng cách.';return advice;}
  const filters:CatalogFilters={};
  const amenities:[RegExp,string][]=[[/\b(?:bai (?:do|dau) xe|cho (?:do|dau) xe)\b/,'Bãi đỗ xe'],[/\b(?:ho boi|be boi)\b/,'Hồ bơi'],[/\bwi(?:\s*-\s*|\s*)fi\b/,'Wi-Fi']];
- if(!advice.attribute)for(const [p,label]of amenities)if(p.test(s))(filters.amenities||=[]).push(label);
+ if(!advice.attribute)for(const [p,label]of amenities){const hit=p.exec(s);if(hit&&!/\b(?:khong can|khong muon|khong co|khoi can|bo(?: yeu cau| dieu kien)?)\s*$/.test(s.slice(Math.max(0,hit.index-36),hit.index)))(filters.amenities||=[]).push(label);}
  if(/\b(?:ngon bo re|gia mem|gia re|re re|tiet kiem|re)\b/.test(s)&&!advice.reference)filters.sort='priceAsc';
  const food:Record<string,string>={'dac san':'local','hai san':'seafood','do chay':'vegetarian','mon viet':'vietnamese','buffet':'buffet','bbq':'bbq_hotpot','lau':'bbq_hotpot'};
  if(dining)for(const [word,id]of Object.entries(food))if(s.includes(word)){filters.cuisine=id;break;}

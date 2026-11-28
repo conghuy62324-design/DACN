@@ -4,6 +4,7 @@ import { Place } from '../../types';
 import { placeMarker, placePopup } from '../../utils/mapPopup';
 import { GoogleMap } from '../maps/GoogleMap';
 import { googleMapsSelected } from '../../utils/googleMapsLoader';
+import '../../styles/hg-catalog.css';
 
 interface MapViewProps {
   places: Place[];
@@ -102,23 +103,14 @@ const LegacyMapView: React.FC<MapViewProps> = ({ places, selectedPlace, onSelect
   }, [selectedPlace]);
 
   return (
-    <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-inner border border-slate-200">
-      <div ref={mapContainerRef} className="w-full h-full min-h-[450px] lg:min-h-[700px]" />
+    <div className="hg-cat-map">
+      <div ref={mapContainerRef} className="hg-cat-map__canvas" />
 
-      {/* Map Legend Floating Tag */}
-      <div className="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-xl shadow-lg border border-slate-200 text-xs flex items-center space-x-3 pointer-events-auto">
-        <div className="flex items-center space-x-1.5">
-          <span className="w-3 h-3 rounded-full bg-teal-600"></span>
-          <span className="text-slate-700 font-medium">Tour / Điểm đến</span>
-        </div>
-        <div className="flex items-center space-x-1.5">
-          <span className="w-3 h-3 rounded-full bg-indigo-600"></span>
-          <span className="text-slate-700 font-medium">Khách sạn</span>
-        </div>
-        <div className="flex items-center space-x-1.5">
-          <span className="w-3 h-3 rounded-full bg-amber-500"></span>
-          <span className="text-slate-700 font-medium">Nhà hàng</span>
-        </div>
+      {/* Chú thích màu marker (màu marker giữ nguyên theo logic bản đồ) */}
+      <div className="hg-cat-map__legend" aria-label="Chú thích bản đồ">
+        <span><i className="bg-teal-600" aria-hidden="true" />Tour / Điểm đến</span>
+        <span><i className="bg-indigo-600" aria-hidden="true" />Khách sạn</span>
+        <span><i className="bg-amber-500" aria-hidden="true" />Nhà hàng</span>
       </div>
     </div>
   );

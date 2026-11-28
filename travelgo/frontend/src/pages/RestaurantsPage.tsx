@@ -1,13 +1,13 @@
-import {CatalogPageFilters,CatalogPagination,useCatalogPage} from '../components/explore/CatalogPageFilters';
-import React, { useState, useEffect } from 'react';
+import {CatalogBreadcrumb,CatalogFeedback,CatalogPageFilters,CatalogPagination,CatalogSkeletonGrid,CatalogState,useCatalogPage} from '../components/explore/CatalogPageFilters';
+import {cuisineLabels} from '../components/explore/ServiceFilters';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { PlaceService } from '../services/placeService';
-import { Place } from '../types';
-import { UtensilsCrossed, Star, MapPin, Clock, Heart, Users } from 'lucide-react';
+import { UtensilsCrossed, MapPin, Heart, Users, Sparkles } from 'lucide-react';
 import { RatingBadge } from '../components/common/RatingBadge';
 import { formatCurrencyVND } from '../utils/formatters';
 import { useFavorites } from '../context/FavoritesContext';
 import { useBooking } from '../context/BookingContext';
+import '../styles/hg-catalog.css';
 
 export const RestaurantsPage: React.FC = () => {
   const catalog=useCatalogPage('restaurant');
@@ -15,112 +15,122 @@ export const RestaurantsPage: React.FC = () => {
   const {toggleFavorite,isFavorite}=useFavorites();
   const {openBooking}=useBooking();
 
+  let list: React.ReactNode = null;
+  if (catalog.loading) list = <CatalogSkeletonGrid label="Đang tải nhà hàng…"/>;
+  else if (!catalog.error && restaurants.length === 0) list = <CatalogState
+    role="status"
+    icon={<UtensilsCrossed size={32} aria-hidden="true"/>}
+    title="Chưa có nhà hàng phù hợp"
+    text="Chưa có nhà hàng tại địa điểm này. Bạn có thể đổi điểm đến hoặc nới bộ lọc."
+  />;
+  else if (!catalog.error) list = (
+    <div className="hg-cat-grid">
+      {restaurants.map((rest) => {
+        const favorited = isFavorite(rest.id);
+        const cuisines = (rest.catalogMetadata?.cuisines || []).map((k) => cuisineLabels[k]).filter(Boolean);
+        return (
+          <article key={rest.id} data-testid="service-catalog-card" className="hg-cat-card">
+            <div className="hg-cat-card__media">
+              <img src={rest.heroImage} alt={rest.name} loading="lazy" decoding="async" onError={(e) => e.currentTarget.parentElement?.classList.add('hg-cat-imgfail')} />
+              <span className="hg-cat-card__badges">
+                {cuisines.length > 0 && <span className="hg-cat-badge">{cuisines.join(' · ')}</span>}
+              </span>
+              <button
+                type="button"
+                aria-pressed={favorited}
+                aria-label={favorited ? 'Bỏ lưu nhà hàng' : 'Lưu nhà hàng'}
+                onClick={() => toggleFavorite(rest)}
+                className="hg-cat-fav"
+              >
+                <Heart size={18} aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="hg-cat-card__body">
+              <div className="hg-cat-card__meta">
+                <span>
+                  <MapPin size={14} aria-hidden="true" />
+                  {rest.address || rest.city}
+                </span>
+              </div>
+              <h3 className="hg-cat-card__title">
+                <Link to={`/places/${rest.id}`}>{rest.name}</Link>
+              </h3>
+              <div className="hg-cat-rating">
+                <RatingBadge rating={rest.rating} reviewCount={rest.reviewCount} showBayesianDetail={true} size="sm" />
+              </div>
+              {rest.summary && <p className="hg-cat-card__text">{rest.summary}</p>}
+              {rest.highlights.length > 0 && (
+                <div className="hg-cat-card__tags">
+                  {rest.highlights.slice(0, 4).map((h, i) => (
+                    <span key={i} className="hg-cat-tag hg-cat-tag--muted">{h}</span>
+                  ))}
+                </div>
+              )}
+              <Link className="hg-cat-ai" to={'/assistant?listing='+encodeURIComponent(rest.id)}>
+                <Sparkles size={16} aria-hidden="true" />Tư vấn bằng AI
+              </Link>
+            </div>
+
+            <div className="hg-cat-card__foot">
+              <div className="hg-cat-price">
+                <span className="hg-cat-price__label">Giá từ danh mục</span>
+                <span className="hg-cat-price__value">{rest.priceFrom==null?'Chưa có giá':formatCurrencyVND(rest.priceFrom)}</span>
+                <span className="hg-cat-price__note">Đơn vị giá chưa xác minh</span>
+              </div>
+              <div className="hg-cat-card__actions">
+                <Link to={`/places/${rest.id}`} className="hg-cat-btn hg-cat-btn--ghost hg-cat-btn--sm">
+                  Xem chi tiết
+                </Link>
+                <button
+                  type="button"
+                  disabled={rest.isDemo||rest.priceFrom==null}
+                  onClick={() =>
+                    openBooking({
+                      serviceType: 'restaurant',
+                      serviceId: rest.id,
+                      serviceName: rest.name,
+                      unitPrice: rest.priceFrom,
+                      imageUrl: rest.heroImage,
+                    })
+                  }
+                  className="hg-cat-btn hg-cat-btn--cta hg-cat-btn--sm"
+                >
+                  <Users size={16} aria-hidden="true" />
+                  <span>{rest.isDemo?'Chưa nhận đặt':'Đặt dịch vụ'}</span>
+                </button>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  );
+
   return (
-    <div className="min-h-screen pt-24 pb-20 bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Banner */}
-        <div className="bg-gradient-to-r from-amber-950 to-orange-950 rounded-3xl p-8 sm:p-12 text-white shadow-xl mb-10">
-          <span className="inline-block px-3 py-1 bg-amber-500 text-white rounded-full text-xs font-bold uppercase tracking-wider mb-3">
-            Tinh hoa ẩm thực ba miền
-          </span>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">
-            Khám phá những nhà hàng & quán ăn trứ danh
-          </h1>
-          <p className="text-amber-200 text-sm sm:text-base max-w-2xl leading-relaxed">
+    <div className="hg-cat">
+      <header className="hg-cat-head">
+        <div className="hg-container">
+          <CatalogBreadcrumb items={[{label:'Trang chủ',to:'/'},{label:'Nhà hàng'}]}/>
+          <p className="hg-cat-eyebrow"><UtensilsCrossed size={16} aria-hidden="true"/>Ẩm thực ba miền</p>
+          <h1 className="hg-cat-h1">Nhà hàng &amp; quán ăn</h1>
+          <p className="hg-cat-lead">
             Tìm quán ăn theo loại ẩm thực và ngân sách. Thực đơn, chất gây dị ứng và tình trạng bàn cần được nhà cung cấp xác nhận riêng.
           </p>
         </div>
+      </header>
 
+      <div className="hg-container hg-cat-main">
         <CatalogPageFilters {...catalog}/>
-
-        {/* Restaurant Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {restaurants.map((rest) => {
-            const favorited = isFavorite(rest.id);
-
-            return (
-              <div
-                key={rest.id}
-                data-testid="service-catalog-card"
-                className="bg-white rounded-3xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 border border-slate-100 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-                    <img src={rest.heroImage} alt={rest.name} className="w-full h-full object-cover" />
-                    <button
-                      onClick={() => toggleFavorite(rest)}
-                      className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center text-slate-700 hover:text-rose-500 transition-all shadow"
-                    >
-                      <Heart className={`w-4 h-4 ${favorited ? 'fill-rose-500 text-rose-500' : ''}`} />
-                    </button>
-                  </div>
-
-                  <div className="p-6 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center text-xs text-slate-500 font-medium">
-                        <MapPin className="w-3.5 h-3.5 text-orange-500 mr-1" />
-                        <span>{rest.address}</span>
-                      </div>
-                      <RatingBadge rating={rest.rating} reviewCount={rest.reviewCount} showBayesianDetail={true} size="sm" />
-                    </div>
-
-                    <Link to={`/places/${rest.id}`}>
-                      <h3 className="text-xl font-bold text-slate-900 leading-snug hover:text-amber-600 transition-colors">
-                        {rest.name}
-                      </h3>
-                    </Link>
-
-                    <Link className="text-sm font-bold text-teal-700 underline" to={'/assistant?listing='+encodeURIComponent(rest.id)}>Tư vấn bằng AI</Link>
-                    <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                      {rest.summary}
-                    </p>
-
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      {rest.highlights.map((h, i) => (
-                        <span key={i} className="text-xs bg-amber-50 text-amber-800 px-2.5 py-1 rounded-lg border border-amber-100">
-                          ★ {h}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-6 pt-0 border-t border-slate-100 flex flex-wrap gap-3 items-center justify-between mt-4">
-                  <div>
-                    <span className="text-[11px] text-slate-400 block">Giá từ catalog, đơn vị chưa xác minh</span>
-                    <span className="text-xl font-black text-slate-900">{rest.priceFrom==null?'Chưa có giá':formatCurrencyVND(rest.priceFrom)}</span>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Link
-                      to={`/places/${rest.id}`}
-                      className="px-4 py-2.5 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-50 transition-colors"
-                    >
-                      Xem chi tiết
-                    </Link>
-                    <button
-                      disabled={rest.isDemo||rest.priceFrom==null}
-                      onClick={() =>
-                        openBooking({
-                          serviceType: 'restaurant',
-                          serviceId: rest.id,
-                          serviceName: rest.name,
-                          unitPrice: rest.priceFrom,
-                          imageUrl: rest.heroImage,
-                        })
-                      }
-                      className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow transition-colors flex items-center space-x-1.5"
-                    >
-                      <Users className="w-3.5 h-3.5" />
-                      <span>{rest.isDemo?'DEMO · Không nhận đặt':'Đặt dịch vụ'}</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <CatalogPagination {...catalog}/>
+        <section aria-label="Danh sách nhà hàng">
+          <div className="hg-cat-resultbar">
+            <h2 className="hg-cat-h2">Nhà hàng phù hợp</h2>
+            <p className="hg-cat-count" role="status">{catalog.loading?'Đang lọc…':catalog.error?'':catalog.meta.total+' nhà hàng'}</p>
+          </div>
+          <CatalogFeedback {...catalog}/>
+          {list}
+          <CatalogPagination {...catalog}/>
+        </section>
       </div>
     </div>
   );

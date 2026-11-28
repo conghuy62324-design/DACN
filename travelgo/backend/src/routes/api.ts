@@ -23,6 +23,7 @@ import mapsRoutes from './mapsRoutes.js';
 import publicAgentRoutes from './publicAgentRoutes.js';
 import { sequelize } from '../config/database.js';
 import {publicHotels,hotelMedia} from './hotelRoutes.js';
+import webFoundationRoutes from './webFoundationRoutes.js';
 
 const router = Router();
 
@@ -37,6 +38,7 @@ router.get('/health', async (_req, res) => {
 });
 
 // Resource endpoints
+router.use(webFoundationRoutes);
 router.use('/places', placeRoutes);
 router.use('/hotels',publicHotels);
 router.use('/hotel-media',hotelMedia);

@@ -1,5 +1,5 @@
 import { ACCOMMODATION_TYPES } from '../services/catalogPolicy.js';
-import { resolveLocation } from '../geography/vietnam.js';
+import { destinationAddressIds, resolveLocation } from '../geography/vietnam.js';
 import { addressFold, hotelError, int, objectOnly, streetKey, wardKey, text } from './validation.js';
 export type HotelIdentitySearch = {
     locationId?: string;
@@ -25,7 +25,11 @@ export function hotelIdentitySearchQuery(input: HotelIdentitySearch) {
         const g = resolveLocation(input.locationId);
         if (!g || g.kind === 'all')
             hotelError('HOTEL_LOCATION_INVALID', 'Khu vực chưa hợp lệ.');
-        where.push(g!.kind === 'province' ? `a.province_code=${bind(g!.id)}` : `a.tourism_destination_id=${bind(g!.id)}`);
+        if(g!.kind==='province')where.push(`a.province_code=${bind(g!.id)}`);
+        else {
+            const destinations=destinationAddressIds(g!);
+            where.push(destinations.length>1?`a.tourism_destination_id=ANY(${bind(destinations)}::text[])`:`a.tourism_destination_id=${bind(destinations[0])}`);
+        }
     }
     if (input.streetName && !input.locationId)
         hotelError('HOTEL_STREET_NEEDS_AREA', 'Chọn khu vực để tránh nhầm đường trùng tên.');

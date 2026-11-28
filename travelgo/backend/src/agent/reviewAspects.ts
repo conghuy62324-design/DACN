@@ -1,37 +1,41 @@
 import {fold} from '../services/registeredCatalogService.js';
-export const REVIEW_ANALYSIS_METHOD='BOUNDED_VI_ASPECT_RULES_V3';
-export const ASPECT_LABELS:Record<string,string>={cleanliness:'Vệ sinh',price:'Giá cả',location:'Vị trí theo nhận xét',staff:'Nhân viên/phục vụ',amenities:'Tiện ích',room:'Chất lượng phòng',noise:'Tiếng ồn/cách âm',food:'Món ăn',space:'Không gian',wait:'Thời gian chờ',overall:'Trải nghiệm tổng thể'};
+export const REVIEW_ANALYSIS_METHOD='BOUNDED_VI_ASPECT_RULES_V5';
 export type Sentiment='POSITIVE'|'NEGATIVE'|'NEUTRAL'|'MIXED'|'UNKNOWN';
-const aspects:Record<string,RegExp>={cleanliness:/\b(?:sach se|khong sach|ve sinh|ban thiu|do ban|(?:phong|khach san|ks) (?:rat )?(?:sach|ban))\b/,price:/\b(?:gia|dat do|re)\b/,location:/\b(?:vi tri|gan bien|xa bien|gan trung tam|xa trung tam)\b/,staff:/\b(?:nhan vien|phuc vu|le tan)\b/,amenities:/\b(?:tien ich|ho boi|wifi|wi fi|bai do xe)\b/,room:/\b(?:phong (?:rong|chat|cu|moi|tot|kem))\b/,noise:/\b(?:on ao|hoi on|rat on|khong on|tieng on|cach am|yen tinh)\b/,food:/\b(?:mon an|do an|thuc an|ngon|do song)\b/,space:/\b(?:khong gian|cho ngoi)\b/,wait:/\b(?:cho lau|doi lau|thoi gian cho|len mon nhanh)\b/,overall:/\b(?:trai nghiem|tong the|that vong|tuyet voi)\b/};
-const positive=/\b(?:sach(?: se)?|ok|tot|than thien|nhiet tinh|gia mem|hop ly|re|ngon|rong rai|thoang|nhanh|yen tinh|khong on|tuyet voi)\b/;
-const negative=/\b(?:ban thiu|do ban|dat do|gia cao|te|kem|hoi on|rat on|on ao|cho lau|doi lau|chat choi|that vong|khong ngon|khong sach|khong tot|khong than thien|khong hop ly|cach am kem)\b/;
-/** Raw text never enters an LLM. No free-text evidence, identity or numeric confidence is persisted. */
+export const ASPECT_LABELS:Record<string,string>={cleanliness:'Vệ sinh',price:'Giá trị theo trải nghiệm',location:'Vị trí theo nhận xét',staff:'Nhân viên/phục vụ',amenities:'Tiện ích',room:'Chất lượng phòng',noise:'Tiếng ồn',food:'Món ăn',space:'Không gian',wait:'Thời gian chờ',overall:'Trải nghiệm tổng thể',room_view:'Hướng nhìn theo nhận xét',beach_access:'Đi biển theo trải nghiệm',food_access:'Đi ăn theo trải nghiệm',city_center_access:'Đi trung tâm theo trải nghiệm',service:'Dịch vụ',soundproofing:'Cách âm',bed_comfort:'Giường/đệm',bathroom:'Phòng tắm',air_conditioning:'Máy lạnh',wifi:'Wi-Fi',breakfast:'Bữa sáng',parking:'Bãi xe',pool:'Hồ bơi',room_equipment:'Thiết bị phòng',family_suitability:'Phù hợp gia đình theo nhận xét'};
+const patterns:Record<string,RegExp>={cleanliness:/\b(?:sach(?: se)?|ve sinh|ban thiu|do ban|ban)\b/g,price:/\b(?:gia|dat do|re)\b/g,location:/\b(?:vi tri|gan bien|xa bien|gan trung tam|xa trung tam)\b/g,staff:/\b(?:nhan vien|phuc vu|le tan)\b/g,amenities:/\b(?:tien ich|ho boi|be boi|wifi|wi fi|bai (?:do )?xe)\b/g,room:/\bphong (?:rong|chat|cu|moi|tot|kem)\b/g,noise:/\b(?:on ao|hoi on|rat on|khong on|tieng on|cach am|yen tinh)\b/g,food:/\b(?:mon an|do an|thuc an|ngon|do song)\b/g,space:/\b(?:khong gian|cho ngoi)\b/g,wait:/\b(?:cho lau|doi lau|thoi gian cho|len mon nhanh)\b/g,overall:/\b(?:trai nghiem|tong the|that vong|tuyet voi)\b/g,room_view:/\b(?:view|huong nhin|nhin ra)\b/g,beach_access:/\b(?:gan bien|xa bien|ra bien|di bien)\b/g,food_access:/\b(?:di an|cho an|quan an|an uong)\b/g,city_center_access:/\btrung tam\b/g,service:/\b(?:phuc vu|dich vu)\b/g,soundproofing:/\bcach am\b/g,bed_comfort:/\b(?:giuong|dem|nem)\b/g,bathroom:/\b(?:phong tam|nha tam|buong tam)\b/g,air_conditioning:/\b(?:may lanh|dieu hoa)\b/g,wifi:/\bwi\s*-?\s*fi\b/g,breakfast:/\b(?:an sang|bua sang|buffet sang)\b/g,parking:/\bbai (?:do )?xe\b/g,pool:/\b(?:ho boi|be boi)\b/g,room_equipment:/\b(?:thiet bi|noi that|tivi|tv|tu lanh)\b/g,family_suitability:/\b(?:gia dinh|tre em|tre nho)\b/g};
+export function safeReviewText(value:string){return value.slice(0,2000).normalize('NFC').split(/[;.!?\n]/).filter(s=>!/(?:địa chỉ nhà|dia chi nha|số nhà tôi|so nha toi|tài khoản|tai khoan|mật khẩu|mat khau|authorization|Bearer\s|eyJ\w+\.)/iu.test(s)).join('. ').replace(/[\w.+%-]+@[\w.-]+\.[a-z]{2,}/gi,' ').replace(/(?:\+?\d[\s.-]*){8,}/g,' ');}
+export interface ReviewAspectProvider {readonly version:string;extract(comment:string,category:string):{status:'ANALYZED'|'UNKNOWN';aspects:Record<string,Sentiment>};}
+/** Pure bounded rules. No raw comment, customer identity or model-generated confidence is persisted. */
 export function extractReviewAspects(comment:string,category:string):{status:'ANALYZED'|'UNKNOWN';aspects:Record<string,Sentiment>}{
- const text=fold(comment.normalize('NFC').replace(/(^|[^\p{L}])ổn(?=$|[^\p{L}])/giu,'$1ondinh')).replace(/\b[\w.+-]+@[\w.-]+\.[a-z]{2,}\b/g,' ').replace(/(?:\+?\d[\s.-]*){8,}/g,' ').replace(/\bnv\b/g,'nhan vien').replace(/\b(?:ko|hok)\b/g,'khong');
- if(/\b(?:ignore|system|prompt|sql|insert|delete|select|bo qua chi dan|bo qua he thong|mat khau|api key)\b/.test(text))return{status:'UNKNOWN',aspects:{}};
- const result:Record<string,Sentiment>={},clauses=text.split(/[,;.!?]|\b(?:nhung|tuy nhien)\b/).map(s=>s.trim()).filter(Boolean);
- for(const [aspect,pattern]of Object.entries(aspects)){
-  if(category==='hotel'&&['food','wait'].includes(aspect)||category==='restaurant'&&['room','amenities','noise'].includes(aspect))continue;
-  const mentions=clauses.filter(s=>pattern.test(s));if(!mentions.length)continue;
-  const sentiments=mentions.map(s=>{
-   if(/\b(?:khong phai|khong chac|co le|chua ro|chua biet)\b/.test(s))return'UNKNOWN';
-   if(aspect==='noise'&&/\bkhong on\b/.test(s)&&!/\b(?:tieng on|cach am|on ao)\b/.test(s)&&!/không\s+ồn/iu.test(comment))return'UNKNOWN';
-   if(aspect==='location'&&!positive.test(s)&&!negative.test(s))return'NEUTRAL';
-   const negatedPositive=/\b(?:khong|chua) (?:sach(?: se)?|ngon|tot|than thien|hop ly|yen tinh|nhanh|thoang|re|ok|ondinh)\b/;
-   const negatedNegative=/\bkhong (?:on(?: ao)?|dat(?: do)?|cho lau|doi lau)\b/;
-   if(/\b(?:khong|chua)\b/.test(s.replace(/\bkhong gian\b/g,'khonggian'))&&!negatedPositive.test(s)&&!negatedNegative.test(s))return'UNKNOWN';
-   const neg=negatedPositive.test(s)||negative.test(s.replace(negatedNegative,'')),pos=negatedNegative.test(s)||positive.test(s.replace(negatedPositive,''));
-   return neg&&pos?'MIXED':neg?'NEGATIVE':pos?'POSITIVE':'UNKNOWN';
-  });
-  result[aspect]=sentiments.includes('MIXED')||sentiments.includes('POSITIVE')&&sentiments.includes('NEGATIVE')?'MIXED':sentiments.includes('POSITIVE')?'POSITIVE':sentiments.includes('NEGATIVE')?'NEGATIVE':sentiments.includes('NEUTRAL')?'NEUTRAL':'UNKNOWN';
+ const text=fold(safeReviewText(comment).replace(/(^|[^\p{L}])ổn(?=$|[^\p{L}])/giu,'$1ondinh')).replace(/\bnv\b/g,'nhan vien').replace(/\b(?:ko|hok|k)\b/g,'khong').replace(/\bphog\b/g,'phong').replace(/\bwf\b/g,'wifi');
+ if(/\b(?:ignore|system|prompt|sql|insert|delete|select|bo qua (?:tat ca|chi dan|he thong)|api key|tiet lo thong tin|hay cho.*diem)\b/.test(text))return{status:'UNKNOWN',aspects:{}};
+ const found:Record<string,Sentiment[]>={};
+ for(const clause of text.split(/[,;.!?]|\b(?:nhung|tuy nhien|ma|chu)\b/).map(s=>s.trim()).filter(Boolean)){
+  const hits=Object.entries(patterns).filter(([key])=>!(category==='hotel'&&['food','wait'].includes(key))).flatMap(([key,p])=>[...clause.matchAll(p)].filter(m=>!(key==='cleanliness'&&m[0]==='sach'&&/\b(?:ngan|doc|quyen|cuon|bo)\s+$/.test(clause.slice(0,m.index)))).map(m=>({key,start:m.index!,end:m.index!+m[0].length,token:m[0]})));
+  for(const hit of hits){const {key}=hit;if(category==='hotel'&&['food','wait'].includes(key)||category==='restaurant'&&['room','noise','room_view','soundproofing','bed_comfort','bathroom','air_conditioning'].includes(key))continue;
+   // A trailing quality adjective also describes the preceding concrete aspect.
+   const next=Math.min(clause.length,...hits.filter(h=>h.key!==key&&h.start>=hit.end&&h.start>hit.start&&!(h.key==='cleanliness'&&/^(?:sach|ban)$/.test(h.token))).map(h=>h.start));
+   const prefix=clause.slice(Math.max(0,hit.start-32),hit.start),modifier=/(?:\b(?:(?:khong|chua)\s+)?(?:gan|xa)|\b(?:khong|chua|rat|hoi|kha|chua ro|khong chac|co le|chua biet))\s+$/.exec(prefix),local=(modifier?.[0]||'')+clause.slice(hit.start,next);let sentiment:Sentiment='UNKNOWN';
+   if(/\b(?:chua ro|khong chac|co le|chua biet)\b/.test(local))sentiment='UNKNOWN';
+   else if(key==='noise'&&/\bkhong on\b/.test(local)&&!/không\s+ồn/iu.test(comment)&&!/\b(?:tieng on|cach am|on ao)\b/.test(local))sentiment='UNKNOWN';
+   else if(/\bluc .*luc (?:khong|yeu|kem|cham)\b/.test(clause)&&['air_conditioning','wifi','service'].includes(key))sentiment='MIXED';
+   else{
+    const badGood=/\b(?:khong|chua)\s+(?:sach(?: se)?|ngon|tot|than thien|hop ly|yen tinh|nhanh|thoang|re|ok|ondinh|gan|phu hop|manh|mat|em|thuan tien)\b/g,badBad=/\bkhong\s+(?:on(?: ao)?|dat(?: do)?|cho lau|doi lau|yeu)\b/g;
+    const ng=[...local.matchAll(badGood)].length>0,nb=[...local.matchAll(badBad)].length>0,plain=local.replace(badGood,' ').replace(badBad,' ');
+    let pos=nb||/\b(?:sach(?: se)?|ok|tot|than thien|nhiet tinh|gia mem|hop ly|re|ngon|rong(?: rai)?|thoang|nhanh|yen tinh|tuyet voi|dep|manh|mat|em|thuan tien|phu hop)\b/.test(plain),neg=ng||/\b(?:ban thiu|do ban|ban|dat do|gia cao|te|kem|yeu|cham|hoi on|rat on|on ao|cho lau|doi lau|that vong|nong|hong|cung)\b/.test(plain);
+    if(['bathroom','room','space','parking'].includes(key)&&/\b(?:nho|chat|chat choi)\b/.test(plain))neg=true;
+    if(['beach_access','food_access','city_center_access'].includes(key)){pos||=/\b(?:gan|thuan tien|de di)\b/.test(plain);neg||=/\b(?:xa|kho di|bat tien)\b/.test(plain);}
+    sentiment=/\b(?:khong|chua)\b/.test(local.replace(/\bkhong gian\b/g,''))&&!ng&&!nb?'UNKNOWN':neg&&pos?'MIXED':neg?'NEGATIVE':pos?'POSITIVE':key==='location'?'NEUTRAL':'UNKNOWN';
+   }
+   (found[key]||=[]).push(sentiment);
+  }
  }
- return{status:Object.keys(result).length?'ANALYZED':'UNKNOWN',aspects:result};
+ const result:Record<string,Sentiment>={};for(const[k,v]of Object.entries(found))result[k]=v.includes('MIXED')||v.includes('POSITIVE')&&v.includes('NEGATIVE')?'MIXED':v.includes('POSITIVE')?'POSITIVE':v.includes('NEGATIVE')?'NEGATIVE':v.includes('NEUTRAL')?'NEUTRAL':'UNKNOWN';return{status:Object.keys(result).length?'ANALYZED':'UNKNOWN',aspects:result};
 }
-export function summarizeReviewEvidence(rows:{id:string;comment:string;rating:number;verificationStatus:string;aiUsageAllowed:boolean}[],category:string){
- const aggregate:Record<string,any>={};let analyzed=0,unknown=0;
- for(const row of rows){if(!row.aiUsageAllowed)continue;const analysis=extractReviewAspects(row.comment,category);if(analysis.status==='UNKNOWN'){unknown++;continue;}analyzed++;
-  for(const [aspect,sentiment]of Object.entries(analysis.aspects)){const entry=aggregate[aspect]||={label:ASPECT_LABELS[aspect],counts:{POSITIVE:0,NEGATIVE:0,NEUTRAL:0,MIXED:0,UNKNOWN:0},evidence:[]};entry.counts[sentiment]++;entry.evidence.push({reviewId:row.id,sentiment});}
- }
- for(const entry of Object.values(aggregate) as any[]){const c=entry.counts;entry.supportCount=entry.evidence.length;entry.sentiment=c.MIXED||c.POSITIVE&&c.NEGATIVE?'MIXED':c.POSITIVE?'POSITIVE':c.NEGATIVE?'NEGATIVE':c.NEUTRAL?'NEUTRAL':'UNKNOWN';entry.strength=entry.supportCount>=5?'REPEATED_REPORTS':entry.supportCount>=2?'LIMITED_REPORTS':'SINGLE_REVIEW';entry.evidenceBasis='EXPLICIT_LEXICAL_RULES_NOT_CALIBRATED_MODEL_CONFIDENCE';}
- return{method:REVIEW_ANALYSIS_METHOD,validReviewCount:rows.length,analyzedReviewCount:analyzed,unknownReviewCount:unknown,rating:rows.length?rows.reduce((s,r)=>s+Number(r.rating),0)/rows.length:null,verifiedBookingCount:rows.filter(r=>r.verificationStatus==='VERIFIED').length,aspects:aggregate,opinionOnly:true};
+export const deterministicReviewProvider:ReviewAspectProvider={version:REVIEW_ANALYSIS_METHOD,extract:extractReviewAspects};
+export function summarizeReviewEvidence(rows:{id:string;comment:string;rating:number;verificationStatus:string;aiUsageAllowed:boolean;revision?:string|number}[],category:string){
+ const aggregate:Record<string,any>={};let analyzed=0,unknown=0;const unique=[...new Map(rows.filter(r=>r.aiUsageAllowed).map(r=>[r.id+':'+(r.revision??''),r])).values()];
+ for(const row of unique){const analysis=extractReviewAspects(row.comment,category);if(analysis.status==='UNKNOWN'){unknown++;continue;}analyzed++;for(const[aspect,sentiment]of Object.entries(analysis.aspects)){const entry=aggregate[aspect]||={label:ASPECT_LABELS[aspect],counts:{POSITIVE:0,NEGATIVE:0,NEUTRAL:0,MIXED:0,UNKNOWN:0},evidence:[]};entry.counts[sentiment]++;entry.evidence.push({reviewId:row.id,...(row.revision!==undefined?{reviewRevision:String(row.revision)}:{}),sentiment});}}
+ for(const entry of Object.values(aggregate) as any[]){const n=entry.counts;entry.supportCount=entry.evidence.length;entry.sentiment=n.MIXED||n.POSITIVE&&n.NEGATIVE?'MIXED':n.POSITIVE?'POSITIVE':n.NEGATIVE?'NEGATIVE':n.NEUTRAL?'NEUTRAL':'UNKNOWN';entry.strength=entry.supportCount>=5?'REPEATED_REPORTS':entry.supportCount>=2?'LIMITED_REPORTS':'SINGLE_REVIEW';entry.evidenceBasis='EXPLICIT_LEXICAL_RULES_NOT_CALIBRATED_MODEL_CONFIDENCE';}
+ return{method:REVIEW_ANALYSIS_METHOD,validReviewCount:unique.length,analyzedReviewCount:analyzed,unknownReviewCount:unknown,rating:unique.length?unique.reduce((s,r)=>s+Number(r.rating),0)/unique.length:null,verifiedBookingCount:unique.filter(r=>r.verificationStatus==='VERIFIED').length,aspects:aggregate,opinionOnly:true};
 }

@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { BlogService } from '../services/blogService';
 import { useAuth } from '../context/AuthContext';
-import { BookOpen, Image, MapPin, DollarSign, Clock, Tag, CheckCircle2, Sparkles } from 'lucide-react';
+import { Image, MapPin, Wallet, Clock, Tag, AlertTriangle, PenLine } from 'lucide-react';
+import {CatalogBreadcrumb,catalogErrorText} from '../components/explore/CatalogPageFilters';
+import '../styles/hg-catalog.css';
 
 export const BlogCreatePage: React.FC = () => {
   const navigate = useNavigate();
@@ -11,20 +13,19 @@ export const BlogCreatePage: React.FC = () => {
   const prefilledDraft = (location.state as any)?.prefilledDraft;
 
   const [title, setTitle] = useState(prefilledDraft?.title || '');
-  const [destinationName, setDestinationName] = useState(prefilledDraft?.destination || 'Đà Nẵng');
+  const [destinationName, setDestinationName] = useState(prefilledDraft?.destination || '');
   const [excerpt, setExcerpt] = useState(prefilledDraft?.summary || '');
   const [content, setContent] = useState(prefilledDraft?.content || '');
-  const [coverImage, setCoverImage] = useState(
-    'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=800&q=80'
-  );
+  // Không điền sẵn ảnh/chi phí/thời gian mẫu: người viết tự nhập để tránh đăng số liệu không có thật.
+  const [coverImage, setCoverImage] = useState('');
   const [costEstimate, setCostEstimate] = useState(
     prefilledDraft?.totalCostVND
       ? `${new Intl.NumberFormat('vi-VN').format(prefilledDraft.totalCostVND)} VNĐ`
-      : '4.000.000đ / người'
+      : ''
   );
-  const [tripDuration, setTripDuration] = useState(prefilledDraft?.durationText || '3 Ngày 2 Đêm');
+  const [tripDuration, setTripDuration] = useState(prefilledDraft?.durationText || '');
   const [tagInput, setTagInput] = useState(
-    prefilledDraft?.suggestedTags?.join(', ') || 'Mẹo du lịch, Check-in'
+    prefilledDraft?.suggestedTags?.join(', ') || ''
   );
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -41,7 +42,7 @@ export const BlogCreatePage: React.FC = () => {
     setErrorMsg('');
 
     try {
-      const tags = tagInput.split(',').map((t) => t.trim()).filter(Boolean);
+      const tags = tagInput.split(',').map((t: string) => t.trim()).filter(Boolean);
       const newPost = await BlogService.createBlog({
         title,
         excerpt,
@@ -55,163 +56,145 @@ export const BlogCreatePage: React.FC = () => {
         tags,
       });
 
-      alert('Đăng bài viết chia sẻ thành công!');
+      alert('Đã gửi bài viết chia sẻ. Bài sẽ hiển thị sau khi được duyệt.');
       navigate(`/blog/${newPost.id}`);
     } catch (err) {
       console.error(err);
-      setErrorMsg('Không thể đăng bài viết lúc này. Vui lòng thử lại!');
+      setErrorMsg(catalogErrorText(err, 'Không thể đăng bài viết lúc này. Vui lòng thử lại!'));
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-20 bg-slate-50">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-6">
-          <div className="border-b border-slate-100 pb-4">
-            <span className="text-teal-600 font-bold text-xs uppercase tracking-wider block mb-1">
-              Góc chia sẻ cộng đồng
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-              Viết bài chia sẻ kinh nghiệm du lịch
-            </h1>
-            <p className="text-slate-500 text-xs sm:text-sm mt-1">
-              Chia sẻ những khoảnh khắc đẹp, mẹo tiết kiệm chi phí và gợi ý lịch trình cho những người yêu du lịch khác.
+    <div className="hg-cat">
+      <header className="hg-cat-head">
+        <div className="hg-container">
+          <div className="hg-cat-narrow">
+            <CatalogBreadcrumb items={[{label:'Trang chủ',to:'/'},{label:'Cẩm nang du lịch',to:'/blog'},{label:'Viết bài'}]}/>
+            <p className="hg-cat-eyebrow"><PenLine size={16} aria-hidden="true"/>Góc chia sẻ cộng đồng</p>
+            <h1 className="hg-cat-h1">Viết bài chia sẻ kinh nghiệm du lịch</h1>
+            <p className="hg-cat-lead">
+              Chia sẻ khoảnh khắc đẹp, mẹo tiết kiệm chi phí và gợi ý lịch trình cho những người yêu du lịch khác.
             </p>
           </div>
+        </div>
+      </header>
 
+      <div className="hg-container hg-cat-main">
+        <div className="hg-cat-narrow hg-cat-box">
           {errorMsg && (
-            <div className="bg-rose-50 text-rose-700 p-3 rounded-xl text-xs border border-rose-200">
-              {errorMsg}
-            </div>
+            <p role="alert" className="hg-cat-notice hg-cat-notice--error">
+              <AlertTriangle size={16} aria-hidden="true" />
+              <span>{errorMsg}</span>
+            </p>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Title */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Tiêu đề bài viết</label>
+          <form onSubmit={handleSubmit} className="hg-cat-form">
+            <label className="hg-cat-field">
+              <span>Tiêu đề bài viết</span>
               <input
                 type="text"
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ví dụ: Bí kíp du lịch Phú Quốc mùa đẹp nhất không cháy túi..."
-                className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                placeholder="Ví dụ: Kinh nghiệm du lịch Phú Quốc mùa đẹp nhất"
+                className="hg-cat-input"
               />
-            </div>
+            </label>
 
-            {/* Destination & Duration */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center">
-                  <MapPin className="w-3.5 h-3.5 text-orange-500 mr-1" />
-                  Địa điểm du lịch
-                </label>
+            <div className="hg-cat-form__grid">
+              <label className="hg-cat-field">
+                <span><MapPin size={16} aria-hidden="true" />Địa điểm du lịch</span>
                 <input
                   type="text"
                   required
                   value={destinationName}
                   onChange={(e) => setDestinationName(e.target.value)}
-                  placeholder="Đà Nẵng, Hội An, Sapa..."
-                  className="w-full px-4 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                  placeholder="Đà Nẵng, Hội An, Sa Pa…"
+                  className="hg-cat-input"
                 />
-              </div>
+              </label>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center">
-                  <Clock className="w-3.5 h-3.5 text-teal-600 mr-1" />
-                  Thời gian chuyến đi
-                </label>
+              <label className="hg-cat-field">
+                <span><Clock size={16} aria-hidden="true" />Thời gian chuyến đi</span>
                 <input
                   type="text"
                   value={tripDuration}
                   onChange={(e) => setTripDuration(e.target.value)}
-                  placeholder="3 Ngày 2 Đêm"
-                  className="w-full px-4 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                  placeholder="Ví dụ: 3 ngày 2 đêm"
+                  className="hg-cat-input"
                 />
-              </div>
+              </label>
             </div>
 
-            {/* Cost & Tags */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center">
-                  <DollarSign className="w-3.5 h-3.5 text-amber-500 mr-1" />
-                  Chi phí ước tính
-                </label>
+            <div className="hg-cat-form__grid">
+              <label className="hg-cat-field">
+                <span><Wallet size={16} aria-hidden="true" />Chi phí ước tính</span>
                 <input
                   type="text"
                   value={costEstimate}
                   onChange={(e) => setCostEstimate(e.target.value)}
-                  placeholder="4.000.000đ / người"
-                  className="w-full px-4 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                  placeholder="Ví dụ: 4.000.000đ / người"
+                  className="hg-cat-input"
                 />
-              </div>
+              </label>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center">
-                  <Tag className="w-3.5 h-3.5 text-slate-400 mr-1" />
-                  Chủ đề / Tags (cách nhau bởi dấu phẩy)
-                </label>
+              <label className="hg-cat-field">
+                <span><Tag size={16} aria-hidden="true" />Chủ đề (cách nhau bởi dấu phẩy)</span>
                 <input
                   type="text"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   placeholder="Mẹo du lịch, Ẩm thực, Check-in"
-                  className="w-full px-4 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                  className="hg-cat-input"
                 />
-              </div>
+              </label>
             </div>
 
-            {/* Cover Image URL */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center">
-                <Image className="w-3.5 h-3.5 text-slate-400 mr-1" />
-                Đường dẫn ảnh bìa (Image URL)
-              </label>
+            <label className="hg-cat-field">
+              <span><Image size={16} aria-hidden="true" />Đường dẫn ảnh bìa</span>
               <input
                 type="url"
                 required
                 value={coverImage}
                 onChange={(e) => setCoverImage(e.target.value)}
-                placeholder="https://images.unsplash.com/..."
-                className="w-full px-4 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                placeholder="https://…"
+                className="hg-cat-input"
               />
-            </div>
+              <span className="hg-cat-field__hint">Chỉ dùng ảnh bạn chụp hoặc có quyền sử dụng.</span>
+            </label>
 
-            {/* Excerpt */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Tóm tắt ngắn (1-2 câu)</label>
+            <label className="hg-cat-field">
+              <span>Tóm tắt ngắn (1–2 câu)</span>
               <textarea
                 rows={2}
                 required
                 value={excerpt}
                 onChange={(e) => setExcerpt(e.target.value)}
-                placeholder="Tóm tắt những điểm hấp dẫn nhất trong bài viết của bạn..."
-                className="w-full px-4 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                placeholder="Tóm tắt những điểm hấp dẫn nhất trong bài viết của bạn…"
+                className="hg-cat-textarea"
               />
-            </div>
+            </label>
 
-            {/* Full Content */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Nội dung chi tiết bài viết</label>
+            <label className="hg-cat-field">
+              <span>Nội dung chi tiết</span>
               <textarea
-                rows={8}
+                rows={10}
                 required
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="Kể về chuyến đi của bạn: Phương tiện di chuyển, khách sạn lưu trú, món ăn ngon và những lưu ý cần thiết..."
-                className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none font-normal"
+                placeholder="Kể về chuyến đi của bạn: phương tiện di chuyển, nơi lưu trú, món ăn ngon và những lưu ý cần thiết…"
+                className="hg-cat-textarea"
               />
-            </div>
+            </label>
 
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-extrabold rounded-2xl shadow-lg shadow-orange-500/25 transition-all text-sm"
+              className="hg-cat-btn hg-cat-btn--cta hg-cat-btn--lg hg-cat-btn--block"
             >
-              {submitting ? 'Đang xuất bản bài viết...' : 'Xuất bản bài viết ngay'}
+              {submitting ? 'Đang gửi bài viết…' : 'Gửi bài viết'}
             </button>
           </form>
         </div>

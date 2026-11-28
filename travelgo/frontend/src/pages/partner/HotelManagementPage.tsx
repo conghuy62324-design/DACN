@@ -1,94 +1,329 @@
-import React, { useEffect, useState, useRef } from 'react';
+// Quản lý khách sạn (Partner) / Kiểm duyệt khách sạn (Admin, nhúng trong AdminHotelModerationPage).
+// File này vẫn là NƠI DUY NHẤT giữ state và gọi API quản lý khách sạn (load, write, act, If-Match: s.revision).
+// Các trang con trong ./hotel/* chỉ trình bày và nhận { s, write, act, load, admin, base }.
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Building2, ChevronLeft, RefreshCw } from 'lucide-react';
 import { api } from '../../services/api';
-const initialBookingStartsAt = new Date().toISOString();
-const tabs = ['Tổng quan', 'Thông tin khách sạn', 'Địa chỉ', 'Hình ảnh', 'Hạng phòng', 'Giá phòng', 'Lịch tồn phòng', 'Ưu đãi', 'Quy định', 'Trạng thái kiểm duyệt'];
-const amenities = ['WIFI', 'TV', 'AIR_CONDITIONING', 'REFRIGERATOR', 'MINIBAR', 'BATHTUB', 'SHOWER', 'HAIR_DRYER', 'KITCHEN', 'BALCONY', 'WORK_DESK', 'PRIVATE_POOL', 'SAFE', 'TOWELS', 'ACCESSIBLE_BATHROOM'];
-const views = ['UNKNOWN', 'SEA', 'MOUNTAIN', 'CITY', 'GARDEN', 'LAKE', 'POOL', 'NONE'];
-const optionLabels: Record<string, string> = { UNKNOWN: 'Chưa rõ', NONE: 'Không có hướng nhìn', SEA: 'Biển', MOUNTAIN: 'Núi', CITY: 'Thành phố', GARDEN: 'Vườn', LAKE: 'Hồ', POOL: 'Hồ bơi', DRAFT: 'Nháp', ACTIVE: 'Hoạt động', ARCHIVED: 'Lưu trữ', ROOM_ONLY: 'Chỉ phòng', BREAKFAST_INCLUDED: 'Bao gồm bữa sáng', NON_REFUNDABLE: 'Không hoàn tiền', FREE_UNTIL_CUTOFF: 'Hủy miễn phí trước hạn', CONDITIONAL: 'Điều kiện riêng', INCLUDED: 'Đã bao gồm', EXCLUDED: 'Chưa bao gồm', NOT_ALLOWED: 'Không nhận trẻ em', BANDS_REQUIRED: 'Phụ thu theo tuổi', PERCENT_BPS: 'Giảm theo phần trăm', FIXED_STAY: 'Giảm cố định cho kỳ lưu trú' };
-const inputClass = 'w-full rounded border border-slate-300 bg-white p-2 text-slate-900 focus:outline-orange-500';
-const buttonClass = 'rounded bg-[#142e50] px-4 py-2 font-semibold text-white disabled:opacity-50';
-function Field({ label, value, onChange, type = 'text', required = false }: any) { return <label className="grid gap-1 text-sm font-medium">{label}<input className={inputClass} aria-label={label} type={type} step={type === 'number' ? 'any' : undefined} value={value ?? ''} required={required} onChange={e => onChange(type === 'number' ? (e.target.value === '' ? null : Number(e.target.value)) : e.target.value)}/></label>; }
-function Choice({ label, value, onChange, values }: any) { return <label className="grid gap-1 text-sm font-medium">{label}<select className={inputClass} aria-label={label} value={value ?? ''} onChange={e => onChange(e.target.value)}>{values.map((v: any) => { const [key, name] = Array.isArray(v) ? v : [v, v]; return <option key={key} value={key}>{Array.isArray(v) ? name : optionLabels[key] || name}</option>; })}</select></label>; }
-function CheckList({ label, values, value, onChange }: any) { return <fieldset className="col-span-full"><legend className="mb-2 text-sm font-semibold">{label}</legend><div className="grid grid-cols-2 gap-2 md:grid-cols-3">{values.map((v: string) => <label key={v} className="text-sm"><input type="checkbox" checked={value.includes(v)} onChange={e => onChange(e.target.checked ? [...value, v] : value.filter((x: string) => x !== v))}/> {v.replace(/_/g, ' ')}</label>)}</div></fieldset>; }
-function Editor({ initial, save, children, label = 'Lưu thay đổi' }: any) { const [value, set] = useState(initial), [busy, setBusy] = useState(false), [error, setError] = useState(''); const latestInitial = useRef(initial); latestInitial.current = initial; useEffect(() => set(initial), [JSON.stringify(initial)]); const dirty = JSON.stringify(value) !== JSON.stringify(initial); return <form className="grid gap-4 md:grid-cols-2" onSubmit={async (e) => { e.preventDefault(); setBusy(true); setError(''); try {
-    await save(value);
-    set(latestInitial.current);
-}
-catch (e: any) {
-    setError(e.message || e.error?.message || 'Không lưu được. Hãy kiểm tra dữ liệu hoặc tải lại khi có xung đột.');
-}
-finally {
-    setBusy(false);
-} }}>{children(value, (k: string, v: any) => set((p: any) => ({ ...p, [k]: v })))}<div className="col-span-full flex flex-wrap items-center gap-3 border-t pt-4"><button className={buttonClass} disabled={busy} type="submit">{busy ? 'Đang lưu…' : label}</button><button type="button" className="rounded border px-4 py-2" onClick={() => { set(initial); setError(''); }} disabled={busy}>Hủy thay đổi</button><span className="text-sm text-slate-600" role="status">{dirty ? 'Có thay đổi chưa lưu' : 'Đã đồng bộ'}</span></div>{error && <p role="alert" className="col-span-full rounded bg-red-50 p-3 text-red-800">{error}</p>}</form>; }
-const profile = (s: any) => ({ name: s?.identity.name || '', summary: s?.identity.summary || '', description: s?.identity.description || '', accommodationType: s?.identity.accommodationType || 'hotel', amenities: s?.identity.amenities || [], checkInTime: s?.profile.checkInTime?.slice(0, 5) || '14:00', checkOutTime: s?.profile.checkOutTime?.slice(0, 5) || '12:00', services: s?.profile.services || [], policies: s?.profile.policies || { children: 'Chưa cung cấp', pets: 'Chưa cung cấp', smoking: 'Chưa cung cấp', general: 'Chưa cung cấp' } });
-const address = (s: any) => ({ houseNumber: s?.address?.houseNumber || '', streetName: s?.address?.streetName || '', wardOrCommune: s?.address?.wardOrCommune || '', administrativeArea: s?.address?.administrativeArea || '', provinceOrCity: s?.address?.provinceOrCity || '', tourismDestination: s?.address?.tourismDestinationId || '', latitude: s?.address?.latitude ?? null, longitude: s?.address?.longitude ?? null, source: s?.address?.source || 'Đối tác cung cấp' });
-const cleanAddress = (v: any) => Object.fromEntries(Object.entries(v).filter(([k, x]) => k !== 'tourismDestination' || x !== ''));
-function ProfileFields({ v, set }: any) { return <><Field label="Tên khách sạn" required value={v.name} onChange={(x: any) => set('name', x)}/><Choice label="Loại lưu trú" value={v.accommodationType} onChange={(x: any) => set('accommodationType', x)} values={['hotel', 'homestay', 'resort', 'villa', 'apartment', 'guesthouse']}/><Field label="Mô tả ngắn" required value={v.summary} onChange={(x: any) => set('summary', x)}/><label className="grid gap-1 text-sm">Mô tả chi tiết<textarea className={inputClass} required value={v.description} onChange={e => set('description', e.target.value)}/></label><Field label="Giờ nhận phòng" type="time" value={v.checkInTime} onChange={(x: any) => set('checkInTime', x)}/><Field label="Giờ trả phòng" type="time" value={v.checkOutTime} onChange={(x: any) => set('checkOutTime', x)}/><Field label="Tiện nghi chung (phân cách bằng dấu phẩy)" value={v.amenities.join(',')} onChange={(x: string) => set('amenities', x.split(','))}/><Field label="Dịch vụ (phân cách bằng dấu phẩy)" value={v.services.join(',')} onChange={(x: string) => set('services', x.split(','))}/></>; }
-function AddressFields({ v, set }: any) { return <>{[['houseNumber', 'Số nhà'], ['streetName', 'Tên đường'], ['wardOrCommune', 'Phường/xã'], ['administrativeArea', 'Khu vực hành chính'], ['provinceOrCity', 'Tỉnh/thành'], ['tourismDestination', 'Địa danh du lịch (tên hoặc mã)'], ['source', 'Nguồn địa chỉ']].map(([k, l]) => <Field key={k} label={l} required={['provinceOrCity', 'source'].includes(k)} value={v[k]} onChange={(x: any) => set(k, x)}/>)}<Field label="Vĩ độ đối tác cung cấp" type="number" value={v.latitude} onChange={(x: any) => set('latitude', x)}/><Field label="Kinh độ đối tác cung cấp" type="number" value={v.longitude} onChange={(x: any) => set('longitude', x)}/><p className="col-span-full text-sm text-slate-600">Không tự điền tọa độ. Tọa độ cung cấp chưa được hệ thống xác minh; khách sạn thiếu tọa độ chưa thể công bố.</p></>; }
-const freshRoom = () => ({ name: '', description: '', areaM2: null, bedrooms: 1, bathrooms: 1, beds: [{ type: 'DOUBLE', quantity: 1 }], extraBedAvailable: null, maxOccupancy: 2, maxAdults: 2, maxChildren: 0, view: 'UNKNOWN', balcony: null, hasWindow: null, kitchen: null, privateBathroom: null, amenities: [], status: 'DRAFT' });
-function roomInput(r: any) { const v = { ...r }; for (const k of ['id', 'placeId', 'version'])
-    delete v[k]; return v; }
-function RoomFields({ v, set }: any) { return <><Field label="Tên hạng phòng" required value={v.name} onChange={(x: any) => set('name', x)}/><Field label="Mô tả phòng" required value={v.description} onChange={(x: any) => set('description', x)}/>{[['areaM2', 'Diện tích m²'], ['bedrooms', 'Số phòng ngủ'], ['bathrooms', 'Số phòng tắm'], ['maxOccupancy', 'Tổng sức chứa'], ['maxAdults', 'Người lớn tối đa'], ['maxChildren', 'Trẻ em tối đa']].map(([k, l]) => <Field key={k} type="number" label={l} value={v[k]} onChange={(x: any) => set(k, x)}/>)}<fieldset className="col-span-full grid gap-2"><legend>Cấu hình giường</legend>{v.beds.map((b: any, i: number) => <div className="grid grid-cols-2 gap-2" key={i}><Choice label="Loại giường" value={b.type} values={['SINGLE', 'DOUBLE', 'QUEEN', 'KING', 'BUNK', 'SOFA', 'OTHER']} onChange={(x: any) => set('beds', v.beds.map((a: any, n: number) => n === i ? { ...a, type: x } : a))}/><Field label="Số giường" type="number" value={b.quantity} onChange={(x: any) => set('beds', v.beds.map((a: any, n: number) => n === i ? { ...a, quantity: x } : a))}/></div>)}<button type="button" className="justify-self-start underline" disabled={v.beds.length >= 8} onClick={() => set('beds', [...v.beds, { type: 'SINGLE', quantity: 1 }])}>Thêm cấu hình giường</button></fieldset><Choice label="Hướng nhìn do đối tác cung cấp" value={v.view} values={views} onChange={(x: any) => set('view', x)}/><Choice label="Trạng thái hạng phòng" value={v.status} values={['DRAFT', 'ACTIVE', 'ARCHIVED']} onChange={(x: any) => set('status', x)}/>{[['extraBedAvailable', 'Có giường phụ'], ['balcony', 'Ban công'], ['hasWindow', 'Cửa sổ'], ['kitchen', 'Bếp'], ['privateBathroom', 'Phòng tắm riêng']].map(([k, l]) => <Choice key={k} label={l} value={v[k] === null ? 'unknown' : String(v[k])} values={['unknown', 'true', 'false'].map(x => [x, x === 'unknown' ? 'Chưa rõ' : x === 'true' ? 'Có' : 'Không'])} onChange={(x: string) => set(k, x === 'unknown' ? null : x === 'true')}/>)}<CheckList label="Tiện nghi riêng của phòng" values={amenities} value={v.amenities} onChange={(x: any) => set('amenities', x)}/></>; }
-const localHotelTime = (iso: string) => iso && Number.isFinite(Date.parse(iso)) ? new Date(Date.parse(iso) + 7 * 3600000).toISOString().slice(0, 16) : '';
-const freshRate = (roomId: string) => ({ roomTypeId: roomId, name: '', currency: 'VND', priceBasis: 'PER_ROOM_NIGHT', baseAmountVnd: 0, validFrom: new Date().toISOString().slice(0, 10), validUntil: '2028-12-31', minNights: 1, maxNights: 90, includedAdults: 2, extraAdultVndPerNight: null, childPolicy: 'UNKNOWN', childBands: [], mealPlan: 'ROOM_ONLY', cancellation: { kind: 'NON_REFUNDABLE', cutoffHours: null, terms: 'Không hoàn tiền' }, tax: { mode: 'UNKNOWN', basisPoints: null }, fees: [], mandatoryFeesKnown: false, status: 'DRAFT' });
-function RateFields({ v, set, rooms }: any) { return <><Choice label="Hạng phòng áp dụng" value={v.roomTypeId} values={rooms.map((r: any) => [r.id, r.name])} onChange={(x: any) => set('roomTypeId', x)}/><Field label="Tên gói giá" required value={v.name} onChange={(x: any) => set('name', x)}/><Field label="Giá VND mỗi phòng/đêm" type="number" value={v.baseAmountVnd} onChange={(x: any) => set('baseAmountVnd', x)}/>{[['validFrom', 'Áp dụng từ'], ['validUntil', 'Đến trước ngày']].map(([k, l]) => <Field key={k} label={l} type="date" value={v[k]} onChange={(x: any) => set(k, x)}/>)}{[['minNights', 'Đêm tối thiểu'], ['maxNights', 'Đêm tối đa'], ['includedAdults', 'Người lớn đã bao gồm'], ['extraAdultVndPerNight', 'Phụ thu người lớn VND/đêm (trống: chưa rõ)']].map(([k, l]) => <Field key={k} label={l} type="number" value={v[k]} onChange={(x: any) => set(k, x)}/>)}<Choice label="Bữa ăn" value={v.mealPlan} values={['ROOM_ONLY', 'BREAKFAST_INCLUDED']} onChange={(x: any) => set('mealPlan', x)}/><Choice label="Chính sách trẻ em" value={v.childPolicy} values={['UNKNOWN', 'NOT_ALLOWED', 'INCLUDED', 'BANDS_REQUIRED']} onChange={(x: any) => set('childPolicy', x)}/>{v.childPolicy === 'BANDS_REQUIRED' && <fieldset className="col-span-full"><legend>Phụ thu theo tuổi, VND/đêm</legend>{v.childBands.map((b: any, i: number) => <div className="grid grid-cols-3 gap-2" key={i}>{['minAge', 'maxAge', 'amountVndPerNight'].map((k, j) => <Field key={k} label={['Từ tuổi', 'Đến tuổi', 'Phụ thu'][j]} type="number" value={b[k]} onChange={(x: any) => set('childBands', v.childBands.map((a: any, n: number) => n === i ? { ...a, [k]: x } : a))}/>)}</div>)}<button type="button" onClick={() => set('childBands', [...v.childBands, { minAge: 0, maxAge: 5, amountVndPerNight: 0 }])}>Thêm khoảng tuổi</button></fieldset>}<Choice label="Chính sách hủy" value={v.cancellation.kind} values={['NON_REFUNDABLE', 'FREE_UNTIL_CUTOFF', 'CONDITIONAL']} onChange={(x: any) => set('cancellation', { ...v.cancellation, kind: x })}/><Field label="Thời hạn hủy miễn phí trước nhận phòng (giờ)" type="number" value={v.cancellation.cutoffHours} onChange={(x: any) => set('cancellation', { ...v.cancellation, cutoffHours: x })}/><Field label="Điều khoản hủy" value={v.cancellation.terms} onChange={(x: any) => set('cancellation', { ...v.cancellation, terms: x })}/><Choice label="Thuế" value={v.tax.mode} values={['UNKNOWN', 'INCLUDED', 'EXCLUDED']} onChange={(x: any) => set('tax', { ...v.tax, mode: x })}/><Field label="Thuế %" type="number" value={v.tax.basisPoints === null ? '' : v.tax.basisPoints / 100} onChange={(x: any) => set('tax', { ...v.tax, basisPoints: x === null ? null : Math.round(x * 100) })}/><label><input type="checkbox" checked={v.mandatoryFeesKnown} onChange={e => set('mandatoryFeesKnown', e.target.checked)}/> Đã kê khai đầy đủ phụ phí bắt buộc</label><fieldset className="col-span-full grid gap-2"><legend>Phụ phí bắt buộc</legend>{v.fees.map((f: any, i: number) => <div className="grid gap-2 md:grid-cols-4" key={i}><Field label="Tên phí" value={f.code} onChange={(x: any) => set('fees', v.fees.map((a: any, n: number) => n === i ? { ...a, code: x } : a))}/><Field label="Số tiền VND" type="number" value={f.amountVnd} onChange={(x: any) => set('fees', v.fees.map((a: any, n: number) => n === i ? { ...a, amountVnd: x } : a))}/><Choice label="Đơn vị phí" value={f.basis} values={['PER_ROOM_NIGHT', 'PER_ROOM_STAY', 'PER_BOOKING']} onChange={(x: any) => set('fees', v.fees.map((a: any, n: number) => n === i ? { ...a, basis: x } : a))}/><label><input type="checkbox" checked={f.included} onChange={e => set('fees', v.fees.map((a: any, n: number) => n === i ? { ...a, included: e.target.checked } : a))}/> Đã gồm trong giá</label></div>)}<button type="button" onClick={() => set('fees', [...v.fees, { code: '', amountVnd: 0, basis: 'PER_BOOKING', included: false }])}>Thêm phụ phí</button></fieldset><Choice label="Trạng thái gói giá" value={v.status} values={['DRAFT', 'ACTIVE', 'ARCHIVED']} onChange={(x: any) => set('status', x)}/></>; }
-function DayCalendar({ s, write, kind }: any) { const [month, setMonth] = useState(new Date().toISOString().slice(0, 7)), [entity, setEntity] = useState(kind === 'inventory' ? s.rooms[0]?.id : s.rates[0]?.id), [from, setFrom] = useState(month + '-01'), [to, setTo] = useState(month + '-02'), [amount, setAmount] = useState(1), [closed, setClosed] = useState(false); const parent = kind === 'inventory' ? s.rooms : s.rates, rows = kind === 'inventory' ? s.inventory : s.nightly; const days = Array.from({ length: new Date(Number(month.slice(0, 4)), Number(month.slice(5)), 0).getDate() }, (_, i) => month + '-' + String(i + 1).padStart(2, '0')); const find = (d: string) => rows.find((r: any) => r.stayDate === d && (r.roomTypeId === entity || r.ratePlanId === entity)); return <section className="grid gap-3"><h3 className="font-bold">{kind === 'inventory' ? 'Lịch tồn phòng' : 'Lịch giá theo ngày'}</h3><Choice label={kind === 'inventory' ? 'Hạng phòng' : 'Gói giá'} value={entity} values={parent.map((r: any) => [r.id, r.name])} onChange={setEntity}/><Field label="Tháng hiển thị" type="month" value={month} onChange={setMonth}/><div className="max-h-72 overflow-auto"><table className="w-full text-left text-sm"><thead><tr><th>Ngày</th><th>{kind === 'inventory' ? 'Bán được' : 'Giá VND/phòng/đêm'}</th><th>Đã phân bổ</th><th>Còn lại / trạng thái</th></tr></thead><tbody>{days.map(d => { const r = find(d); return <tr key={d} className="border-t"><td className="py-2">{d}</td><td>{r ? (kind === 'inventory' ? r.sellableQuantity : r.amountVnd.toLocaleString('vi-VN')) : 'Chưa có'}</td><td>{kind === 'inventory' && r ? r.allocatedQuantity : '—'}</td><td>{!r ? 'Chưa xác minh' : r.closed ? 'Đóng bán' : kind === 'inventory' ? r.sellableQuantity - r.allocatedQuantity : 'Mở bán'}</td></tr>; })}</tbody></table></div><form className="grid gap-3 md:grid-cols-2" onSubmit={async (e) => { e.preventDefault(); try {
-    const a = Date.parse(from + 'T00:00:00Z'), b = Date.parse(to + 'T00:00:00Z'), n = (b - a) / 86400000;
-    if (n < 1 || n > 90) {
-        alert('Khoảng cập nhật cần từ1 đến90ngày, ngày kết thúc không bao gồm.');
-        return;
+import {
+  Alert,
+  BoButton,
+  BoLinkButton,
+  BoTabs,
+  ConflictBanner,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  PageHeader,
+  StatusPill,
+  isConflictError,
+  useBackofficeBreadcrumbs,
+  useToast,
+} from '../../components/backoffice';
+import '../../styles/hg-partner.css';
+import { SectionProps, WriteOptions } from './hotel/shared';
+import { usePartnerHotels } from './hotel/partnerContext';
+import { HotelListView } from './hotel/HotelListView';
+import { HotelOverviewSection } from './hotel/HotelOverviewSection';
+import { HotelProfileSection } from './hotel/HotelProfileSection';
+import { HotelAddressSection } from './hotel/HotelAddressSection';
+import { HotelReviewStatusSection } from './hotel/HotelReviewStatusSection';
+import { HotelMediaSection } from './hotel/HotelMediaSection';
+import { HotelRoomsSection } from './hotel/HotelRoomsSection';
+import { HotelRatesSection } from './hotel/HotelRatesSection';
+import { PriceInventoryCalendar } from './hotel/PriceInventoryCalendar';
+import { HotelPromotionsSection } from './hotel/HotelPromotionsSection';
+import { HotelPoliciesSection } from './hotel/HotelPoliciesSection';
+import { HotelContentReview } from './hotel/HotelContentReview';
+
+type Group = { key: string; title: string; tabs?: { key: string; label: string }[] };
+
+const PARTNER_GROUPS: Record<string, Group> = {
+  overview: { key: 'facility', title: 'Cơ sở' },
+  profile: { key: 'facility', title: 'Cơ sở' },
+  address: { key: 'facility', title: 'Cơ sở' },
+  'review-status': { key: 'facility', title: 'Cơ sở' },
+  media: { key: 'media', title: 'Hình ảnh' },
+  rooms: { key: 'rooms', title: 'Phòng' },
+  calendar: { key: 'pricing', title: 'Giá & tồn phòng' },
+  rates: { key: 'pricing', title: 'Giá & tồn phòng' },
+  promotions: { key: 'promotions', title: 'Ưu đãi' },
+  policies: { key: 'policies', title: 'Chính sách' },
+};
+
+const FACILITY_TABS = [
+  { key: 'overview', label: 'Tổng quan' },
+  { key: 'profile', label: 'Thông tin' },
+  { key: 'address', label: 'Địa chỉ' },
+  { key: 'review-status', label: 'Trạng thái duyệt' },
+];
+
+const PRICING_TABS = [
+  { key: 'calendar', label: 'Lịch tháng' },
+  { key: 'rates', label: 'Gói giá' },
+];
+
+const ADMIN_TABS = [
+  { key: 'overview', label: 'Tổng quan' },
+  { key: 'content', label: 'Nội dung' },
+  { key: 'media', label: 'Hình ảnh' },
+  { key: 'review-status', label: 'Quyết định & lịch sử' },
+];
+
+const PARTNER_SECTIONS = Object.keys(PARTNER_GROUPS);
+const ADMIN_SECTIONS = ADMIN_TABS.map((tab) => tab.key);
+
+/**
+ * State + lời gọi API quản lý khách sạn (giữ nguyên từ bản cũ: cùng endpoint, payload, If-Match/revision và thông báo lỗi).
+ * Dùng chung cho HotelManagementPage và PartnerHotelOnboardingPage để không có nơi thứ hai gọi API ghi.
+ */
+export function useManagedHotel(admin = false) {
+  const base = `/${admin ? 'admin' : 'partner'}/hotels`;
+  const [list, setList] = useState<any[]>([]);
+  const [listLoading, setListLoading] = useState(true);
+  const [s, setS] = useState<any>(null);
+  const sRef = useRef<any>(null);
+  const [error, setError] = useState('');
+  const [conflict, setConflict] = useState(false);
+  const [business, setBusiness] = useState<any[]>([]);
+  const [businessLoaded, setBusinessLoaded] = useState(admin);
+  const { toast } = useToast();
+  const partnerHotels = usePartnerHotels();
+
+  const loadList = useCallback(async () => {
+    const r: any = await api.get(base);
+    setList(r.data);
+    return r.data;
+  }, [base]);
+
+  useEffect(() => {
+    setListLoading(true);
+    loadList()
+      .catch((e: any) => setError(e.message || 'Chưa tải được module'))
+      .finally(() => setListLoading(false));
+    if (!admin) {
+      api
+        .get('/partner/businesses')
+        .then((r: any) => setBusiness(Array.isArray(r.data) ? r.data : r.data?.items || []))
+        .catch(() => {})
+        .finally(() => setBusinessLoaded(true));
     }
-    const body = { days: Array.from({ length: n }, (_, i) => { const d = new Date(a + i * 86400000).toISOString().slice(0, 10); return { stayDate: d, [kind === 'inventory' ? 'sellableQuantity' : 'amountVnd']: amount, closed, expectedVersion: find(d)?.version || 0 }; }) };
-    await write(`${kind === 'inventory' ? 'rooms' : 'rates'}/${entity}/${kind}`, 'put', body);
-}
-catch { /* parent renders API error */ } }}><Field label="Từ ngày" type="date" value={from} onChange={setFrom}/><Field label="Đến trước ngày" type="date" value={to} onChange={setTo}/><Field label={kind === 'inventory' ? 'Số phòng bán được' : 'Giá VND/phòng/đêm'} type="number" value={amount} onChange={setAmount}/><label><input type="checkbox" checked={closed} onChange={e => setClosed(e.target.checked)}/> Đóng bán</label><button className={buttonClass} disabled={!entity}>Lưu lịch theo khoảng ngày</button></form></section>; }
-function MediaPicture({ hotelId, media, admin }: any) { const [url, setUrl] = useState(''); useEffect(() => { let live = true, object = ''; api.get(`/${admin ? 'admin' : 'partner'}/hotels/${hotelId}/media/${media.id}/file`, { responseType: 'blob' }).then((blob: any) => { object = URL.createObjectURL(blob); if (live)
-    setUrl(object); }).catch(() => { }); return () => { live = false; if (object)
-    URL.revokeObjectURL(object); }; }, [hotelId, media.id, admin]); return url ? <img src={url} alt={media.altText || 'Ảnh khách sạn'} className="h-32 w-full object-cover"/> : <p>Chưa tải được ảnh</p>; }
-function HotelManagementEnabled({ admin = false }: {
-    admin?: boolean;
-}) {
-    const base = `/${admin ? 'admin' : 'partner'}/hotels`, [list, setList] = useState<any[]>([]), [s, setS] = useState<any>(null), [tab, setTab] = useState(0), [error, setError] = useState(''), [notice, setNotice] = useState(''), [creating, setCreating] = useState(false), [roomId, setRoom] = useState(''), [rateId, setRate] = useState(''), [promoId, setPromo] = useState(''), [business, setBusiness] = useState<any[]>([]), [reason, setReason] = useState('');
-    const loadList = async () => { const r: any = await api.get(base); setList(r.data); };
-    useEffect(() => { loadList().catch((e: any) => setError(e.message || 'Chưa tải được module')); if (!admin)
-        api.get('/partner/businesses').then((r: any) => setBusiness(Array.isArray(r.data) ? r.data : r.data?.items || [])).catch(() => { }); }, [admin]);
-    const load = async (id: string) => { setError(''); setNotice(''); const r: any = await api.get(base + '/' + id); setS(r.data); setCreating(false); };
-    const write = async (path: string, method = 'put', body: any = {}) => { try {
-        setError('');
-        const r: any = await (api as any)[method](base + '/' + s.identity.id + '/' + path, body, { headers: { 'If-Match': String(s.revision) } });
-        setNotice('Đã lưu vào hệ thống.');
-        await load(s.identity.id);
-        await loadList();
-        return r;
+  }, [admin, loadList]);
+
+  const load = useCallback(async (id: string) => {
+    setError('');
+    setConflict(false);
+    const r: any = await api.get(base + '/' + id);
+    sRef.current = r.data;
+    setS(r.data);
+    return r.data;
+  }, [base]);
+
+  const write = useCallback(async (path: string, method = 'put', body: any = {}, options: WriteOptions = {}) => {
+    const current = sRef.current;
+    try {
+      setError('');
+      const r: any = await (api as any)[method](base + '/' + current.identity.id + '/' + path, body, { headers: { 'If-Match': String(current.revision) } });
+      await load(current.identity.id);
+      await loadList();
+      partnerHotels?.reload();
+      toast({ tone: 'success', message: options.success || 'Đã lưu vào hệ thống.' });
+      return r;
+    } catch (e: any) {
+      setError(e.message || e.error?.message || 'Không thể lưu. Dữ liệu có thể đã thay đổi; hãy tải lại.');
+      if (isConflictError(e)) setConflict(true);
+      throw e;
     }
-    catch (e: any) {
-        setError(e.message || e.error?.message || 'Không thể lưu. Dữ liệu có thể đã thay đổi; hãy tải lại.');
-        throw e;
-    } };
-    const room = s?.rooms.find((r: any) => r.id === roomId), rate = s?.rates.find((r: any) => r.id === rateId), promo = s?.promotions.find((r: any) => r.id === promoId);
-    const act = (...args: any[]) => { void (write as any)(...args).catch(() => { }); };
-    const entityInput = (v: any) => { const r = { ...v }; for (const k of ['id', 'placeId', 'version'])
-        delete r[k]; return r; };
-    return <main className="mx-auto max-w-6xl space-y-5 p-3 text-slate-900 sm:p-6"><header className="flex flex-wrap justify-between gap-3"><div><p className="text-sm font-semibold text-orange-700">HuGo Travel · {admin ? 'Quản trị' : 'Đối tác'}</p><h1 className="text-2xl font-bold">{admin ? 'Kiểm duyệt khách sạn' : 'Quản lý khách sạn'}</h1><p className="text-sm text-slate-600">Quản lý dữ liệu phòng và nội dung công bố trong cùng hệ thống.</p></div>{!admin && <button className={buttonClass} onClick={() => { setCreating(true); setS(null); setError(''); }}>Thêm khách sạn</button>}</header>{error && <p role="alert" className="rounded border border-red-200 bg-red-50 p-3 text-red-800">{error}</p>}{notice && <p role="status">{notice}</p>}<label className="block text-sm">Khách sạn<select aria-label="Chọn khách sạn" className={inputClass} value={s?.identity.id || ''} onChange={e => e.target.value && load(e.target.value)}><option value="">Chọn khách sạn trong phạm vi quản lý</option>{list.map(h => <option key={h.id} value={h.id}>{h.name} · {h.status}</option>)}</select></label>
- {creating && <section className="rounded border bg-white p-4"><h2 className="mb-4 font-bold">Tạo khách sạn nháp</h2><Editor initial={{ businessId: business[0]?.id || '', profile: profile(null), address: address(null) }} label="Tạo bản nháp" save={async (v: any) => { const r: any = await api.post(base, { ...v, address: cleanAddress(v.address) }); await loadList(); await load(r.data.identity.id); }}>{(v: any, set: any) => <><Choice label="Doanh nghiệp sở hữu" value={v.businessId} values={business.map(b => [b.id, b.name])} onChange={(x: any) => set('businessId', x)}/><div className="col-span-full grid gap-4 md:grid-cols-2"><ProfileFields v={v.profile} set={(k: string, x: any) => set('profile', { ...v.profile, [k]: x })}/><AddressFields v={v.address} set={(k: string, x: any) => set('address', { ...v.address, [k]: x })}/></div></>}</Editor></section>}
- {!creating && !s && <p className="rounded border bg-white p-6">{list.length ? 'Chọn khách sạn để xem và quản lý.' : 'Chưa có khách sạn trong phạm vi của bạn.'}</p>}
- {s && <><div className="flex flex-wrap items-center justify-between gap-3 rounded border bg-white p-3"><span>{s.identity.name} · {s.authority.placeStatus} · Nội dung v{s.authority.contentVersion}, đã duyệt {s.authority.approvedContentVersion ?? 'chưa có'} · Giá/tồn v{s.authority.commercialVersion}</span><button className="underline" onClick={() => load(s.identity.id)}>Tải lại dữ liệu</button></div><nav aria-label="Các phần quản lý khách sạn" className="flex gap-2 overflow-x-auto border-b pb-2">{tabs.map((name, i) => <button key={name} className={`shrink-0 rounded px-3 py-2 text-sm ${tab === i ? 'bg-[#142e50] text-white' : 'bg-white text-slate-700'}`} aria-current={tab === i ? 'page' : undefined} onClick={() => setTab(i)}>{name}</button>)}</nav><section className="rounded border bg-white p-4 sm:p-6" key={s.identity.id + '-' + tab}>
- {tab === 0 && <><h2 className="mb-3 text-xl font-bold">{s.identity.name}</h2><p>{s.identity.summary}</p>{admin && s.owner && <p>Doanh nghiệp: {s.owner.business?.name} · Người đại diện: {s.owner.representatives.map((u: any) => u.full_name).join(', ')}</p>}<p>{s.address?.fullAddress || 'Chưa có địa chỉ'}</p><dl className="my-4 grid grid-cols-2 gap-3"><div><dt>Hạng phòng</dt><dd>{s.rooms.length}</dd></div><div><dt>Gói giá</dt><dd>{s.rates.length}</dd></div><div><dt>Ảnh đã tải</dt><dd>{s.media.length}</dd></div><div><dt>Ưu đãi</dt><dd>{s.promotions.length}</dd></div></dl><p className="rounded bg-amber-50 p-3">Chưa hỗ trợ đặt phòng theo hợp đồng mới. Giá tham khảo không xác nhận Booking hoặc giữ phòng.</p>{s.authority.isDemo && <p className="mt-3 font-semibold">SYNTHETIC / môi trường kiểm thử, không phải cơ sở kinh doanh thật.</p>}</>}
- {admin && tab > 0 && tab !== 3 && tab !== 9 && <><h2 className="mb-3 font-bold">Nội dung {tabs[tab].toLowerCase()} để kiểm duyệt</h2>{tab === 1 ? <><p>{s.identity.summary}</p><p>{s.identity.description}</p><p>{s.identity.amenities.join(', ')}</p></> : tab === 2 ? <><p>{s.address?.fullAddress}</p><p>Tọa độ: {s.address?.latitude ?? 'chưa rõ'}, {s.address?.longitude ?? 'chưa rõ'} · {s.address?.coordinateStatus}</p><p>Nguồn: {s.address?.source}</p></> : tab === 4 ? <ul>{s.rooms.map((r: any) => <li key={r.id} className="mb-3 border-b pb-3">{r.name} · {r.areaM2 ?? 'Chưa rõ'}m² · {r.maxOccupancy}khách · {r.view}<p>{r.description}</p><p>{r.amenities.join(', ')}</p></li>)}</ul> : tab === 5 ? <ul>{s.rates.map((r: any) => <li key={r.id}>{r.name}: {r.baseAmountVnd.toLocaleString('vi-VN')}VND/phòng/đêm · {r.mealPlan} · {r.cancellation.terms}</li>)}</ul> : tab === 6 ? <p>{s.inventory.length}ngày tồn phòng được cung cấp; quản trị không tự sửa phân bổ.</p> : tab === 7 ? <ul>{s.promotions.map((p: any) => <li key={p.id}>{p.name} · {p.bookingStartsAt}—{p.bookingEndsAt}</li>)}</ul> : <dl>{Object.entries(s.profile.policies).map(([k, v]: any) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>}</>}
- {!admin && tab === 1 && <Editor initial={profile(s)} save={(v: any) => write('profile', 'put', v)}>{(v: any, set: any) => <ProfileFields v={v} set={set}/>}</Editor>}
- {!admin && tab === 2 && <Editor initial={address(s)} save={(v: any) => write('address', 'put', cleanAddress(v))}>{(v: any, set: any) => <AddressFields v={v} set={set}/>}</Editor>}
- {tab === 3 && <div className="grid gap-5">{admin && <Field label="Lý do kiểm duyệt ảnh" value={reason} onChange={setReason}/>}{!admin && <Editor initial={{ roomTypeId: '', rights: 'PARTNER_CONFIRMED', altText: '', file: null }} label="Tải ảnh lên" save={async (v: any) => { if (!v.file)
-            throw Error('Chọn ảnh trước khi tải.'); const params = new URLSearchParams({ rights: v.rights, altText: v.altText, ...(v.roomTypeId ? { roomTypeId: v.roomTypeId } : {}) }); await api.post(base + '/' + s.identity.id + '/media?' + params, v.file, { headers: { 'Content-Type': 'application/octet-stream', 'If-Match': String(s.revision) } }); await load(s.identity.id); }}>{(v: any, set: any) => <><Choice label="Ảnh thuộc" value={v.roomTypeId} values={[['', 'Khách sạn'], ...s.rooms.map((r: any) => [r.id, r.name])]} onChange={(x: any) => set('roomTypeId', x)}/><Field label="Mô tả ảnh" required value={v.altText} onChange={(x: any) => set('altText', x)}/><label className="grid gap-1">Ảnh JPEG/PNG/WebP tối đa10MiB<input type="file" accept="image/jpeg,image/png,image/webp" required onChange={e => set('file', e.target.files?.[0])}/></label><Choice label="Quyền sử dụng" value={v.rights} values={[['PARTNER_CONFIRMED', 'Tôi có quyền sử dụng'], ['OWNED', 'Ảnh do tôi sở hữu']]} onChange={(x: any) => set('rights', x)}/></>}</Editor>}<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{s.media.map((m: any) => <article key={m.id} className="grid gap-2 rounded border p-3"><MediaPicture hotelId={s.identity.id} media={m} admin={admin}/><p>{m.altText} · {m.roomTypeId ? s.rooms.find((r: any) => r.id === m.roomTypeId)?.name : 'Khách sạn'}</p><p className="text-sm">{m.status} · {m.rights}</p>{admin ? <div className="grid gap-2"><button disabled={!reason.trim()} className={buttonClass} onClick={() => act('media/' + m.id + '/review', 'post', { decision: 'APPROVED', reason })}>Duyệt ảnh</button><button disabled={!reason.trim()} onClick={() => act('media/' + m.id + '/review', 'post', { decision: 'REJECTED', reason })}>Từ chối ảnh</button></div> : <><button className="underline" onClick={() => act('media/' + m.id, 'put', { position: 0 })}>Đặt làm ảnh đại diện</button><button className="underline" onClick={() => { const alt = prompt('Mô tả ảnh', m.altText); if (alt)
-            act('media/' + m.id, 'put', { altText: alt }); }}>Đổi mô tả</button><button className="text-red-700 underline" onClick={() => act('media/' + m.id, 'put', { archive: true })}>Lưu trữ ảnh</button></>}</article>)}</div></div>}
- {!admin && tab === 4 && <><div className="mb-4 overflow-auto"><table className="w-full text-left text-sm"><thead><tr><th>Hạng phòng</th><th>Khách / Diện tích / View</th><th>Giá gói từ</th><th>Trạng thái</th></tr></thead><tbody>{s.rooms.map((r: any) => <tr key={r.id} className="border-t"><td>{s.media.find((m: any) => m.roomTypeId === r.id) && <MediaPicture hotelId={s.identity.id} media={s.media.find((m: any) => m.roomTypeId === r.id)} admin={false}/>}<button className="py-3 underline" onClick={() => setRoom(r.id)}>{r.name}</button></td><td>{r.maxOccupancy} / {r.areaM2 ?? '?'}m² / {r.view}</td><td>{s.rates.find((p: any) => p.roomTypeId === r.id)?.baseAmountVnd?.toLocaleString('vi-VN') || 'Chưa có'} VND/phòng/đêm</td><td>{r.status}</td></tr>)}</tbody></table></div><button className="mb-4 underline" onClick={() => setRoom('')}>Tạo hạng phòng mới</button><Editor key={roomId || 'new'} initial={room ? roomInput(room) : freshRoom()} save={(v: any) => write('rooms' + (roomId ? '/' + roomId : ''), roomId ? 'put' : 'post', v)}>{(v: any, set: any) => <RoomFields v={v} set={set}/>}</Editor></>}
- {!admin && tab === 5 && <><Choice label="Gói giá cần sửa" value={rateId} values={[["", "Tạo gói giá mới"], ...s.rates.map((r: any) => [r.id, r.name])]} onChange={setRate}/><Editor key={rateId || 'new'} initial={rate ? entityInput(rate) : freshRate(s.rooms[0]?.id || '')} save={(v: any) => write('rates' + (rateId ? '/' + rateId : ''), rateId ? 'put' : 'post', v)}>{(v: any, set: any) => <RateFields v={v} set={set} rooms={s.rooms}/>}</Editor><div className="mt-6 border-t pt-4"><DayCalendar s={s} write={write} kind="calendar"/></div></>}
- {!admin && tab === 6 && <DayCalendar s={s} write={write} kind="inventory"/>}
- {!admin && tab === 7 && <><Choice label="Ưu đãi cần sửa" value={promoId} values={[["", "Tạo ưu đãi mới"], ...s.promotions.map((r: any) => [r.id, r.name])]} onChange={setPromo}/><Editor key={promoId || 'new'} initial={promo ? entityInput(promo) : { roomTypeId: null, ratePlanId: null, name: '', currency: 'VND', kind: 'PERCENT_BPS', value: 1000, maxDiscountVnd: null, bookingStartsAt: initialBookingStartsAt, bookingEndsAt: '2028-01-01T00:00:00Z', stayFrom: new Date().toISOString().slice(0, 10), stayUntil: '2028-12-31', minNights: 1, status: 'DRAFT' }} save={(v: any) => write('promotions' + (promoId ? '/' + promoId : ''), promoId ? 'put' : 'post', v)}>{(v: any, set: any) => <><Field label="Tên ưu đãi" required value={v.name} onChange={(x: any) => set('name', x)}/><Choice label="Loại ưu đãi" value={v.kind} values={['PERCENT_BPS', 'FIXED_STAY']} onChange={(x: any) => set('kind', x)}/><Field label={v.kind === 'PERCENT_BPS' ? 'Giảm phần trăm (%)' : 'Giảm cố định cho cả kỳ VND'} type="number" value={v.kind === 'PERCENT_BPS' ? v.value / 100 : v.value} onChange={(x: number) => set('value', v.kind === 'PERCENT_BPS' ? Math.round(x * 100) : x)}/><Field label="Giới hạn giảm VND (trống: không giới hạn)" type="number" value={v.maxDiscountVnd} onChange={(x: any) => set('maxDiscountVnd', x)}/><Choice label="Hạng phòng áp dụng" value={v.roomTypeId || ''} values={[["", "Toàn khách sạn"], ...s.rooms.map((r: any) => [r.id, r.name])]} onChange={(x: any) => { set('roomTypeId', x || null); set('ratePlanId', null); }}/><Choice label="Gói giá áp dụng" value={v.ratePlanId || ''} values={[["", "Mọi gói của phạm vi"], ...s.rates.filter((r: any) => r.roomTypeId === v.roomTypeId).map((r: any) => [r.id, r.name])]} onChange={(x: any) => set('ratePlanId', x || null)}/>{[['bookingStartsAt', 'Mở nhận ưu đãi (giờ Việt Nam)'], ['bookingEndsAt', 'Kết thúc nhận ưu đãi (giờ Việt Nam)']].map(([k, l]) => <Field key={k} label={l} type="datetime-local" value={localHotelTime(v[k])} onChange={(x: any) => set(k, x ? new Date(x + ':00+07:00').toISOString() : '')}/>)}{[['stayFrom', 'Lưu trú từ'], ['stayUntil', 'Lưu trú đến trước ngày']].map(([k, l]) => <Field key={k} label={l} type="date" value={v[k]} onChange={(x: any) => set(k, x)}/>)}<Field label="Đêm tối thiểu" type="number" value={v.minNights} onChange={(x: any) => set('minNights', x)}/><Choice label="Trạng thái ưu đãi" value={v.status} values={['DRAFT', 'ACTIVE', 'ARCHIVED']} onChange={(x: any) => set('status', x)}/></>}</Editor></>}
- {!admin && tab === 8 && <Editor initial={profile(s)} save={(v: any) => write('profile', 'put', v)}>{(v: any, set: any) => <>{[['children', 'Chính sách trẻ em'], ['pets', 'Thú cưng'], ['smoking', 'Hút thuốc'], ['general', 'Quy định chung']].map(([k, l]) => <label key={k} className="grid gap-1 text-sm">{l}<textarea className={inputClass} value={v.policies[k] || ''} required onChange={e => set('policies', { ...v.policies, [k]: e.target.value })}/></label>)}</>}</Editor>}
- {tab === 9 && <div className="grid gap-4"><h2 className="text-lg font-bold">Kiểm duyệt nội dung</h2><p>Nội dung hiện tại v{s.authority.contentVersion}; phiên bản đã duyệt {s.authority.approvedContentVersion ?? 'chưa có'}. Thay đổi giá/tồn được quản lý riêng.</p>{admin ? <><Field label="Lý do quyết định" value={reason} onChange={setReason}/><div className="flex flex-wrap gap-3">{[['APPROVED', 'Duyệt nội dung hiện tại'], ['REJECTED', 'Từ chối và yêu cầu sửa'], ['SUSPENDED', 'Tạm ngừng công khai']].map(([decision, label]) => <button key={decision} disabled={!reason.trim()} className={buttonClass} onClick={() => act('moderate', 'post', { decision, reason })}>{label}</button>)}</div><h3 className="font-bold">Đối chiếu nội dung đã duyệt</h3>{s.publishedSnapshot ? <div><p>Tên: {s.publishedSnapshot.identity?.name} → {s.identity.name}</p><p>Địa chỉ: {s.publishedSnapshot.address?.fullAddress} → {s.address?.fullAddress}</p><p>Hạng phòng: {s.publishedSnapshot.rooms?.map((r: any) => r.name).join(', ')} → {s.rooms.map((r: any) => r.name).join(', ')}</p><p>Mô tả trước: {s.publishedSnapshot.identity?.description}</p><p>Mô tả hiện tại: {s.identity.description}</p></div> : <p>Chưa có bản công bố trước để so sánh.</p>}<h3 className="font-bold">Lịch sử quyết định</h3><ul>{s.audit?.map((a: any, i: number) => <li key={i}>{a.action} · {a.reason || 'Cập nhật dữ liệu'} · {new Date(a.created_at).toLocaleString('vi-VN')}</li>)}</ul></> : <button className={buttonClass} onClick={() => act('submit', 'post', {})}>Gửi nội dung hiện tại để duyệt</button>}</div>}
- </section></>}
- </main>;
+  }, [base, load, loadList, partnerHotels, toast]);
+
+  const act = useCallback((path: string, method?: string, body?: any) => {
+    void write(path, method, body).catch(() => {});
+  }, [write]);
+
+  /** Tải 1 ảnh (octet-stream + If-Match) rồi load() để có revision mới trước ảnh kế tiếp. Lỗi ném ra cho hàng chờ hiển thị. */
+  const uploadMedia = useCallback(async (file: File, meta: { rights: string; altText: string; roomTypeId?: string }) => {
+    const current = sRef.current;
+    const params = new URLSearchParams({ rights: meta.rights, altText: meta.altText, ...(meta.roomTypeId ? { roomTypeId: meta.roomTypeId } : {}) });
+    await api.post(base + '/' + current.identity.id + '/media?' + params, file, { headers: { 'Content-Type': 'application/octet-stream', 'If-Match': String(current.revision) } });
+    await load(current.identity.id);
+    await loadList();
+  }, [base, load, loadList]);
+
+  /** Tạo bản nháp (POST /partner/hotels) như form "Tạo khách sạn nháp" cũ. */
+  const createHotel = useCallback(async (v: any, clean: (a: any) => any) => {
+    const r: any = await api.post(base, { ...v, address: clean(v.address) });
+    await loadList();
+    partnerHotels?.reload();
+    return load(r.data.identity.id);
+  }, [base, load, loadList, partnerHotels]);
+
+  return { base, list, listLoading, s, setS, error, setError, conflict, business, businessLoaded, load, loadList, write, act, uploadMedia, createHotel };
 }
-export default function HotelManagementPage(props: {
-    admin?: boolean;
-}) { return import.meta.env.VITE_HOTEL_DOMAIN_ENABLED === 'true' ? <HotelManagementEnabled {...props}/> : <div className="p-6">Module khách sạn chưa được bật trong môi trường này.</div>; }
+
+const HotelStatusBar: React.FC<{ s: any; onReload: () => void; reloading: boolean }> = ({ s, onReload, reloading }) => (
+  <div className="hgp-statusbar" role="group" aria-label="Tình trạng dữ liệu khách sạn">
+    <StatusPill status={s.authority.placeStatus} domain="moderation" size="sm" />
+    <span>Nội dung v{s.authority.contentVersion}</span>
+    <span>{s.authority.approvedContentVersion == null ? 'Chưa duyệt' : `Đã duyệt v${s.authority.approvedContentVersion}`}</span>
+    <span>Giá/tồn v{s.authority.commercialVersion}</span>
+    <BoButton variant="ghost" size="sm" icon={RefreshCw} loading={reloading} onClick={onReload} className="hgp-statusbar__reload">
+      Tải lại dữ liệu
+    </BoButton>
+  </div>
+);
+
+function HotelManagementEnabled({ admin = false, embedded = false }: { admin?: boolean; embedded?: boolean }) {
+  const { hotelId, section } = useParams();
+  const navigate = useNavigate();
+  const m = useManagedHotel(admin);
+  const { s, load, base } = m;
+  const [loadError, setLoadError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const partnerHotels = usePartnerHotels();
+
+  const fetchHotel = useCallback(async (id: string) => {
+    setLoading(true);
+    setLoadError('');
+    try {
+      await load(id);
+    } catch (e: any) {
+      setLoadError(e?.message || 'Không tải được dữ liệu khách sạn.');
+    } finally {
+      setLoading(false);
+    }
+  }, [load]);
+
+  useEffect(() => {
+    if (hotelId) void fetchHotel(hotelId);
+  }, [hotelId, fetchHotel]);
+
+  useEffect(() => {
+    if (!admin && hotelId) partnerHotels?.remember(hotelId);
+  }, [admin, hotelId, partnerHotels]);
+
+  const valid = admin ? ADMIN_SECTIONS : PARTNER_SECTIONS;
+  const current = s && hotelId && s.identity.id === hotelId ? s : null;
+  const group = !admin && section ? PARTNER_GROUPS[section] : undefined;
+  const crumbTitle = admin ? 'Kiểm duyệt khách sạn' : group?.title || 'Khách sạn';
+
+  useBackofficeBreadcrumbs(
+    embedded
+      ? null
+      : hotelId
+        ? [{ label: 'Khách sạn', to: base }, { label: current?.identity.name || '…', to: `${base}/${hotelId}/overview` }, { label: crumbTitle }]
+        : [{ label: 'Khách sạn' }],
+  );
+
+  if (!hotelId) {
+    return (
+      <HotelListView
+        admin={admin}
+        embedded={embedded}
+        base={base}
+        list={m.list}
+        loading={m.listLoading}
+        error={m.error}
+        onRetry={() => {
+          m.setError('');
+          void m.loadList().catch((e: any) => m.setError(e.message || 'Chưa tải được module'));
+        }}
+      />
+    );
+  }
+
+  if (!section || !valid.includes(section)) return <Navigate to={`${base}/${hotelId}/overview`} replace />;
+
+  const hotelUrl = `${base}/${hotelId}`;
+  const tabsFor = admin ? ADMIN_TABS : group?.key === 'facility' ? FACILITY_TABS : group?.key === 'pricing' ? PRICING_TABS : null;
+  const tabItems = tabsFor?.map((tab) => ({ key: tab.key, label: tab.label, to: `${hotelUrl}/${tab.key}` }));
+  const title = admin ? current?.identity.name || 'Khách sạn' : group?.title || 'Khách sạn';
+
+  const header = embedded ? (
+    <div className="hgp-subhead">
+      <BoLinkButton variant="ghost" size="sm" icon={ChevronLeft} to={base}>
+        Danh sách khách sạn
+      </BoLinkButton>
+      <h2 className="hgp-subhead__title">{current?.identity.name || 'Đang tải khách sạn…'}</h2>
+      {tabItems && <BoTabs items={tabItems} value={section} label="Các phần kiểm duyệt khách sạn" />}
+    </div>
+  ) : (
+    <PageHeader
+      title={title}
+      subtitle={admin ? 'Duyệt đúng phiên bản nội dung. Giá và tồn phòng do đối tác quản lý.' : current?.identity.name}
+      tabs={tabItems}
+      tabValue={section}
+      tabsLabel="Các phần quản lý khách sạn"
+      actions={!admin && current && ['DRAFT', 'REJECTED'].includes(current.authority.placeStatus) ? (
+        <BoLinkButton variant="secondary" to={`${hotelUrl}/setup`}>Tiếp tục thiết lập</BoLinkButton>
+      ) : undefined}
+    />
+  );
+
+  let body: React.ReactNode;
+  if (loadError && !current) {
+    body = (
+      <ErrorState
+        message={loadError}
+        onRetry={() => void fetchHotel(hotelId)}
+      />
+    );
+  } else if (!current) {
+    body = <LoadingState variant="detail" rows={8} />;
+  } else {
+    const props: SectionProps = { s: current, write: m.write, act: m.act, load: m.load, admin, base, hotelUrl };
+    const key = current.identity.id + '-' + section;
+    const map: Record<string, React.ReactNode> = {
+      overview: <HotelOverviewSection key={key} {...props} />,
+      profile: <HotelProfileSection key={key} {...props} />,
+      address: <HotelAddressSection key={key} {...props} />,
+      'review-status': <HotelReviewStatusSection key={key} {...props} />,
+      media: <HotelMediaSection key={key} {...props} upload={m.uploadMedia} />,
+      rooms: <HotelRoomsSection key={key} {...props} />,
+      rates: <HotelRatesSection key={key} {...props} />,
+      calendar: <PriceInventoryCalendar key={key} {...props} />,
+      promotions: <HotelPromotionsSection key={key} {...props} />,
+      policies: <HotelPoliciesSection key={key} {...props} />,
+      content: <HotelContentReview key={key} {...props} />,
+    };
+    body = (
+      <>
+        <HotelStatusBar s={current} reloading={loading} onReload={() => void fetchHotel(current.identity.id)} />
+        {m.conflict && <ConflictBanner busy={loading} onReload={() => void fetchHotel(current.identity.id)} />}
+        {m.error && !m.conflict && (
+          <Alert tone="danger" role="alert">
+            {m.error}
+          </Alert>
+        )}
+        {map[section]}
+      </>
+    );
+  }
+
+  return (
+    <div className="hgp-page hgbo-stack" data-hotel-section={section}>
+      {header}
+      {body}
+      {!admin && !current && !loading && loadError && (
+        <EmptyState
+          icon={Building2}
+          plain
+          title="Chọn hoặc tạo khách sạn"
+          action={(
+            <BoButton variant="secondary" onClick={() => navigate(base)}>Về danh sách khách sạn</BoButton>
+          )}
+        />
+      )}
+    </div>
+  );
+}
+
+export default function HotelManagementPage(props: { admin?: boolean; embedded?: boolean }) {
+  return import.meta.env.VITE_HOTEL_DOMAIN_ENABLED === 'true' ? (
+    <HotelManagementEnabled {...props} />
+  ) : (
+    <EmptyState
+      icon={Building2}
+      title="Module khách sạn chưa được bật trong môi trường này."
+    />
+  );
+}

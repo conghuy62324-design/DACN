@@ -19,14 +19,14 @@ export function createAgentRouter(service: AgentOrchestrator = agentService) {
   router.get('/verified-history/privacy', authenticate, (_req, res) => {
     res.setHeader('Cache-Control', 'no-store'); res.json({ success: true, data: { ...G2_PRIVACY_NOTICE, enabled: service.verifiedHistoryEnabled() } });
   });
-  router.post('/verified-history/:id/reset', authenticate, (req: AuthenticatedRequest, res, next) => {
-    try { onlyKeys(object(req.body || {}), []); res.setHeader('Cache-Control', 'no-store'); res.json({ success: true, data: service.resetVerifiedHistory(req.user, String(req.params.id)) }); } catch (error) { next(error); }
+  router.post('/verified-history/:id/reset', authenticate, async (req: AuthenticatedRequest, res, next) => {
+    try { onlyKeys(object(req.body || {}), []); res.setHeader('Cache-Control', 'no-store'); res.json({ success: true, data: await service.resetVerifiedHistory(req.user, String(req.params.id)) }); } catch (error) { next(error); }
   });
-  router.delete('/verified-history/:id', authenticate, (req: AuthenticatedRequest, res, next) => {
-    try { onlyKeys(object(req.body || {}), []); res.setHeader('Cache-Control', 'no-store'); res.json({ success: true, data: service.revokeVerifiedHistory(req.user, String(req.params.id)) }); } catch (error) { next(error); }
+  router.delete('/verified-history/:id', authenticate, async (req: AuthenticatedRequest, res, next) => {
+    try { onlyKeys(object(req.body || {}), []); res.setHeader('Cache-Control', 'no-store'); res.json({ success: true, data: await service.revokeVerifiedHistory(req.user, String(req.params.id)) }); } catch (error) { next(error); }
   });
-  router.delete('/verified-history', authenticate, (req: AuthenticatedRequest, res, next) => {
-    try { onlyKeys(object(req.body || {}), []); res.setHeader('Cache-Control', 'no-store'); res.json({ success: true, data: service.revokeVerifiedHistory(req.user) }); } catch (error) { next(error); }
+  router.delete('/verified-history', authenticate, async (req: AuthenticatedRequest, res, next) => {
+    try { onlyKeys(object(req.body || {}), []); res.setHeader('Cache-Control', 'no-store'); res.json({ success: true, data: await service.revokeVerifiedHistory(req.user) }); } catch (error) { next(error); }
   });
   // Do not pass provider/database exceptions to the global logger or development stack response.
   const safeError: ErrorRequestHandler = (error, _req, res, _next) => {

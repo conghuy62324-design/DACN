@@ -2,21 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { BlogService } from '../services/blogService';
 import { BlogPost } from '../types';
-import { 
-  Heart, 
-  Share2, 
-  Calendar, 
-  User, 
-  MapPin, 
-  DollarSign, 
-  Clock, 
-  MessageSquare, 
-  ChevronRight,
+import {
+  Heart,
+  MapPin,
+  Wallet,
+  Clock,
+  MessageSquare,
   Send,
   Compass,
-  ArrowRight
+  ArrowRight,
+  BookOpen,
+  Info,
 } from 'lucide-react';
 import { formatDateVN } from '../utils/formatters';
+import {CatalogBreadcrumb,CatalogState,catalogErrorText} from '../components/explore/CatalogPageFilters';
+import '../styles/hg-catalog.css';
+
+const initials = (name: string) => name.trim().split(/\s+/).slice(-1)[0]?.charAt(0).toUpperCase() || 'H';
 
 export const BlogDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,41 +27,34 @@ export const BlogDetailPage: React.FC = () => {
   const [blog, setBlog] = useState<BlogPost | null>(null);
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
-  const [comments, setComments] = useState<{ id: string; name: string; text: string; date: string }[]>([
-    {
-      id: 'c-1',
-      name: 'Nguyễn Văn Minh',
-      text: 'Bài viết rất chi tiết và hữu ích! Mình sắp đi Hội An tuần tới, cảm ơn bạn đã chia sẻ lịch trình này.',
-      date: '2026-10-09',
-    },
-    {
-      id: 'c-2',
-      name: 'Trần Thị Lan',
-      text: 'Món cao lầu Hội An thực sự gây thương nhớ, ảnh bạn chụp Cầu Vàng cũng siêu đẹp!',
-      date: '2026-10-10',
-    },
-  ]);
+  // Bình luận chỉ lưu tạm trong trình duyệt (chưa có API); không dựng sẵn bình luận mẫu.
+  const [comments, setComments] = useState<{ id: string; name: string; text: string; date: string }[]>([]);
   const [newCommentName, setNewCommentName] = useState('');
   const [newCommentText, setNewCommentText] = useState('');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     const fetchBlog = async () => {
       setLoading(true);
+      setLoadError('');
       try {
         const data = await BlogService.getBlogById(id || 'b-1');
         setBlog(data);
         setLikesCount(data.likesCount);
-      } catch (e) {
+      } catch (e: any) {
         console.error(e);
+        setBlog(null);
+        setLoadError(/không tìm thấy|không tồn tại/i.test(String(e?.message || '')) ? 'NOT_FOUND' : catalogErrorText(e, 'Chưa tải được bài viết. Vui lòng thử lại sau ít phút.'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchBlog();
-  }, [id]);
+  }, [id, retry]);
 
   const handleLike = async () => {
     if (!blog || liked) return;
@@ -89,115 +84,116 @@ export const BlogDetailPage: React.FC = () => {
     setNewCommentText('');
   };
 
+  const crumbs = (title?: string) => <CatalogBreadcrumb items={[{label:'Trang chủ',to:'/'},{label:'Cẩm nang du lịch',to:'/blog'},{label:title||'Bài viết'}]}/>;
+
   if (loading || !blog) {
     return (
-      <div className="min-h-screen pt-28 pb-16 flex items-center justify-center">
-        <p className="text-slate-500 text-sm">Đang tải bài viết...</p>
+      <div className="hg-cat">
+        <div className="hg-container hg-cat-main">
+          <div className="hg-cat-article">
+            {crumbs()}
+            {loading ? (
+              <div role="status">
+                <span className="hg-cat-sr">Đang tải bài viết…</span>
+                <div className="hg-cat-skelhead" aria-hidden="true">
+                  <span className="hg-cat-skel" />
+                  <span className="hg-cat-skel" />
+                </div>
+                <div className="hg-cat-cover" aria-hidden="true"><span className="hg-cat-skel hg-cat-skel--fill" /></div>
+              </div>
+            ) : loadError === 'NOT_FOUND' ? (
+              <CatalogState
+                role="status"
+                icon={<BookOpen size={32} aria-hidden="true" />}
+                title="Không tìm thấy bài viết"
+                text="Bài viết không tồn tại hoặc chưa được duyệt hiển thị."
+                actions={<Link to="/blog" className="hg-cat-btn hg-cat-btn--outline">Xem cẩm nang khác</Link>}
+              />
+            ) : (
+              <CatalogState
+                role="alert"
+                tone="error"
+                title="Chưa tải được bài viết"
+                text={loadError}
+                actions={<>
+                  <button type="button" className="hg-cat-btn hg-cat-btn--outline" onClick={() => setRetry((v) => v + 1)}>Thử lại</button>
+                  <Link to="/blog" className="hg-cat-btn hg-cat-btn--ghost">Về trang cẩm nang</Link>
+                </>}
+              />
+            )}
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pt-20 pb-20 bg-slate-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-xs text-slate-500 py-4">
-          <Link to="/" className="hover:text-orange-500">Trang chủ</Link>
-          <ChevronRight className="w-3.5 h-3.5" />
-          <Link to="/blog" className="hover:text-orange-500">Cẩm nang du lịch</Link>
-          <ChevronRight className="w-3.5 h-3.5" />
-          <span className="text-slate-800 font-semibold truncate max-w-xs">{blog.title}</span>
-        </nav>
+    <div className="hg-cat">
+      <div className="hg-container hg-cat-main">
+        <article className="hg-cat-article">
+          {crumbs(blog.title)}
 
-        {/* Article Container */}
-        <article className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-8">
-          {/* Header */}
-          <div className="space-y-4">
-            <div className="flex flex-wrap gap-2">
+          {blog.tags.length > 0 && (
+            <div className="hg-cat-card__tags">
               {blog.tags.map((t, idx) => (
-                <span key={idx} className="text-xs font-bold px-3 py-1 bg-orange-50 text-orange-600 rounded-full">
-                  #{t}
-                </span>
+                <span key={idx} className="hg-cat-tag">#{t}</span>
               ))}
             </div>
+          )}
 
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 leading-tight">
-              {blog.title}
-            </h1>
+          <h1 className="hg-cat-h1 hg-cat-h1--article">{blog.title}</h1>
 
-            {/* Author bar */}
-            <div className="flex items-center justify-between border-y border-slate-100 py-3 text-xs text-slate-500">
-              <div className="flex items-center space-x-3">
-                <img
-                  src={blog.authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'}
-                  alt={blog.authorName}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-                <div>
-                  <h4 className="font-bold text-slate-800 text-sm">{blog.authorName}</h4>
-                  <p>Ngày đăng: {formatDateVN(blog.createdAt)}</p>
-                </div>
+          <div className="hg-cat-author">
+            <div className="hg-cat-review__who">
+              <span className="hg-cat-avatar">
+                {blog.authorAvatar ? <img src={blog.authorAvatar} alt="" /> : initials(blog.authorName)}
+              </span>
+              <div>
+                <p className="hg-cat-review__name">{blog.authorName}</p>
+                <p className="hg-cat-review__sub">Ngày đăng: {formatDateVN(blog.createdAt)}</p>
               </div>
+            </div>
 
-              {/* Action buttons */}
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={handleLike}
-                  className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full border text-xs font-bold transition-all ${
-                    liked
-                      ? 'bg-rose-50 border-rose-200 text-rose-600'
-                      : 'border-slate-200 text-slate-700 hover:bg-slate-50'
-                  }`}
-                >
-                  <Heart className={`w-4 h-4 ${liked ? 'fill-rose-500 text-rose-500' : ''}`} />
-                  <span>{likesCount}</span>
-                </button>
-              </div>
+            <button
+              type="button"
+              onClick={handleLike}
+              aria-pressed={liked}
+              aria-label={`Thích bài viết, hiện có ${likesCount} lượt thích`}
+              className="hg-cat-btn hg-cat-btn--ghost hg-cat-btn--sm hg-cat-like"
+            >
+              <Heart size={18} aria-hidden="true" />
+              <span>{likesCount}</span>
+            </button>
+          </div>
+
+          <div className="hg-cat-cover">
+            <img src={blog.coverImage} alt={blog.title} onError={(e) => e.currentTarget.parentElement?.classList.add('hg-cat-imgfail')} />
+          </div>
+
+          <div className="hg-cat-facts3">
+            <div className="hg-cat-fact">
+              <MapPin size={18} aria-hidden="true" />
+              <span>Địa điểm<b>{blog.destinationName || 'Chưa cung cấp'}</b></span>
+            </div>
+            <div className="hg-cat-fact">
+              <Clock size={18} aria-hidden="true" />
+              <span>Thời gian đề xuất<b>{blog.tripDuration || 'Chưa cung cấp'}</b></span>
+            </div>
+            <div className="hg-cat-fact">
+              <Wallet size={18} aria-hidden="true" />
+              <span>Dự trù chi phí<b>{blog.costEstimate || 'Chưa cung cấp'}</b></span>
             </div>
           </div>
 
-          {/* Cover Photo */}
-          <div className="aspect-[16/9] rounded-2xl overflow-hidden bg-slate-100">
-            <img src={blog.coverImage} alt={blog.title} className="w-full h-full object-cover" />
-          </div>
+          <div className="hg-cat-prose">{blog.content}</div>
 
-          {/* Highlights Box (Cost & Duration) */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
-            <div className="flex items-center space-x-2.5">
-              <MapPin className="w-4 h-4 text-orange-500" />
-              <div>
-                <span className="text-slate-400 block">Địa điểm</span>
-                <span className="font-bold text-slate-800">{blog.destinationName}</span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2.5">
-              <Clock className="w-4 h-4 text-teal-600" />
-              <div>
-                <span className="text-slate-400 block">Thời gian đề xuất</span>
-                <span className="font-bold text-slate-800">{blog.tripDuration || '3 Ngày 2 Đêm'}</span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2.5">
-              <DollarSign className="w-4 h-4 text-amber-500" />
-              <div>
-                <span className="text-slate-400 block">Dự trù chi phí</span>
-                <span className="font-bold text-slate-800">{blog.costEstimate || 'Khoảng 4.000.000đ'}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Copy Itinerary Action Banner */}
-          <div className="bg-gradient-to-r from-sky-900 to-indigo-950 p-5 rounded-2xl text-white shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="hg-cat-banner hg-cat-banner--spaced">
             <div>
-              <h4 className="font-bold text-sm flex items-center gap-2">
-                <Compass className="w-4 h-4 text-orange-400" />
-                Bạn thích lịch trình trong bài viết này?
-              </h4>
-              <p className="text-xs text-slate-300 mt-1">
-                Sao chép các địa điểm trên sang HuGo Planner để tự do tùy biến ngày, thêm bớt điểm và tối ưu chi phí!
-              </p>
+              <h2><Compass size={18} aria-hidden="true" /> Bạn thích lịch trình trong bài viết này?</h2>
+              <p>Đưa điểm đến sang HuGo Planner để tự chọn ngày, thêm bớt điểm và ước tính chi phí.</p>
             </div>
             <button
+              type="button"
               onClick={() =>
                 navigate('/tour-planner', {
                   state: {
@@ -209,66 +205,73 @@ export const BlogDetailPage: React.FC = () => {
                   },
                 })
               }
-              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all flex items-center gap-1.5 flex-shrink-0 shadow-md group"
+              className="hg-cat-btn hg-cat-btn--cta"
             >
               <span>Sao chép thành tour cá nhân</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight size={16} aria-hidden="true" />
             </button>
           </div>
 
+          <section className="hg-cat-box hg-cat-comments" aria-labelledby="blog-comments-title">
+            <h2 id="blog-comments-title" className="hg-cat-box__title">
+              <MessageSquare size={18} aria-hidden="true" />
+              Bình luận &amp; chia sẻ cảm nghĩ ({comments.length})
+            </h2>
+            <p className="hg-cat-notice hg-cat-notice--info hg-cat-notice--spaced">
+              <Info size={16} aria-hidden="true" />
+              <span>Bình luận hiện chỉ hiển thị trên thiết bị của bạn và chưa được lưu lên máy chủ.</span>
+            </p>
 
-          {/* Body Content */}
-          <div className="text-slate-700 text-base leading-relaxed whitespace-pre-line space-y-4 font-normal">
-            {blog.content}
-          </div>
-
-          {/* Comments Section */}
-          <div className="pt-8 border-t border-slate-200 space-y-6">
-            <h3 className="text-xl font-bold text-slate-900 flex items-center">
-              <MessageSquare className="w-5 h-5 text-orange-500 mr-2" />
-              Bình luận & Chia sẻ cảm nghĩ ({comments.length})
-            </h3>
-
-            {/* Comment Form */}
-            <form onSubmit={handleAddComment} className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
-              <input
-                type="text"
-                required
-                value={newCommentName}
-                onChange={(e) => setNewCommentName(e.target.value)}
-                placeholder="Họ tên của bạn..."
-                className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500"
-              />
-              <textarea
-                rows={2}
-                required
-                value={newCommentText}
-                onChange={(e) => setNewCommentText(e.target.value)}
-                placeholder="Viết nhận xét hoặc chia sẻ mẹo du lịch của bạn..."
-                className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500"
-              />
-              <button
-                type="submit"
-                className="px-5 py-2 bg-slate-900 hover:bg-orange-600 text-white font-bold text-xs rounded-xl transition-colors flex items-center space-x-1.5"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>Gửi bình luận</span>
-              </button>
+            <form onSubmit={handleAddComment} className="hg-cat-form">
+              <label className="hg-cat-field">
+                <span>Họ tên</span>
+                <input
+                  type="text"
+                  required
+                  value={newCommentName}
+                  onChange={(e) => setNewCommentName(e.target.value)}
+                  placeholder="Họ tên của bạn"
+                  className="hg-cat-input"
+                />
+              </label>
+              <label className="hg-cat-field">
+                <span>Nội dung</span>
+                <textarea
+                  rows={3}
+                  required
+                  value={newCommentText}
+                  onChange={(e) => setNewCommentText(e.target.value)}
+                  placeholder="Viết nhận xét hoặc chia sẻ mẹo du lịch của bạn…"
+                  className="hg-cat-textarea"
+                />
+              </label>
+              <div>
+                <button type="submit" className="hg-cat-btn hg-cat-btn--primary">
+                  <Send size={16} aria-hidden="true" />
+                  <span>Gửi bình luận</span>
+                </button>
+              </div>
             </form>
 
-            {/* Comments List */}
-            <div className="space-y-3">
-              {comments.map((c) => (
-                <div key={c.id} className="p-4 rounded-xl bg-slate-50/70 border border-slate-100 space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-slate-900">{c.name}</span>
-                    <span className="text-slate-400">{c.date}</span>
+            {comments.length === 0 ? (
+              <p className="hg-cat-note hg-cat-comments__empty">Chưa có bình luận nào.</p>
+            ) : (
+              <div className="hg-cat-stack hg-cat-comments__list">
+                {comments.map((c) => (
+                  <div key={c.id} className="hg-cat-review">
+                    <div className="hg-cat-review__head">
+                      <div className="hg-cat-review__who">
+                        <span className="hg-cat-avatar">{initials(c.name)}</span>
+                        <p className="hg-cat-review__name">{c.name}</p>
+                      </div>
+                      <span className="hg-cat-review__sub">{formatDateVN(c.date)}</span>
+                    </div>
+                    <p className="hg-cat-review__body">{c.text}</p>
                   </div>
-                  <p className="text-xs text-slate-600 leading-relaxed">{c.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+                ))}
+              </div>
+            )}
+          </section>
         </article>
       </div>
     </div>
