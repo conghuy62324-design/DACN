@@ -1,4 +1,6 @@
 # HUGO TRAVEL — CURRENT TASK HANDOFF DOCUMENT
+
+**Checkpoint mới nhất ngày 28/11/2026 ICT** thuộc TASK21.41-B-FINAL. [Báo cáo](HUGO_21_41_B_FINAL_ACCEPTANCE_REPORT.md) · [Ma trận](HUGO_PRODUCTION_RELEASE_MATRIX.md)
 **DACN | TravelGo | Bàn giao tiến độ kỹ thuật & Phân định trách nhiệm nhóm**
 
 - **Thời gian lập:** 20/11/2026 (Asia/Ho_Chi_Minh)
@@ -211,3 +213,77 @@ Hoặc dùng `docker-compose up -d` trong thư mục cấu hình Docker của d�
 3. **Thanh toán:** Không triển khai thanh toán tiền thật và không thu thập/lưu trữ thông tin thẻ thanh toán của người dùng.
 4. **Bản đồ & Tọa độ:** Không sử dụng API bản đồ trả phí; hiển thị bản đồ chi tiết được hoãn tới phase 21.41.
 5. **Triển khai Production:** Dự án hiện được nghiệm thu trong môi trường cục bộ (local/Docker), chưa cấu hình deploy tự động lên VPS production.
+
+
+## TASK21.40-B-RESUME checkpoint — 27/11/2026 ICT
+
+Worktree DACN_WEB_REVIEW/travelgo, branch integration/web-backend @ 46839ea. Fresh two-hour task scope used exact isolated15457; V5 persisted review worker/native acceptance and R01–R24 data/native checks complete with R14 first FAIL preserved and R14B PASS. Browser Edge real auth/consent: B01–B03 PASS, B04 FAIL (validated quote omitted in detail prose), B05 NOT RUN. Renderer fixed and offline8/8, compatibility7/7, backend build PASS; no browser retry. Agent quota20→15, reserve10. Cleanup511/1600 DML, 8 audit rows deleted, temporary writer/worker roles and fence removed, public READ ONLY, outside-cohort59/59, schema61/20. Preview HTTP200 at http://127.0.0.1:5182/assistant with POST batch closed; automated Edge launch blocked by tool policy. Qwen/Ollama/Internet OFF, no commit/push/deploy. Full [report](HUGO_AI_21_40_B_REVIEW_INTELLIGENCE_WORKER_REPORT.md). Next task requires fresh browser authorization and source/expected lock; do not call LIVE READY or start21.40-C.
+
+
+## TASK21.40-B-FINAL handoff — 27/11/2026 ICT
+
+Worktree DACN_WEB_REVIEW/travelgo, integration/web-backend @ 46839ea. Current response grounding source adds verified stay dates/guest allocation and applied discount to native detail DTO; detail/search renderers show current total only while quote/snapshot are valid, keep review separate from price. Backend build PASS, targeted15/15, compatibility7/7 offline. Current-source B04/B05 browser NOT RUN because prior Edge launch was policy-blocked and fresh90-minute window expired; historical B04 FAIL remains. No new Agent requests or DML; fresh quota20/20 but no execution authorization remains. Prior cleanup511/1600 and outside-cohort59/59 remain last DB evidence. Old preview watchdog stopped task-owned API/frontend at02:46:28Z; URL5182 is not live. Linux worker signal/retention/container gate BLOCKED. Phase C scope prepared only; no C code, Qwen, commit, push or deploy. Full [B report](HUGO_AI_21_40_B_REVIEW_INTELLIGENCE_WORKER_REPORT.md).
+
+
+## TASK21.40-C — 27/11/2026
+
+`integration/web-backend` tại `46839ea`, source C trong worktree hiện tại. Agent dùng native Hotel và review V5, truy vấn catalog công khai theo mục tiêu và đưa dữ liệu đủ điều kiện sang Planner hiện có. Build PASS, development 21/21, native PostgreSQL 10/10 chỉ đọc. Holdout niêm phong 9/10, giữ nguyên FAIL HC06. Source cuối qua hồi quy đích. Positive native Planner còn thiếu catalog nhà hàng và điểm tham quan đủ điều kiện, HTTP chưa chạy và B04/B05 browser vẫn bị chặn. Runtime C dùng model OFF và không gọi Ollama. Phase D cần scope mới, với B04/B05 và các gate Linux/production còn mở. [Báo cáo C](HUGO_AI_21_40_C_ADVANCED_TRAVEL_CONSULTANT_REPORT.md) · [Checkpoint](../../docs/HUGO_CODEX_CONTINUATION.md)
+
+
+## TASK21.40-D — 27/11/2026
+
+`integration/web-backend` tại `46839ea`. Core provider hiện có dùng schema cho câu hỏi làm rõ và lựa chọn fact ID native. Giá, tồn, ưu đãi, review và dữ liệu Planner vẫn qua kiểm chứng phía server. Build PASS, 22/22 offline, 7/7 native chỉ đọc với provider mô phỏng. Đúng tag/digest và loopback, cold-load chặn bởi RAM/VRAM/GPU, 0 warm-load và inference. Model mặc định OFF, worker và preview dừng, không DML. HTTP thật, B04/B05 và các gate release vẫn mở. Dừng tại D. [Báo cáo D](HUGO_AI_21_40_D_QWEN_LIVE_INTEGRATION_REPORT.md) · [Checkpoint](../../docs/HUGO_CODEX_CONTINUATION.md)
+
+
+## TASK21.41 — Bàn giao cuối ngày 27/11/2026 ICT
+
+- Backend build PASS và vượt regression mục tiêu. HTTP Agent thực 9/9 với PostgreSQL READ ONLY hiện có, bao gồm giá/review, parity Hotel quote, xác thực DB session version và consent. Dùng token test đã ký ngắn hạn; browser/login thật chưa chạy. Target `hugotravel_web_integration_test_20261125` tại `127.0.0.1:15457`, 61 bảng/20 migration, fingerprints giữ nguyên; DML 0. Cùng principal còn reserve 10 khi kết thúc lượt.
+- Qwen pin Phase D đúng, model chưa resident. RAM 5.330 rồi 3.758 MiB dưới ngưỡng 6.144; 0/24 inference. Candidate Linux có 2 image, Compose config, nginx -t, SPA 200, Linux signal 3/3 với callback queue mô phỏng. Model, worker, prune và ghi HotelStay production chưa bật. [Bằng chứng](evidence/release-2141-20261127/verification.json)
+- WEB xác nhận browser manual hoặc route tự động đã duyệt cho B04/B05 và hành trình essential. Backend/DB kiểm quyền, HotelStay DML scoped, Planner dương, prune/restart native và shared quota. Vận hành cần staging GPU/stack, restore, host hardening, DNS/TLS và monitoring. Owner duyệt gói ghi, phạm vi browser, hợp nhất nguồn và quyết định 21.42.
+- Source tại `DACN_WEB_REVIEW` @ `46839ea38453d42accb040e30e1973a171638b66` cộng lock cục bộ. DACN chính giữ nguyên. Mốc 09/12 là mục tiêu có điều kiện. [Khóa nguồn](evidence/release-2141-20261127/final-source-lock.json) · [Ma trận](HUGO_PRODUCTION_RELEASE_MATRIX.md) · [Runbook](HUGO_PRODUCTION_DEPLOYMENT_RUNBOOK.md)
+
+
+## TASK21.41-A — 27/11/2026 ICT
+
+- HTTP 12/12 trên app thật và PostgreSQL chỉ đọc với token harness. Quote Web/Agent 1.000.000 VND cùng room/rate/version và checkout prepare PASS. Retained snapshot và cross-owner đọc/reject đạt. HotelStay confirm/cancel, live inventory và review lifecycle bị chặn vì side effects ngoài allowlist hoặc rate nonrefundable.
+- Planner native dương với hai fixture SYNTHETIC PostgreSQL, lịch ba ngày, giờ mở cửa, budget estimate/over và transport UNKNOWN. Chưa full E2E hoặc routing. Linux worker thực claim/recover, retry/FAILED, SIGTERM/SIGINT và actual prune. P06 PASS trong scope Linux isolated, P05/P08/P09 còn PARTIAL.
+- DML 71/144 gồm cleanup 15/24, còn 0 fixture mới. Fingerprint 61 bảng và 20 migration giữ nguyên, role/fence gỡ, worker tắt. Qwen OFF, browser BLOCKED, B04 FAIL/B05 NOT RUN lịch sử.
+- WEB/owner chốt route browser và delta DML cho side effects, sau đó nghiệm thu ghi thật. 21.41-B chỉ ở handoff PostgreSQL shared quota/session, chưa khởi động. Giữ DACN chính nguyên vẹn; không deploy, commit, push hay merge. [Báo cáo](HUGO_21_41_A_BUSINESS_ACCEPTANCE_REPORT.md) · [Runbook](HUGO_PRODUCTION_DEPLOYMENT_RUNBOOK.md)
+
+
+## TASK21.41-B — 27/11/2026 ICT
+
+- Code chung quota/lease/claims PostgreSQL đã có. Build PASS, 11/11 Windows và Linux theo component; bốn baseline FAIL đã đối chiếu và giữ trạng thái. DDL/DML 0. Migration 21, grants, 2 backend thật chờ P12 packet.
+- Session local tiếp tục `persisted:false`. Giữ auth, TTL, revision, replay rejection và revoke dừng in-flight trên process sở hữu. Structured state bền và cross-process revocation cần quyết định privacy riêng.
+- Rate hiện có của exact room `…041` NON_REFUNDABLE. Gói business delta gồm rate SYNTHETIC mới, exact audit và profile revisions, HotelStay, verified history/review V5 và cleanup ở isolated. Chờ scope mới trước viết.
+- B04/B05 browser giữ BLOCKED_POLICY và historical FAIL/NOT RUN, Qwen OFF, P06 A giữ nguyên. DACN chính nguyên vẹn, source backup private có checksum. Dừng B, chưa mở 21.41-C. [Báo cáo và 2 gói quyền](HUGO_21_41_B_AI_RELIABILITY_REPORT.md)
+
+
+## TASK21.41-B-FINAL — 28/11/2026 ICT
+
+- P12 shared coordination native PASS hai backend trên exact isolated DB. P12 tổng PARTIAL vì structured session chưa được phép lưu, cross-process consent/revision còn thiếu. `persisted:false` giữ nguyên, một backend production cho Agent.
+- Actual Partner update 10.000 VND/đêm, promo 50.000 VND, quote expiry, fixture stock và hard budget đạt. Checkout prepare và historical booking COMPLETED/reload/RBAC qua app thật. Confirm/cancel và last-room chưa đạt vì row-lock ACL ngoài phạm vi.
+- Actual verified review và bảy chu kỳ V5 Linux/PostgreSQL đạt; B04/B05 browser BLOCKED_POLICY. Qwen 0 calls và worker production OFF.
+- Gói 1 dùng 147/224 ops, gói 2 dùng 191/255, 0 record business mới hoặc role/fence tạm. Database 61 bảng public/21 migrations cùng 4 bảng/4 functions, settings pin NULL. Allowed metadata thay đổi ở ba bảng exact cohort, business values khớp. DACN chính giữ nguyên, dừng trước 21.41-C. [Báo cáo](HUGO_21_41_B_FINAL_ACCEPTANCE_REPORT.md) · [Integrity](evidence/reliability-2141bf-20261128/final-integrity.json)
+
+
+## TASK21.41-C · 28/11/2026 ICT
+
+Pilot HMAC row-lock IMPLEMENTED và OFFLINE PASS. Native H03–H16 chờ Packet 1 trên 15457. Hai image Linux và 15 test component, config no-public-DB, nginx syntax, standalone API/SPA đã kiểm. L01–L20 và P15 cần Packet 2. PostgreSQL cũ khớp 61 fingerprints chuẩn hóa, 21 checksum, `hotel_runtime` read-only. Browser B04/B05 BLOCKED_POLICY, P12 `persisted:false` và một backend. Qwen và production Worker OFF. Dừng trước 21.42. [Report C](HUGO_21_41_C_LINUX_RELEASE_READINESS_REPORT.md) · [Matrix](HUGO_PRODUCTION_RELEASE_MATRIX.md) · [Source groups](evidence/linux-release-2141c-20261128/source-consolidation.json)
+
+
+## TASK21.41-C-FINAL · 28/11/2026 ICT
+
+Packet 1 migration22 NATIVE PASS, fixture FAIL 42501 và rollback. 5/100 + 1/40 ops, 0 dữ liệu/roles tạm, 60 fingerprints business khớp, ledger 22/22. H03–H16 cần fence delta duyệt mới. Packet 2 migrations 01–21 dùng runtime roles thấp, integrated API/Worker/restart đã chạy qua private networks. Host loopback thất bại và L06/L10/L18/L19/L20 PARTIAL. P15 portable age restore synthetic đạt (backup 2,038 s, restore 6,555 s, service recovered 27,194 s). Không còn staging/restore resources. P18 image scan có critical/high, browser gate giữ nguyên, Qwen/production Worker OFF. [Báo cáo](HUGO_21_41_C_FINAL_ACCEPTANCE_REPORT.md)
+
+
+## TASK21.41-RELEASE-CLOSURE · 28/11/2026 ICT
+
+Release closure xác nhận H03–H16, 45/100 + 17/40 cumulative, 60 normalized business fingerprints và 22 migration checksums. Pilot disabled. Linux synthetic 20/20 qua các lượt, host loopback đã verify và cleanup 0 resources. P15 schema22 trên PostgreSQL15/PostGIS3.7 distribution đạt trong 25,100 giây đến API smoke. Trivy bốn candidate 0 critical/high. Hai moderate/npm mỗi workspace còn review. Browser BLOCKED_POLICY. P12 persisted:false, một Agent backend. Qwen OFF, production Worker OFF, 21.42 chưa mở. [Báo cáo](HUGO_21_41_RELEASE_CLOSURE_REPORT.md)
+
+
+## TASK21.41-SOURCE-CONSOLIDATION · 28/11/2026 ICT
+
+Đã chuẩn bị cây ứng viên, gói duyệt Git và bàn giao GPU staging. P17 PARTIAL. Owner duyệt commit, push và draft PR trước, rồi quyết định merge riêng sau review. TASK21.42-A cần duyệt riêng. Qwen OFF, P12 PARTIAL, persisted:false, một Agent backend.
+
+[Checkpoint, nhóm commit và bàn giao TASK21.42-A](HUGO_21_41_SOURCE_CONSOLIDATION_REPORT.md)

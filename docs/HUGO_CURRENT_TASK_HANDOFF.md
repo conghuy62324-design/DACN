@@ -1,4 +1,6 @@
 # HUGO TRAVEL — CURRENT TASK HANDOFF DOCUMENT
+
+**Checkpoint hiện hành TASK21.41-B-FINAL (28/11/2026 ICT).** [Bàn giao kỹ thuật](../travelgo/docs/HUGO_CURRENT_TASK_HANDOFF.md) · [Ma trận](../travelgo/docs/HUGO_PRODUCTION_RELEASE_MATRIX.md)
 **DACN | TravelGo | Bàn giao tiến độ kỹ thuật & Phân định trách nhiệm nhóm**
 
 - **Thời gian lập:** 20/11/2026 (Asia/Ho_Chi_Minh)
@@ -179,3 +181,90 @@ Hoặc dùng `docker-compose up -d` trong thư mục cấu hình Docker của d�
 3. **Thanh toán:** Không triển khai thanh toán tiền thật và không thu thập/lưu trữ thông tin thẻ thanh toán của người dùng.
 4. **Bản đồ & Tọa độ:** Không sử dụng API bản đồ trả phí; hiển thị bản đồ chi tiết được hoãn tới phase 21.41.
 5. **Triển khai Production:** Dự án hiện được nghiệm thu trong môi trường cục bộ (local/Docker), chưa cấu hình deploy tự động lên VPS production.
+
+
+## WEB-INTEGRATION-02 handoff —25/11/2026 ICT
+
+Active integration source: <workspace>/DACN_WEB_REVIEW\travelgo, branch integration/web-backend, base46839ea. Main e76d187 and feature/web-ui-admin-partner46839ea are unchanged. Do not reset/clean/stash/overwrite either worktree. Integration edits are uncommitted, as requested.
+
+Verdict WEB_INTEGRATION_02_PARTIAL_NATIVE_PASS. Backend CMS/account/Admin/Partner foundation, native19v3 schema and actual HTTP/browser work are documented at [HUGO_WEB_BACKEND_INTEGRATION.md](../travelgo/docs/HUGO_WEB_BACKEND_INTEGRATION.md), with [API matrix](../travelgo/docs/HUGO_WEB_REAL_API_MATRIX.md) and [SQL review](../travelgo/docs/HUGO_WEB_DATABASE_MIGRATION_REVIEW.md).
+
+Preview http://127.0.0.1:5182/ → API5064 → task-owned hugotravel_web_integration_test_20261125 at15457;59/19. Enforced READ ONLY after exact transient cleanup: DML revoked, default read-only, HTTP mutations403. Retained only SYNTHETIC preview accounts/Businesses/two CMS documents/security epochs; no Hotel/Booking/Trip/review rows. Separate Edge is opened with SYNTHETIC Admin, not real Owner. Safe reopen tools: travelgo/tools/OPEN_WEB_INTEGRATION_ADMIN.cmd or OPEN_WEB_INTEGRATION_CUSTOMER.cmd, using only task DPAPI blob outside repo. No plaintext secrets.
+
+257/257 WEB and owner raw baseline verified. Staging40/40 fingerprint,130Place/20Business/17migrations unchanged; original DB not accessed; old Hotel UI52/18 audit READ ONLY and container restored stopped;3000 untouched. Qwen/Ollama/Agent/worker/Maps/payment/VPS OFF. No commit/push/merge/deploy.
+
+Blocking acceptance: prior C/D coordinate permission was UI-target-only. A question for unchanged reuse in new WEB target was sent; no reply assumed. Positive Hotel/room/rate/inventory, promotion freshness, HotelStay and populated review-reply tests are NOT RUN. Do not reopen writes or reuse expired scope without validating fresh authorization/source/IDs/caps. Do not treat partial native or real browser login as complete website/AI LIVE READY.
+
+Full CMS public/Admin UI is03; full Customer/Partner UI04. They have NOT started. Preserve historical AI evidence/verdicts; only append current results. Do not change protected AI modules to adapt to new web contracts. Final source lock is travelgo/docs/evidence/web-integration-02-20261125/runtime-source-lock-v5.json.
+
+
+## 21.40-A0 — AI CORE RECOVERY HANDOFF (26/11/2026 ICT)
+
+**AI_21_40_A0_PARTIAL** — đã sửa AI backend và kiểm offline, chưa LIVE READY. Workspace tiếp tục: <workspace>/DACN_WEB_REVIEW, branch integration/web-backend, HEAD46839ea38453d42accb040e30e1973a171638b66. DACN/main e76d187 nguyên vẹn. Không merge/commit/push/deploy.
+
+- Owner đóng băng WEB-INTEGRATION-02-FIX/03–06, frontend/Assistant UI và business development. Toàn bộ uncommitted WEB02 được giữ; WEB freeze839/839, main protected AI257/257. Old manifest/evidence giữ nguyên.3 protected AI sources được sửa theo quyền A0; không chạy checker cũ rồi ghi đè baseline để che drift.
+- Actual Core là V6.8/V7.0 functional, NATURAL_CHAT_V3/CORE_INTENT_V2. Incremental fixes: typed room/stay constraints, absolute budget change, amenity withdrawal đồng bộ, giữ hotel khi hỏi room type, availability UNKNOWN thay vì sửa ngày Trip. Native Hotel read adapter chưa bind; không thay services nghiệp vụ.
+- Development16/24→23/24, D01 oracle mismatch còn FAIL; holdout lần đầu11/12, H04 tổng tiền phòng chưa hiểu, **không tune sau holdout**. Targeted20/20,V62 20/20,review18/18,V63 18/18,build PASS. V5 legacy19/21 như exact before source,2 FAIL cũ giữ nguyên.
+- Existing integration container15457 đã start đúng volume;59 bảng/19 migration, hotel_runtime READ ONLY/no DML;59/59 native fingerprints trước/sau bằng nhau.0 Place/Trip/Booking,5 user/8 role/2 SYN businesses giữ nguyên. Không kết nối original5432/protected15452, không Owner/DPAPI action.
+- API5064/frontend5182 chưa start. WEB launcher chặn Agent; source lock v5 cũ drift6 entries do3 AI TS/3 dist được sửa. Không bypass/update old lock. Actual Assistant browser và quota acceptance NOT RUN/BLOCKED, cần packet mới trước actual Agent turns; cap20/h reserve10 và principal không được tự đổi.
+- Qwen/worker OFF, native model/metadata/warm-load/Internet0. Không chạy A1/A2. A1 đề xuất xử lý money-role/holdout mới, oracle debt và fresh bounded READ ONLY Assistant runtime.
+
+Chi tiết: [AI21.40-A0 report](../travelgo/docs/HUGO_AI_21_40_A0_CORE_RECOVERY_REPORT.md). Evidence/source lock: travelgo/docs/evidence/ai-core-recovery-a0-20261126/. Giữ nguyên history phía trên; dừng A0 để owner quyết định.
+
+
+## 21.40-A1/A2 — NATIVE AI–HOTEL LIVE HANDOFF (26/11/2026 ICT)
+
+**AI_A1_A2_BOUNDED_NATIVE_BROWSER_PASS_WITH_FINAL_SAFETY_DELTA**, SYNTHETIC và model OFF; không AI LIVE READY. Mở workspace <workspace>/DACN_WEB_REVIEW, integration/web-backend, HEAD46839ea. Main e76d187/old WEB02/A0 giữ nguyên, không merge/commit/push/deploy.
+
+- Actual native/HTTP S01–S16:16/16. Shared HotelReadService/pricing cho website và native search/detail/quote; price/promo/inventory/amenity/publication freshness, same-room/address/occupancy/expiry/authorization/protection đã kiểm.
+- Actual Edge existing Assistant5/5, desktop/mobile, consent/send và updated Partner price visible. Same CUSTOMER A2c840c54-1933-4c93-8358-4e706a9eb8d0,1login+5chat +1ephemeral cleanup entry; fresh final remaining13/20/reserve10. Không thêm batch hoặc tự gửi nữa.
+- Preview http://127.0.0.1:5182/assistant; new API5064/Vite5182/final source lockv3, loopback READ ONLY/BATCH CLOSED. Edge đã đăng nhập SYNTHETIC CUSTOMER để xem. Không Owner thật, secrets không trong handoff. Start/stop/status: node travelgo/backend/scripts/ai-hotel-preview.cjs status|start|stop; kiểm actual listeners/PIDs, không dựa runtime.json. Old WEB launcher/lock không sửa.
+- Retained exact3 SYN hotels20/21/24 từ C,4rooms/4rates/16inventory/2promotions/3media và3profile/3address trên15457.38 fixture INSERT,240/600 total DML attempts (218writer+22cleanup),22audits cleanup; outside-cohort59/59 unchanged. Temporary writer role/fences đã DROP, public runtime no DML. Không chạm original5432/staging15452/Owner/Trip/Booking/review/memory/knowledge.
+- H04 fixed/newdevelopment7/7; newholdout9/10 còn standalone street thiếu service/context, giữ FAIL. V2contract7/7,V62compat20/20; A0fakeDTO19/20 do thiếu required profile.services, native fullDTO/browser PASS. Historical V5/A0 evidence không sửa. Build PASS,806 hashes locked before holdout;4 explicit safety/operator deltas to finalv3.
+- Frontend không sửa. Authorized WEB delta: hotels/postgresStore.ts exact acceptance-role guard + API handoff append. Pricing/Booking/Planner/Recommendation/RBAC/consent/geography/migrations giữ nguyên. Qwen/worker OFF, model/Internet/paid calls0.
+- Review room attribution contract prepared,0 actual review rows; phaseB cần fresh scoped authorization và lifecycle/revision/privacy tests. Roadmap26/11–09/12/2026 conditional, chưa thuê/mua/deploy; không bắt đầu B.
+
+Report: [A1/A2 live integration](../travelgo/docs/HUGO_AI_21_40_A1_A2_LIVE_BUSINESS_INTEGRATION_REPORT.md); sync/roadmap trong travelgo/docs. Evidence: travelgo/docs/evidence/ai-live-hotel-a1a2-20261126/. Không gọi bounded fixture/browser PASS là production/Qwen reasoning PASS.
+
+Final safety patch: generic people count requires adult/child composition;2 negative cases PASS,5 explicit-adult browser parser decisions identical offline. Actual native/browser PASS is v2; final v3 has no new browser batch (cap5), only HTTP/read-only/persistence check. API reload did not authorize/spend extra chat; ledger stays13 and backend batch seal blocks further POST chat. Owner can view existing chat/Hotel preview. Do not label v3 full browser/Qwen/production PASS.
+
+
+## 21.40-B current handoff — 27/11/2026 ICT
+
+Open <workspace>/DACN_WEB_REVIEW\travelgo on integration/web-backend; do not switch to DACN main or merge. TASK21.40-B is PARTIAL/BLOCKED: isolated15457 ECONNREFUSED, scoped write window expired; no further DB DML/worker/browser without fresh authorization. Migration20 and four SYNTHETIC reviews plus initial worker2 completions have receipts, but R03–R24/final readback/cleanup/role revocation/browser NOT RUN. Review development12/12, holdout9/10 FAIL preserved, targeted offline7/7, build PASS. Main AI257/257 unchanged. Old A1 browser5/5 was v2 only; B0 chat. See travelgo/docs/HUGO_AI_21_40_B_REVIEW_INTELLIGENCE_WORKER_REPORT.md and proposed resumption packet in travelgo/docs/evidence/review-worker-b-20261126/. Qwen, external knowledge and production worker OFF. Do not start21.40-C.
+
+B correction: current extractor method V5 after fixing budget/book false cleanliness and trailing pool-quality polarity. Review/Memory18/18, targeted B8/8, V5 development12/12; old V4 holdout9/10 FAIL not rerun. Initial actual worker2 completions were V4; V5 native acceptance remains BLOCKED.
+
+B read-only restart: exact old container/volume15457 restored with no reset. Public runtime read-only,61/20,4SYN reviews,2links,6events,2V4 insights; outside-cohort59/59 PASS. V5 reader withholds V4 caches. Writer/worker roles are expired but not dropped; native writes, cleanup and browser still blocked until fresh approval. API/frontend not running.
+
+
+## TASK21.40-C — 27/11/2026
+
+Checkpoint hiện hành nằm ở [HUGO_CODEX_CONTINUATION.md](HUGO_CODEX_CONTINUATION.md). C đã triển khai nhánh tư vấn đa dịch vụ và qua build, development 21/21, native chỉ đọc 10/10. Holdout 9/10 được giữ nguyên sau hồi quy đích. B04/B05 vẫn bị chặn. [Handoff hiện hành](../travelgo/docs/HUGO_CURRENT_TASK_HANDOFF.md) · [Báo cáo C](../travelgo/docs/HUGO_AI_21_40_C_ADVANCED_TRAVEL_CONSULTANT_REPORT.md)
+
+
+## TASK21.40-D — 27/11/2026
+
+Đã triển khai code tích hợp Qwen native, grounding và fallback. Build PASS, 22/22 offline, 7/7 native chỉ đọc với provider mô phỏng. Qwen thật BLOCKED_RESOURCE, 0/24 lượt. HTTP chưa chạy, B04/B05 vẫn bị chặn. [Checkpoint](HUGO_CODEX_CONTINUATION.md) · [Báo cáo D](../travelgo/docs/HUGO_AI_21_40_D_QWEN_LIVE_INTEGRATION_REPORT.md)
+
+
+## TASK21.41-C · 28/11/2026 ICT
+
+Checkpoint C hoàn tất phần source và offline trước phê duyệt. Packet 1 xin HotelStay DDL/DML exact. Packet 2 xin Linux staging và restore target mới. [Handoff hiện hành](../travelgo/docs/HUGO_CURRENT_TASK_HANDOFF.md) · [Report C](../travelgo/docs/HUGO_21_41_C_LINUX_RELEASE_READINESS_REPORT.md)
+
+
+## TASK21.41-C-FINAL · 28/11/2026 ICT
+
+Hai packet owner đã chạy theo thứ tự. Migration22 giữ lại theo duyệt. HotelStay mutation chờ column SELECT delta. Linux private integrated đạt một phần, portable restore synthetic đạt, hai project đã dọn. [Handoff hiện hành](../travelgo/docs/HUGO_CURRENT_TASK_HANDOFF.md) · [Báo cáo](../travelgo/docs/HUGO_21_41_C_FINAL_ACCEPTANCE_REPORT.md)
+
+
+## TASK21.41-RELEASE-CLOSURE · 28/11/2026 ICT
+
+HotelStay H03–H16 native/HTTP đạt, Linux synthetic L01–L20 đạt theo receipts và restore schema22 đạt trên image distribution. Browser, production data, GPU, public TLS và release approval còn mở. [Handoff project](../travelgo/docs/HUGO_CURRENT_TASK_HANDOFF.md) · [Báo cáo](../travelgo/docs/HUGO_21_41_RELEASE_CLOSURE_REPORT.md)
+
+
+## TASK21.41-SOURCE-CONSOLIDATION · 28/11/2026 ICT
+
+Đã chuẩn bị cây ứng viên, gói duyệt Git và bàn giao GPU staging. P17 PARTIAL. Owner duyệt commit, push và draft PR trước, rồi quyết định merge riêng sau review. TASK21.42-A cần duyệt riêng. Qwen OFF, P12 PARTIAL, persisted:false, một Agent backend.
+
+[Checkpoint, nhóm commit và bàn giao TASK21.42-A](../travelgo/docs/HUGO_21_41_SOURCE_CONSOLIDATION_REPORT.md)

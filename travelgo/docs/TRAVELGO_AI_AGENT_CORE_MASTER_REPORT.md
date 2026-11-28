@@ -5551,3 +5551,146 @@ Trạng thái: **OWNER_VISUAL_APPROVAL_PENDING** (Triển khai hoàn tất · Pr
 - **Bảo toàn dữ liệu & nghiệp vụ:** Giữ nguyên 100% logic định giá của `HotelReadService`, room inventory, booking idempotency, database 18 migrations / 40 bảng. Không thêm migration mới. Tọa độ cũ chỉ dùng phục vụ tương thích schema theo phê duyệt của owner, không hiển thị bản đồ hay dẫn đường.
 - **Tài liệu bàn giao:** Đã cập nhật `docs/HUGO_HOTEL_UI_VISUAL_REDESIGN.md` và `docs/HUGO_CURRENT_TASK_HANDOFF.md`.
 - **Dừng tại TASK21.38-D-UI:** Giữ nguyên trạng thái `OWNER_VISUAL_APPROVAL_PENDING`. Không tự ý chuyển sang TASK21.38-E hay tích hợp AI21.40.
+
+
+## WEB-INTEGRATION-02 — CODEX TAKEOVER, REAL BACKEND & DATABASE FOUNDATION (25/11/2026 ICT)
+
+Verdict: **WEB_INTEGRATION_02_PARTIAL_NATIVE_PASS**. This is website/backend foundation acceptance; AI reasoning/Agent LIVE readiness is NOT RUN. Historical sections/evidence/verdicts above remain byte-identical.
+
+- Worktree DACN_WEB_REVIEW, branch integration/web-backend, base46839ea38453d42accb040e30e1973a171638b66; main e76d187e8b824ee0c688001150a36cd279074c9d and WEB handoff branch retained. No commit/push/merge/deploy. Owner's two untracked review reports preserved.
+- Protected WEB manifest257/257 raw SHA256; owner257/257 against separate original-byte baseline.230 owner/WEB files differ only LF/CRLF, equivalent content257/257. No manifest edit, AI algorithm/prompt/UI/tool/worker/consent/quota/Planner/Recommendation change. Shared auth/router/Hotel schema impact and default-OFF native compatibility documented.
+- Docker recovered; exactly1new task-owned cached PostGIS target hugotravel_web_integration_test_20261125, loopback15457. Native migrations1–18 PASS52/18; final reviewed candidate19v3 PASS59/19. New seven side tables only, no existing AI/User/Review/Hotel columns altered. Candidate SQL/failures preserved. Native down/up/row restoration, immutable content/live actor rejection and FK anonymization rollback probes PASS.
+- Implemented CMS revision/publication/settings/media foundation; safe Admin users/status/roles/history; own profile/avatar/current-password+scrypt/session revocation; account notifications; Partner promotion read/Admin suspension adapters and separate versioned review replies. Reused existing business/Hotel/Booking/storage services. Existing frontend design retained; named tested flags only, never all. Full CMS UI is03 and full Customer/Partner UI04, not implemented as part of02.
+- Backend/frontend builds PASS. Existing RBAC/scrypt compatibility and new targeted WEB boundaries PASS OFFLINE with unchanged model-off preload. Native foundation82HTTP/84recorded checks PASS. Business run23requests PASS then42501 TEMP failure preserved/rolled back; affected-only7HTTP PASS after exact-target TEMP grant required by existing Sequelize findOrCreate. Legacy ticket Booking server-price/idempotency/ownership/cancel/inventory restoration PASS; exact Booking cleaned.
+- REAL Edge desktop/mobile UI login → actual backend/PG Admin users/detail and own profile PASS. First text-selector FAIL preserved/corrected without changing expected name/email. No mock responses/model doubles. No populated Hotel/HotelStay/Promotion/reply acceptance claimed.
+- W02-10/11/populated12/HotelStay13 remain BLOCKED/NOT RUN: prior coordinate reuse permission was UI-target-only; question for unchanged C/D fixture coordinates in new WEB target remains unanswered. No invented coordinates, copied real customer data, or nullable-coordinate workaround. Existing no-coordinate422 guard PASS.
+- Cleanup exact transient rows/media COMMIT. New target retains only5SYNTHETIC accounts,2SYNTHETIC Businesses/memberships,2published CMS documents/4revisions and security epochs for read-only preview. Places/Booking/Trip/reviews/tickets/onboarding/notifications/media/audits0. Test tokens revoked. No real Owner row/credentials used. Passwords are production-scrypt hashed; task secrets DPAPI CurrentUser/user-only outside repo; no plaintext credentials/token logged.
+- Protected staging15452 READ ONLY before/after fingerprint40/40,17migrations,130Place/20Business. Historical Hotel UI52/18 READ ONLY audited and restored stopped. Original5432 NOT ACCESSED; no new assertion about original27Trip counts. Existing3000 process preserved.
+- Preview http://127.0.0.1:5182/ → API5064 → DB15457 is enforced READ ONLY (HTTP403 + SQL denial; runtime DML revoked/default read-only). Real synthetic login/public CMS persistence through restarts PASS. Edge opened for SYNTHETIC Admin via task-specific DPAPI, not real Owner. Qwen/Ollama/Agent/Worker/Maps/payment/paid API/VPS OFF/NOT RUN; no full AI benchmark rerun.
+- Final source lock: evidence/web-integration-02-20261125/runtime-source-lock-v5.json (931 source/build/helper files). Remaining UI/public CMS consumption, populated native journeys, financial KPI semantics and production/Linux/GPU/full E2E are explicitly not accepted. No03/04/AI upgrade automatically started.
+
+Reports: [Integration](HUGO_WEB_BACKEND_INTEGRATION.md), [Real API matrix](HUGO_WEB_REAL_API_MATRIX.md), [Migration19 review](HUGO_WEB_DATABASE_MIGRATION_REVIEW.md). Evidence: docs/evidence/web-integration-02-20261125/. This appendix does not replace any historical AI PASS/FAIL/BLOCKED.
+
+
+## 21.40-A0 — AI AGENT RECOVERY, CORE AUDIT & INTELLIGENCE FOUNDATION (26/11/2026 ICT)
+
+Verdict: **AI_21_40_A0_PARTIAL**. Đã sửa incremental và kiểm offline; holdout còn FAIL, actual Assistant browser BLOCKED. Không tuyên bố AI LIVE READY; giữ historical verdicts/evidence phía trên nguyên byte.
+
+- Workspace chính cho task: DACN_WEB_REVIEW/travelgo, integration/web-backend, HEAD46839ea38453d42accb040e30e1973a171638b66. Main e76d187e8b824ee0c688001150a36cd279074c9d nguyên vẹn; không merge/commit/push/deploy/worktree mới.
+- Actual AI: V6.8 implementation / V7.0 Core functional acceptance; wire NATURAL_CHAT_V3 và CORE_INTENT_V2 giữ nguyên. Không suy version từ tên commit WEB.
+- WEB/UI/business tasks02-FIX/03–06 tiếp tục FROZEN. Manifest WEB trước sửa839 file, cuối task839/839 khớp; main AI257/257. Old protected-baseline.sha256 không sửa;3 AI files trong manifest được đổi theo quyền A0, không tuyên bố257/257 WEB vẫn khớp manifest cũ.
+- Root causes được sửa: absolute budget replacement bị semantic scope chặn; amenity cancellation lệch giữa các filter stores; room-type cheaper bị route sang khách sạn khác; availability question bị parse thành ngày Trip; thiếu typed stay-total/nights/street/room-view. Không sửa Planner/Recommendation/business services/geo/UI.
+- Thêm optional hotelConstraints response, typed consent/TTL session criteria; không biến user criteria thành fact. AgentHotelReadAdapter reuse native read contract nhưng **chưa bind tool**, unbound trả UNSUPPORTED/executed:false; native quote integration NOT RUN.
+- Development giữ nguyên expected: baseline16/24 → lần1 22/24 → cuối23/24. D01 còn FAIL vì expected nhầm search area với verified Trip destination; không tự cập nhật Trip để lấy PASS.
+- Holdout12 case khác đã khóa trước sửa, nguồn/expected khóa trước lần chạy đầu: **11/12**. H04 “cả tiền phòng tối đa…” chưa nhận scope tổng lưu trú; raw clarification/no tool/no model/no write giữ nguyên. Không tune source sau holdout; benchmark cùng tác giả, không phải third-party blinded.
+- Targeted mới20/20; V62 compatibility20/20; Review/Memory18/18; V63 reliability18/18; backend build PASS. V5 legacy19/21 với2 FAIL có sẵn: before-source được reconstruct trong RAM và xác minh hash; không sửa tests cũ để đổi điểm. Sai cwd ban đầu và regression wording đã sửa được giữ evidence riêng.
+- Actual DB: start đúng existing integration container/volume15457; exact sentinel, hotel_runtime/default+transaction READ ONLY, không quyền DML;59 bảng/19 migrations, aggregate fingerprints59/59 before-after bằng nhau.5 users/8 roles/2 SYN businesses,0 Place/Trip/Booking. Không seed/migrate/tạo account, không decrypt Owner/DPAPI; không kết nối5432 hoặc protected15452, không coi đó là fresh protected DB fingerprint PASS.
+- API5064/frontend5182 chưa start. Existing WEB launcher chặn Agent503 WEB02_AI_AND_TRIP_WRITE_OFF; old source lock có6 drift entries tương ứng3 TS/3 dist của sửa AI. Không cập nhật old lock hoặc bỏ guard. Actual browser Agent/real quota acceptance **NOT RUN/BLOCKED**; cần fresh AI READ ONLY runtime authorization và same-principal quota cap20/h reserve10 trước actual turns.
+- Qwen metadata/warm-load/inference/native POST0, Internet0, worker OFF.13 offline test processes có0 network dispatched; Docker READ ONLY psql ghi evidence riêng.
+- Đề xuất A1: tổng quát hóa money-role binding từ H04 với holdout mới; xử lý oracle/legacy compatibility có version; chuẩn bị bounded READ ONLY actual Assistant packet. Chưa bắt đầu A1/A2, không mở business integration hoặc Qwen LIVE.
+
+Báo cáo đầy đủ: [HUGO_AI_21_40_A0_CORE_RECOVERY_REPORT.md](HUGO_AI_21_40_A0_CORE_RECOVERY_REPORT.md). Evidence: [ai-core-recovery-a0-20261126](evidence/ai-core-recovery-a0-20261126/), gồm before/freeze manifest, locked inputs, baseline/post-fix/holdout, source lock, regression/build và actual integration fingerprints. **Dừng tại A0.**
+
+
+## 21.40-A1/A2 — LIVE CORE + NATIVE HOTEL BUSINESS SYNCHRONIZATION (26/11/2026 ICT)
+
+Verdict: **AI_A1_A2_BOUNDED_NATIVE_BROWSER_PASS_WITH_FINAL_SAFETY_DELTA** — actual SYNTHETIC PostgreSQL/service/HTTP16/16 và Edge browser5/5, Qwen OFF. Offline language/fixture debt còn dưới đây; không gọi AI LIVE READY. Historical A0/WEB02 và evidence phía trên giữ nguyên byte.
+
+- Workspace DACN_WEB_REVIEW/travelgo, integration/web-backend, HEAD46839ea38453d42accb040e30e1973a171638b66; main e76d187 nguyên vẹn. Preserve uncommitted WEB02/A0, không reset/merge/commit/push/deploy/worktree mới.
+- Bind native_hotel_search/detail/quote vào typed read capability layer dùng cùng searchHotels/HotelReadService/pricing/availability như website. Natural chat chạy native search/detail; dated search có exact quote; typed quote đã kiểm PostgreSQL thật. Không model SQL hoặc tự Booking/Trip mutation.
+- H04 vào development mới: party4/nights3/stayTotal3000000, không Trip budget. Distinct money scopes, exact allocations/dates, same-room facts, street+destination và owned focus/criteria. Search area vẫn khác verified Trip destination. Frontend không sửa; additive response đã qua existing UI validator/render.
+- Native S01–S16 PASS: Partner rate2m→2.4m; promo10%→2.16m và archived/expired bị loại; inventory0 một đêm làm unavailable; amenity publication/revision; same-room negative; hidden hotel; same street ở2destination;2rooms×3nights=3m; expired scope/unauthorized/untrusted description/shared contract/protection.
+- Browser một batch5/5: actual login CUSTOMER A, consent/send gate, room details30m², totalcap1m empty không nới, đổi ngày/budget giữ focus, Partner base1.1m→website và chat2.2m/sourceVersion mới; sau đó restore. Desktop1440/mobile390 cùng owned session, no API mock, no model double.
+- Fresh Agent scan882 attempt files hai workspaces, BOTH at/createdAt; initial20. Batch1login+5chat=6entries, UI ephemeral reset sau đó cũng tính conservative: final7entries, remaining13/20, reserve10. Không retry chat/batch, đổi principal hoặc reset quota; model quota không gọi.
+- Locked inputs trước sửa: development7/7; holdout first9/10, FAIL standalone ĐàNẵng/street thiếu Hotel/context anchor giữ nguyên, không tune. V2 contract7/7, V62compat20/20; A0 rerun19/20 do old any-typed fake DTO thiếu profile.services cần cho additive projection (actual native DTO/browser đủ). Old V519/21 và expected giữ nguyên, V2 safe clarification/structured link tests mới PASS. Backend build PASS;806 hashes khóa trước holdout,4 safety/operator delta riêng sau đó, no holdout tuning.
+- Existing integration15457/sentinel/59tables19migrations;3 Hotel C IDs20/21/24,4rooms/4rates/16inventory/2promos/3media và3profile/3address SYNTHETIC retained cho owner preview. Tọa độ C nguyên mẫu, không map/routing/distance, không real Owner/customer copy.38 fixture INSERT statements;218 writer rows +22 audit cleanup rows =240/600 total attempts, gồm rollback;22 task audits cleanup. Outside-fixture59/59 bằng baseline;0Booking/Trip/review/knowledge/memory writes.
+- Separate scoped write role ai_hotel_a1a2_acceptance và9-table SQL fence đã DROP/revoke sau restore. Public hotel_runtime default READ ONLY, DMLfalse. Không DB gốc5432/staging15452, không seed/reset/migrate/delete volume. WEB delta chỉ scoped guard trong hotels/postgresStore.ts + append required API handoff, old839 manifest/locks không sửa; before/after được versioned.
+- New final source lockv3 + READ ONLY API5064/frontend5182 đang chạy; preview http://127.0.0.1:5182/assistant, Edge CUSTOMER SYNTHETIC còn mở. Existing WEB launcher vẫn chặn Agent theo old boundary, không sửa để bypass. Batch đã dừng5chat, không tự mở rộng lượt owner preview.
+- Qwen/Ollama metadata/warm-load/inference/download0, worker OFF, Internet/paidAPI0. Setup SQL/fixture status/build FAIL trước acceptance đều giữ evidence, không gia hạn write window hoặc đổi expected để lấy PASS.
+- Review actual rows/link0, đã audit HotelStay room/item/snapshot/FK/eligibility và proposed room attribution DTO; ReviewService hiện chưa ghi attribution link, place insights không thành room insights. Không migration/worker mới. Roadmap14ngày26/11–09/12/2026 là proposal có điều kiện, không quyền thuê/mua/deploy.
+
+Chi tiết: [A1/A2 report](HUGO_AI_21_40_A1_A2_LIVE_BUSINESS_INTEGRATION_REPORT.md), [sync contract](HUGO_AI_WEB_SYNCHRONIZATION_CONTRACT.md), [14-day roadmap](HUGO_AI_14_DAY_PRODUCTION_ROADMAP.md). Evidence: [ai-live-hotel-a1a2-20261126](evidence/ai-live-hotel-a1a2-20261126/). Remaining: standalone street/money phrasing, nightly all-in filtering/child allocation UX, fixture debt, real review/model reasoning/Linux GPU/production quotas. **Dừng A1/A2; chưa bắt đầu21.40-B.**
+
+Final source review: generic partySize không tự thành adults;2 negative offline cases PASS, exact5 explicit-adult browser decisions replay5/5 giống V2. Native/browser LIVE evidence trên sourcev2 giữ nguyên; final4-file safety/operator delta có manifestv3, không thêm chat hoặc gọi offline replay là full V3 browser PASS. API reload verified owned PID, final HTTP200/price2m/outside59/59 PASS; operator ledger13 giữ nguyên và chat gate permanently closes this5-turn batch, không dùng restart để chạy thêm. Previewv3 READ ONLY/BATCH CLOSED; V3 full browser retest NOT RUN do task cap.
+
+
+## 21.40-B — Automatic Review Intelligence / persistent worker (27/11/2026 ICT)
+
+PARTIAL — BLOCKED_DB_AND_EXPIRED_WRITE_WINDOW. Isolated15457 received additive migration20 (61 tables/20 migrations), four SYNTHETIC ReviewService reviews (two exact-room, two hotel-only), revisioned transactional events, and one bounded standalone worker process with two claims/completions. The DB later returned ECONNREFUSED; the two-hour task write authorization expired at 07:12:05 UTC on 26/11. Current DB counts, final cleanup, role revocation and persisted insight readback are unverified. R03–R24 native and new browser batch NOT RUN. No Qwen/Ollama/Internet. Development12/12; sealed holdout9/10 FAIL for pool polarity, preserved without tuning; targeted offline7/7, A1 contract7/7, build PASS. Historical A0 fake DTO19/20 and A1 v2 browser5/5/v3 safety delta remain unchanged. Main AI protected raw257/257. A fresh exact-container restoration and new bounded write approval are required for closure; proposed packet is not authorization. No21.40-C or production worker started. Full report: HUGO_AI_21_40_B_REVIEW_INTELLIGENCE_WORKER_REPORT.md; runbook: HUGO_AI_REVIEW_WORKER_RUNBOOK.md; evidence: evidence/review-worker-b-20261126/.
+
+Post-holdout B correction (same day): existing Review/Memory compatibility first exposed false cleanliness from ngân sách/đọc sách (17/18). Extractor method advanced to BOUNDED_VI_ASPECT_RULES_V5, compatibility18/18, B targeted8/8, development V5 12/12. Historical V4 holdout remains9/10 FAIL, no V5 holdout or native worker run. V4 cached insights are invalid under the V5 method/source stamp and await newly authorized reconciliation. Earlier 7/7 targeted figure above describes the pre-correction run only.
+
+B read-only restart update, 27/11 ICT: Docker daemon and the exact existing isolated container/volume were available and restarted without reset. hotel_runtime READ ONLY confirmed61tables/20migrations,4SYN reviews,2exact-room links,6events,2persisted V4 insights; two job revisions completed. Current V5 reader returned pending/no old opinion for all3Hotels. Outside-B-cohort baseline59/59 table fingerprints PASS after exact fixture exclusion; first two scope-comparison receipts remain as audit history. Temporary roles still exist with expired VALID UNTIL; no cleanup or new write authority. API5064/frontend5182 absent; browser still NOT RUN. Earlier ECONNREFUSED note records the first attempt, not the latest DB state.
+
+
+## 21.40-B-RESUME — REVIEW WORKER V5 & ACTUAL AI ACCEPTANCE (27/11/2026 ICT)
+
+Fresh owner authorization opened exact isolated15457 scope until 02:46:28Z; no DML counter reset. Source V5 locked; new sealed same-author holdout8/8 PASS, historical V4 holdout9/10 FAIL unchanged. Actual bounded worker regenerated V5 insights in PostgreSQL; public readback10/10. R06–R13 and R15–R24 data/native checks PASS. Historical first R14 FAIL from operator 1s race retained; corrected R14B 5/10s retry/backoff/dead-letter/new revision PASS. Worker health READY after bounded cycle; Windows SIGTERM probe did not log graceful exit, so Linux signal acceptance remains open.
+
+Actual Edge desktop/mobile with same CUSTOMER A: fresh quota20/20; 1 login+4 chat, 15/20 left, reserve10. B01 guest allocation clarification PASS, B02 hotel review PASS, B03 room scope PASS; B04 **FAIL** because hotel detail response omitted current 2,000,000 VND stay quote already present in validated native DTO; B05 NOT RUN. No retry or expected change. Fixed grounded detail renderer to use validated stay quote only, include expiry/source/SYNTHETIC caveats; offline targeted8/8, native compatibility7/7, backend build PASS. This fix has **no browser PASS**.
+
+Cleanup verified: DML511/1600, remaining1089; 8 task audit rows removed, 4 SYN reviews/2 historical SYN bookings retained, temporary roles/fences/counter removed, public role READ ONLY/no DML. Final 59/59 outside cohort fingerprints and schema61/20/checksum PASS. API5064/frontend5182 read preview HTTP200, model/worker OFF and POST batch closed; automatic Edge launch was blocked by tool policy. **TASK21.40-B verdict PARTIAL; AI LIVE READY is not claimed.** Full [B report](HUGO_AI_21_40_B_REVIEW_INTELLIGENCE_WORKER_REPORT.md). No21.40-C, Qwen, Internet, commit or deploy.
+
+
+## 21.40-B-FINAL — REVIEW WORKER CLOSURE & GROUNDED RESPONSE ACCEPTANCE (27/11/2026 ICT)
+
+Current source lock: [final source](evidence/review-worker-b-20261126/final-20261127/source-lock.json), branch integration/web-backend @ 46839ea. Detail DTO now carries verified stay dates, exact guest allocation and applied quote discount; detail/search renderers present total stay VND with room, dates, guests, source, expiry and SYNTHETIC caveat, and suppress expired quote. Review remains opinion evidence, not current pricing authority. Backend build PASS, targeted review/grounding15/15, native compatibility7/7 **OFFLINE**. agentCoreService and worker code unchanged; migration20 hash unchanged.
+
+Browser current-source B04 **NOT RUN** and B05 **NOT RUN**. Historical B04 FAIL/B05 NOT RUN and R01–R24 native evidence remain unchanged. Prior automatic approval review rejected Edge launch; no alternate launcher/browser tool was used. Fresh90-minute owner window expired before browser or DB execution. Fresh Agent quota20/20 at05:00Z, consumed0; no new login/chat/DML/role/fence. Previous cleanup511/1600, public READ ONLY and 59/59 integrity are historical last verified DB receipts, not freshly rerun. Previous watchdog stopped API5064/frontend5182 at02:46:28Z, so preview is not live. [Execution gates](evidence/review-worker-b-20261126/final-20261127/execution-gates.json).
+
+Linux worker: static signal/health/scheduler/retention audit only; actual Linux SIGTERM/restart/retention test and dedicated worker container remain BLOCKED. [Audit](evidence/review-worker-b-20261126/final-20261127/linux-worker-audit.json). **Verdict: OFFLINE_GROUNDING_PASS; BROWSER_ACCEPTANCE_BLOCKED_POLICY; PHASE_B_PARTIAL; AI LIVE READY not claimed.** Phase C handoff scope covers multi-constraint travel consultation, hotel/room tradeoffs, street/area context, cross-service advice, whole-trip budget, consented memory and grounded Qwen tool calling. No phase C implementation, Qwen, Internet, merge, commit, push or deploy in this task.
+
+
+## 21.40-C — ADVANCED TRAVEL CONSULTANT & DECISION INTELLIGENCE (27/11/2026 ICT)
+
+Source C trên `integration/web-backend` tại `46839ea` nối native Hotel, review V5, catalog và Planner qua Agent Core hiện có. Hiểu yêu cầu nhiều điều kiện, tách ngân sách theo phạm vi, giữ lựa chọn theo phiên và trình bày báo giá, nhận xét và khoản dự toán theo nguồn. Build PASS, development 21/21, native PostgreSQL chỉ đọc 10/10. Holdout niêm phong 9/10 và giữ nguyên FAIL HC06. Catalog cô lập chưa có nhà hàng và điểm tham quan đủ điều kiện, HTTP NOT RUN và B04/B05 browser BLOCKED. Schema 61/20, fingerprint cohort 6/6, Qwen call 0, DML 0. Giữ nguyên kết quả lịch sử và gate phát hành. Phase D chưa bắt đầu. [Báo cáo C](HUGO_AI_21_40_C_ADVANCED_TRAVEL_CONSULTANT_REPORT.md)
+
+
+## 21.40-D — QWEN LIVE INTEGRATION, GROUNDED REASONING & MODEL RELIABILITY (27/11/2026 ICT)
+
+Worktree `integration/web-backend` @ `46839ea`. Reuse Core Ollama provider và schema typed. Native Qwen chỉ đề xuất làm rõ hoặc chọn fact ID, source/read services giữ giá, review, Planner và authority. Build PASS, offline 22/22, native PostgreSQL chỉ đọc với provider mô phỏng 7/7, fingerprint cohort 6/6, DML 0. Actual tag/digest khớp. Lần chốt chỉ 2.196 MiB RAM và 4.987 MiB VRAM trống, GPU 26%. Cold-load BLOCKED_RESOURCE, 0/24 lượt. HTTP NOT RUN, B04/B05 browser BLOCKED. Có Compose GPU proposal, chưa deploy hay mở 21.41. Giữ verdict và release gates lịch sử. [Báo cáo D](HUGO_AI_21_40_D_QWEN_LIVE_INTEGRATION_REPORT.md)
+
+
+## TASK21.41 — Qwen acceptance, production integration & release readiness — 27/11/2026 ICT
+
+Source `integration/web-backend` @ `46839ea38453d42accb040e30e1973a171638b66` cùng ứng viên 21.41. 20 mục Phase D được xác minh khi tiếp quản và 303 tệp Agent/frontend/migration giữ hash so với baseline. Original DACN/main giữ nguyên. [Lock 21.41](evidence/release-2141-20261127/final-source-lock.json)
+
+Qwen actual **BLOCKED_RESOURCE**, đúng tag/digest, RAM khả dụng 5.330 rồi 3.758 MiB dưới ngưỡng 6.144, 0 warm-up và 0/24 inference. HTTP app thật 9/9 trên isolated PostgreSQL READ ONLY 61/20 với token harness xác minh DB session. Giá/review và quote parity đạt trong cấp đọc, thiếu thành phần 4 khách được hỏi trước báo giá. DML 0, fingerprint trước/sau khớp. B04 FAIL/B05 NOT RUN lịch sử được giữ, browser vẫn bị chặn. [HTTP](evidence/release-2141-20261127/http-final-native-result.json)
+
+Candidate có production Hotel chỉ đọc có guard, bind API nội bộ, graceful shutdown, worker signal, lease/terminal handling và outbox pruning giới hạn. Linux build 2 image, SIGTERM/SIGINT 3/3 với queue mô phỏng, nginx -t và SPA 200. PostgreSQL PREPARE kiểm SQL prune, delete thật chưa chạy. Model và worker giữ mặc định OFF. P03/P10 PASS theo scope, go-live chưa đạt. Gói DML/browser, PostgreSQL multi-process quota, VPS sizing, backup/restore và hợp nhất nguồn được giao tại checkpoint. Dừng trước 21.42. [Báo cáo](HUGO_21_41_PRODUCTION_INTEGRATION_REPORT.md) · [Ma trận](HUGO_PRODUCTION_RELEASE_MATRIX.md) · [Runbook](HUGO_PRODUCTION_DEPLOYMENT_RUNBOOK.md)
+
+
+## TASK21.41-A — Production business acceptance, 27/11/2026 ICT
+
+Nguồn `integration/web-backend` @ `46839ea38453d42accb040e30e1973a171638b66` kèm lock A. HTTP current-source 12/12 trên PostgreSQL isolated chỉ đọc với auth middleware và token harness. Quote Web–Agent khớp 1.000.000 VND chính xác room/rate/version. Checkout prepare và reload snapshot lịch sử đạt. Booking mới/cancel/verified review lifecycle chưa ghi do `audit_logs` và `hotel_profiles` ngoài scope, rate exact nonrefundable. Planner Agent native có nhà hàng/điểm tham quan exact SYNTHETIC, lịch ba ngày, quote, opening hours, ước tính và over-budget; routing thật chưa có. [Báo cáo A](HUGO_21_41_A_BUSINESS_ACCEPTANCE_REPORT.md)
+
+Worker Linux thật dùng PostgreSQL isolate, claim/duplicate lease/recover, retry/backoff/terminal và shutdown SIGTERM/SIGINT. Outbox prune 1 đủ điều kiện, đối chứng 0. V5 dùng review verified có sẵn. P06 PASS bounded; P05/P08/P09 còn PARTIAL. DML acceptance 56, cleanup 15, 61 fingerprint bảng và 20 migration nguyên vẹn, retained 0, role/fence được gỡ. B04 historical FAIL, B05 NOT RUN, browser hiện BLOCKED. Qwen OFF, 0 inference. P12 PostgreSQL handoff chưa cài/apply. Dừng A. [Khóa A](evidence/business-2141a-20261127/final-source-lock.json) · [Ma trận](HUGO_PRODUCTION_RELEASE_MATRIX.md)
+
+
+## TASK21.41-B — Production AI reliability — 27/11/2026 ICT
+
+`integration/web-backend` @ `46839ea38453d42accb040e30e1973a171638b66` và lock B. Backup AES-GCM/DPAPI đã đọc lại. PostgreSQL adapter dùng DB time, HMAC principal, atomic quota, replay claim và provider fencing lease. Core/legacy/public/maps dùng chung authority. Production fail-closed, session chỉ local `persisted:false`. Migration 21 additive ở source, chưa apply. Backend build, 11/11 Windows/Linux component, G2 history 68/68. Core/IntentV2 còn bốn FAIL đồng nhất với baseline A được phục dựng riêng. [Khóa B](evidence/reliability-2141b-20261127/final-source-lock.json) · [Evidence](evidence/reliability-2141b-20261127/verification.json)
+
+Target 61 bảng public/20 migration, DDL/DML 0 và role temp 0. Rate exact NON_REFUNDABLE. Gói P12 và business ghi được chuẩn bị độc lập, cần owner approve. B04/B05 browser BLOCKED_POLICY, historical verdict giữ nguyên. Qwen OFF, P06 A giữ nguyên, không deploy và dừng ở B. [Báo cáo](HUGO_21_41_B_AI_RELIABILITY_REPORT.md) · [Ma trận](HUGO_PRODUCTION_RELEASE_MATRIX.md)
+
+
+## TASK21.41-B-FINAL — 28/11/2026 ICT
+
+Migration 21 exact SHA-256 đã apply trên isolated PostgreSQL. Hai process thật nhận đúng 20/26, shared cap qua restart, replay 409, global lease/recovery/fencing và fail-closed 503. Runtime role execute-only. Session local `persisted:false`, P12 shared coordination PASS, P12 tổng PARTIAL. [Receipt P12](evidence/reliability-2141bf-20261128/p12/result.json)
+
+Partner rate/promo/stock fixture sync đạt trên Website HTTP và Agent native. Verified review đủ lifecycle và bảy chu kỳ V5 Linux actual, immediate invalidation trước worker. Confirm/cancel, replay booking và last room BLOCKED_SCOPE do ACL row lock. Browser B04 FAIL/B05 NOT RUN lịch sử giữ nguyên. Qwen OFF. DML tách gói 147/224 và 191/255, 0 role tạm/record mới, business fields 61/61 và outside cohort giữ nguyên, metadata cohort thay đổi hợp lệ, coordination pin NULL. DACN chính giữ nguyên. Dừng trước 21.41-C. [Báo cáo](HUGO_21_41_B_FINAL_ACCEPTANCE_REPORT.md) · [Ma trận](HUGO_PRODUCTION_RELEASE_MATRIX.md)
+
+
+## TASK21.41-C · 28/11/2026 ICT
+
+Native read-only audit xác nhận 61 tables/21 migrations và 61 normalized fingerprints khớp BF, 4 coordination tables/4 functions, pin NULL và `hotel_runtime` read-only. HotelStay pilot migration22 và capability IMPLEMENTED, OFFLINE PASS. H03–H16, Linux L01–L20 và restore chờ 2 gói owner. Hai Linux images, 15 tests, nginx syntax, standalone SPA/API đạt. P12 PARTIAL `persisted:false`. Browser gate giữ verdict, Qwen và production Worker OFF. Kiểm backup incremental và exact source groups, DACN/main giữ nguyên. [Report C](HUGO_21_41_C_LINUX_RELEASE_READINESS_REPORT.md) · [Lock C](evidence/linux-release-2141c-20261128/final-source-lock.json)
+
+
+## TASK21.41-C-FINAL · 28/11/2026 ICT
+
+Owner phê duyệt riêng hai packet. Packet 1 áp migration22, fixture FAIL 42501 do trigger profile cần read ba cột places. Cleanup 5/100 + 1/40 ops, 61 public/22 migrations, 0 role/session/fence và pilot disabled; 60 business fingerprints khớp. Packet 2 Linux stage 01–21 verified internal, auth/model OFF/worker/shared quota qua restart đạt trong scope, host loopback chưa hoạt động. Portable P15 đạt synthetic, 2,038 s backup, 6,555 s restore, 27,194 s thời gian khôi phục service. Đã xác minh dọn hai project. B04 historical FAIL/B05 historical NOT RUN giữ nguyên, `persisted:false`, Qwen/production Worker OFF. Image advisory và release gates giữ trạng thái theo matrix. [Báo cáo](HUGO_21_41_C_FINAL_ACCEPTANCE_REPORT.md)
+
+
+## TASK21.41-RELEASE-CLOSURE · 28/11/2026 ICT
+
+Approved fence delta đạt H03–H16 sandbox native/HTTP. Giữ 45/100 acceptance + 17/40 cleanup cumulative, 61/22, 60 normalized business tables và pilot disabled. Linux synthetic 20/20 theo các lượt, host loopback ingress và gateway rate limiting, quote parity, upload và ACL đã kiểm. PostGIS distribution 15/3.7 schema22 portable backup/restore đạt, four image scan 0 critical/high. Cleanup xác minh 0 rehearsal resources. Giữ B04 FAIL/B05 NOT RUN lịch sử, P12 PARTIAL, Qwen OFF, DACN/main giữ nguyên. Dừng trước 21.42. [Báo cáo](HUGO_21_41_RELEASE_CLOSURE_REPORT.md)

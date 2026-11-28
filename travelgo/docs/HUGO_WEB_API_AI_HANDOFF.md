@@ -118,3 +118,45 @@ Tất cả additive, không đổi response cũ, không rename ID.
 - Chưa xác minh trên PostgreSQL thật; ví dụ JSON lấy theo mock mô phỏng hợp đồng.
 - V1 chỉ nhiều phòng cùng room type/rate; không mixed-room.
 - Không có thanh toán, không trạng thái paid/refunded thật.
+
+
+## WEB-INTEGRATION-02 — actual backend handoff,25/11/2026 ICT
+
+Current source is integration/web-backend in DACN_WEB_REVIEW, based on46839ea. Historical mock contracts above are preserved; the authoritative current inventory is [HUGO_WEB_REAL_API_MATRIX.md](HUGO_WEB_REAL_API_MATRIX.md).
+
+Actual isolated chain: frontend5182 → Vite proxy5064 → PostgreSQL15457, final candidate19v3/59tables19migrations; no mock5099. Preview is READ ONLY, SYNTHETIC and incomplete for populated Hotel journeys. Model/Agent/worker OFF; this is not AI acceptance. All protected AI files257/257 remain unchanged, owner byte baseline separately verified.
+
+Implemented real backend: /admin/users, /admin/businesses/:id[/bookings], validated /admin/bookings filters; /admin/cms banners/sections/featured/preview with exact revisions and publication, /cms/home; /admin/settings draft/publish and /settings/public; managed /web-media; PATCH /auth/profile, POST /auth/change-password; own /notifications; Partner promotions read alias and separate versioned review replies. Hotel writes remain the existing /partner/hotels/:id/... routes with If-Match, not an invented /hotels/manage API. Existing Booking/HotelStay services remain authoritative.
+
+Contract deltas to carry into03/04: order requests use items[{id,version}], archive requires version/reason, promotion suspension sends If-Match Hotel revision, reply writes/deletes require observed version and preserve replyVersion tombstones. CMS media must be uploaded/rights-checked by existing shared image storage adapter; arbitrary remote/static image URLs are not accepted. Sections/settings have explicit publication; save is a draft, never fake public success. Current PublicUser profile DTO remains the existing safe account contract; no private AI memory is exposed.
+
+All BO defaults remain false. Scoped preview names ONLY adminUsers,adminBusinessDetail,adminBookingFilters after actual API/RBAC/persistence proof; not VITE_BO_FEATURES=all. CMS/settings/populated promotions/replies/notifications full UI activation is deferred. Frontend accountService is a contract client for04, not completed profile-edit/password/notification UI. Existing three profile AI/Review panels are unchanged.
+
+No property coordinates were generated. C/D fixture reuse in the new target needs a specific reply to the pending question; positive Hotel/room/rate/inventory/promotion freshness/HotelStay and populated reply E2E remain NOT RUN. Do not reinterpret empty search200 or the preserved no-coordinate422 as full Hotel PASS. Existing financial KPI aggregates are booking totals, not a verified paid-revenue ledger.
+
+See [integration report](HUGO_WEB_BACKEND_INTEGRATION.md) for W02-01..16, exact native/browser evidence, retained failures, cleanup, DPAPI synthetic login launchers, remaining blockers and03 handoff. No commit/push/main merge/deploy or AI source adaptation authorized by this appendix.
+
+
+## 21.40-A1/A2 — ACTUAL NATIVE AI/WEB SHARED READ CONTRACT (26/11/2026 ICT)
+
+Owner task mới cấp quyền native AI/business compatibility và exact synthetic fixture scope; không kế thừa mutation authorization WEB02 cũ. Historical appendix phía trên giữ nguyên.
+
+- AI native_hotel_search/detail/quote reuse cùng searchHotels/HotelReadService/quoteHotelStay/stock/publication như GET /api/hotels. Closed typed inputs/output top-level + domain validation, no SQL/model-written prices. Natural Core đã bind search/detail và dated quote flow; typed quote method verified native, chưa Qwen tool-call acceptance.
+- Native/HTTP16/16 và actual existing Assistant Edge5/5 model OFF: cùng giá mới sau Partner update, promo eligibility/disable, inventory/amenities/publication/same-room/address, explicit stay allocations và freshness. Frontend untouched; additive nativeHotel payload và source-rendered reply qua existing readCoreResponse/UI thật.
+- Direct WEB-source delta chỉ backend/src/hotels/postgresStore.ts: exact test acceptance role/profile/window, không superuser/app DML. Delta before/after có versioned receipt; old freeze839/source locks không chỉnh. Write role và SQL fence đã DROP, hotel_runtime READ ONLY. CMS/Auth/Booking/Planner/Recommendation contracts không sửa.
+-3Hotel/4room/4rate/16inventory/2promotion/3media C IDs retained SYNTHETIC ở15457; outside-fixture59/59 unchanged, existing users/businesses intact. Tọa độ C không dùng distance/map; source rows không coi là doanh nghiệp thật.
+- New READ ONLY preview5182/API5064, old WEB launcher giữ nguyên boundary. Correct existing SYNTHETIC CUSTOMER A,1login+5chat +1ephemeral cleanup; final remaining13/20/reserve10. Qwen metadata/inference0, worker OFF, không Internet hoặc protected database connections.
+- Room review attribution hiện chỉ prepared contract: Place reviews/COMPLETED Booking và hotel_review_stays exact link; actual0review/link, existing ReviewService chưa populate link, place-level insights không được gán cho room. No schema/worker activation.
+
+See [sync contract](HUGO_AI_WEB_SYNCHRONIZATION_CONTRACT.md), [A1/A2 report](HUGO_AI_21_40_A1_A2_LIVE_BUSINESS_INTEGRATION_REPORT.md), [conditional14-day roadmap](HUGO_AI_14_DAY_PRODUCTION_ROADMAP.md). Newholdout9/10 và A0fakeDTO19/20 FAIL giữ nguyên, không là blanket semantic/production PASS. Dừng A1/A2, chưa mở21.40-B.
+
+Final v3 safety/operator delta is explicit: generic guest count asks composition;2 offline negatives, exact5 explicit-adult decisions parity5/5 versus v2. Actual16 native +5 browser cases remain v2 evidence; v3 HTTP persistence READ ONLY checked, no extra browser/Agent POST. Operator ledger stays13; backend batch-closed gate survives reload. Total DML240/600 including22cleanup; writer role/fences dropped.
+
+
+## 21.40-B scoped review read contract — 27/11/2026 ICT
+
+Migration20 on isolated15457 adds review_ai_inputs/review_ai_targets sanitized security-barrier views, review_processing_events, review_worker_state and revision/lease fields to existing Review/insight jobs. The independent worker writes derived job/insight/event/state only; public hotel_runtime reads persisted scoped evidence and remains READ ONLY. Native Hotel search/detail return additive reviewEvidence and roomReviewEvidence, with exact room attribution only after completed owned HotelStay item verification; if a source revision/eligibility changes before processing, advice returns pending/insufficient instead of stale opinion. Current price/availability still use HotelReadService. The read contract is implemented but full actual R03–R24/browser acceptance is blocked because15457 is offline and test write authorization expired. No old A1 source lock, WEB freeze, Auth/CMS/Booking/price contract or Qwen default was changed for this handoff. Details: HUGO_AI_21_40_B_REVIEW_INTELLIGENCE_WORKER_REPORT.md.
+
+B method detail: review queue protocol remains REVIEW_SCOPED_V4 under committed migration20, while current extractor is BOUNDED_VI_ASPECT_RULES_V5. Source stamp includes both; V4 derived results cannot be read as V5. No migration checksum or event identities were rewritten, and V5 worker processing is not yet accepted.
+
+B read-only persistence confirmation: two V4 derived rows stored for SYNTHETIC Hotel20/21, with exact room40/review1 and room41/review2 separation; public V5 read returns pending instead of stale evidence. This confirms V4 persistence and V5 rejection of old cache, not current V5 processing or full Agent/browser integration. Public role has no Review/insight/Booking/Place DML.
