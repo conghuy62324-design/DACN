@@ -6,6 +6,7 @@ export interface ProviderRequest {
   messages: ChatMessage[];
   tools: readonly unknown[];
   responseSchema?: unknown;
+  profile?: 'native_consultation';
 }
 
 /** SDK-specific credentials/HTTP belong inside a future transport, never this request. */

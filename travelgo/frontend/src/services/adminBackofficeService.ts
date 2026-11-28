@@ -114,11 +114,11 @@ export const AdminBackofficeService = {
   async restoreBanner(id: string, revision: number, version: number): Promise<any> {
     return data(await api.post(`/admin/cms/banners/${id}/restore`, { revision, version }));
   },
-  async orderBanners(ids: string[]): Promise<any> {
-    return data(await api.put('/admin/cms/banners/order', { ids }));
+  async orderBanners(items: { id: string; version: number }[]): Promise<any> {
+    return data(await api.put('/admin/cms/banners/order', { items }));
   },
-  async archiveBanner(id: string, reason?: string): Promise<any> {
-    return data(await api.delete(`/admin/cms/banners/${id}`, reason ? { data: { reason } } : undefined));
+  async archiveBanner(id: string, version: number, reason?: string): Promise<any> {
+    return data(await api.delete(`/admin/cms/banners/${id}`, { data: { version, reason: reason || 'Archive reviewed banner' } }));
   },
 
   /** PAC §2.2 */
@@ -128,8 +128,8 @@ export const AdminBackofficeService = {
   async patchSection(key: string, input: Record<string, unknown>): Promise<any> {
     return data(await api.patch(`/admin/cms/sections/${key}`, input));
   },
-  async orderSections(keys: string[]): Promise<any> {
-    return data(await api.put('/admin/cms/sections/order', { keys }));
+  async orderSections(items: { id: string; version: number }[]): Promise<any> {
+    return data(await api.put('/admin/cms/sections/order', { items }));
   },
 
   /** PAC §2.3 */
@@ -144,8 +144,8 @@ export const AdminBackofficeService = {
   async promotions(params: Record<string, string | number>): Promise<Paged<any>> {
     return data(await api.get('/admin/promotions', { params }));
   },
-  async suspendPromotion(id: string, reason: string): Promise<any> {
-    return data(await api.post(`/admin/promotions/${id}/suspend`, { reason }));
+  async suspendPromotion(id: string, reason: string, revision: number): Promise<any> {
+    return data(await api.post(`/admin/promotions/${id}/suspend`, { reason }, { headers: { 'If-Match': String(revision) } }));
   },
 
   /** PAC §3.1 */

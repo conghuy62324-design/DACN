@@ -3,11 +3,14 @@ import {sequelize} from '../config/database.js';
 import {Review} from '../models/Review.js';
 import {RegisteredCatalogService} from './registeredCatalogService.js';
 import {REVIEW_ANALYSIS_METHOD,summarizeReviewEvidence} from '../agent/reviewAspects.js';
+import {ReviewProcessingService,persistentReviewsEnabled} from './reviewProcessingService.js';
 export const reviewInsightsEnabled=()=>process.env.REVIEW_INSIGHTS_ENABLED==='true';
 export class ReviewInsightService {
+ static async scoped(placeId:string,roomTypeId?:string){return persistentReviewsEnabled()?ReviewProcessingService.read(placeId,roomTypeId):null;}
  /** Bounded request batch. It is reloaded at the presentation fence; no cross-request cache. */
  static async getBatch(ids:string[]){
   if(!Array.isArray(ids)||ids.length>5||new Set(ids).size!==ids.length||ids.some(id=>typeof id!=='string'||!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id)))throw Error('REVIEW_BATCH_INVALID');
+  if(persistentReviewsEnabled())return Promise.all(ids.map(async id=>(await ReviewProcessingService.read(id)).hotel));
   if(!reviewInsightsEnabled())return ids.map(()=>null);
   if(process.env.ADVISORY_STAGING_READ_ONLY!=='true'&&process.env.REVIEW_INSIGHTS_READ_ONLY!=='true'){const results=[];for(const id of ids)results.push(await this.get(id));return results;}
   if(!ids.length)return[];
@@ -17,6 +20,7 @@ export class ReviewInsightService {
   return places.map((place,i)=>{if(!place)return null;const permitted=rows.filter(r=>r.targetId===ids[i]);const data={...summarizeReviewEvidence(permitted.map(r=>({id:r.id,comment:r.comment,rating:Number(r.rating),verificationStatus:r.verificationStatus,aiUsageAllowed:r.aiUsageAllowed})),place.category),placeId:ids[i],isDemo:catalogService.publicListing(place).isDemo,evidenceScope:'PUBLISHED_AND_AI_ALLOWED_ONLY',sourceRevision:String(jobs.find(j=>j.place_id===ids[i])?.revision||0)};return{...data,status:data.analyzedReviewCount?'READY':'INSUFFICIENT',computedAt:new Date().toISOString(),readMode:'FRESH_READ_ONLY'};});
  }
  static async get(placeId:string){
+  if(persistentReviewsEnabled())return(await ReviewProcessingService.read(placeId)).hotel;
   if(!reviewInsightsEnabled())return null;
   if((process.env.ADVISORY_STAGING_READ_ONLY==='true'||process.env.REVIEW_INSIGHTS_READ_ONLY==='true'))return this.freshReadOnly(placeId);
   const place=await new RegisteredCatalogService().details(placeId);
@@ -37,6 +41,7 @@ export class ReviewInsightService {
  }
  /** Explicit isolated readonly path: recompute from fresh permitted rows; never reuse stale cache or write jobs. */
  static async freshReadOnly(placeId:string){
+  if(persistentReviewsEnabled())return(await ReviewProcessingService.read(placeId)).hotel;
   const place=await new RegisteredCatalogService().details(placeId);
   const rows=await Review.findAll({where:{targetType:'place',targetId:placeId,moderationStatus:'PUBLISHED'},attributes:['id','comment','rating','verificationStatus','aiUsageAllowed']});
   const jobs=await sequelize.query<any>('SELECT revision FROM review_insight_jobs WHERE place_id=$1',{bind:[placeId],type:QueryTypes.SELECT});
@@ -46,5 +51,5 @@ export class ReviewInsightService {
  static async runPending(limit=20){if(!reviewInsightsEnabled())return;const jobs=await sequelize.query<any>("SELECT j.place_id FROM review_insight_jobs j JOIN places p ON p.id=j.place_id LEFT JOIN businesses b ON b.id=p.business_id LEFT JOIN review_insights i ON i.place_id=j.place_id WHERE p.status='APPROVED' AND (p.business_id IS NULL OR b.status='ACTIVE') AND (j.revision>j.processed_revision OR i.place_id IS NULL OR i.method<>$2) ORDER BY j.updated_at LIMIT $1",{bind:[Math.min(20,limit),REVIEW_ANALYSIS_METHOD],type:QueryTypes.SELECT});for(const row of jobs)await this.get(row.place_id).catch(()=>{});}
 }
 let worker:ReturnType<typeof setInterval>|undefined;
-export function startReviewInsightWorker(){if(!reviewInsightsEnabled()||(process.env.ADVISORY_STAGING_READ_ONLY==='true'||process.env.REVIEW_INSIGHTS_READ_ONLY==='true')||worker)return;let busy=false;worker=setInterval(async()=>{if(busy)return;busy=true;try{await ReviewInsightService.runPending();}catch{}finally{busy=false;}},10000);worker.unref();}
+export function startReviewInsightWorker(){if(persistentReviewsEnabled()||!reviewInsightsEnabled()||(process.env.ADVISORY_STAGING_READ_ONLY==='true'||process.env.REVIEW_INSIGHTS_READ_ONLY==='true')||worker)return;let busy=false;worker=setInterval(async()=>{if(busy)return;busy=true;try{await ReviewInsightService.runPending();}catch{}finally{busy=false;}},10000);worker.unref();}
 export function stopReviewInsightWorker(){if(worker)clearInterval(worker);worker=undefined;}

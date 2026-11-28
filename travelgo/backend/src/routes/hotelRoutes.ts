@@ -19,8 +19,20 @@ export const publicHotels = Router();
 publicHotels.use(enabled);
 publicHotels.get('/', wrap(async (req: any, res: any) => { res.set('Cache-Control', 'no-store'); return searchHotels(parseHotelSearch(req.query),process.env.NODE_ENV==='test'); }));
 publicHotels.get('/:id', wrap(async (req: any, res: any) => { res.set('Cache-Control', 'no-store'); objectOnly(req.query,['checkIn','checkOut','rooms','promotionId','offers']);if(req.query.offers!==undefined&&req.query.offers!=='true')hotelError('HOTEL_OFFERS_QUERY','offers chỉ nhận true.');const {promotionId,offers,...raw}=req.query;const q=parseHotelSearch(raw);return reader().detail(uuid(req.params.id),q.checkIn?normalizeStayRequest({checkIn:q.checkIn,checkOut:q.checkOut,rooms:q.rooms||[{adults:2,childAges:[]}],...(promotionId?{promotionId:uuid(promotionId)}:{})}):undefined,offers==='true'); }));
-publicHotels.post('/:id/quotes', wrap(async (req: any, res: any) => { res.set('Cache-Control', 'no-store'); objectOnly(req.body, ['ratePlanId', 'stay']); const result = await reader().detail(uuid(req.params.id), normalizeStayRequest(req.body.stay)); const offer = result.rooms.flatMap(r => r.offers).find(o => o.ratePlanId === uuid(req.body.ratePlanId)); if (!offer || !('quote' in offer))
-    hotelError('HOTEL_QUOTE_UNAVAILABLE', 'Chưa có báo giá hợp lệ cho lựa chọn này.', 409); return offer; }));
+export function hotelQuoteHandler(allowSynthetic: boolean) {
+    return wrap(async (req: any, res: any) => {
+        res.set('Cache-Control', 'no-store');
+        objectOnly(req.body, ['ratePlanId', 'stay']);
+        const result = await new HotelReadService(new PostgresHotelStore(), true, allowSynthetic)
+            .detail(uuid(req.params.id), normalizeStayRequest(req.body.stay));
+        const offer = result.rooms.flatMap(room => room.offers).find(rate => rate.ratePlanId === uuid(req.body.ratePlanId));
+        if (!offer || !('quote' in offer)) {
+            hotelError('HOTEL_QUOTE_UNAVAILABLE', 'Chưa có báo giá hợp lệ cho lựa chọn này.', 409);
+        }
+        return offer;
+    });
+}
+publicHotels.post('/:id/quotes', hotelQuoteHandler(process.env.NODE_ENV === 'test'));
 export const hotelMedia = Router();
 hotelMedia.use(enabled);
 hotelMedia.get('/:id', wrap(async (req: any, res: any) => { const rows = await query("SELECT m.storage_key FROM hotel_media m JOIN hotel_profiles h ON h.place_id=m.place_id JOIN places p ON p.id=h.place_id JOIN businesses b ON b.id=h.business_id WHERE m.id=$1 AND m.status='APPROVED' AND m.rights<>'UNVERIFIED' AND p.status='APPROVED' AND b.status='ACTIVE' AND h.approved_content_version=h.content_version"+(process.env.NODE_ENV==='test'?'':" AND COALESCE(p.catalog_metadata->>'source','')<>'DEMO' AND COALESCE(p.catalog_metadata->>'testOnly','false')<>'true' AND NOT(COALESCE(p.slug,'')||' '||p.name ~* '(^demo-|\\mDEMO\\M)')"), [uuid(req.params.id)]); if (!rows.length)

@@ -286,7 +286,7 @@ const EditorInner: React.FC = () => {
   };
 
   const onArchive = async (reason?: string) => {
-    await AdminBackofficeService.archiveBanner(banner!.id, reason);
+    await AdminBackofficeService.archiveBanner(banner!.id, banner!.version, reason);
     toast({ tone: 'success', message: 'Đã lưu trữ banner.' });
     navigate('/admin/cms');
   };

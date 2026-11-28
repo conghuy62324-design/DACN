@@ -127,7 +127,7 @@ export const BannerList: React.FC = () => {
     setSavingOrder(true);
     setOrderError('');
     try {
-      await AdminBackofficeService.orderBanners(order);
+      await AdminBackofficeService.orderBanners(order.map(id => ({ id, version: items.find(item => item.id === id)!.version })));
       toast({ tone: 'success', message: 'Đã lưu thứ tự banner.' });
       await load();
     } catch (requestError) {
@@ -144,7 +144,7 @@ export const BannerList: React.FC = () => {
     try {
       if (kind === 'publish') await AdminBackofficeService.publishBanner(banner.id, banner.version, banner.startsAt, banner.endsAt);
       if (kind === 'unpublish') await AdminBackofficeService.unpublishBanner(banner.id, banner.version, reason);
-      if (kind === 'archive') await AdminBackofficeService.archiveBanner(banner.id, reason);
+      if (kind === 'archive') await AdminBackofficeService.archiveBanner(banner.id, banner.version, reason);
     } catch (requestError) {
       if (isConflictError(requestError)) setConflict(true);
       throw requestError;

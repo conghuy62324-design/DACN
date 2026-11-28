@@ -1,3 +1,4 @@
+import {validatedWebSessionVersion} from '../web/accountSecurity.js';
 import { NextFunction, Response } from 'express';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware.js';
 import { BlogService } from '../services/blogService.js';
@@ -55,5 +56,5 @@ export class PartnerResourceController {
 
   static async listBookings(req: AuthenticatedRequest,res: Response,next: NextFunction){try{const businessId=String(req.query.businessId||'');if(!businessId)throw new HttpError(400,'businessId là bắt buộc','BUSINESS_ID_REQUIRED');res.json({success:true,data:await BookingService.listForPartner(req.user!.id,businessId,Number(req.query.page||1),Number(req.query.limit||20),{search:typeof req.query.search==='string'?req.query.search:undefined,status:typeof req.query.status==='string'?req.query.status:undefined})});}catch(error){next(error);}}
   static async getBooking(req: AuthenticatedRequest,res: Response,next: NextFunction){try{res.json({success:true,data:await BookingService.getForPartner(req.user!.id,id(req))});}catch(error){next(error);}}
-  static async updateBooking(req: AuthenticatedRequest,res: Response,next: NextFunction){try{const businessId=String(req.body.businessId||'');if(!businessId)throw new HttpError(400,'businessId là bắt buộc','BUSINESS_ID_REQUIRED');const status=req.body.status as BookingStatus;if(!['CONFIRMED','REJECTED','COMPLETED','CANCELLED'].includes(status))throw new HttpError(400,'Trạng thái booking không hợp lệ');await BookingService.getForPartner(req.user!.id,id(req));res.json({success:true,data:await BookingService.changeStatus(id(req),status,req.user!,req.body.reason,businessId)});}catch(error){next(error);}}
+  static async updateBooking(req: AuthenticatedRequest,res: Response,next: NextFunction){try{const businessId=String(req.body.businessId||'');if(!businessId)throw new HttpError(400,'businessId là bắt buộc','BUSINESS_ID_REQUIRED');const status=req.body.status as BookingStatus;if(!['CONFIRMED','REJECTED','COMPLETED','CANCELLED'].includes(status))throw new HttpError(400,'Trạng thái booking không hợp lệ');await BookingService.getForPartner(req.user!.id,id(req));res.json({success:true,data:await BookingService.changeStatus(id(req),status,{...req.user!,sessionVersion:validatedWebSessionVersion(req.user!)},req.body.reason,businessId)});}catch(error){next(error);}}
 }

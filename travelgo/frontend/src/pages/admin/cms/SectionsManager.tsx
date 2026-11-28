@@ -16,6 +16,7 @@ import {
 } from '../../../components/backoffice';
 
 interface Section {
+  id: string;
   key: string;
   title: string;
   enabled: boolean;
@@ -98,6 +99,7 @@ export const SectionsManager: React.FC = () => {
     setSaveError('');
     setConflict(false);
     try {
+      const revisions = new Map(server.map(s => [s.key, s.version]));
       for (const key of changedKeys) {
         const s = draft.find((x) => x.key === key)!;
         const original = byKey.get(key)!;
@@ -105,9 +107,10 @@ export const SectionsManager: React.FC = () => {
         if (original.enabled !== s.enabled) body.enabled = s.enabled;
         if (original.title !== s.title) body.title = s.title.trim();
         if (!same(original.config, s.config)) body.config = s.config;
-        await AdminBackofficeService.patchSection(key, body);
+        const saved = await AdminBackofficeService.patchSection(key, body);
+        revisions.set(key, saved.version);
       }
-      if (orderChanged) await AdminBackofficeService.orderSections(draft.map((s) => s.key));
+      if (orderChanged) await AdminBackofficeService.orderSections(draft.map(s => ({ id: s.id, version: revisions.get(s.key)! })));
       toast({ tone: 'success', message: 'Đã lưu bố cục trang chủ.' });
       await load();
     } catch (requestError) {

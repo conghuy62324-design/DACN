@@ -13,7 +13,8 @@ export interface PartnerReview {
   comment: string;
   verificationStatus?: string;
   createdAt: string;
-  reply: { text: string; repliedAt: string; repliedBy?: string } | null;
+  replyVersion: number;
+  reply: { text: string; version: number; repliedAt: string; repliedBy?: string } | null;
 }
 
 export interface PartnerReviewPage {
@@ -37,13 +38,13 @@ export const PartnerBackofficeService = {
     return response.data;
   },
   /** PAC §5.2 — PUT /partner/reviews/:id/reply */
-  async reply(id: string, text: string): Promise<PartnerReview> {
-    const response: any = await api.put(`/partner/reviews/${id}/reply`, { text });
+  async reply(id: string, text: string, version: number): Promise<PartnerReview> {
+    const response: any = await api.put(`/partner/reviews/${id}/reply`, { text, version });
     return response.data;
   },
   /** PAC §5.2 — DELETE /partner/reviews/:id/reply */
-  async deleteReply(id: string): Promise<PartnerReview> {
-    const response: any = await api.delete(`/partner/reviews/${id}/reply`);
+  async deleteReply(id: string, version: number): Promise<PartnerReview> {
+    const response: any = await api.delete(`/partner/reviews/${id}/reply`, { data: { version } });
     return response.data;
   },
 };

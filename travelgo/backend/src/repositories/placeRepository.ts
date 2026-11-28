@@ -7,17 +7,24 @@ import {resolveLocation} from '../geography/vietnam.js';
 import {locationWhere} from '../geography/query.js';
 
 export interface PlaceListQuery extends PageQuery, CatalogQuery {}
-function visibility(){
+function visibility(allowedTestIds?: ReadonlySet<string>){
  const parts:any[]=[{status:'APPROVED'},{[Op.or]:[{businessId:null},{'$business.status$':'ACTIVE'}]}];
  if(!demoCatalogEnabled()){
   parts.push({name:{[Op.notIRegexp]:'\\mDEMO\\M'}},{slug:{[Op.notILike]:'demo-%'}});
   if(catalogMetadataEnabled())parts.push(literal(`NOT ("Place"."catalog_metadata" @> '{"source":"DEMO"}'::jsonb)`));
  }
+ if(catalogMetadataEnabled()){
+  parts.push({[Op.or]:[
+   {category:'hotel'},
+   literal(`NOT ("Place"."catalog_metadata" @> '{"testOnly":true}'::jsonb)`),
+   ...((process.env.NODE_ENV==='test'&&allowedTestIds?.size)?[{id:{[Op.in]:[...allowedTestIds]}}]:[]),
+  ]});
+ }
  return parts;
 }
 export class PlaceRepository {
-  static async list(query: PlaceListQuery, scope: { publicOnly?: boolean; businessIds?: string[] } = {}) {
-    validatePlaceQuery(query);const {page,limit,offset}=pageOptions(query),parts:any[]=scope.publicOnly?visibility():[];
+  static async list(query: PlaceListQuery, scope: { publicOnly?: boolean; businessIds?: string[]; allowedTestIds?:ReadonlySet<string> } = {}) {
+    validatePlaceQuery(query);const {page,limit,offset}=pageOptions(query),parts:any[]=scope.publicOnly?visibility(scope.allowedTestIds):[];
     if(scope.businessIds)parts.push({businessId:{[Op.in]:scope.businessIds}});
     if(query.status&&!scope.publicOnly)parts.push({status:query.status});
     if(query.category&&query.category!=='all')parts.push({category:query.category});

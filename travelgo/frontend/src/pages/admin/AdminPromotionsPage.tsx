@@ -97,7 +97,7 @@ const PromotionsInner: React.FC = () => {
   const close = () => set({ id: null });
   const suspend = async (reason?: string) => {
     if (!selected) return;
-    await AdminBackofficeService.suspendPromotion(selected.id, reason || '');
+    await AdminBackofficeService.suspendPromotion(selected.id, reason || '', selected.revision);
     toast({ tone: 'success', message: `Đã đình chỉ ưu đãi “${selected.name}”.` });
     await load();
   };

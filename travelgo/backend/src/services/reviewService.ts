@@ -10,7 +10,7 @@ import { HttpError } from '../utils/httpError.js';
 type ReviewEnvironment = 'production' | 'development' | 'test';
 type ModerationStatus = 'PUBLISHED' | 'HIDDEN' | 'REJECTED';
 
-const REVIEW_FIELDS = new Set(['bookingId', 'rating', 'criteria', 'comment','analysisConsent']);
+const REVIEW_FIELDS = new Set(['bookingId','bookingItemId', 'rating', 'criteria', 'comment','analysisConsent']);
 const CRITERIA_FIELDS = new Set(['service', 'price', 'location', 'experience']);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -40,6 +40,8 @@ function validateInput(raw: unknown) {
     throw new HttpError(400, `Client không được gửi trường đánh giá: ${unsupported.join(', ')}`, 'SPOOFED_REVIEW_FIELD');
   }
   const bookingId = raw.bookingId;
+  const bookingItemId=raw.bookingItemId;
+  if(bookingItemId!==undefined&&(!bookingId||typeof bookingItemId!=='string'||!UUID.test(bookingItemId)))throw new HttpError(400,'Cần Booking và đúng item để xác minh phòng.','INVALID_REVIEW_BOOKING_ITEM');
   if (bookingId !== undefined && (typeof bookingId !== 'string' || !UUID.test(bookingId))) {
     throw new HttpError(400, 'bookingId không hợp lệ', 'INVALID_REVIEW_BOOKING');
   }
@@ -57,7 +59,7 @@ function validateInput(raw: unknown) {
     if (invalid.length) throw new HttpError(400, `Tiêu chí không hợp lệ: ${invalid.join(', ')}`, 'INVALID_REVIEW_CRITERIA');
     criteria = Object.fromEntries(Object.entries(raw.criteria).map(([key, value]) => [key, validateRating(value, key)]));
   }
-  return { bookingId: bookingId as string | undefined, rating, criteria, comment,analysisConsent:raw.analysisConsent };
+  return { bookingId: bookingId as string | undefined,bookingItemId:bookingItemId as string|undefined, rating, criteria, comment,analysisConsent:raw.analysisConsent };
 }
 
 function criteriaFlags(criteria: CriteriaRatings) {
@@ -154,6 +156,7 @@ export class ReviewService {
 
         let verificationStatus: 'VERIFIED' | 'UNVERIFIED' = 'UNVERIFIED';
         let verifiedAt: Date | undefined;
+        let verifiedItemId:string|undefined;
         if (input.bookingId) {
           const booking = await Booking.findByPk(input.bookingId, { transaction, lock: transaction.LOCK.UPDATE });
           if (!booking || booking.userId !== userId) {
@@ -170,6 +173,12 @@ export class ReviewService {
           }
           verificationStatus = 'VERIFIED';
           verifiedAt = new Date();
+          if(process.env.REVIEW_PERSISTENCE_ENABLED==='true'&&booking.serviceType==='hotel'){
+            const [items]=await sequelize.query('SELECT i.id FROM hotel_booking_items i JOIN hotel_booking_stays s ON s.booking_id=i.booking_id WHERE i.booking_id=$1 AND i.place_id=$2 AND s.check_out<=(now() AT TIME ZONE \'Asia/Ho_Chi_Minh\')::date ORDER BY i.id',{bind:[booking.id,targetId],transaction});
+            const matches=items as {id:string}[];
+            if(input.bookingItemId){if(!matches.some(i=>i.id===input.bookingItemId))throw new HttpError(409,'Item không thuộc đúng kỳ lưu trú đã hoàn tất.','REVIEW_ITEM_SCOPE');verifiedItemId=input.bookingItemId;}
+            else if(matches.length===1)verifiedItemId=matches[0].id;
+          }else if(input.bookingItemId)throw new HttpError(409,'Attribution phòng chưa được kích hoạt.','REVIEW_ROOM_ATTRIBUTION_DISABLED');
         }
 
         const consent = await TelemetryConsent.findByPk(userId, { transaction });
@@ -193,6 +202,7 @@ export class ReviewService {
           aiUsageAllowed,
           consentPolicyVersion: aiUsageAllowed ? input.analysisConsent==='REVIEW_INSIGHTS_V1'?'REVIEW_INSIGHTS_V1':TELEMETRY_POLICY_VERSION : undefined,
         }, { transaction });
+        if(verifiedItemId)await sequelize.query('INSERT INTO hotel_review_stays(review_id,booking_item_id) VALUES($1,$2)',{bind:[review.id,verifiedItemId],transaction});
         await updatePlaceRating(place, transaction);
         return serialize(review, true);
       });
@@ -206,7 +216,7 @@ export class ReviewService {
 
   static async update(reviewId: string, userId: string, raw: unknown) {
     const input = validateInput(raw);
-    if (input.bookingId !== undefined) {
+    if (input.bookingId !== undefined||input.bookingItemId!==undefined) {
       throw new HttpError(400, 'Không thể thay đổi booking provenance của đánh giá', 'SPOOFED_REVIEW_FIELD');
     }
     const snapshot = await Review.findByPk(reviewId);

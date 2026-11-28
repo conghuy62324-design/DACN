@@ -49,7 +49,7 @@ const ReviewCard: React.FC<{ review: PartnerReview; onChanged: (r: PartnerReview
     setBusy(true);
     setError('');
     try {
-      const updated = await PartnerBackofficeService.reply(review.id, trimmed);
+      const updated = await PartnerBackofficeService.reply(review.id, trimmed, review.replyVersion);
       onChanged({ ...review, ...updated });
       setEditing(false);
     } catch (e) {
@@ -115,7 +115,7 @@ const ReviewCard: React.FC<{ review: PartnerReview; onChanged: (r: PartnerReview
         confirmLabel="Xóa phản hồi"
         onClose={() => setDeleting(false)}
         onConfirm={async () => {
-          const updated = await PartnerBackofficeService.deleteReply(review.id);
+          const updated = await PartnerBackofficeService.deleteReply(review.id, review.reply!.version);
           onChanged({ ...review, ...updated, reply: null });
           setText('');
         }}
