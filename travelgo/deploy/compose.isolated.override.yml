@@ -1,0 +1,43 @@
+# Use with ../docker-compose.production.example.yml, explicit -p and a private env file.
+# Preapproval permits config validation only. This override needs no GPU or model pull.
+services:
+  gateway:
+    environment:
+      TRAVELGO_API_UPSTREAM: backend
+      TRAVELGO_HTTPS_AUTHORITY: ${TRAVELGO_DOMAIN:?reviewed hostname required}:18443
+    ports: !override ["127.0.0.1:18083:80", "127.0.0.1:18443:443"]
+    restart: "no"
+  frontend:
+    restart: "no"
+  backend:
+    network_mode: !reset null
+    networks: [app, data]
+    depends_on: !override
+      postgres:
+        condition: service_healthy
+    environment:
+      AGENT_CORE_LLM_ENABLED: "false"
+      AI_NATIVE_CONSULTATION_MODEL_ENABLED: "false"
+      LLM_LIVE_ENABLED: "false"
+      LLM_USAGE_APPROVED: "false"
+      LLM_EXTERNAL_PROCESSING_APPROVED: "false"
+      TRAVEL_WEB_WORKER_ENABLED: "false"
+      TRAVEL_SEARCH_ENABLED: "false"
+    restart: "no"
+  postgres:
+    restart: "no"
+  ollama:
+    profiles: [unapproved-model]
+    deploy: !reset {}
+    restart: "no"
+  review_worker:
+    restart: "no"
+networks:
+  edge:
+    driver: bridge
+    enable_ipv6: false
+    driver_opts:
+      com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"
+      com.docker.network.bridge.enable_ip_masquerade: "false"
+volumes:
+  approved_models: !override {}

@@ -1,0 +1,167 @@
+# Release candidate. Set image pins and environment files outside Git.
+name: hugotravel-production-candidate
+x-api-image: &api-image ${TRAVELGO_BACKEND_IMAGE:?reviewed backend image required}
+x-logs: &logs
+  driver: local
+  options: {max-size: "10m", max-file: "3"}
+services:
+  gateway:
+    image: ${TRAVELGO_NGINX_IMAGE:?reviewed nginx image required}
+    environment:
+      TRAVELGO_DOMAIN: ${TRAVELGO_DOMAIN:?reviewed hostname required}
+      TRAVELGO_HTTPS_AUTHORITY: ${TRAVELGO_DOMAIN:?reviewed hostname required}
+      TRAVELGO_API_UPSTREAM: ollama
+      NGINX_ENVSUBST_FILTER: ^TRAVELGO_(DOMAIN|HTTPS_AUTHORITY|API_UPSTREAM)$
+    volumes:
+      - type: bind
+        source: ./deploy/gateway.conf.template
+        target: /etc/nginx/templates/default.conf.template
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${TRAVELGO_TLS_DIR:?TLS material directory required}
+        target: /run/tls
+        read_only: true
+        bind:
+          create_host_path: false
+    ports: ["80:80", "443:443"]
+    networks: [edge, app]
+    restart: unless-stopped
+    security_opt: [no-new-privileges:true]
+    logging: *logs
+  frontend:
+    image: ${TRAVELGO_FRONTEND_IMAGE:?reviewed frontend image required}
+    networks: [app]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 4s
+      retries: 3
+    restart: unless-stopped
+    logging: *logs
+  backend:
+    image: *api-image
+    network_mode: service:ollama
+    env_file: ${TRAVELGO_API_ENV_FILE:?API secret environment required}
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      PORT: "5000"
+      HOTEL_MEDIA_DIR: /var/lib/travelgo/media/hotel
+      WEB_MEDIA_DIR: /var/lib/travelgo/media/web
+      TRAVELGO_PRIVATE_PROXY_ENABLED: "true"
+      OLLAMA_BASE_URL: http://127.0.0.1:11434
+      AGENT_CORE_LLM_ENABLED: ${TRAVELGO_CORE_MODEL_ENABLED:-false}
+      AI_NATIVE_CONSULTATION_MODEL_ENABLED: ${TRAVELGO_CORE_MODEL_ENABLED:-false}
+      LLM_LIVE_ENABLED: ${TRAVELGO_CORE_MODEL_ENABLED:-false}
+      HOTEL_PRODUCTION_READ_APPROVED: ${TRAVELGO_HOTEL_READ_ENABLED:-false}
+      HOTEL_DOMAIN_ENABLED: ${TRAVELGO_HOTEL_READ_ENABLED:-false}
+      AI_NATIVE_HOTELS_ENABLED: ${TRAVELGO_HOTEL_READ_ENABLED:-false}
+      HOTEL_STAY_BOOKING_ENABLED: "false"
+      ALLOW_TEST_DB_WRITES: "false"
+      CATALOG_DEMO_ENABLED: "false"
+      REVIEW_PERSISTENT_WORKER_ENABLED: "false"
+      REVIEW_INSIGHTS_ENABLED: "false"
+      TRAVEL_WEB_WORKER_ENABLED: "false"
+      TRAVEL_SEARCH_ENABLED: "false"
+      AGENT_SHARED_STATE_MODE: postgres
+      HOTEL_REFERENCE_LOCKS: "disabled"
+    depends_on:
+      ollama:
+        condition: service_started
+        restart: true
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5000/api/health',{signal:AbortSignal.timeout(3500)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - media:/var/lib/travelgo/media
+    stop_grace_period: 40s
+    mem_limit: 1536m
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+    logging: *logs
+  postgres:
+    image: ${TRAVELGO_POSTGIS_IMAGE:?reviewed PostGIS image required}
+    env_file: ${TRAVELGO_DB_ENV_FILE:?PostgreSQL secret environment required}
+    networks: [data]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 15s
+      timeout: 4s
+      retries: 5
+    mem_limit: 4g
+    restart: unless-stopped
+    logging: *logs
+  ollama:
+    image: ${TRAVELGO_OLLAMA_IMAGE:?reviewed Ollama image required}
+    environment:
+      OLLAMA_HOST: 127.0.0.1:11434
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+    networks: [app, data]
+    volumes:
+      - approved_models:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    mem_limit: 10g
+    restart: unless-stopped
+    logging: *logs
+  review_worker:
+    image: *api-image
+    profiles: [review-worker]
+    env_file: ${TRAVELGO_REVIEW_WORKER_ENV_FILE:?worker secret environment required}
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      HOTEL_DOMAIN_ENABLED: "false"
+      REVIEW_PERSISTENT_WORKER_ENABLED: ${TRAVELGO_REVIEW_WORKER_ENABLED:-false}
+      REVIEW_WORKER_PRUNE_ENABLED: ${TRAVELGO_REVIEW_PRUNE_ENABLED:-false}
+      REVIEW_WORKER_POLL_MS: ${TRAVELGO_REVIEW_POLL_MS:-60000}
+      REVIEW_RECONCILE_TIME: ${TRAVELGO_REVIEW_RECONCILE_TIME:-03:00}
+    command: ["node", "dist/workers/reviewWorker.js"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "dist/workers/reviewWorkerHealth.js"]
+      interval: 60s
+      timeout: 8s
+      retries: 3
+      start_period: 60s
+    networks: [data]
+    stop_grace_period: 65s
+    mem_limit: 768m
+    security_opt: [no-new-privileges:true]
+    restart: "on-failure:3"
+    logging: *logs
+networks:
+  edge:
+  app:
+    internal: true
+  data:
+    internal: true
+volumes:
+  postgres_data:
+  media:
+  approved_models:
+    external: true
+    name: ${TRAVELGO_APPROVED_MODEL_VOLUME:?existing verified model volume required}

@@ -1,0 +1,64 @@
+# Owner-approved rehearsal only. Credentials and host paths live outside the repository.
+name: hugotravel-2141c-restore
+services:
+  postgres:
+    image: ${TRAVELGO_POSTGIS_IMAGE:?reviewed PostGIS image required}
+    env_file: ${TRAVELGO_RESTORE_DB_ENV_FILE:?isolated restore administrator environment required}
+    environment:
+      POSTGRES_DB: postgres
+    networks: [data]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d postgres"]
+      interval: 15s
+      timeout: 4s
+      retries: 5
+    mem_limit: 4g
+    restart: "no"
+    logging: &logs
+      driver: local
+      options: {max-size: "10m", max-file: "3"}
+  api_smoke:
+    profiles: [restore-smoke]
+    image: ${TRAVELGO_BACKEND_IMAGE:?reviewed API image required}
+    env_file: ${TRAVELGO_RESTORE_API_ENV_FILE:?isolated restore API environment required}
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: hugo_2141c_restore_test
+      HOTEL_PRODUCTION_READ_DATABASE: hugo_2141c_restore_test
+      HOTEL_MEDIA_DIR: /var/lib/travelgo/media/hotel
+      WEB_MEDIA_DIR: /var/lib/travelgo/media/web
+      AGENT_SHARED_STATE_MODE: postgres
+      AGENT_CORE_LLM_ENABLED: "false"
+      AI_NATIVE_CONSULTATION_MODEL_ENABLED: "false"
+      LLM_LIVE_ENABLED: "false"
+      LLM_USAGE_APPROVED: "false"
+      LLM_EXTERNAL_PROCESSING_APPROVED: "false"
+      HOTEL_STAY_BOOKING_ENABLED: "false"
+      HOTEL_REFERENCE_LOCKS: disabled
+      ALLOW_TEST_DB_WRITES: "false"
+      CATALOG_DEMO_ENABLED: "false"
+      TRAVEL_WEB_WORKER_ENABLED: "false"
+      TRAVEL_SEARCH_ENABLED: "false"
+      REVIEW_PERSISTENT_WORKER_ENABLED: "false"
+      REVIEW_INSIGHTS_ENABLED: "false"
+    networks: [data]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - media:/var/lib/travelgo/media:ro
+    stop_grace_period: 40s
+    mem_limit: 1536m
+    security_opt: [no-new-privileges:true]
+    restart: "no"
+    logging: *logs
+networks:
+  data:
+    internal: true
+volumes:
+  postgres_data:
+  media:
